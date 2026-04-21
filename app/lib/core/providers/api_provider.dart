@@ -50,28 +50,44 @@ final topicsProvider = FutureProvider<List<Topic>>((ref) async {
 });
 
 /// Fuentes activas (para filtrar por medio y mostrar directorio).
+///
+/// Si el backend no responde, caemos al seed bundleado (que además se
+/// refresca en disco cada vez que la petición sí tiene éxito). Así el
+/// directorio de medios sigue funcionando con la instancia caída.
 final sourcesProvider = FutureProvider<PaginatedList<Source>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  final pagina = await api.fetchSources(perPage: 100);
-  // Snapshot del catálogo en disco: la siguiente vez que el backend esté
-  // caído, el fallback usará estos datos frescos en vez del bundleado.
-  guardarSnapshotSeed(
-    'sources.json',
-    pagina.items
-        .where((s) => s.feedUrl.isNotEmpty)
-        .map((s) => {
-              'id': s.id,
-              'name': s.name,
-              'slug': s.slug,
-              'feed_url': s.feedUrl,
-              'feed_type': s.feedType,
-              'website_url': s.websiteUrl,
-              'territory': s.territory,
-              'languages': s.languages,
-            })
-        .toList(),
-  );
-  return pagina;
+  try {
+    final pagina = await api.fetchSources(perPage: 100);
+    // Snapshot del catálogo en disco: la siguiente vez que el backend esté
+    // caído, el fallback usará estos datos frescos en vez del bundleado.
+    guardarSnapshotSeed(
+      'sources.json',
+      pagina.items
+          .where((s) => s.feedUrl.isNotEmpty)
+          .map((s) => {
+                'id': s.id,
+                'name': s.name,
+                'slug': s.slug,
+                'feed_url': s.feedUrl,
+                'feed_type': s.feedType,
+                'website_url': s.websiteUrl,
+                'territory': s.territory,
+                'languages': s.languages,
+              })
+          .toList(),
+    );
+    return pagina;
+  } on FlavorNewsApiException catch (e) {
+    if (!e.esProblemaRed) rethrow;
+    final desdeSeed = await ref.watch(sourcesSeedProvider.future);
+    return PaginatedList<Source>(
+      items: desdeSeed,
+      total: desdeSeed.length,
+      totalPages: 1,
+      page: 1,
+      perPage: desdeSeed.length,
+    );
+  }
 });
 
 // El directorio de colectivos vive en `features/collectives/data/

@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/api_exception.dart';
 import '../../../core/models/item.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../personal_sources/data/items_personales_provider.dart';
 
 /// Filtros locales para la pantalla de vídeos. No se persisten entre sesiones:
@@ -35,20 +38,32 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   final filtros = ref.watch(filtrosVideosProvider);
   final slugCsv = filtros.slugsTopics.isEmpty ? null : filtros.slugsTopics.join(',');
 
-  final paginaBackend = await api.fetchItems(
-    page: 1,
-    perPage: 50,
-    sourceType: 'video,youtube',
-    topic: slugCsv,
-  );
+  PaginatedList<Item>? paginaBackend;
+  final itemsDelSeed = <Item>[];
+  try {
+    paginaBackend = await api.fetchItems(
+      page: 1,
+      perPage: 50,
+      sourceType: 'video,youtube',
+      topic: slugCsv,
+    );
+  } on FlavorNewsApiException catch (e) {
+    if (!e.esProblemaRed) rethrow;
+    // Backend caído: filtramos los items que llegan por RSS del seed
+    // por los marcadores de vídeo. Serán los pocos feeds RSS/Atom del
+    // directorio que apunten a vídeos (PeerTube, .mp4 embebido…); los
+    // feeds tipo YouTube no pasan por el pipeline del seed.
+    final todosDelSeed = await ref.watch(itemsDesdeSeedProvider.future);
+    itemsDelSeed.addAll(todosDelSeed.where(_esItemDeVideo));
+  }
 
-  final items = <Item>[...paginaBackend.items];
+  final items = <Item>[
+    if (paginaBackend != null) ...paginaBackend.items,
+    ...itemsDelSeed,
+  ];
   if (filtros.estaVacio) {
     final personales = await ref.watch(itemsDeFuentesPersonalesProvider.future);
-    items.addAll(personales.where((i) {
-      final tipo = i.source?.feedType ?? '';
-      return tipo == 'youtube' || tipo == 'video' || _tieneUrlDeVideo(i);
-    }));
+    items.addAll(personales.where(_esItemDeVideo));
   }
 
   // Deduplicamos por id (backend positivos, personales negativos).
@@ -60,6 +75,12 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
     ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
   return combinados;
 });
+
+bool _esItemDeVideo(Item item) {
+  final tipo = item.source?.feedType ?? '';
+  if (tipo == 'youtube' || tipo == 'video') return true;
+  return _tieneUrlDeVideo(item);
+}
 
 bool _tieneUrlDeVideo(Item item) {
   final url = item.originalUrl.toLowerCase();

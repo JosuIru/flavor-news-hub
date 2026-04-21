@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/collective.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
+import '../../../core/models/source.dart';
 import '../../../core/models/source_summary.dart';
 import '../../../core/models/topic.dart';
 import 'seed_cache.dart';
@@ -48,6 +49,19 @@ class FuenteSeed {
 final fuentesSeedProvider = FutureProvider<List<FuenteSeed>>((ref) async {
   final lista = await _cargarListaConCache('sources.json');
   return lista.whereType<Map<String, dynamic>>().map(_leerFuente).toList(growable: false);
+});
+
+/// Versión "completa" de las fuentes desde el seed: mismo fichero que
+/// `fuentesSeedProvider` pero mapeado al modelo `Source` para que el
+/// directorio de medios pueda renderizarlas igual que las del backend.
+/// Los campos que el seed no trae (description, ownership, editorial_note…)
+/// quedan vacíos — el seed sólo expone lo imprescindible.
+final sourcesSeedProvider = FutureProvider<List<Source>>((ref) async {
+  final lista = await _cargarListaConCache('sources.json');
+  return lista
+      .whereType<Map<String, dynamic>>()
+      .map(Source.fromJson)
+      .toList(growable: false);
 });
 
 /// Intenta leer del cache en disco (catálogo fresco guardado la última vez
