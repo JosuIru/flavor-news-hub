@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Tests;
 
+use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\Taxonomy\Topic;
@@ -22,6 +23,9 @@ final class RestItemsEndpointTest extends WP_UnitTestCase
     public function set_up(): void
     {
         parent::set_up();
+        // WP_UnitTestCase revierte la base entre tests, así que las temáticas
+        // precargadas en activación se pierden. Las reinsertamos aquí.
+        Activator::precargarTematicasCanonicas();
         // Fuerza el registro de rutas si aún no están.
         do_action('rest_api_init');
     }

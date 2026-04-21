@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Tests;
 
+use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\Taxonomy\Topic;
@@ -25,6 +26,9 @@ final class FeedIngesterTest extends WP_UnitTestCase
     public function set_up(): void
     {
         parent::set_up();
+        // WP_UnitTestCase revierte la base entre tests, así que las temáticas
+        // precargadas en activación se pierden. Las reinsertamos aquí.
+        Activator::precargarTematicasCanonicas();
         // Limpiar cualquier caché de SimplePie entre tests.
         delete_transient('feed_' . md5(self::URL_FEED_FIXTURE));
         delete_transient('feed_mod_' . md5(self::URL_FEED_FIXTURE));

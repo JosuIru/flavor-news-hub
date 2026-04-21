@@ -50,8 +50,12 @@ final class Activator
      * Inserta las 15 temáticas canónicas si aún no existen.
      * Idempotente: reactivar el plugin no duplica términos ni machaca los
      * que el usuario haya añadido manualmente.
+     *
+     * Es `public` para que los tests puedan repoblar topics en su set_up
+     * cuando el wrapper transaccional de `WP_UnitTestCase` los haya
+     * revertido entre casos.
      */
-    private static function precargarTematicasCanonicas(): void
+    public static function precargarTematicasCanonicas(): void
     {
         foreach (Topic::TEMATICAS_PRECARGADAS as $slugTematica => $etiquetaTematica) {
             $terminoExistente = term_exists($slugTematica, Topic::SLUG);
