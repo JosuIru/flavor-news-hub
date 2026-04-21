@@ -54,7 +54,10 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Flutter analyze
-        run: flutter analyze
+        # `--no-fatal-infos` deja pasar avisos cosméticos (prefer_const,
+        # prefer_function_declarations…) que no indican bugs. Errores y
+        # warnings siguen siendo bloqueantes.
+        run: flutter analyze --no-fatal-infos
 
       - name: Flutter test
         run: flutter test
