@@ -44,6 +44,13 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      - name: Generate l10n
+        # Desde Flutter 3.41 la generación automática tras `pub get` no es
+        # fiable (el paquete sintético `flutter_gen` quedó opt-in). Forzamos
+        # la generación para que los imports `package:flutter_gen/gen_l10n/...`
+        # estén disponibles antes del analyze.
+        run: flutter gen-l10n
+
       - name: Generate freezed + json_serializable
         # Los `.freezed.dart` y `.g.dart` no se commitean; se regeneran
         # en cada build. `--delete-conflicting-outputs` evita errores si

@@ -8,3 +8,7 @@ output-localization-file: app_localizations.dart
 output-class: AppLocalizations
 untranslated-messages-file: l10n_missing.txt
 nullable-getter: false
+# Flutter 3.41+ deshabilita por defecto el paquete sintético `flutter_gen`.
+# Los imports del proyecto usan `package:flutter_gen/gen_l10n/...`, así que
+# lo reactivamos hasta migrar a imports desde el paquete propio.
+synthetic-package: true
