@@ -1,0 +1,729 @@
+[
+ {
+  "id": 7102,
+  "name": "404 Media",
+  "slug": "404-media",
+  "feed_url": "https://www.404media.co/rss/",
+  "feed_type": "rss",
+  "website_url": "https://www.404media.co/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 6933,
+  "name": "À l&#8217;encontre",
+  "slug": "a-lencontre",
+  "feed_url": "https://www.alencontre.org/feed/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.alencontre.org/",
+  "territory": "Internacional",
+  "languages": [
+   "fr"
+  ]
+ },
+ {
+  "id": 6452,
+  "name": "Ahotsa.info",
+  "slug": "ahotsa-info",
+  "feed_url": "https://ahotsa.info/rss",
+  "feed_type": "rss",
+  "website_url": "https://ahotsa.info",
+  "territory": "Euskal Herria",
+  "languages": [
+   "eu"
+  ]
+ },
+ {
+  "id": 6611,
+  "name": "Anartist Video",
+  "slug": "anartist-video",
+  "feed_url": "https://video.anartist.org/feeds/videos.xml",
+  "feed_type": "video",
+  "website_url": "https://video.anartist.org",
+  "territory": "Internacional",
+  "languages": [
+   "es",
+   "en",
+   "fr"
+  ]
+ },
+ {
+  "id": 6753,
+  "name": "Antropología en la Sombra",
+  "slug": "antropologia-en-la-sombra",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCe81jZxbCPX8PilT3IQKxFw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCe81jZxbCPX8PilT3IQKxFw",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6283,
+  "name": "AraInfo",
+  "slug": "arainfo",
+  "feed_url": "https://arainfo.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://arainfo.org",
+  "territory": "Aragón",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6464,
+  "name": "Ballena Blanca",
+  "slug": "ballena-blanca",
+  "feed_url": "https://www.ballenablanca.es/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.ballenablanca.es",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6414,
+  "name": "Berria",
+  "slug": "berria",
+  "feed_url": "https://www.berria.eus/uploads/feeds/feed_berria_eu.xml",
+  "feed_type": "rss",
+  "website_url": "https://www.berria.eus",
+  "territory": "Euskal Herria",
+  "languages": [
+   "eu"
+  ]
+ },
+ {
+  "id": 6133,
+  "name": "Climática",
+  "slug": "climatica-2",
+  "feed_url": "https://climatica.coop/feed/",
+  "feed_type": "rss",
+  "website_url": "https://climatica.coop",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6463,
+  "name": "Crític",
+  "slug": "critic",
+  "feed_url": "https://www.elcritic.cat/feed",
+  "feed_type": "rss",
+  "website_url": "https://www.elcritic.cat",
+  "territory": "Catalunya",
+  "languages": [
+   "ca"
+  ]
+ },
+ {
+  "id": 6931,
+  "name": "Cuarto Poder",
+  "slug": "cuarto-poder",
+  "feed_url": "https://www.cuartopoder.es/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.cuartopoder.es/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6755,
+  "name": "Descifrando la Guerra",
+  "slug": "descifrando-la-guerra",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCvLrMnloIn_RqITF4Ly5ZEA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCvLrMnloIn_RqITF4Ly5ZEA",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6925,
+  "name": "Directa",
+  "slug": "directa",
+  "feed_url": "https://directa.cat/feed/",
+  "feed_type": "rss",
+  "website_url": "https://directa.cat/",
+  "territory": "Catalunya",
+  "languages": [
+   "ca"
+  ]
+ },
+ {
+  "id": 6132,
+  "name": "Ecologistas en Acción",
+  "slug": "ecologistas-en-accion-2",
+  "feed_url": "https://www.ecologistasenaccion.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.ecologistasenaccion.org",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6752,
+  "name": "El Mundo Today",
+  "slug": "el-mundo-today",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfxxmFIJGD_S6xim0EphBw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCbfxxmFIJGD_S6xim0EphBw",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6065,
+  "name": "El Salto Diario",
+  "slug": "el-salto-diario",
+  "feed_url": "https://www.elsaltodiario.com/general/feed",
+  "feed_type": "rss",
+  "website_url": "https://www.elsaltodiario.com",
+  "territory": "Estado",
+  "languages": []
+ },
+ {
+  "id": 6282,
+  "name": "El Topo",
+  "slug": "el-topo",
+  "feed_url": "https://eltopo.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://eltopo.org",
+  "territory": "Andalucía",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7100,
+  "name": "Electronic Frontier Foundation",
+  "slug": "electronic-frontier-foundation",
+  "feed_url": "https://www.eff.org/rss/updates.xml",
+  "feed_type": "rss",
+  "website_url": "https://www.eff.org/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 6919,
+  "name": "Flavor Platform (local)",
+  "slug": "flavor-platform-local",
+  "feed_url": "http://sitio-prueba.local/",
+  "feed_type": "flavor_platform",
+  "website_url": "http://sitio-prueba.local/",
+  "territory": "Navarra",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7101,
+  "name": "Free Software Foundation Europe",
+  "slug": "free-software-foundation-europe",
+  "feed_url": "https://fsfe.org/news/news.en.rss",
+  "feed_type": "rss",
+  "website_url": "https://fsfe.org/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 6608,
+  "name": "Fundación Savia",
+  "slug": "fundacion-savia",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCF2k6ZA_4LP7v7Wq5qOtQpA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@SaviaYT",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6715,
+  "name": "FurorTV",
+  "slug": "furortv",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH6Xr67k_7_KAgeDgQiFamw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@furortv",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6416,
+  "name": "Hala Bedi Irratia",
+  "slug": "hala-bedi-irratia",
+  "feed_url": "https://halabedi.eus/feed/",
+  "feed_type": "rss",
+  "website_url": "https://halabedi.eus",
+  "territory": "Araba",
+  "languages": [
+   "eu",
+   "es"
+  ]
+ },
+ {
+  "id": 7103,
+  "name": "Hipertextual",
+  "slug": "hipertextual",
+  "feed_url": "https://hipertextual.com/feed",
+  "feed_type": "rss",
+  "website_url": "https://hipertextual.com/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6892,
+  "name": "Homo Deus",
+  "slug": "homo-deus",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSU1606eim0bCnIpvYsz4_w",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@homodeus_espanol",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6612,
+  "name": "IndyMotion",
+  "slug": "indymotion",
+  "feed_url": "https://indymotion.fr/feeds/videos.xml",
+  "feed_type": "video",
+  "website_url": "https://indymotion.fr",
+  "territory": "Internacional",
+  "languages": [
+   "es",
+   "fr",
+   "en"
+  ]
+ },
+ {
+  "id": 6930,
+  "name": "Infolibre",
+  "slug": "infolibre",
+  "feed_url": "https://www.infolibre.es/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.infolibre.es/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6280,
+  "name": "Kaos en la Red",
+  "slug": "kaos-en-la-red",
+  "feed_url": "https://kaosenlared.net/feed/",
+  "feed_type": "rss",
+  "website_url": "https://kaosenlared.net",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6932,
+  "name": "Kaos en la Red",
+  "slug": "kaos-en-la-red-2",
+  "feed_url": "https://www.kaosenlared.net/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.kaosenlared.net/",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6284,
+  "name": "La Base",
+  "slug": "la-base",
+  "feed_url": "https://www.ivoox.com/feed_fg_f1893330_filtro_1.xml",
+  "feed_type": "podcast",
+  "website_url": "https://www.publico.es/podcasts/la-base",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6281,
+  "name": "La Directa",
+  "slug": "la-directa",
+  "feed_url": "https://directa.cat/feed/",
+  "feed_type": "rss",
+  "website_url": "https://directa.cat",
+  "territory": "Catalunya",
+  "languages": [
+   "ca"
+  ]
+ },
+ {
+  "id": 6751,
+  "name": "La Filmoteca Maldita",
+  "slug": "la-filmoteca-maldita",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCvt0OljLuvQW017ppgmSVog",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCvt0OljLuvQW017ppgmSVog",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6924,
+  "name": "La Marea",
+  "slug": "la-marea-2",
+  "feed_url": "https://www.lamarea.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.lamarea.com/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6124,
+  "name": "La Marea",
+  "slug": "la-marea",
+  "feed_url": "https://www.lamarea.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.lamarea.com",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7099,
+  "name": "Low-Tech Magazine",
+  "slug": "low-tech-magazine",
+  "feed_url": "https://solar.lowtechmagazine.com/index.xml",
+  "feed_type": "rss",
+  "website_url": "https://solar.lowtechmagazine.com/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 6613,
+  "name": "MakerTube",
+  "slug": "makertube",
+  "feed_url": "https://makertube.net/feeds/videos.xml",
+  "feed_type": "video",
+  "website_url": "https://makertube.net",
+  "territory": "Internacional",
+  "languages": [
+   "en",
+   "es",
+   "de"
+  ]
+ },
+ {
+  "id": 6748,
+  "name": "Miguel Charisteas",
+  "slug": "miguel-charisteas",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCoL-njX4mEWsaHlXFzWvUZw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCoL-njX4mEWsaHlXFzWvUZw",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6607,
+  "name": "Miguel Ruiz Calvo",
+  "slug": "miguel-ruiz-calvo",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCgms7r9SaeYhuIBaPGOjnhw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@miguelruizcalvo",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6928,
+  "name": "Mongabay Latam",
+  "slug": "mongabay-latam",
+  "feed_url": "https://es.mongabay.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://es.mongabay.com/",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7107,
+  "name": "Naukas",
+  "slug": "naukas",
+  "feed_url": "https://www.naukas.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.naukas.com/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6929,
+  "name": "Nodo50",
+  "slug": "nodo50",
+  "feed_url": "https://nodo50.org/spip.php?page=backend",
+  "feed_type": "rss",
+  "website_url": "https://info.nodo50.org/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6927,
+  "name": "Nós Diario",
+  "slug": "nos-diario-2",
+  "feed_url": "https://www.nosdiario.gal/rss/",
+  "feed_type": "rss",
+  "website_url": "https://www.nosdiario.gal/",
+  "territory": "Galiza",
+  "languages": [
+   "gl"
+  ]
+ },
+ {
+  "id": 6127,
+  "name": "Nós Diario",
+  "slug": "nos-diario",
+  "feed_url": "https://www.nosdiario.gal/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.nosdiario.gal",
+  "territory": "Galicia",
+  "languages": [
+   "gl"
+  ]
+ },
+ {
+  "id": 6926,
+  "name": "Pikara Magazine",
+  "slug": "pikara-magazine-2",
+  "feed_url": "https://www.pikaramagazine.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.pikaramagazine.com/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6125,
+  "name": "Pikara Magazine",
+  "slug": "pikara-magazine",
+  "feed_url": "https://www.pikaramagazine.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.pikaramagazine.com",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6754,
+  "name": "Puto Mikel",
+  "slug": "puto-mikel",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSvkCc8rbluGVsZV-KKHCFA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCSvkCc8rbluGVsZV-KKHCFA",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6609,
+  "name": "Radio Bronka TV",
+  "slug": "radio-bronka-tv",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCHl5UQCAuqHeqF4hqlcBzdQ",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@radiobronka",
+  "territory": "Catalunya",
+  "languages": [
+   "ca",
+   "es"
+  ]
+ },
+ {
+  "id": 7105,
+  "name": "Rest of World",
+  "slug": "rest-of-world",
+  "feed_url": "https://restofworld.org/feed/latest",
+  "feed_type": "rss",
+  "website_url": "https://restofworld.org/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 6749,
+  "name": "Rubén Hood",
+  "slug": "ruben-hood",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC_Q7-uOJy3BPWjKNdATqrag",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UC_Q7-uOJy3BPWjKNdATqrag",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6269,
+  "name": "Spanish Revolution",
+  "slug": "spanish-revolution",
+  "feed_url": "https://spanishrevolution.org/feed/",
+  "feed_type": "video",
+  "website_url": "https://spanishrevolution.org",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6465,
+  "name": "The Conversation ES",
+  "slug": "the-conversation-es",
+  "feed_url": "https://theconversation.com/es/articles.atom",
+  "feed_type": "rss",
+  "website_url": "https://theconversation.com/es",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6750,
+  "name": "The Mexican Family",
+  "slug": "the-mexican-family",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCKNW2TrrUlof4ES2y1BWjpA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UCKNW2TrrUlof4ES2y1BWjpA",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7106,
+  "name": "The Register",
+  "slug": "the-register",
+  "feed_url": "https://www.theregister.com/headlines.atom",
+  "feed_type": "atom",
+  "website_url": "https://www.theregister.com/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 6714,
+  "name": "Top de Impacto",
+  "slug": "top-de-impacto",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCmHv37aBniCJK0ihYmHDqAg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@topimpacto",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6779,
+  "name": "Tu Profe de RI",
+  "slug": "tu-profe-de-ri",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC8-6gikVs0MvKebAHEGiwHg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/channel/UC8-6gikVs0MvKebAHEGiwHg",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6610,
+  "name": "TV Lumbung",
+  "slug": "tv-lumbung",
+  "feed_url": "https://tv.lumbung.space/feeds/videos.xml",
+  "feed_type": "video",
+  "website_url": "https://tv.lumbung.space",
+  "territory": "Internacional",
+  "languages": [
+   "es",
+   "en"
+  ]
+ },
+ {
+  "id": 6466,
+  "name": "Viento Sur",
+  "slug": "viento-sur",
+  "feed_url": "https://vientosur.info/feed/",
+  "feed_type": "rss",
+  "website_url": "https://vientosur.info",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6126,
+  "name": "VilaWeb",
+  "slug": "vilaweb",
+  "feed_url": "https://www.vilaweb.cat/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.vilaweb.cat",
+  "territory": "Catalunya",
+  "languages": [
+   "ca"
+  ]
+ },
+ {
+  "id": 7104,
+  "name": "Xataka Ciencia",
+  "slug": "xataka-ciencia",
+  "feed_url": "https://www.xatakaciencia.com/rss2.xml",
+  "feed_type": "rss",
+  "website_url": "https://www.xatakaciencia.com/",
+  "territory": "Estado Español",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6415,
+  "name": "Zuzeu",
+  "slug": "zuzeu",
+  "feed_url": "https://zuzeu.eus/feed/",
+  "feed_type": "rss",
+  "website_url": "https://zuzeu.eus",
+  "territory": "Euskal Herria",
+  "languages": [
+   "eu"
+  ]
+ }
+]

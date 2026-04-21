@@ -1,0 +1,13 @@
+# Configuración global de json_serializable.
+# `field_rename: snake` hace que los campos camelCase del Dart mapeen
+# automáticamente al snake_case que emite la API REST del backend
+# (`original_url`, `published_at`, `flavor_url`, etc.), sin necesidad
+# de anotar cada campo con @JsonKey.
+
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          field_rename: snake
+          explicit_to_json: true

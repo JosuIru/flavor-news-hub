@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Monograma de marca: un círculo abierto (señal de emisión) sobre el
+     color de splash. Sin tipografía: así funciona en cualquier tamaño y
+     no depende de fuentes del sistema. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M60,20
+            C37.909,20 20,37.909 20,60
+            C20,82.091 37.909,100 60,100
+            C82.091,100 100,82.091 100,60
+            L85,60
+            C85,73.807 73.807,85 60,85
+            C46.193,85 35,73.807 35,60
+            C35,46.193 46.193,35 60,35
+            C70.493,35 79.469,41.483 83.127,50.668
+            L97,45
+            C91.445,31.186 77.843,20 60,20 Z" />
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M60,48
+            C53.373,48 48,53.373 48,60
+            C48,66.627 53.373,72 60,72
+            C66.627,72 72,66.627 72,60
+            C72,53.373 66.627,48 60,48 Z" />
+</vector>

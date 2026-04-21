@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+    <title>Fixture de tests — Flavor News Hub</title>
+    <link>https://example.test/</link>
+    <description>Feed fixtures para los tests PHPUnit.</description>
+    <language>es</language>
+
+    <item>
+        <title>Primera noticia de prueba</title>
+        <link>https://example.test/articulo-uno</link>
+        <guid isPermaLink="false">fnh-fixture-guid-001</guid>
+        <pubDate>Mon, 20 Apr 2026 08:00:00 +0000</pubDate>
+        <description>Extracto corto de la primera noticia de prueba.</description>
+    </item>
+
+    <item>
+        <title>Segunda noticia de prueba</title>
+        <link>https://example.test/articulo-dos</link>
+        <guid isPermaLink="false">fnh-fixture-guid-002</guid>
+        <pubDate>Mon, 20 Apr 2026 09:30:00 +0000</pubDate>
+        <description>Extracto corto de la segunda noticia.</description>
+    </item>
+
+    <item>
+        <title>Tercera noticia de prueba</title>
+        <link>https://example.test/articulo-tres</link>
+        <guid isPermaLink="false">fnh-fixture-guid-003</guid>
+        <pubDate>Mon, 20 Apr 2026 10:15:00 +0000</pubDate>
+        <description>Extracto corto de la tercera noticia.</description>
+    </item>
+</channel>
+</rss>

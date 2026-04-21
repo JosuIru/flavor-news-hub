@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Color primario de la marca Flavor News Hub. Tono verde-azulado
+         que evoca medios alternativos y comunidad, distinto de los azules
+         de grandes plataformas. Se usa para splash y (más adelante) icono
+         adaptativo. -->
+    <color name="splash_background">#0e4d5a</color>
+    <color name="brand_primary">#0e4d5a</color>
+    <color name="brand_on_primary">#ffffff</color>
+</resources>

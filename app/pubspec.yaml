@@ -1,0 +1,127 @@
+name: flavor_news_hub
+description: "Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Estado: Riverpod. Elegido por su baja fricción con UI de lectura,
+  # tipado fuerte y capacidad de componer providers derivados sin el
+  # boilerplate de bloc.
+  flutter_riverpod: ^2.5.1
+
+  # Navegación declarativa basada en rutas, con deep-linking nativo.
+  go_router: ^14.2.0
+
+  # Cliente HTTP minimal — la API del backend es pública, sin auth ni
+  # interceptors, así que `dio` estaría sobredimensionado.
+  http: ^1.2.2
+
+  # i18n: formateo de fechas y plurales. Castellano, catalán, euskera,
+  # gallego e inglés como idiomas de primera clase desde el día 1.
+  intl: ^0.19.0
+
+  # Persistencia ligera de preferencias (idioma UI, tema, URL de
+  # instancia backend, tamaño de texto).
+  shared_preferences: ^2.3.2
+
+  # Modelos inmutables y serialización JSON (capa 10).
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Abrir URL externas (artículo original en el medio).
+  url_launcher: ^6.3.0
+
+  # Compartir por canal nativo (mensajería, redes, email).
+  share_plus: ^10.0.2
+
+  # Render HTML en el extracto y en las fichas editoriales. Ligero, sin
+  # JS ni plugins — las plantillas del backend ya sanean con wp_kses_post.
+  flutter_widget_from_html_core: ^0.15.2
+
+  # Versión de la app para la pantalla "Acerca de" (leído en runtime).
+  package_info_plus: ^8.0.2
+
+  # Parseo de RSS/Atom en cliente para "Mis medios" personales. Evita
+  # depender de un paquete de feeds más pesado que además no está
+  # mantenido para Dart 3 en todos los forks.
+  xml: ^6.5.0
+
+  # Parseo ligero de HTML para autodescubrir feeds (link rel=alternate)
+  # en páginas arbitrarias sin depender de servicios de terceros.
+  html: ^0.15.4
+
+  # Persistencia local (cache offline, guardados, leídos). Usamos sqflite
+  # directo en lugar de drift para evitar otra dep de build_runner; el
+  # modelo es simple (una sola tabla) y no justifica un ORM.
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  # Directorio de app support para cache del seed federado.
+  path_provider: ^2.1.4
+
+  # Reproductor de audio en vivo para las radios libres. `just_audio_background`
+  # integra `audio_service` con muy poco boilerplate: controles en la
+  # notificación del sistema, se sigue oyendo al bloquear el teléfono,
+  # compatible con botones bluetooth.
+  just_audio: ^0.9.40
+  just_audio_background: ^0.0.1-beta.13
+
+  # Reproductor de vídeos in-app. Usa el WebView del sistema (ya presente
+  # en Android) para renderizar el embed oficial de YouTube — legal y
+  # respeta las métricas del canal — o el embed de PeerTube.
+  webview_flutter: ^4.8.0
+
+  # Mapa basado en tiles de OpenStreetMap. No depende de Google Maps API
+  # (ni de su key), sin tracking, y el proveedor de tiles se puede cambiar
+  # sin tocar código. Encaja con el manifiesto "sin terceros comerciales".
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # Recibir URLs compartidas desde otras apps (intent filters nativos).
+  receive_sharing_intent: ^1.8.0
+
+  # Home-screen widgets (Android). Escribe datos desde Flutter vía
+  # SharedPreferences nativos; la parte Kotlin lee y pinta RemoteViews.
+  home_widget: ^0.6.0
+
+  # Notificaciones locales (sin FCM, sin terceros). La app arma y muestra
+  # la notificación ella misma; no hay push server, sólo timers/workers
+  # dentro del dispositivo.
+  flutter_local_notifications: ^17.2.2
+
+  # Tareas periódicas en background (cada X minutos/horas). Permite que
+  # la app compruebe si hay titulares nuevos aunque esté cerrada.
+  workmanager: ^0.5.2
+
+  # Parseo de fechas/timezones necesario para notificaciones programadas.
+  timezone: ^0.9.4
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Generadores para freezed + json_serializable (capa 10 los usará).
+  build_runner: ^2.4.12
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    # Seed bundleado para modo autónomo: si el backend no responde (servidor
+    # caído, sin red, o el usuario aún no ha configurado URL), la app carga
+    # RSS y streams directamente desde estos JSON.
+    - assets/seed/sources.json
+    - assets/seed/radios.json
+    - assets/seed/collectives.json

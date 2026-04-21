@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_titulares_cabecera">Titulares</string>
+    <string name="widget_titulares_descripcion">Últimos titulares de Flavor News Hub</string>
+    <string name="widget_titulares_vacio">Abre la app para cargar titulares.</string>
+    <string name="widget_refrescar">Refrescar</string>
+
+    <string name="widget_radio_descripcion">Radio libre en directo</string>
+    <string name="widget_radio_sin_radio">Sin radio sonando</string>
+    <string name="widget_radio_play">Play</string>
+    <string name="widget_radio_stop">Parar</string>
+    <string name="widget_radio_cabecera">Radio</string>
+
+    <string name="widget_musica_descripcion">Reproductor de música</string>
+    <string name="widget_musica_cabecera">Sonando</string>
+    <string name="widget_musica_sin_pista">Sin pista</string>
+    <string name="widget_musica_portada">Portada</string>
+    <string name="widget_musica_estado">Estado</string>
+
+    <string name="widget_favoritos_descripcion">Radios favoritas</string>
+    <string name="widget_favoritos_cabecera">Mis radios</string>
+    <string name="widget_favoritos_vacio">Marca radios con ❤ en la app para que aparezcan aquí.</string>
+</resources>

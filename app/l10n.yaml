@@ -1,0 +1,10 @@
+# Configuración de generación de localizaciones.
+# flutter gen-l10n lee este fichero y produce AppLocalizations a partir
+# de los ARB de lib/l10n, tomando app_es.arb como plantilla de claves.
+
+arb-dir: lib/l10n
+template-arb-file: app_es.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+untranslated-messages-file: l10n_missing.txt
+nullable-getter: false

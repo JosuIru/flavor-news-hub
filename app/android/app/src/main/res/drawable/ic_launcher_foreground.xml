@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Foreground del icono adaptativo. Se pinta sobre fondo @color/brand_primary.
+     Tamaño 108dp es el estándar de Android para iconos adaptativos, con
+     el contenido ocupando ~66dp (zona segura); escalamos el viewport para
+     mantener esa proporción. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M54,34
+            C44.059,34 36,42.059 36,52
+            C36,61.941 44.059,70 54,70
+            C63.941,70 72,61.941 72,52
+            L65.25,52
+            C65.25,58.213 60.213,63.25 54,63.25
+            C47.787,63.25 42.75,58.213 42.75,52
+            C42.75,45.787 47.787,40.75 54,40.75
+            C58.722,40.75 62.759,43.668 64.407,47.801
+            L70.65,45.25
+            C68.15,39.034 62.029,34 54,34 Z" />
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M54,46.6
+            C51.019,46.6 48.6,49.019 48.6,52
+            C48.6,54.981 51.019,57.4 54,57.4
+            C56.981,57.4 59.4,54.981 59.4,52
+            C59.4,49.019 56.981,46.6 54,46.6 Z" />
+</vector>

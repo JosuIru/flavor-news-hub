@@ -1,0 +1,72 @@
+name: App · build & test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/app-build.yml'
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/app-build.yml'
+
+jobs:
+  flutter:
+    name: Flutter analyze, test, build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        # El toolchain de Android moderno requiere Java 17 o superior.
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        # `subosito/flutter-action` cachea el SDK entre jobs, acelera
+        # el cold start de 3-4 min a segundos.
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Generate freezed + json_serializable
+        # Los `.freezed.dart` y `.g.dart` no se commitean; se regeneran
+        # en cada build. `--delete-conflicting-outputs` evita errores si
+        # algún archivo quedó desactualizado.
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Flutter analyze
+        run: flutter analyze
+
+      - name: Flutter test
+        run: flutter test
+
+      - name: Build APK (debug)
+        # APK debug en lugar de release porque no firmamos aún. La
+        # validación real aquí es "compila limpio para Android"; la
+        # firma + release APK llegará en una tarea específica cuando
+        # se publique la primera versión.
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flavor-news-hub-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7

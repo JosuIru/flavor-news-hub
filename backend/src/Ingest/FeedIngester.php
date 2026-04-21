@@ -1,0 +1,374 @@
+<?php
+declare(strict_types=1);
+
+namespace FlavorNewsHub\Ingest;
+
+use FlavorNewsHub\CPT\Source;
+use FlavorNewsHub\CPT\Item;
+use FlavorNewsHub\Taxonomy\Topic;
+use FlavorNewsHub\Database\IngestLogTable;
+
+/**
+ * Ingesta de feeds: recorre fuentes activas, descarga sus feeds con
+ * SimplePie (`fetch_feed()`) y crea items nuevos con dedupe por `guid`
+ * (fallback a `original_url`).
+ *
+ * Usa un transient como lock global para evitar que dos ejecuciones
+ * concurrentes (cron + WP-CLI, dos cron solapados…) se pisen.
+ */
+final class FeedIngester
+{
+    private const NOMBRE_LOCK_TRANSIENT = 'fnh_ingest_lock';
+    private const DURACION_LOCK_SEGUNDOS = 5 * MINUTE_IN_SECONDS;
+
+    /**
+     * Punto de entrada para cron y para disparo manual sin argumentos.
+     *
+     * @return array{
+     *   skipped?:bool,
+     *   reason?:string,
+     *   sources_processed?:int,
+     *   items_new_total?:int,
+     *   items_skipped_total?:int,
+     *   errors?:list<array{source_id:int,message:string}>
+     * }
+     */
+    public static function ingestarTodasLasFuentesActivas(): array
+    {
+        if (!self::adquirirLock()) {
+            return [
+                'skipped' => true,
+                'reason'  => __('Otra ingesta está en curso; se cancela esta.', 'flavor-news-hub'),
+            ];
+        }
+
+        try {
+            $idsFuentesActivas = self::obtenerIdsFuentesActivas();
+            $resumenGlobal = [
+                'sources_processed'   => 0,
+                'items_new_total'     => 0,
+                'items_skipped_total' => 0,
+                'errors'              => [],
+            ];
+
+            foreach ($idsFuentesActivas as $idFuente) {
+                $resumenFuente = self::ingestarFuente($idFuente);
+                $resumenGlobal['sources_processed']++;
+                $resumenGlobal['items_new_total']     += $resumenFuente['items_new'];
+                $resumenGlobal['items_skipped_total'] += $resumenFuente['items_skipped'];
+                if ($resumenFuente['error'] !== '') {
+                    $resumenGlobal['errors'][] = [
+                        'source_id' => $idFuente,
+                        'message'   => $resumenFuente['error'],
+                    ];
+                }
+            }
+            return $resumenGlobal;
+        } finally {
+            self::liberarLock();
+        }
+    }
+
+    /**
+     * Ingesta una única fuente. No exige el lock global: se puede llamar
+     * en paralelo para fuentes distintas si hiciera falta en el futuro.
+     *
+     * @return array{items_new:int,items_skipped:int,error:string,log_id:int}
+     */
+    public static function ingestarFuente(int $idFuente): array
+    {
+        $idLog = self::crearLogInicial($idFuente);
+        $contadorNuevos = 0;
+        $contadorDescartados = 0;
+        $mensajeError = '';
+
+        $urlFeed = (string) get_post_meta($idFuente, '_fnh_feed_url', true);
+        if ($urlFeed === '') {
+            $mensajeError = __('La fuente no tiene feed_url configurado.', 'flavor-news-hub');
+            self::cerrarLog($idLog, 'error', $contadorNuevos, $contadorDescartados, $mensajeError);
+            return self::resumenFuente(0, 0, $mensajeError, $idLog);
+        }
+
+        // Rama federación: si la fuente declara tipo `flavor_platform`,
+        // la URL apunta a una instancia de Flavor Platform y no a un RSS.
+        // Delegamos a un ingester especializado que habla con
+        // `/flavor-network/v1/*` en lugar de con SimplePie.
+        $tipoFeed = (string) get_post_meta($idFuente, '_fnh_feed_type', true);
+        if ($tipoFeed === 'flavor_platform') {
+            $resumenFlavor = FlavorPlatformIngester::ingestarDeInstancia($idFuente, $urlFeed);
+            self::cerrarLog(
+                $idLog,
+                $resumenFlavor['error'] === '' ? 'success' : 'error',
+                $resumenFlavor['items_new'],
+                $resumenFlavor['items_skipped'],
+                $resumenFlavor['error']
+            );
+            return self::resumenFuente(
+                $resumenFlavor['items_new'],
+                $resumenFlavor['items_skipped'],
+                $resumenFlavor['error'],
+                $idLog
+            );
+        }
+
+        require_once ABSPATH . WPINC . '/feed.php';
+        $feedDescargado = fetch_feed($urlFeed);
+        if (is_wp_error($feedDescargado)) {
+            $mensajeError = $feedDescargado->get_error_message();
+            self::cerrarLog($idLog, 'error', $contadorNuevos, $contadorDescartados, $mensajeError);
+            return self::resumenFuente(0, 0, $mensajeError, $idLog);
+        }
+
+        $idsTematicasHeredadas = wp_get_object_terms($idFuente, Topic::SLUG, ['fields' => 'ids']);
+        if (is_wp_error($idsTematicasHeredadas)) {
+            $idsTematicasHeredadas = [];
+        }
+        $idsTematicasHeredadas = array_map('intval', $idsTematicasHeredadas);
+
+        $maximoItemsPorEjecucion = (int) apply_filters('fnh_max_items_per_ingest', 50);
+        $itemsDelFeed = $feedDescargado->get_items(0, $maximoItemsPorEjecucion);
+
+        foreach ($itemsDelFeed as $itemFeed) {
+            try {
+                $datosNormalizados = FeedItemParser::parsear($itemFeed);
+            } catch (\Throwable $errorParseo) {
+                // Un item malformado no debe romper la ingesta completa.
+                continue;
+            }
+            if ($datosNormalizados['title'] === '' || $datosNormalizados['permalink'] === '') {
+                continue;
+            }
+            if (self::yaExisteItem($datosNormalizados['guid'], $datosNormalizados['permalink'])) {
+                $contadorDescartados++;
+                continue;
+            }
+            $idItemCreado = self::insertarItem($idFuente, $datosNormalizados, $idsTematicasHeredadas);
+            if ($idItemCreado > 0) {
+                $contadorNuevos++;
+            }
+        }
+
+        self::cerrarLog($idLog, 'success', $contadorNuevos, $contadorDescartados, '');
+        return self::resumenFuente($contadorNuevos, $contadorDescartados, '', $idLog);
+    }
+
+    /** @return array{items_new:int,items_skipped:int,error:string,log_id:int} */
+    private static function resumenFuente(int $nuevos, int $descartados, string $error, int $idLog): array
+    {
+        return [
+            'items_new'     => $nuevos,
+            'items_skipped' => $descartados,
+            'error'         => $error,
+            'log_id'        => $idLog,
+        ];
+    }
+
+    /**
+     * Fuentes activas: las que tienen `_fnh_active = 1` *o* no tienen el
+     * meta escrito (coherente con el default `true` de register_post_meta).
+     *
+     * @return list<int>
+     */
+    private static function obtenerIdsFuentesActivas(): array
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => Source::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                'relation' => 'OR',
+                [
+                    'key'     => '_fnh_active',
+                    'value'   => '1',
+                    'compare' => '=',
+                ],
+                [
+                    'key'     => '_fnh_active',
+                    'compare' => 'NOT EXISTS',
+                ],
+            ],
+        ]);
+        return array_map('intval', $consulta->posts);
+    }
+
+    /**
+     * Dedupe: primero por GUID (identificador canónico del feed) y, si no,
+     * por URL original del artículo.
+     *
+     * Público porque `FlavorPlatformIngester` lo reutiliza para deduplicar
+     * publicaciones federadas con el mismo contrato.
+     */
+    public static function yaExisteItem(string $guid, string $permalink): bool
+    {
+        if ($guid !== '' && self::existeItemConMeta('_fnh_guid', $guid)) {
+            return true;
+        }
+        if ($permalink !== '' && self::existeItemConMeta('_fnh_original_url', $permalink)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static function existeItemConMeta(string $claveMeta, string $valorBuscado): bool
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => Item::SLUG,
+            'post_status'    => 'any',
+            'posts_per_page' => 1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                [
+                    'key'     => $claveMeta,
+                    'value'   => $valorBuscado,
+                    'compare' => '=',
+                ],
+            ],
+        ]);
+        return !empty($consulta->posts);
+    }
+
+    /**
+     * @param array{title:string,excerpt:string,permalink:string,published_at:string,guid:string,media_url:string} $datosNormalizados
+     * @param list<int> $idsTematicas
+     *
+     * Público porque `FlavorPlatformIngester` también persiste items con
+     * este mismo contrato.
+     */
+    public static function insertarItem(int $idFuente, array $datosNormalizados, array $idsTematicas): int
+    {
+        $timestampPublicacion = $datosNormalizados['published_at'] !== ''
+            ? (int) strtotime($datosNormalizados['published_at'])
+            : time();
+        if ($timestampPublicacion <= 0) {
+            $timestampPublicacion = time();
+        }
+        $fechaPublicacionGmt = gmdate('Y-m-d H:i:s', $timestampPublicacion);
+        $fechaPublicacionLocal = get_date_from_gmt($fechaPublicacionGmt);
+
+        $idItemNuevo = wp_insert_post([
+            'post_type'     => Item::SLUG,
+            'post_status'   => 'publish',
+            'post_title'    => $datosNormalizados['title'],
+            'post_content'  => $datosNormalizados['excerpt'],
+            'post_date'     => $fechaPublicacionLocal,
+            'post_date_gmt' => $fechaPublicacionGmt,
+            // `tax_input` en wp_insert_post exige capacidades del usuario
+            // (en cron no hay usuario). Asignamos después con wp_set_object_terms.
+        ], true);
+
+        if (is_wp_error($idItemNuevo) || $idItemNuevo === 0) {
+            return 0;
+        }
+
+        update_post_meta($idItemNuevo, '_fnh_source_id', $idFuente);
+        update_post_meta($idItemNuevo, '_fnh_original_url', $datosNormalizados['permalink']);
+        update_post_meta($idItemNuevo, '_fnh_published_at', $datosNormalizados['published_at']);
+        update_post_meta($idItemNuevo, '_fnh_guid', $datosNormalizados['guid']);
+        update_post_meta($idItemNuevo, '_fnh_media_url', $datosNormalizados['media_url']);
+
+        $segundosDuracion = self::extraerDuracionVideoSiAplica($datosNormalizados['permalink']);
+        if ($segundosDuracion > 0) {
+            update_post_meta($idItemNuevo, '_fnh_duration_seconds', $segundosDuracion);
+        }
+
+        if (!empty($idsTematicas)) {
+            wp_set_object_terms($idItemNuevo, $idsTematicas, Topic::SLUG, false);
+        }
+
+        return (int) $idItemNuevo;
+    }
+
+    /**
+     * Si la URL del item apunta a una instancia PeerTube, consulta su API
+     * pública (`/api/v1/videos/<uuid>`) para obtener la duración. No hay
+     * key, no hay tracking: PeerTube es software libre y expone metadata
+     * abiertamente.
+     *
+     * YouTube no se consulta: su feed RSS no expone duración y la Data API
+     * de Google envía cada petición a sus servidores con API key. Rompería
+     * el principio "sin terceros" del manifiesto.
+     */
+    public static function extraerDuracionVideoSiAplica(string $urlOriginal): int
+    {
+        // Delimitador `~` para no chocar con `#` dentro de la character class.
+        if (!preg_match('~^https?://([^/]+)/(?:w/|videos/watch/)([^/?#]+)~', $urlOriginal, $coincidencias)) {
+            return 0;
+        }
+        $instancia = $coincidencias[1];
+        $uuid = $coincidencias[2];
+        $urlApi = "https://{$instancia}/api/v1/videos/{$uuid}";
+        $respuesta = wp_remote_get($urlApi, [
+            'timeout' => 8,
+            'headers' => ['Accept' => 'application/json'],
+        ]);
+        if (is_wp_error($respuesta)) {
+            return 0;
+        }
+        if ((int) wp_remote_retrieve_response_code($respuesta) !== 200) {
+            return 0;
+        }
+        $datos = json_decode((string) wp_remote_retrieve_body($respuesta), true);
+        if (!is_array($datos)) {
+            return 0;
+        }
+        return max(0, (int) ($datos['duration'] ?? 0));
+    }
+
+    private static function crearLogInicial(int $idFuente): int
+    {
+        global $wpdb;
+        $wpdb->insert(
+            IngestLogTable::nombreCompleto(),
+            [
+                'source_id'  => $idFuente,
+                'status'     => 'running',
+                'started_at' => current_time('mysql', 1),
+            ],
+            ['%d', '%s', '%s']
+        );
+        return (int) $wpdb->insert_id;
+    }
+
+    private static function cerrarLog(
+        int $idLog,
+        string $estadoFinal,
+        int $contadorNuevos,
+        int $contadorDescartados,
+        string $mensajeError
+    ): void {
+        if ($idLog === 0) {
+            return;
+        }
+        global $wpdb;
+        $wpdb->update(
+            IngestLogTable::nombreCompleto(),
+            [
+                'status'        => $estadoFinal,
+                'finished_at'   => current_time('mysql', 1),
+                'items_new'     => $contadorNuevos,
+                'items_skipped' => $contadorDescartados,
+                'error_message' => $mensajeError === '' ? null : $mensajeError,
+            ],
+            ['id' => $idLog],
+            ['%s', '%s', '%d', '%d', '%s'],
+            ['%d']
+        );
+    }
+
+    private static function adquirirLock(): bool
+    {
+        if (get_transient(self::NOMBRE_LOCK_TRANSIENT)) {
+            return false;
+        }
+        set_transient(self::NOMBRE_LOCK_TRANSIENT, '1', self::DURACION_LOCK_SEGUNDOS);
+        return true;
+    }
+
+    private static function liberarLock(): void
+    {
+        delete_transient(self::NOMBRE_LOCK_TRANSIENT);
+    }
+}

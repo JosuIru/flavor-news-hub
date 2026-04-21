@@ -1,0 +1,268 @@
+/*
+ * Estilado sobrio para las plantillas públicas de Flavor News Hub.
+ * Una sola hoja, CSS variables, sin dependencias, sin JS.
+ */
+
+:root {
+    --color-texto: #1a1a1a;
+    --color-texto-secundario: #555;
+    --color-fondo: #fafafa;
+    --color-fondo-card: #ffffff;
+    --color-borde: #e4e4e4;
+    --color-acento: #0b63ce;
+    --color-acento-hover: #084ea6;
+    --color-acento-suave: #e7f0fb;
+    --color-organizing: #f3f5f0;
+    --color-organizing-borde: #c9d6b7;
+    --ancho-max: 720px;
+    --radio-borde: 6px;
+    --espaciado-base: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-texto: #e8e8e8;
+        --color-texto-secundario: #a8a8a8;
+        --color-fondo: #121212;
+        --color-fondo-card: #1c1c1c;
+        --color-borde: #2e2e2e;
+        --color-acento: #6ea9e8;
+        --color-acento-hover: #90c0f0;
+        --color-acento-suave: #1a2740;
+        --color-organizing: #1c2418;
+        --color-organizing-borde: #3a4d2b;
+    }
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.skip-link:focus {
+    position: fixed;
+    left: 1rem;
+    top: 1rem;
+    width: auto;
+    height: auto;
+    padding: .5rem 1rem;
+    background: var(--color-acento);
+    color: #fff;
+    z-index: 1000;
+    border-radius: var(--radio-borde);
+}
+
+a {
+    color: var(--color-acento);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+a:hover, a:focus {
+    color: var(--color-acento-hover);
+}
+a:focus-visible {
+    outline: 2px solid var(--color-acento);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.site-header {
+    border-bottom: 1px solid var(--color-borde);
+    background: var(--color-fondo-card);
+}
+.site-header-inner {
+    max-width: var(--ancho-max);
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+.site-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+.site-title a {
+    color: var(--color-texto);
+    text-decoration: none;
+}
+.site-nav {
+    font-size: .9rem;
+}
+.site-nav a {
+    margin-left: 1rem;
+}
+
+main {
+    max-width: var(--ancho-max);
+    margin: 2rem auto;
+    padding: 0 1.25rem;
+}
+
+article header h1 {
+    font-size: 1.75rem;
+    line-height: 1.25;
+    margin: 0 0 .5rem 0;
+}
+
+.meta {
+    color: var(--color-texto-secundario);
+    font-size: .9rem;
+    margin: 0 0 1rem 0;
+}
+.meta a { color: var(--color-texto-secundario); text-decoration: underline; }
+.meta .sep { margin: 0 .4em; color: var(--color-borde); }
+
+.topics {
+    list-style: none;
+    padding: 0;
+    margin: .5rem 0 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+.topics li { display: inline-block; }
+.topics a {
+    background: var(--color-acento-suave);
+    color: var(--color-acento);
+    text-decoration: none;
+    padding: .15rem .6rem;
+    border-radius: 999px;
+    font-size: .85rem;
+    border: 1px solid transparent;
+}
+.topics a:hover, .topics a:focus {
+    border-color: var(--color-acento);
+}
+
+.excerpt {
+    font-size: 1.05rem;
+    margin: 1.25rem 0;
+}
+.excerpt p { margin: 0 0 1em 0; }
+.excerpt img { max-width: 100%; height: auto; border-radius: var(--radio-borde); }
+
+.cta {
+    margin: 1.5rem 0;
+}
+.btn {
+    display: inline-block;
+    background: var(--color-acento);
+    color: #fff !important;
+    padding: .6rem 1rem;
+    border-radius: var(--radio-borde);
+    text-decoration: none;
+    font-weight: 600;
+}
+.btn:hover, .btn:focus {
+    background: var(--color-acento-hover);
+    color: #fff;
+}
+.btn-secundario {
+    background: transparent;
+    color: var(--color-acento) !important;
+    border: 1px solid var(--color-acento);
+}
+.btn-secundario:hover, .btn-secundario:focus {
+    background: var(--color-acento-suave);
+}
+
+.ficha-source {
+    background: var(--color-fondo-card);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+}
+.ficha-source h2 {
+    font-size: 1.05rem;
+    margin: 0 0 .75rem 0;
+}
+.ficha-source dl { margin: 0; }
+.ficha-source dt {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--color-texto-secundario);
+    margin-top: .75rem;
+}
+.ficha-source dt:first-child { margin-top: 0; }
+.ficha-source dd { margin: .15rem 0 0 0; }
+
+.organizing {
+    background: var(--color-organizing);
+    border: 1px solid var(--color-organizing-borde);
+    border-radius: var(--radio-borde);
+    padding: 1rem 1.25rem;
+    margin: 2rem 0;
+}
+.organizing h2 {
+    font-size: 1.1rem;
+    margin: 0 0 .5rem 0;
+}
+.organizing ul {
+    list-style: none;
+    padding: 0;
+    margin: .5rem 0 0 0;
+}
+.organizing li {
+    padding: .65rem 0;
+    border-top: 1px solid var(--color-organizing-borde);
+}
+.organizing li:first-child { border-top: none; }
+.organizing a {
+    text-decoration: none;
+    color: var(--color-texto);
+    display: block;
+}
+.organizing a:hover strong, .organizing a:focus strong { color: var(--color-acento); }
+.organizing strong { display: block; font-size: 1rem; }
+.organizing small { color: var(--color-texto-secundario); font-size: .85rem; }
+.organizing .vacio {
+    color: var(--color-texto-secundario);
+    font-size: .95rem;
+    margin: .5rem 0 0 0;
+}
+
+.actions-row {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+}
+
+.site-footer {
+    border-top: 1px solid var(--color-borde);
+    background: var(--color-fondo-card);
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+    font-size: .9rem;
+    color: var(--color-texto-secundario);
+}
+.site-footer-inner {
+    max-width: var(--ancho-max);
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+.site-footer p { margin: .25rem 0; }

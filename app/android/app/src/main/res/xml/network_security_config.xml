@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Política de red para Android.
+
+  Permitimos cleartext (HTTP sin TLS) globalmente porque:
+   - Muchas radios libres sirven por Icecast HTTP sin certificado
+     (proyectos autogestionados con pocos recursos técnicos: Euskalerria
+     Irratia, Radio Malva, radios en dominios .ddns.net…). El tráfico es
+     un stream de audio público, no hay secretos.
+   - La API del backend puede ser HTTP cuando se autohospeda en una
+     intranet o en `localhost:port` desde desarrollo.
+   - El buscador de feeds tiene que poder leer HTML de webs que se
+     anuncian con `http://`.
+
+  La confidencialidad no aplica aquí: ningún dato personal sale nunca
+  de la app (sin cuentas, sin tracking, sin contraseñas). El riesgo de
+  MITM sobre un stream de radio libre es "escuchar la misma radio que
+  también es pública en FM" — no justifica romper el 30% de las radios
+  del directorio.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

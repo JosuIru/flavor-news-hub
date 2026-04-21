@@ -1,0 +1,76 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "org.flavornewshub.flavor_news_hub"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        // `flutter_local_notifications` 17+ exige core library desugaring
+        // para usar java.time en API levels antiguos.
+        coreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "org.flavornewshub.flavor_news_hub"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
+        }
+    }
+
+    // Split por ABI: genera un APK por arquitectura (arm, arm64, x86_64).
+    // Reduce el tamaño de cada APK ~35-40% porque cada uno sólo lleva el
+    // código nativo de su CPU. Para distribución F-Droid o GitHub Releases
+    // se sube cada uno por separado; `universalApk` mantiene además un
+    // APK "todo en uno" para quien no quiera elegir.
+    splits {
+        abi {
+            enable project.hasProperty('split-per-abi')
+            reset()
+            include 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+            universalApk true
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    // Desugaring runtime para java.time y APIs similares.
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+}
+
+// Evita clash entre work-runtime (flutter_local_notifications 17.x trae
+// 2.8.1) y work-runtime-ktx (workmanager 0.5.x trae 2.7.1). Forzamos la
+// versión más nueva en todas las referencias.
+configurations.all {
+    resolutionStrategy {
+        force "androidx.work:work-runtime:2.8.1"
+        force "androidx.work:work-runtime-ktx:2.8.1"
+    }
+}

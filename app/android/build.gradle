@@ -1,0 +1,44 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+// Antes de que `:app` fuerce la evaluación de todos (via evaluationDependsOn
+// más abajo), plantamos el afterEvaluate para el resto de plugins. Esto
+// fija jvmTarget/Java 1.8 en plugins (p. ej. receive_sharing_intent) que
+// no lo declaran y heredan el JDK del entorno (JDK 21 local), lo que
+// rompería la compilación con "Unknown Kotlin JVM target: 21".
+subprojects {
+    if (project.name != 'app') {
+        afterEvaluate {
+            if (project.hasProperty('android')) {
+                android {
+                    compileOptions {
+                        sourceCompatibility = JavaVersion.VERSION_1_8
+                        targetCompatibility = JavaVersion.VERSION_1_8
+                    }
+                }
+            }
+            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
+            }
+        }
+    }
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
