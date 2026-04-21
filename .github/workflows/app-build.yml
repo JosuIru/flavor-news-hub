@@ -31,10 +31,13 @@ jobs:
           java-version: '17'
 
       - name: Setup Flutter
-        # `subosito/flutter-action` cachea el SDK entre jobs, acelera
-        # el cold start de 3-4 min a segundos.
+        # Fijamos 3.24.0 para coincidir con la versión usada en
+        # desarrollo. Flutter 3.41+ eliminó el paquete sintético
+        # `flutter_gen` que aún usan los imports del proyecto; cuando
+        # se migre a imports propios se podrá volver a `channel: stable`.
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.24.0'
           channel: stable
           cache: true
 
@@ -43,13 +46,6 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
-
-      - name: Generate l10n
-        # Desde Flutter 3.41 la generación automática tras `pub get` no es
-        # fiable (el paquete sintético `flutter_gen` quedó opt-in). Forzamos
-        # la generación para que los imports `package:flutter_gen/gen_l10n/...`
-        # estén disponibles antes del analyze.
-        run: flutter gen-l10n
 
       - name: Generate freezed + json_serializable
         # Los `.freezed.dart` y `.g.dart` no se commitean; se regeneran
