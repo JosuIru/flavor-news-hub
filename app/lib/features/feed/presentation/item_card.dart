@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +15,9 @@ class ItemCard extends StatelessWidget {
     required this.onSourceTap,
     required this.onTopicTap,
     required this.onGuardarAlternar,
+    required this.onUtilAlternar,
     required this.estaGuardado,
+    required this.esUtil,
     required this.estaLeido,
     super.key,
   });
@@ -24,7 +27,9 @@ class ItemCard extends StatelessWidget {
   final ValueChanged<int> onSourceTap;
   final ValueChanged<String> onTopicTap;
   final VoidCallback onGuardarAlternar;
+  final VoidCallback onUtilAlternar;
   final bool estaGuardado;
+  final bool esUtil;
   final bool estaLeido;
 
   @override
@@ -101,14 +106,29 @@ class ItemCard extends StatelessWidget {
                   child: _ImagenDestacada(url: item.mediaUrl),
                 ),
               ],
-              // Botón bookmark compacto al final — siempre accesible sin abrir detalle.
-              IconButton(
-                icon: Icon(estaGuardado ? Icons.bookmark : Icons.bookmark_border),
-                tooltip: estaGuardado ? textos.itemUnsave : textos.itemSave,
-                onPressed: onGuardarAlternar,
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.only(left: 4),
-                constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
+              // Bookmark + "útil" apilados: ambos sin abrir el detalle.
+              // "Útil" alimenta la pantalla "Tus intereses" — no reordena
+              // nada, sólo ayuda al usuario a ver qué le interesa.
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(estaGuardado ? Icons.bookmark : Icons.bookmark_border),
+                    tooltip: estaGuardado ? textos.itemUnsave : textos.itemSave,
+                    onPressed: onGuardarAlternar,
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.only(left: 4),
+                    constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
+                  ),
+                  IconButton(
+                    icon: Icon(esUtil ? Icons.lightbulb : Icons.lightbulb_outline),
+                    tooltip: esUtil ? textos.itemUnmarkUseful : textos.itemMarkUseful,
+                    onPressed: onUtilAlternar,
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.only(left: 4),
+                    constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
+                  ),
+                ],
               ),
             ],
           ),
@@ -192,16 +212,13 @@ class _ImagenDestacada extends StatelessWidget {
     return SizedBox(
       width: 96,
       height: 96,
-      child: Image.network(
-        url,
+      child: CachedNetworkImage(
+        imageUrl: url,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-        loadingBuilder: (_, child, progreso) {
-          if (progreso == null) return child;
-          return Container(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          );
-        },
+        errorWidget: (_, __, ___) => const SizedBox.shrink(),
+        placeholder: (ctx, _) => Container(
+          color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+        ),
       ),
     );
   }

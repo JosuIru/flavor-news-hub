@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,9 +17,33 @@ import '../../../core/providers/api_provider.dart';
 import '../../history/data/historial_provider.dart';
 
 /// Provider del detalle de un item concreto. Family por id.
+///
+/// Ids negativos identifican items del seed RSS o de fuentes personales:
+/// no tienen endpoint en el backend, así que vamos directos a cache.
+///
+/// Para ids positivos pedimos al backend; si falla por red, caemos a
+/// cache — así el detalle funciona también con el servidor caído.
 final itemDetalleProvider = FutureProvider.autoDispose.family<Item, int>((ref, idItem) async {
+  if (idItem <= 0) {
+    final dao = await ref.watch(itemsLocalesDaoProvider.future);
+    final cacheado = await dao.obtenerPorId(idItem);
+    if (cacheado != null) return cacheado;
+    throw const FlavorNewsApiException(
+      statusCode: 404,
+      errorCode: 'not_found_in_cache',
+      message: 'El item no está cacheado localmente.',
+    );
+  }
   final api = ref.watch(flavorNewsApiProvider);
-  return api.fetchItem(idItem);
+  try {
+    return await api.fetchItem(idItem);
+  } on FlavorNewsApiException catch (e) {
+    if (!e.esProblemaRed) rethrow;
+    final dao = await ref.watch(itemsLocalesDaoProvider.future);
+    final cacheado = await dao.obtenerPorId(idItem);
+    if (cacheado != null) return cacheado;
+    rethrow;
+  }
 });
 
 /// Colectivos relacionados por topic. Consulta `/collectives?topic=a,b,c`.
@@ -56,17 +81,29 @@ class _EstadoItemDetail extends ConsumerState<ItemDetailScreen> {
     final idNumerico = int.tryParse(widget.idItem) ?? 0;
     final asyncItem = ref.watch(itemDetalleProvider(idNumerico));
     final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
+    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
     final estaGuardado = guardados.contains(idNumerico);
+    final esUtil = utiles.contains(idNumerico);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(textos.feedTitle),
         actions: [
           asyncItem.when(
-            data: (item) => IconButton(
-              icon: Icon(estaGuardado ? Icons.bookmark : Icons.bookmark_border),
-              tooltip: estaGuardado ? textos.itemUnsave : textos.itemSave,
-              onPressed: () => ref.read(guardadosProvider.notifier).alternar(item),
+            data: (item) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(esUtil ? Icons.lightbulb : Icons.lightbulb_outline),
+                  tooltip: esUtil ? textos.itemUnmarkUseful : textos.itemMarkUseful,
+                  onPressed: () => ref.read(utilesProvider.notifier).alternar(item),
+                ),
+                IconButton(
+                  icon: Icon(estaGuardado ? Icons.bookmark : Icons.bookmark_border),
+                  tooltip: estaGuardado ? textos.itemUnsave : textos.itemSave,
+                  onPressed: () => ref.read(guardadosProvider.notifier).alternar(item),
+                ),
+              ],
             ),
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
@@ -147,17 +184,20 @@ class _CuerpoDetalle extends ConsumerWidget {
             const SizedBox(height: 16),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item.mediaUrl,
+              child: CachedNetworkImage(
+                imageUrl: item.mediaUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           ],
           const SizedBox(height: 20),
-          // Extracto: HTML saneado por el backend (wp_kses_post).
+          // Extracto: HTML saneado por el backend (wp_kses_post). Si ya
+          // mostramos la imagen destacada arriba, quitamos las `<img>`
+          // del excerpt para evitar ver dos veces la misma foto — RSS y
+          // Atom suelen repetirla como primer elemento del description.
           HtmlWidget(
-            item.excerpt,
+            _excerptSinImagenes(item.excerpt, eliminar: item.mediaUrl.isNotEmpty),
             textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.55),
             onTapUrl: (url) async {
               final uri = Uri.tryParse(url);
@@ -360,4 +400,16 @@ class _ErrorDetalle extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Quita las `<img>` del HTML del excerpt si `eliminar` es true. También
+/// retira `<figure>`/`<picture>` vacíos que pueda dejar la operación.
+/// Simplista a propósito: es suficiente para el caso real — los feeds
+/// repiten la foto destacada como primer elemento del description.
+String _excerptSinImagenes(String html, {required bool eliminar}) {
+  if (!eliminar || html.isEmpty) return html;
+  var salida = html.replaceAll(RegExp(r'<img[^>]*>', caseSensitive: false), '');
+  salida = salida.replaceAll(
+      RegExp(r'<(figure|picture)[^>]*>\s*</\1>', caseSensitive: false), '');
+  return salida;
 }

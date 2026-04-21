@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import '../../../core/models/item.dart';
+import '../../radios/data/reproductor_radio_notifier.dart';
 
 /// Estado del reproductor de episodio. Distinto del de radio porque aquí hay
 /// duración conocida, posición, seek y además una cola de reproducción.
@@ -89,7 +90,7 @@ class EstadoReproductorEpisodio {
 /// - Si se agota la cola y hay un `proveedorSiguientes` activo, le pedimos
 ///   más tracks (p. ej. "más del mismo artista") y extendemos.
 class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodio> {
-  ReproductorEpisodioNotifier() : super(EstadoReproductorEpisodio.detenido) {
+  ReproductorEpisodioNotifier(this._ref) : super(EstadoReproductorEpisodio.detenido) {
     _player.playbackEventStream.listen((_) {
       final actual = state.episodioActual;
       if (actual == null) return;
@@ -122,6 +123,7 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
   }
 
   final AudioPlayer _player = AudioPlayer();
+  final Ref _ref;
   ProveedorSiguientes? _proveedorSiguientes;
   bool _extendiendoCola = false;
   Timer? _sleepTimer;
@@ -171,6 +173,11 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
   }
 
   Future<void> _cargarYReproducir(Item episodio) async {
+    // Sólo puede haber un AudioPlayer activo con la sesión de fondo del
+    // sistema. Si la radio está sonando, la paramos antes — si no, este
+    // `setAudioSource` falla con un error y el usuario ve "error" sin
+    // saber por qué.
+    await _ref.read(reproductorRadioProvider.notifier).parar();
     try {
       await _player.setAudioSource(
         AudioSource.uri(
@@ -314,5 +321,5 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
 
 final reproductorEpisodioProvider =
     StateNotifierProvider<ReproductorEpisodioNotifier, EstadoReproductorEpisodio>(
-  (ref) => ReproductorEpisodioNotifier(),
+  (ref) => ReproductorEpisodioNotifier(ref),
 );

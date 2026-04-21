@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import '../../../core/models/radio.dart' as modelo_radio;
+import '../../audio/data/reproductor_episodio_notifier.dart';
 
 enum EstadoPlayback { detenido, cargando, reproduciendo, error }
 
@@ -29,7 +30,7 @@ class EstadoReproductor {
 }
 
 class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
-  ReproductorRadioNotifier() : super(EstadoReproductor.detenido) {
+  ReproductorRadioNotifier(this._ref) : super(EstadoReproductor.detenido) {
     _player.playbackEventStream.listen((evento) {
       final actual = state.radioActual;
       if (actual == null) return;
@@ -49,6 +50,7 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
   }
 
   final AudioPlayer _player = AudioPlayer();
+  final Ref _ref;
 
   Future<void> alternar(modelo_radio.Radio radio) async {
     if (state.radioActual?.id == radio.id &&
@@ -65,6 +67,12 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
   }
 
   Future<void> _reproducir(modelo_radio.Radio radio) async {
+    // Sólo puede haber un AudioPlayer activo con la sesión de audio del
+    // sistema (just_audio_background registra una única MediaSession).
+    // Si el reproductor de música/podcast está sonando, lo paramos
+    // antes de arrancar la radio — si no, el segundo `setAudioSource`
+    // falla con "Failed to set source".
+    await _ref.read(reproductorEpisodioProvider.notifier).parar();
     state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: radio);
     try {
       await _player.setAudioSource(
@@ -98,5 +106,5 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
 
 final reproductorRadioProvider =
     StateNotifierProvider<ReproductorRadioNotifier, EstadoReproductor>(
-  (ref) => ReproductorRadioNotifier(),
+  (ref) => ReproductorRadioNotifier(ref),
 );

@@ -71,6 +71,12 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/historial'),
           ),
           ListTile(
+            leading: const Icon(Icons.lightbulb_outline),
+            title: Text(textos.settingsTusIntereses),
+            subtitle: Text(textos.settingsTusInteresesSubtitle),
+            onTap: () => context.push('/tus-intereses'),
+          ),
+          ListTile(
             leading: const Icon(Icons.rss_feed),
             title: Text(textos.settingsMyMedia),
             subtitle: Text(textos.settingsMyMediaSubtitle),

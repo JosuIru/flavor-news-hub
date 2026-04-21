@@ -1,8 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
@@ -221,18 +221,14 @@ class _TarjetaVideo extends ConsumerWidget {
   final Item item;
 
   void _abrir(BuildContext context) {
-    // Items del backend (id positivo) tienen detalle en REST: navegamos
-    // al reproductor in-app. Los personales (id negativo) no tienen
-    // endpoint; abrimos en navegador externo.
-    if (item.id > 0) {
-      GoRouter.of(context).push('/videos/play/${item.id}');
-      return;
-    }
-    final url = item.originalUrl.isNotEmpty ? item.originalUrl : item.url;
-    if (url.isEmpty) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    launchUrl(uri, mode: LaunchMode.externalApplication);
+    // Siempre abrimos el reproductor in-app. `itemDetalleProvider` se
+    // encarga de resolver la ficha: para ids positivos pregunta al
+    // backend (y cae al cache si no responde); para ids negativos (seed
+    // RSS y fuentes personales) va directo al cache local, donde se
+    // guardan desde `cachearMuchos` tras cada descarga del seed.
+    // El propio reproductor delega a navegador externo si la URL no es
+    // YouTube ni PeerTube — no hace falta decidirlo aquí.
+    GoRouter.of(context).push('/videos/play/${item.id}');
   }
 
   @override
@@ -255,10 +251,13 @@ class _TarjetaVideo extends ConsumerWidget {
                 fit: StackFit.expand,
                 children: [
                   if (item.mediaUrl.isNotEmpty)
-                    Image.network(
-                      item.mediaUrl,
+                    CachedNetworkImage(
+                      imageUrl: item.mediaUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorWidget: (_, __, ___) => Container(
+                        color: esquema.surfaceContainerHighest,
+                      ),
+                      placeholder: (_, __) => Container(
                         color: esquema.surfaceContainerHighest,
                       ),
                     )

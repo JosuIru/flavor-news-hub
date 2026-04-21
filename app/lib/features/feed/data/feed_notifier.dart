@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
@@ -5,6 +6,7 @@ import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
+import '../../offline_seed/data/seed_loader.dart';
 import '../../personal_sources/data/items_personales_provider.dart';
 import '../../sources_filter/data/fuentes_bloqueadas_notifier.dart';
 import '../../widgets/widget_titulares_writer.dart';
@@ -66,61 +68,171 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
         cargandoMasPaginas: false,
       );
     } on FlavorNewsApiException catch (error) {
-      // Sin red / error HTTP → modo autónomo: siempre que el dispositivo
-      // tenga red (aunque el backend esté caído), descargamos los RSS del
-      // seed directamente. Si también falla la red absoluta, caemos al
-      // cache local. Priorizamos seed sobre cache porque el seed es más
-      // fresco (descarga ahora) y el cache puede tener horas/días.
+      // Sin red / error HTTP → modo autónomo. Combinamos TODO lo que
+      // tengamos disponible (seed RSS en vivo + cache SQLite +
+      // personales) y devolvemos siempre `EstadoFeed` con
+      // `modoOffline: true`, aunque el combinado salga vacío. La UI
+      // interpreta una lista vacía en offline como "sin contenido
+      // guardado" y no como error — mejor que tirar la pantalla.
       if (error.esProblemaRed) {
         final itemsPersonales = await futuroPersonales;
-        List<Item> desdeSeed = const [];
-        try {
-          desdeSeed = await ref.watch(itemsDesdeSeedProvider.future);
-        } catch (_) {
-          // sigue intentando con cache
-        }
-
-        if (desdeSeed.isNotEmpty) {
-          unawaited(dao.cachearMuchos(desdeSeed));
-          // Mezclamos con cache para mantener items del backend que no
-          // están en el seed (colectivos, publicaciones federadas…).
-          final cache = await dao.obtenerCache(limite: 50);
-          final idsSeed = desdeSeed.map((e) => e.id).toSet();
-          final cacheNoSolapado = cache.where((i) => !idsSeed.contains(i.id));
-          final combinados = [...desdeSeed, ...cacheNoSolapado, ...itemsPersonales]
-              .where(_noEsVideo)
-              .where((it) => !_estaFuenteBloqueada(it, fuentesBloqueadas))
-              .toList();
-          combinados.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
-          unawaited(WidgetTitularesWriter.escribir(combinados));
-          return EstadoFeed(
-            items: combinados,
-            paginaActual: 1,
-            totalPaginas: 1,
-            cargandoMasPaginas: false,
-            modoOffline: true,
-          );
-        }
-
-        // Sin seed (sin red absoluta) → cache.
         final cache = await dao.obtenerCache(limite: 50);
-        if (cache.isNotEmpty) {
-          final combinados = [...cache, ...itemsPersonales]
-              .where(_noEsVideo)
-              .where((it) => !_estaFuenteBloqueada(it, fuentesBloqueadas))
-              .toList();
-          combinados.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
-          return EstadoFeed(
-            items: combinados,
-            paginaActual: 1,
-            totalPaginas: 1,
-            cargandoMasPaginas: false,
-            modoOffline: true,
-          );
+
+        // Mapas id_source → {idiomas, territorio}, leídos del seed.
+        // Los usamos en modo offline para replicar en cliente los
+        // filtros que normalmente aplica el backend (language,
+        // territory). El filtro por topic va contra `item.topics`
+        // directamente y el de source contra `item.source.id`.
+        final fuentesSeed = await ref.watch(fuentesSeedProvider.future);
+        final idiomasPorIdSource = <int, List<String>>{
+          for (final f in fuentesSeed) f.id: f.languages,
+        };
+        final territorioPorIdSource = <int, String>{
+          for (final f in fuentesSeed) f.id: f.territory,
+        };
+
+        EstadoFeed estadoDesde(List<Item> desdeSeed) => EstadoFeed(
+              items: _combinar(
+                desdeSeed: desdeSeed,
+                cache: cache,
+                itemsPersonales: itemsPersonales,
+                fuentesBloqueadas: fuentesBloqueadas,
+                filtros: filtros,
+                idiomasPorIdSource: idiomasPorIdSource,
+                territorioPorIdSource: territorioPorIdSource,
+              ),
+              paginaActual: 1,
+              totalPaginas: 1,
+              // Marcamos que seguimos esperando más tramos. La UI del
+              // feed usa este flag para pintar un spinner fino en el
+              // pie de lista (no sustituye la lista ya cargada).
+              cargandoMasPaginas: true,
+              modoOffline: true,
+            );
+
+        // Escuchamos el stream del seed: cada tramo refresca la UI con
+        // los items acumulados. Sólo al terminar el stream dejamos
+        // `cargandoMasPaginas` en false.
+        ref.listen<AsyncValue<List<Item>>>(itemsDesdeSeedProvider, (prev, next) {
+          next.whenData((desdeSeed) {
+            if (desdeSeed.isEmpty) return;
+            unawaited(dao.cachearMuchos(desdeSeed));
+            final combinados = _combinar(
+              desdeSeed: desdeSeed,
+              cache: cache,
+              itemsPersonales: itemsPersonales,
+              fuentesBloqueadas: fuentesBloqueadas,
+              filtros: filtros,
+              idiomasPorIdSource: idiomasPorIdSource,
+              territorioPorIdSource: territorioPorIdSource,
+            );
+            unawaited(WidgetTitularesWriter.escribir(combinados));
+            state = AsyncValue.data(EstadoFeed(
+              items: combinados,
+              paginaActual: 1,
+              totalPaginas: 1,
+              cargandoMasPaginas: false,
+              modoOffline: true,
+            ));
+          });
+        });
+
+        // Sin cache ni personales: esperamos al PRIMER tramo con items
+        // antes de devolver. Durante el await, AsyncNotifier queda en
+        // estado AsyncLoading y la pantalla muestra el spinner — mucho
+        // mejor que ver "feed vacío" durante los primeros segundos.
+        if (cache.isEmpty && itemsPersonales.isEmpty) {
+          final primerTramo = await ref
+              .read(itemsDesdeSeedProvider.stream)
+              .firstWhere((lista) => lista.isNotEmpty,
+                  orElse: () => const <Item>[]);
+          debugPrint('[FeedNotifier] fallback primer tramo items=${primerTramo.length}');
+          return estadoDesde(primerTramo);
         }
+
+        // Con cache o medios personales: devolvemos ya lo que haya y
+        // el listener irá añadiendo los tramos conforme lleguen.
+        debugPrint('[FeedNotifier] fallback inicial cache=${cache.length} personales=${itemsPersonales.length}');
+        return estadoDesde(const []);
       }
       rethrow;
     }
+  }
+
+  /// Fusiona items de seed + cache + personales aplicando TODOS los
+  /// filtros en cliente — offline el backend no contesta y no puede
+  /// filtrar por nosotros. Replicamos la semántica de la API:
+  ///  - topic: slug del item debe estar entre los seleccionados.
+  ///  - territory: el territorio del medio (mapa id→territorio del seed)
+  ///    debe contener el código elegido (LIKE parcial, igual que backend).
+  ///  - language: algún idioma del medio coincide (OR entre idiomas).
+  ///  - source: coincide exactamente con el id del medio.
+  /// Items personales (id negativo, sin metadato en el seed) pasan el
+  /// filtro de territorio/idioma: el usuario los añadió explícitamente
+  /// y no queremos bloquearlos por falta de metadatos.
+  List<Item> _combinar({
+    required List<Item> desdeSeed,
+    required List<Item> cache,
+    required List<Item> itemsPersonales,
+    required Set<int> fuentesBloqueadas,
+    required FiltrosFeed filtros,
+    required Map<int, List<String>> idiomasPorIdSource,
+    required Map<int, String> territorioPorIdSource,
+  }) {
+    final idsSeed = desdeSeed.map((e) => e.id).toSet();
+    final cacheNoSolapado = cache.where((i) => !idsSeed.contains(i.id));
+
+    final topicsActivos = filtros.slugsTopics.toSet();
+    final territorio = filtros.codigoTerritorio?.toLowerCase().trim();
+    final filtroTerritorioActivo = territorio != null && territorio.isNotEmpty;
+    final filtroIdiomaActivo = filtros.codigosIdiomas.isNotEmpty;
+    final codigosIdiomasSet = filtros.codigosIdiomas.toSet();
+    final idSourceFiltrada = filtros.idSource;
+
+    bool pasaTodosLosFiltros(Item it) {
+      if (!_noEsVideo(it)) return false;
+      if (_estaFuenteBloqueada(it, fuentesBloqueadas)) return false;
+
+      // Topic (OR entre los seleccionados — igual que backend)
+      if (topicsActivos.isNotEmpty) {
+        final slugsItem = it.topics.map((t) => t.slug).toSet();
+        if (!slugsItem.any(topicsActivos.contains)) return false;
+      }
+
+      // Source concreto
+      final idSource = it.source?.id;
+      if (idSourceFiltrada != null && idSource != idSourceFiltrada) {
+        return false;
+      }
+
+      // Territorio e idioma: sólo aplican si sabemos el medio del item.
+      // Items personales (id <= 0) o sin metadato en seed → dejan pasar.
+      final esPersonalOSinMetadato = idSource == null || idSource <= 0;
+
+      if (filtroTerritorioActivo && !esPersonalOSinMetadato) {
+        final territorioMedio =
+            (territorioPorIdSource[idSource] ?? '').toLowerCase();
+        if (!territorioMedio.contains(territorio)) return false;
+      }
+
+      if (filtroIdiomaActivo && !esPersonalOSinMetadato) {
+        final idiomasDelMedio = idiomasPorIdSource[idSource] ?? const <String>[];
+        // Si no tenemos dato de idiomas para este medio, no bloqueamos
+        // (evita vaciar el feed al filtrar si el seed no lo anota).
+        if (idiomasDelMedio.isNotEmpty &&
+            !idiomasDelMedio.any(codigosIdiomasSet.contains)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    final combinados = [...desdeSeed, ...cacheNoSolapado, ...itemsPersonales]
+        .where(pasaTodosLosFiltros)
+        .toList();
+    combinados.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+    return combinados;
   }
 
   /// Recarga la primera página manteniendo los filtros actuales.

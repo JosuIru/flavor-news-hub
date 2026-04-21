@@ -77,6 +77,12 @@ class AboutScreen extends ConsumerWidget {
               etiqueta: '${textos.aboutLicense}: AGPL-3.0',
               url: _urlLicenciaAgpl,
             ),
+            const SizedBox(height: 8),
+            _BotonEnlaceExterno(
+              icono: Icons.auto_awesome,
+              etiqueta: textos.ecosistemaTitle,
+              url: 'https://coleccion-nuevo-ser.gailu.net/',
+            ),
           ]),
 
           const SizedBox(height: 24),

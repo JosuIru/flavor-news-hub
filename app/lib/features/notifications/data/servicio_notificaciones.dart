@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
@@ -68,7 +69,19 @@ Future<void> _comprobarYNotificar(SharedPreferences sp) async {
     return true;
   }).toList();
 
+  // Actualizamos el widget de titulares con los 3 primeros, tenga o no
+  // notificaciones activas el usuario: si colocó el widget quiere verlo
+  // fresco. Si no hay items, limpiamos los slots para no dejar algo
+  // viejo en pantalla.
+  await _actualizarWidgetTitulares(utilizables);
+
   if (utilizables.isEmpty) return;
+
+  // Sólo notificamos si el usuario tiene la alerta activa. Cuando las
+  // notificaciones están off el worker sigue corriendo (para alimentar
+  // el widget) pero no dispara popups.
+  final notifActiva = sp.getBool('fnh.pref.notifActiva') ?? false;
+  if (!notifActiva) return;
 
   final primero = utilizables.first;
   final tituloPrimero = (primero['title'] ?? '').toString();
@@ -82,6 +95,32 @@ Future<void> _comprobarYNotificar(SharedPreferences sp) async {
   await sp.setString(
     'fnh.pref.notifUltimaComprobacion',
     DateTime.now().toUtc().toIso8601String(),
+  );
+}
+
+/// Empuja los 3 primeros titulares al almacén del widget Android sin
+/// depender del modelo `Item` — el worker corre en un isolate donde
+/// importar el resto de providers complicaría el arranque.
+Future<void> _actualizarWidgetTitulares(List<Map<String, dynamic>> items) async {
+  for (var i = 0; i < 3; i++) {
+    final clave = i + 1;
+    if (i < items.length) {
+      final it = items[i];
+      final titulo = (it['title'] ?? '').toString();
+      final fuente = (it['source']?['name'] ?? '').toString();
+      final id = (it['id'] ?? '').toString();
+      await HomeWidget.saveWidgetData<String>('titular_${clave}_titulo', titulo);
+      await HomeWidget.saveWidgetData<String>('titular_${clave}_fuente', fuente);
+      await HomeWidget.saveWidgetData<String>('titular_${clave}_id', id);
+    } else {
+      await HomeWidget.saveWidgetData<String>('titular_${clave}_titulo', '');
+      await HomeWidget.saveWidgetData<String>('titular_${clave}_fuente', '');
+      await HomeWidget.saveWidgetData<String>('titular_${clave}_id', '');
+    }
+  }
+  await HomeWidget.updateWidget(
+    name: 'TitularesWidgetProvider',
+    androidName: 'TitularesWidgetProvider',
   );
 }
 
@@ -137,11 +176,17 @@ Future<void> aplicarFrecuenciaNotif(FrecuenciaNotif frecuencia) async {
   // incluso cuando se pasa de 60m a 180m: `registerPeriodicTask` no
   // reprograma si la clave existe.
   await Workmanager().cancelByUniqueName(kNombreWorkerTitulares);
-  if (!frecuencia.esActiva) return;
+  // Frecuencia efectiva: la que eligió el usuario, o 60 min como
+  // baseline cuando las notificaciones están apagadas — así el widget
+  // de titulares sigue refrescándose aunque no queramos popups.
+  // Guardamos la preferencia para que el worker sepa si puede notificar.
+  final sp = await SharedPreferences.getInstance();
+  await sp.setBool('fnh.pref.notifActiva', frecuencia.esActiva);
+  final minutos = frecuencia.esActiva ? frecuencia.minutos : 60;
   await Workmanager().registerPeriodicTask(
     kNombreWorkerTitulares,
     kNombreWorkerTitulares,
-    frequency: Duration(minutes: frecuencia.minutos),
+    frequency: Duration(minutes: minutos),
     existingWorkPolicy: ExistingWorkPolicy.replace,
     tag: kTagWorker,
     constraints: Constraints(

@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/api_exception.dart';
 import '../../../core/models/collective.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../history/data/historial_provider.dart';
+import '../../offline_seed/data/seed_loader.dart';
 
 /// Consulta activa del buscador. Vacía = no hay búsqueda en curso.
 /// La pantalla la actualiza con debounce (300ms) para no saturar el backend
@@ -36,7 +39,11 @@ class ResultadosBusqueda {
 
 /// Dispara 4 peticiones paralelas a /items, /sources, /radios y /collectives
 /// con el mismo parámetro `s`. Cada una trae pocos resultados (10 máx).
-/// Si una sección falla aisladamente, las otras no arrastran el error.
+///
+/// Fallback offline: si la API da error de red (backend caído), buscamos
+/// en los datos locales — cache SQLite de items y seed de sources/radios
+/// /colectivos. Búsqueda naive case-insensitive `contains` sobre nombre
+/// y título; suficiente para que el buscador no aparezca roto offline.
 final resultadosBusquedaProvider =
     FutureProvider.autoDispose<ResultadosBusqueda>((ref) async {
   final consulta = ref.watch(consultaBusquedaProvider).trim();
@@ -44,13 +51,24 @@ final resultadosBusquedaProvider =
     return ResultadosBusqueda.vacio;
   }
   final api = ref.watch(flavorNewsApiProvider);
+  final minuscula = consulta.toLowerCase();
+
+  bool esError(dynamic e) => e is FlavorNewsApiException && e.esProblemaRed;
 
   Future<List<Item>> buscarItems() async {
     try {
       final pag = await api.fetchItems(perPage: 10, search: consulta);
       return pag.items;
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      if (!esError(e)) return const [];
+      final dao = await ref.watch(itemsLocalesDaoProvider.future);
+      final cache = await dao.obtenerCache(limite: 500);
+      return cache
+          .where((it) =>
+              it.title.toLowerCase().contains(minuscula) ||
+              it.excerpt.toLowerCase().contains(minuscula))
+          .take(10)
+          .toList();
     }
   }
 
@@ -58,16 +76,26 @@ final resultadosBusquedaProvider =
     try {
       final pag = await api.fetchSources(perPage: 10, search: consulta);
       return pag.items;
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      if (!esError(e)) return const [];
+      final fuentesSeed = await ref.watch(sourcesSeedProvider.future);
+      return fuentesSeed
+          .where((s) => s.name.toLowerCase().contains(minuscula))
+          .take(10)
+          .toList();
     }
   }
 
   Future<List<modelo_radio.Radio>> buscarRadios() async {
     try {
       return await api.fetchRadios(search: consulta);
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      if (!esError(e)) return const [];
+      final radios = await ref.watch(radiosSeedProvider.future);
+      return radios
+          .where((r) => r.name.toLowerCase().contains(minuscula))
+          .take(10)
+          .toList();
     }
   }
 
@@ -75,8 +103,15 @@ final resultadosBusquedaProvider =
     try {
       final pag = await api.fetchCollectives(perPage: 10, search: consulta);
       return pag.items;
-    } catch (_) {
-      return const [];
+    } catch (e) {
+      if (!esError(e)) return const [];
+      final colectivos = await ref.watch(colectivosSeedProvider.future);
+      return colectivos
+          .where((c) =>
+              c.name.toLowerCase().contains(minuscula) ||
+              c.description.toLowerCase().contains(minuscula))
+          .take(10)
+          .toList();
     }
   }
 

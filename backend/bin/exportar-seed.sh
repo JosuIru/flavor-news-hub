@@ -88,6 +88,30 @@ for c in colectivos:
 with open(DEST + '/collectives.json', 'w') as f:
     json.dump(out_c, f, ensure_ascii=False, indent=1)
 print('colectivos:', len(out_c))
+
+# Items: últimos 80 titulares. A diferencia de sources/radios/colectivos,
+# los items caducan con el tiempo, pero tener un puñado empaquetado permite
+# que la app muestre algo "out of the box" en el primer arranque sin red.
+items = fetch('/wp-json/flavor-news/v1/items?per_page=80')
+out_i = []
+for it in items:
+    out_i.append({
+        'id': it.get('id'),
+        'slug': it.get('slug', ''),
+        'title': it.get('title', ''),
+        'excerpt': it.get('excerpt', ''),
+        'url': it.get('url', ''),
+        'original_url': it.get('original_url', ''),
+        'published_at': it.get('published_at', ''),
+        'media_url': it.get('media_url', ''),
+        'audio_url': it.get('audio_url', ''),
+        'duration_seconds': it.get('duration_seconds', 0),
+        'source': it.get('source'),
+        'topics': it.get('topics', []),
+    })
+with open(DEST + '/items.json', 'w') as f:
+    json.dump(out_i, f, ensure_ascii=False, indent=1)
+print('items:', len(out_i))
 EOF
 )"
 

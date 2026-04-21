@@ -146,18 +146,6 @@
   ]
  },
  {
-  "id": 6925,
-  "name": "Directa",
-  "slug": "directa",
-  "feed_url": "https://directa.cat/feed/",
-  "feed_type": "rss",
-  "website_url": "https://directa.cat/",
-  "territory": "Catalunya",
-  "languages": [
-   "ca"
-  ]
- },
- {
   "id": 6132,
   "name": "Ecologistas en Acción",
   "slug": "ecologistas-en-accion-2",
@@ -339,18 +327,6 @@
   ]
  },
  {
-  "id": 6932,
-  "name": "Kaos en la Red",
-  "slug": "kaos-en-la-red-2",
-  "feed_url": "https://www.kaosenlared.net/feed/",
-  "feed_type": "rss",
-  "website_url": "https://www.kaosenlared.net/",
-  "territory": "Internacional",
-  "languages": [
-   "es"
-  ]
- },
- {
   "id": 6284,
   "name": "La Base",
   "slug": "la-base",
@@ -382,18 +358,6 @@
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCvt0OljLuvQW017ppgmSVog",
   "territory": "Estado",
-  "languages": [
-   "es"
-  ]
- },
- {
-  "id": 6924,
-  "name": "La Marea",
-  "slug": "la-marea-2",
-  "feed_url": "https://www.lamarea.com/feed/",
-  "feed_type": "rss",
-  "website_url": "https://www.lamarea.com/",
-  "territory": "Estado Español",
   "languages": [
    "es"
   ]
@@ -497,18 +461,6 @@
   ]
  },
  {
-  "id": 6927,
-  "name": "Nós Diario",
-  "slug": "nos-diario-2",
-  "feed_url": "https://www.nosdiario.gal/rss/",
-  "feed_type": "rss",
-  "website_url": "https://www.nosdiario.gal/",
-  "territory": "Galiza",
-  "languages": [
-   "gl"
-  ]
- },
- {
   "id": 6127,
   "name": "Nós Diario",
   "slug": "nos-diario",
@@ -518,18 +470,6 @@
   "territory": "Galicia",
   "languages": [
    "gl"
-  ]
- },
- {
-  "id": 6926,
-  "name": "Pikara Magazine",
-  "slug": "pikara-magazine-2",
-  "feed_url": "https://www.pikaramagazine.com/feed/",
-  "feed_type": "rss",
-  "website_url": "https://www.pikaramagazine.com/",
-  "territory": "Estado Español",
-  "languages": [
-   "es"
   ]
  },
  {
@@ -724,6 +664,452 @@
   "territory": "Euskal Herria",
   "languages": [
    "eu"
+  ]
+ },
+ {
+  "id": 7108,
+  "name": "Framasoft (Mastodon)",
+  "slug": "mastodon-framasoft",
+  "feed_url": "https://framapiaf.org/@framasoft.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://framapiaf.org/@framasoft",
+  "territory": "Internacional",
+  "languages": [
+   "fr",
+   "en"
+  ]
+ },
+ {
+  "id": 7109,
+  "name": "FSFE (Mastodon)",
+  "slug": "mastodon-fsfe",
+  "feed_url": "https://mastodon.social/@fsfe.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mastodon.social/@fsfe",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7111,
+  "name": "EFF (Mastodon)",
+  "slug": "mastodon-eff",
+  "feed_url": "https://mastodon.social/@eff.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mastodon.social/@eff",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7112,
+  "name": "Tor Project (Mastodon)",
+  "slug": "mastodon-tor-project",
+  "feed_url": "https://mastodon.social/@torproject.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mastodon.social/@torproject",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7113,
+  "name": "Internet Archive (Mastodon)",
+  "slug": "mastodon-internet-archive",
+  "feed_url": "https://mastodon.archive.org/@internetarchive.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mastodon.archive.org/@internetarchive",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7116,
+  "name": "GNOME (Mastodon)",
+  "slug": "mastodon-gnome",
+  "feed_url": "https://floss.social/@gnome.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://floss.social/@gnome",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7117,
+  "name": "KDE (Mastodon)",
+  "slug": "mastodon-kde",
+  "feed_url": "https://floss.social/@kde.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://floss.social/@kde",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7118,
+  "name": "F-Droid (Mastodon)",
+  "slug": "mastodon-f-droid",
+  "feed_url": "https://floss.social/@fdroidorg.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://floss.social/@fdroidorg",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7119,
+  "name": "Codeberg (Mastodon)",
+  "slug": "mastodon-codeberg",
+  "feed_url": "https://social.anoxinon.de/@Codeberg.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://social.anoxinon.de/@Codeberg",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7121,
+  "name": "ProPublica (Mastodon)",
+  "slug": "mastodon-propublica",
+  "feed_url": "https://newsie.social/@propublica.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://newsie.social/@propublica",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7127,
+  "name": "La Quadrature du Net (Mastodon)",
+  "slug": "mastodon-la-quadrature-du-net",
+  "feed_url": "https://mamot.fr/@laquadrature.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mamot.fr/@laquadrature",
+  "territory": "Internacional",
+  "languages": [
+   "fr"
+  ]
+ },
+ {
+  "id": 7128,
+  "name": "Maldita.es (Mastodon)",
+  "slug": "mastodon-maldita-es",
+  "feed_url": "https://mastodon.social/@maldita.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mastodon.social/@maldita",
+  "territory": "España",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7129,
+  "name": "Civio (Mastodon)",
+  "slug": "mastodon-civio",
+  "feed_url": "https://mastodon.social/@civio.rss",
+  "feed_type": "mastodon",
+  "website_url": "https://mastodon.social/@civio",
+  "territory": "España",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7132,
+  "name": "QuantumFracture",
+  "slug": "yt-quantumfracture",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbdSYaPD-lr1kW27UJuk8Pw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@QuantumFracture",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7133,
+  "name": "Date un Voltio",
+  "slug": "yt-date-un-voltio",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH-Z8ya93m7_RD02WsCSZYA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@DateunVoltio",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7134,
+  "name": "Date un Vlog",
+  "slug": "yt-date-un-vlog",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC6lHx7hjQq0_SX0jWj2dwFg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@dateunvlog",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7135,
+  "name": "La Gata de Schrödinger",
+  "slug": "yt-la-gata-de-schrodinger",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCenEzPrCdfO1_46ipOwz7AQ",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@LaGatadeSchrodinger",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7136,
+  "name": "La Hiperactina",
+  "slug": "yt-la-hiperactina",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC-7FB_6Bj5yzUk70bgW0nuQ",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@LaHiperactina",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7137,
+  "name": "Derivando",
+  "slug": "yt-derivando",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCriEZRMA_gLwgrD0cwwAagA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@Derivando",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7138,
+  "name": "C de Ciencia",
+  "slug": "yt-c-de-ciencia",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC65IX-jCCdgZcpklAguFFJA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@CdeCiencia",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7139,
+  "name": "DotCSV",
+  "slug": "yt-dotcsv",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCOTko-zmnQTcOxSRdg5_uOQ",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@DotCSV",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7140,
+  "name": "El Robot de Platón",
+  "slug": "yt-el-robot-de-platon",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCjZYt-dPU_H_O-hMx_yd5Ug",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@elrobotdeplaton",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7141,
+  "name": "Jaime Altozano",
+  "slug": "yt-jaime-altozano",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCdZbCqHoPAT5hBuu3y3Qkhw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@JaimeAltozano",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7142,
+  "name": "Veritasium",
+  "slug": "yt-veritasium",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCin0m13qWv3-051xlWlHamA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@veritasium",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7143,
+  "name": "3Blue1Brown",
+  "slug": "yt-3blue1brown",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC1_uAIS3r8Vu6JjXWvastJg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@3blue1brown",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7144,
+  "name": "Kurzgesagt",
+  "slug": "yt-kurzgesagt",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCq8ZAAsI89IoJ-fn1gYpO3g",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@kurzgesagt",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7145,
+  "name": "Sabine Hossenfelder",
+  "slug": "yt-sabine-hossenfelder",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC6Bo2Gquf86J5VU6K2-12bw",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@SabineHossenfelder",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7146,
+  "name": "PBS Space Time",
+  "slug": "yt-pbs-space-time",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCq6OAftTQOuUBRdtUDq5SUA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@pbsspacetime",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7147,
+  "name": "Quanta Magazine",
+  "slug": "yt-quanta-magazine",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCTpmmkp1E4nmZqWPS-dl5bg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@QuantaScienceChannel",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7148,
+  "name": "Andrewism",
+  "slug": "yt-andrewism",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCN__G2hSqRKuqedN3M0JCDg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@Andrewism",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7149,
+  "name": "Our Changing Climate",
+  "slug": "yt-our-changing-climate",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAz17eZxF5tD7vNOEVgegKg",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@OurChangingClimate",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7150,
+  "name": "Folding Ideas",
+  "slug": "yt-folding-ideas",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCyNtlmLB73-7gtlBz00XOQQ",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@FoldingIdeas",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7151,
+  "name": "MIT OpenCourseWare",
+  "slug": "yt-mit-opencourseware",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCN0QBfKk0ZSytyX_16M11fA",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@mitocw",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7152,
+  "name": "CCC (Chaos Computer Club)",
+  "slug": "yt-ccc-chaos-computer-club",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCz1JblICecvr-EYJFZikZ_A",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@mediacccde",
+  "territory": "Internacional",
+  "languages": [
+   "de",
+   "en"
+  ]
+ },
+ {
+  "id": 7153,
+  "name": "TED-Ed",
+  "slug": "yt-ted-ed",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAuUUnT6oDeKwE6v1NGQxug",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@TEDEd",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ]
+ },
+ {
+  "id": 7154,
+  "name": "Antroporama",
+  "slug": "yt-antroporama",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCU-bJVfAsQ_yxrIAKKQajTQ",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@PatriTezanos",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 7155,
+  "name": "Pol Lluís",
+  "slug": "yt-pol-lluis",
+  "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCdpXIsfJUV9k8tQyFwAuG6Q",
+  "feed_type": "youtube",
+  "website_url": "https://www.youtube.com/@PolLuis",
+  "territory": "Internacional",
+  "languages": [
+   "es"
   ]
  }
 ]

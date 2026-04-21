@@ -13,6 +13,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/shell/presentation/shell_screen.dart';
 import '../../features/history/presentation/guardados_screen.dart';
 import '../../features/history/presentation/historial_screen.dart';
+import '../../features/history/presentation/tus_intereses_screen.dart';
 import '../../features/map/presentation/mapa_screen.dart';
 import '../../features/music/presentation/musica_screen.dart';
 import '../../features/notifications/presentation/notificaciones_screen.dart';
@@ -113,6 +114,10 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/historial',
         builder: (context, state) => const HistorialScreen(),
+      ),
+      GoRoute(
+        path: '/tus-intereses',
+        builder: (context, state) => const TusInteresesScreen(),
       ),
       GoRoute(
         path: '/videos',

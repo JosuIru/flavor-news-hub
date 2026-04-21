@@ -105,6 +105,11 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # Cache en disco + memoria de imágenes remotas. Evita volver a
+  # descargar las portadas cada vez que el usuario scrollea el feed o
+  # abre y cierra la app — importante con conexiones móviles limitadas.
+  cached_network_image: ^3.4.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

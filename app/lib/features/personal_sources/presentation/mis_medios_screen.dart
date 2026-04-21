@@ -44,42 +44,104 @@ class MisMediosScreen extends ConsumerWidget {
       ),
       body: fuentes.isEmpty
           ? _EstadoVacio(textos: textos)
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: fuentes.length + 1, // +1 para mensaje informativo al final
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, indice) {
-                if (indice == fuentes.length) {
-                  return Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      textos.personalSourcesNote,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  );
-                }
-                final fuente = fuentes[indice];
-                return ListTile(
-                  leading: Icon(_iconoDeTipo(fuente.tipoFeed)),
-                  title: Text(fuente.nombre),
-                  subtitle: Text(fuente.feedUrl, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: textos.personalSourcesRemove,
-                    onPressed: () => _confirmarBorrado(context, notifier, fuente, textos),
-                  ),
-                );
-              },
-            ),
+          : _construirListaAgrupada(context, fuentes, notifier, textos),
     );
+  }
+
+  /// Agrupa las fuentes en tres secciones — Lectura, Audio, Vídeo — con
+  /// cabecera propia. Dentro de cada sección el orden es el de adición.
+  Widget _construirListaAgrupada(
+    BuildContext context,
+    List<FuentePersonal> fuentes,
+    FuentesPersonalesNotifier notifier,
+    AppLocalizations textos,
+  ) {
+    final lectura = <FuentePersonal>[];
+    final audio = <FuentePersonal>[];
+    final video = <FuentePersonal>[];
+    for (final f in fuentes) {
+      switch (_categoriaDeTipo(f.tipoFeed)) {
+        case _Categoria.audio:
+          audio.add(f);
+        case _Categoria.video:
+          video.add(f);
+        case _Categoria.lectura:
+          lectura.add(f);
+      }
+    }
+
+    final esquema = Theme.of(context).colorScheme;
+    final bloques = <Widget>[];
+    void anadirSeccion(String titulo, List<FuentePersonal> lista, IconData iconoSeccion) {
+      if (lista.isEmpty) return;
+      bloques.add(Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Row(
+          children: [
+            Icon(iconoSeccion, size: 18, color: esquema.primary),
+            const SizedBox(width: 8),
+            Text(
+              titulo,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: esquema.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ),
+      ));
+      for (final fuente in lista) {
+        bloques.add(ListTile(
+          leading: Icon(_iconoDeTipo(fuente.tipoFeed)),
+          title: Text(fuente.nombre),
+          subtitle: Text(fuente.feedUrl, maxLines: 1, overflow: TextOverflow.ellipsis),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: textos.personalSourcesRemove,
+            onPressed: () => _confirmarBorrado(context, notifier, fuente, textos),
+          ),
+        ));
+      }
+    }
+
+    anadirSeccion(textos.personalSourcesCategoryReading, lectura, Icons.menu_book_outlined);
+    anadirSeccion(textos.personalSourcesCategoryAudio, audio, Icons.podcasts);
+    anadirSeccion(textos.personalSourcesCategoryVideo, video, Icons.play_circle_outline);
+
+    bloques.add(Padding(
+      padding: const EdgeInsets.all(24),
+      child: Text(
+        textos.personalSourcesNote,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: esquema.onSurfaceVariant,
+            ),
+      ),
+    ));
+
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 88), // espacio para el FAB
+      children: bloques,
+    );
+  }
+
+  _Categoria _categoriaDeTipo(String tipo) {
+    switch (tipo) {
+      case 'podcast':
+        return _Categoria.audio;
+      case 'youtube':
+      case 'video':
+        return _Categoria.video;
+      default:
+        return _Categoria.lectura;
+    }
   }
 
   IconData _iconoDeTipo(String tipo) {
     switch (tipo) {
       case 'youtube':
         return Icons.play_circle_outline;
+      case 'video':
+        return Icons.videocam_outlined;
       case 'podcast':
         return Icons.mic_outlined;
       case 'atom':
@@ -502,3 +564,5 @@ class _OpcionTipo {
   final String codigo;
   final String etiqueta;
 }
+
+enum _Categoria { lectura, audio, video }

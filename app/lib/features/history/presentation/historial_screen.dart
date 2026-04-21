@@ -17,6 +17,7 @@ class HistorialScreen extends ConsumerWidget {
     final textos = AppLocalizations.of(context);
     final asyncItems = ref.watch(itemsLeidosProvider);
     final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
+    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
 
     return Scaffold(
       appBar: AppBar(title: Text(textos.historyTitle)),
@@ -58,12 +59,15 @@ class HistorialScreen extends ConsumerWidget {
               return ItemCard(
                 item: item,
                 estaGuardado: guardados.contains(item.id),
+                esUtil: utiles.contains(item.id),
                 estaLeido: true,
                 onTap: () => context.push('/items/${item.id}'),
                 onSourceTap: (idSource) => context.push('/sources/$idSource'),
                 onTopicTap: (_) {},
                 onGuardarAlternar: () =>
                     ref.read(guardadosProvider.notifier).alternar(item),
+                onUtilAlternar: () =>
+                    ref.read(utilesProvider.notifier).alternar(item),
               );
             },
           );

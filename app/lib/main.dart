@@ -26,19 +26,18 @@ Future<void> main() async {
 
   final sharedPrefs = await SharedPreferences.getInstance();
 
-  // Workmanager arranca antes de la UI para poder restaurar la tarea
-  // periódica de notificaciones si el usuario la tenía activa.
+  // Workmanager arranca antes de la UI. Siempre registramos el worker
+  // periódico (aunque las notificaciones estén off): lo usamos para
+  // refrescar los widgets Android de titulares en segundo plano.
   await inicializarWorkmanager();
   final codigoFrecuencia = sharedPrefs.getString('fnh.pref.notifFrecuencia');
-  if (codigoFrecuencia != null) {
-    final frecuencia = FrecuenciaNotif.values.firstWhere(
-      (f) => f.name == codigoFrecuencia,
-      orElse: () => FrecuenciaNotif.nunca,
-    );
-    if (frecuencia.esActiva) {
-      await aplicarFrecuenciaNotif(frecuencia);
-    }
-  }
+  final frecuenciaGuardada = codigoFrecuencia != null
+      ? FrecuenciaNotif.values.firstWhere(
+          (f) => f.name == codigoFrecuencia,
+          orElse: () => FrecuenciaNotif.nunca,
+        )
+      : FrecuenciaNotif.nunca;
+  await aplicarFrecuenciaNotif(frecuenciaGuardada);
 
   runApp(
     ProviderScope(

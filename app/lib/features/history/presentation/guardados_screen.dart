@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -105,6 +106,7 @@ class _ListaGuardados extends ConsumerWidget {
     final textos = AppLocalizations.of(context);
     final asyncItems = ref.watch(itemsGuardadosProvider);
     final leidos = ref.watch(leidosProvider).valueOrNull ?? const <int>{};
+    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
 
     return asyncItems.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -168,6 +170,7 @@ class _ListaGuardados extends ConsumerWidget {
             return ItemCard(
               item: item,
               estaGuardado: true,
+              esUtil: utiles.contains(item.id),
               estaLeido: leidos.contains(item.id),
               onTap: () => context.push('/items/${item.id}'),
               onSourceTap: (idSource) => context.push('/sources/$idSource'),
@@ -176,6 +179,8 @@ class _ListaGuardados extends ConsumerWidget {
               },
               onGuardarAlternar: () =>
                   ref.read(guardadosProvider.notifier).alternar(item),
+              onUtilAlternar: () =>
+                  ref.read(utilesProvider.notifier).alternar(item),
             );
           },
         );
@@ -207,12 +212,12 @@ class _FilaAudioGuardado extends StatelessWidget {
       leading: item.mediaUrl.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: Image.network(
-                item.mediaUrl,
+              child: CachedNetworkImage(
+                imageUrl: item.mediaUrl,
                 width: 44,
                 height: 44,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.music_note),
+                errorWidget: (_, __, ___) => const Icon(Icons.music_note),
               ),
             )
           : const Icon(Icons.music_note),

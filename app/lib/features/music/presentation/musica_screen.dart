@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -422,12 +423,12 @@ class _TilePista extends StatelessWidget {
       leading: pista.coverUrl.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: Image.network(
-                pista.coverUrl,
+              child: CachedNetworkImage(
+                imageUrl: pista.coverUrl,
                 width: 44,
                 height: 44,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.music_note),
+                errorWidget: (_, __, ___) => const Icon(Icons.music_note),
               ),
             )
           : const Icon(Icons.music_note),

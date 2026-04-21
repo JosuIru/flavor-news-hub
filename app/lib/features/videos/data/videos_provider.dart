@@ -52,9 +52,16 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
     // Backend caído: filtramos los items que llegan por RSS del seed
     // por los marcadores de vídeo. Serán los pocos feeds RSS/Atom del
     // directorio que apunten a vídeos (PeerTube, .mp4 embebido…); los
-    // feeds tipo YouTube no pasan por el pipeline del seed.
-    final todosDelSeed = await ref.watch(itemsDesdeSeedProvider.future);
-    itemsDelSeed.addAll(todosDelSeed.where(_esItemDeVideo));
+    // feeds tipo YouTube no pasan por el pipeline del seed. Si el
+    // seed también falla, seguimos con las fuentes personales.
+    try {
+      final todosDelSeed = await ref.watch(itemsDesdeSeedProvider.future);
+      itemsDelSeed.addAll(todosDelSeed.where(_esItemDeVideo));
+    } catch (_) {
+      // El propio provider del seed RSS puede lanzar (timeout global,
+      // error de red absoluta, etc.). Nos tragamos el fallo y dejamos
+      // que las fuentes personales, si las hay, tiren del carro.
+    }
   }
 
   final items = <Item>[

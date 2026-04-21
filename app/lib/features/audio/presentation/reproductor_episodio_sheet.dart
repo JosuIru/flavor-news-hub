@@ -89,6 +89,23 @@ class _EstadoSheet extends ConsumerState<ReproductorEpisodioSheet> {
                   ),
                 Consumer(
                   builder: (context, ref, _) {
+                    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
+                    final esUtil = utiles.contains(episodio.id);
+                    return IconButton(
+                      icon: Icon(
+                        esUtil ? Icons.lightbulb : Icons.lightbulb_outline,
+                        color: esUtil ? esquema.primary : null,
+                      ),
+                      tooltip: esUtil
+                          ? AppLocalizations.of(context).itemUnmarkUseful
+                          : AppLocalizations.of(context).itemMarkUseful,
+                      onPressed: () =>
+                          ref.read(utilesProvider.notifier).alternar(episodio),
+                    );
+                  },
+                ),
+                Consumer(
+                  builder: (context, ref, _) {
                     final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
                     final estaGuardado = guardados.contains(episodio.id);
                     return IconButton(

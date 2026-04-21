@@ -80,3 +80,38 @@ final itemsLeidosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   final dao = await ref.watch(itemsLocalesDaoProvider.future);
   return dao.obtenerLeidos();
 });
+
+/// Set de IDs marcados como "útiles" por el usuario. Alimenta el panel
+/// "Tus intereses" y el botón de útil/no-útil en tarjetas y detalle.
+/// **No** reordena el feed — eso iría contra el manifiesto (sin
+/// algoritmo de engagement).
+class UtilesNotifier extends AsyncNotifier<Set<int>> {
+  @override
+  Future<Set<int>> build() async {
+    final dao = await ref.watch(itemsLocalesDaoProvider.future);
+    return dao.obtenerIdsUtiles();
+  }
+
+  Future<void> alternar(Item item) async {
+    final dao = await ref.read(itemsLocalesDaoProvider.future);
+    await dao.alternarUtil(item);
+    final previo = state.valueOrNull ?? <int>{};
+    final nuevo = {...previo};
+    if (nuevo.contains(item.id)) {
+      nuevo.remove(item.id);
+    } else {
+      nuevo.add(item.id);
+    }
+    state = AsyncData(nuevo);
+  }
+}
+
+final utilesProvider = AsyncNotifierProvider<UtilesNotifier, Set<int>>(UtilesNotifier.new);
+
+/// Lista completa de items marcados útiles, con sus payloads. Reactiva
+/// al set de ids para refrescar la pantalla "Tus intereses".
+final itemsUtilesProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
+  ref.watch(utilesProvider);
+  final dao = await ref.watch(itemsLocalesDaoProvider.future);
+  return dao.obtenerUtiles();
+});

@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../donations/presentation/donaciones_sheet.dart';
 import '../../history/data/historial_provider.dart';
 import '../data/feed_notifier.dart';
 import '../data/filtros_feed.dart';
@@ -54,6 +55,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         title: Text(textos.feedTitle),
         actions: [
           IconButton(
+            icon: const Icon(Icons.favorite_border),
+            tooltip: textos.donationsTitle,
+            onPressed: () => mostrarSheetDonaciones(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.search),
             tooltip: textos.searchTooltip,
             onPressed: () => context.push('/search'),
@@ -76,6 +82,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       body: RefreshIndicator(
         onRefresh: () => ref.read(feedProvider.notifier).refrescar(),
         child: asyncEstadoFeed.when(
+          // Durante pull-to-refresh o `invalidateSelf`, mantenemos la
+          // lista previa visible en vez de parpadear al estado de carga.
+          // Sólo mostramos la pantalla de carga la primera vez.
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
           loading: () => _PantallaCarga(mensaje: textos.feedLoading),
           error: (error, stackTrace) => _PantallaError(
             mensajeError: error.toString(),
@@ -87,6 +98,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               return _PantallaVacia(mensaje: textos.feedEmpty);
             }
             final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
+            final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
             final leidos = ref.watch(leidosProvider).valueOrNull ?? const <int>{};
             final indiceBase = estado.modoOffline ? 1 : 0; // +1 si hay banner offline
             return ListView.separated(
@@ -111,6 +123,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 return ItemCard(
                   item: item,
                   estaGuardado: guardados.contains(item.id),
+                  esUtil: utiles.contains(item.id),
                   estaLeido: leidos.contains(item.id),
                   onTap: () => context.push('/items/${item.id}'),
                   onSourceTap: (idSource) => context.push('/sources/$idSource'),
@@ -119,6 +132,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   },
                   onGuardarAlternar: () =>
                       ref.read(guardadosProvider.notifier).alternar(item),
+                  onUtilAlternar: () =>
+                      ref.read(utilesProvider.notifier).alternar(item),
                 );
               },
             );

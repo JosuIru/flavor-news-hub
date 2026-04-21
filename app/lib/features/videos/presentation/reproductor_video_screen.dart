@@ -13,6 +13,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../../core/models/item.dart';
 import '../../../core/services/pip_service.dart';
 import '../../feed/presentation/item_detail_screen.dart';
+import '../../history/data/historial_provider.dart';
 import '../data/url_video_helper.dart';
 import '../data/videos_provider.dart';
 
@@ -98,11 +99,32 @@ class _EstadoReproductorVideo extends ConsumerState<ReproductorVideoScreen> {
               title: Text(textos.videosTitle),
               actions: [
                 asyncItem.maybeWhen(
-                  data: (item) => IconButton(
-                    icon: const Icon(Icons.skip_next),
-                    tooltip: textos.videosPlayNext,
-                    onPressed: () => _saltarAlSiguiente(item),
-                  ),
+                  data: (item) {
+                    final utiles = ref.watch(utilesProvider).valueOrNull ??
+                        const <int>{};
+                    final esUtil = utiles.contains(item.id);
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(esUtil
+                              ? Icons.lightbulb
+                              : Icons.lightbulb_outline),
+                          tooltip: esUtil
+                              ? textos.itemUnmarkUseful
+                              : textos.itemMarkUseful,
+                          onPressed: () => ref
+                              .read(utilesProvider.notifier)
+                              .alternar(item),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.skip_next),
+                          tooltip: textos.videosPlayNext,
+                          onPressed: () => _saltarAlSiguiente(item),
+                        ),
+                      ],
+                    );
+                  },
                   orElse: () => const SizedBox.shrink(),
                 ),
               ],
@@ -132,6 +154,11 @@ class _EstadoReproductorVideo extends ConsumerState<ReproductorVideoScreen> {
     final idYoutube = _idYoutubeDesdeItem(item);
     final embedPeerTube =
         idYoutube == null ? UrlVideoHelper.embedPeerTube(urlOriginal) : null;
+    debugPrint(
+      '[ReproductorVideo] itemId=${item.id} url=$urlOriginal '
+      'feedType=${item.source?.feedType} idYT=$idYoutube '
+      'peertube=$embedPeerTube',
+    );
 
     if (idYoutube == null && embedPeerTube == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
