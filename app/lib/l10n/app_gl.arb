@@ -300,5 +300,9 @@
   },
   "updateBodyGeneric": "Hai unha actualización dispoñible. Descárgaa para ter as últimas novidades.",
   "updateDownload": "Descargar",
-  "updateDismiss": "Agora non"
+  "updateDismiss": "Agora non",
+  "updateDownloadingTitle": "Descargando actualización",
+  "updateDownloadingIndeterminate": "Preparando…",
+  "updateDownloadFallback": "Non se puido descargar dentro da app. Abríndoo no navegador.",
+  "updateInstallFallback": "Non se puido abrir o instalador. Abríndoo no navegador."
 }

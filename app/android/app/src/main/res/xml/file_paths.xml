@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Rutas que el FileProvider puede servir como content:// Uri. Lo usamos
+  para pasar al instalador del sistema el APK de actualización que la
+  app descarga a su cache privada.
+
+  `cache-path` = getCacheDir() en Android (= path_provider.getTemporaryDirectory()).
+-->
+<paths>
+    <cache-path name="cache" path="." />
+</paths>

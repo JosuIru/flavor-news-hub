@@ -300,5 +300,9 @@
   },
   "updateBodyGeneric": "An update is available. Download it for the latest fixes and features.",
   "updateDownload": "Download",
-  "updateDismiss": "Not now"
+  "updateDismiss": "Not now",
+  "updateDownloadingTitle": "Downloading update",
+  "updateDownloadingIndeterminate": "Preparing…",
+  "updateDownloadFallback": "Couldn't download inside the app. Opening in the browser.",
+  "updateInstallFallback": "Couldn't open the installer. Opening in the browser."
 }

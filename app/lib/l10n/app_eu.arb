@@ -300,5 +300,9 @@
   },
   "updateBodyGeneric": "Eguneratzea eskuragarri dago. Deskargatu azken hobekuntzak izateko.",
   "updateDownload": "Deskargatu",
-  "updateDismiss": "Orain ez"
+  "updateDismiss": "Orain ez",
+  "updateDownloadingTitle": "Eguneratzea deskargatzen",
+  "updateDownloadingIndeterminate": "Prestatzen…",
+  "updateDownloadFallback": "Ezin izan da aplikazioan deskargatu. Nabigatzailean irekitzen.",
+  "updateInstallFallback": "Ezin izan da instalatzailea ireki. Nabigatzailean irekitzen."
 }

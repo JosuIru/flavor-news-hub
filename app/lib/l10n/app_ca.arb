@@ -300,5 +300,9 @@
   },
   "updateBodyGeneric": "Hi ha una actualització disponible. Descarrega-la per tenir les darreres novetats.",
   "updateDownload": "Descarrega",
-  "updateDismiss": "Ara no"
+  "updateDismiss": "Ara no",
+  "updateDownloadingTitle": "Descarregant actualització",
+  "updateDownloadingIndeterminate": "Preparant…",
+  "updateDownloadFallback": "No s'ha pogut descarregar des de l'app. S'obre al navegador.",
+  "updateInstallFallback": "No s'ha pogut obrir l'instal·lador. S'obre al navegador."
 }
