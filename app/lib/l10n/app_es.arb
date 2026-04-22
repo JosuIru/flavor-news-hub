@@ -147,6 +147,7 @@
   "settingsBackendUrl": "URL de la instancia",
   "settingsBackendUrlDescription": "Si cambias esto, la app consumirá los datos de otra instancia de Flavor News Hub.",
   "settingsAbout": "Acerca de",
+  "settingsAdvanced": "Avanzado",
   "settingsVersion": "Versión",
   "settingsProposeSource": "Proponer un medio",
   "settingsProposeSourceSubtitle": "¿Echas en falta un medio alternativo? Sugiérenoslo para revisión.",

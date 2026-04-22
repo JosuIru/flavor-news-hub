@@ -208,6 +208,7 @@
   "settingsBackendUrl": "Instantziaren URLa",
   "settingsBackendUrlDescription": "Hau aldatuz gero, aplikazioak beste Flavor News Hub instantzia batetik jasoko ditu datuak.",
   "settingsAbout": "Honi buruz",
+  "settingsAdvanced": "Aurreratua",
   "settingsVersion": "Bertsioa",
   "settingsProposeSource": "Hedabide bat proposatu",
   "settingsProposeSourceSubtitle": "Hedabide alternatiboren bat falta zaizu? Proposa ezazu berrikusteko.",

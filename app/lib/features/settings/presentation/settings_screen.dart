@@ -52,13 +52,6 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(height: 24),
           ListTile(
-            leading: const Icon(Icons.cloud_outlined),
-            title: Text(textos.settingsBackendUrl),
-            subtitle: Text(preferencias.urlInstanciaBackend, maxLines: 1, overflow: TextOverflow.ellipsis),
-            onTap: () => _editarUrlBackend(context, notifier, preferencias.urlInstanciaBackend, textos),
-          ),
-          const Divider(height: 24),
-          ListTile(
             leading: const Icon(Icons.bookmark),
             title: Text(textos.savedTitle),
             subtitle: Text(textos.savedSubtitle),
@@ -124,6 +117,31 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.info_outline),
             title: Text(textos.settingsAbout),
             onTap: () => context.push('/about'),
+          ),
+          // "Avanzado" agrupa opciones para usuarios técnicos — hoy solo
+          // la URL del backend. Colapsado por defecto: el 99 % de la
+          // gente no necesita tocarla, y tenerla a la vista invita a
+          // introducir una URL rota y dejar la app sin datos.
+          ExpansionTile(
+            leading: const Icon(Icons.tune),
+            title: Text(textos.settingsAdvanced),
+            children: [
+              ListTile(
+                leading: const Icon(Icons.cloud_outlined),
+                title: Text(textos.settingsBackendUrl),
+                subtitle: Text(
+                  preferencias.urlInstanciaBackend,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () => _editarUrlBackend(
+                  context,
+                  notifier,
+                  preferencias.urlInstanciaBackend,
+                  textos,
+                ),
+              ),
+            ],
           ),
         ],
       ),

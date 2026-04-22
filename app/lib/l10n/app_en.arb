@@ -148,6 +148,7 @@
   "settingsBackendUrl": "Instance URL",
   "settingsBackendUrlDescription": "Change this to consume a different Flavor News Hub instance.",
   "settingsAbout": "About",
+  "settingsAdvanced": "Advanced",
   "settingsVersion": "Version",
   "settingsProposeSource": "Propose a source",
   "settingsProposeSourceSubtitle": "Missing an alternative medium? Suggest it for review.",

@@ -148,6 +148,7 @@
   "settingsBackendUrl": "URL de la instància",
   "settingsBackendUrlDescription": "Si ho canvies, l'app consumirà dades d'una altra instància de Flavor News Hub.",
   "settingsAbout": "Quant a",
+  "settingsAdvanced": "Avançat",
   "settingsVersion": "Versió",
   "settingsProposeSource": "Proposa un mitjà",
   "settingsProposeSourceSubtitle": "Trobes a faltar un mitjà alternatiu? Suggereix-lo per a revisió.",
