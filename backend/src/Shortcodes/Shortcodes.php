@@ -115,6 +115,46 @@ final class Shortcodes
         #fnh-landing .fnh-boton-descarga{display:inline-block !important;padding:.9rem 2rem !important;background:#3ddc84 !important;color:#0a0a0a !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.05em !important}
         #fnh-landing .fnh-boton-descarga:hover{background:#5ae89a !important}
         #fnh-landing .fnh-repo{text-align:center;font-size:.9em;color:#777}
+
+        /* Noticias dentro de la landing: tarjeta horizontal (imagen izquierda, texto derecha). */
+        #fnh-landing .fnh-feed-lista{display:flex !important;flex-direction:column;gap:1.1rem}
+        #fnh-landing .fnh-feed-lista li{display:grid !important;grid-template-columns:220px 1fr;gap:1.1rem;padding:0 0 1.1rem !important;border-bottom:1px solid #ececec;align-items:start;background:transparent !important}
+        #fnh-landing .fnh-feed-lista li:last-child{border-bottom:0}
+        #fnh-landing .fnh-feed-lista .fnh-media{order:-1;margin:0 !important;grid-column:1}
+        #fnh-landing .fnh-feed-lista .fnh-media img{width:100% !important;height:140px !important;object-fit:cover;border-radius:8px !important;display:block;margin:0 !important;max-width:100% !important}
+        #fnh-landing .fnh-feed-lista h3{margin:0 0 .35em !important;font-size:1.05em !important;line-height:1.3 !important;font-weight:700 !important}
+        #fnh-landing .fnh-feed-lista h3 a{color:#111 !important;text-decoration:none !important}
+        #fnh-landing .fnh-feed-lista h3 a:hover{text-decoration:underline !important}
+        #fnh-landing .fnh-feed-lista .fnh-meta{font-size:.82em !important;color:#777 !important;margin-bottom:.4em}
+        #fnh-landing .fnh-feed-lista .fnh-excerpt{font-size:.92em;color:#333;line-height:1.5}
+        #fnh-landing .fnh-feed-lista .fnh-excerpt p{margin:.25em 0 !important}
+
+        /* En la columna "Podcasts recientes" los items son compactos y sin imagen. */
+        #fnh-landing .fnh-sonando-col .fnh-feed-lista li{display:block !important;grid-template-columns:none !important;padding:.7rem 0 !important}
+        #fnh-landing .fnh-sonando-col .fnh-feed-lista .fnh-media{display:none !important}
+        #fnh-landing .fnh-sonando-col .fnh-feed-lista .fnh-excerpt{display:none !important}
+        #fnh-landing .fnh-sonando-col .fnh-feed-lista h3{font-size:.95em !important}
+
+        /* Móvil: noticias a columna única. */
+        @media (max-width:640px){
+          #fnh-landing .fnh-feed-lista li{grid-template-columns:1fr !important}
+          #fnh-landing .fnh-feed-lista .fnh-media img{height:200px !important}
+        }
+
+        /* Vídeos: 4 columnas en desktop, 2 en tablet, 1 en móvil. */
+        #fnh-landing .fnh-videos-grid{display:grid !important;grid-template-columns:repeat(4,1fr) !important;gap:12px !important}
+        @media (max-width:900px){#fnh-landing .fnh-videos-grid{grid-template-columns:repeat(2,1fr) !important}}
+        @media (max-width:500px){#fnh-landing .fnh-videos-grid{grid-template-columns:1fr !important}}
+
+        /* Radios: cards con sombra y hover claro. */
+        #fnh-landing .fnh-radios-lista{display:grid !important;grid-template-columns:1fr !important;gap:.75rem !important;padding:0 !important;list-style:none !important}
+        #fnh-landing .fnh-radios-lista .fnh-radio{padding:1rem !important;border:1px solid #e5e5e5 !important;border-radius:12px !important;background:#fff !important;box-shadow:0 1px 3px rgba(0,0,0,.04) !important;transition:box-shadow .15s,transform .15s;list-style:none !important}
+        #fnh-landing .fnh-radios-lista .fnh-radio:hover{box-shadow:0 4px 12px rgba(0,0,0,.08) !important;transform:translateY(-1px)}
+        #fnh-landing .fnh-radios-lista .fnh-radio h4{margin:0 0 .25em !important;font-size:1em !important;font-weight:600 !important;color:#111 !important}
+        #fnh-landing .fnh-radios-lista .fnh-radio .fnh-meta{font-size:.82em !important;color:#777 !important;margin-bottom:.5em}
+        #fnh-landing .fnh-radios-lista .fnh-radio audio{width:100% !important;height:36px;margin:.35em 0 !important;display:block}
+        #fnh-landing .fnh-radios-lista .fnh-radio .fnh-listen{display:inline-block;margin-top:.4em !important;font-size:.88em !important;color:#3b7bdb !important;text-decoration:none !important}
+        #fnh-landing .fnh-radios-lista .fnh-radio .fnh-listen:hover{text-decoration:underline !important}
         ";
         wp_register_style('flavor-news-hub-shortcodes', false);
         wp_enqueue_style('flavor-news-hub-shortcodes');
