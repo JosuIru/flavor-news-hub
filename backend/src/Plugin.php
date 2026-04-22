@@ -12,6 +12,7 @@ use FlavorNewsHub\Meta\MetaRegistrar;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\CLI\IngestCommand;
+use FlavorNewsHub\CLI\ImportSourcesCommand;
 use FlavorNewsHub\REST\RestController;
 use FlavorNewsHub\Admin\AdminController;
 use FlavorNewsHub\Activation\Activator;
@@ -91,6 +92,7 @@ final class Plugin
         // Registro de comandos WP-CLI sólo si estamos en CLI.
         if (defined('WP_CLI') && WP_CLI) {
             \WP_CLI::add_command('flavor-news', IngestCommand::class);
+            \WP_CLI::add_command('flavor-news import', ImportSourcesCommand::class);
         }
     }
 

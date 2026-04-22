@@ -1,0 +1,21 @@
+[
+ {
+  "id": 6120,
+  "name": "Stop Desahucios Bizkaia",
+  "slug": "stop-desahucios-bizkaia",
+  "description": "<p>Red de apoyo mutuo frente a desahucios en Bizkaia.</p>\n",
+  "url": "http://localhost:10028/c/stop-desahucios-bizkaia/",
+  "website_url": "https://ejemplo.org/stop",
+  "flavor_url": "",
+  "territory": "Bizkaia",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 59,
+    "name": "Vivienda",
+    "slug": "vivienda"
+   }
+  ]
+ }
+]

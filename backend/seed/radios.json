@@ -1,0 +1,261 @@
+[
+ {
+  "id": 6594,
+  "name": "Ágora Sol Radio",
+  "slug": "agora-sol-radio",
+  "stream_url": "https://radiobot.radioslibres.info/listen/agora_sol_radio/agora.ogg",
+  "website_url": "https://agorasolradio.org",
+  "rss_url": "https://agorasolradio.org/feed/",
+  "territory": "Madrid",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6590,
+  "name": "Contrabanda FM",
+  "slug": "contrabanda-fm",
+  "stream_url": "https://radiobot.radioslibres.info/listen/contrabanda_fm/radio.mp3",
+  "website_url": "https://contrabanda.org",
+  "rss_url": "https://contrabanda.org/feed/",
+  "territory": "Catalunya",
+  "languages": [
+   "ca",
+   "es"
+  ]
+ },
+ {
+  "id": 6923,
+  "name": "Eguzki Irratia",
+  "slug": "eguzki-irratia",
+  "stream_url": "https://streaming.eguzki.eus/eguzki.mp3",
+  "website_url": "https://eguzki.eus",
+  "rss_url": "",
+  "territory": "Nafarroa",
+  "languages": [
+   "eu",
+   "es"
+  ]
+ },
+ {
+  "id": 6589,
+  "name": "Euskalerria Irratia",
+  "slug": "euskalerria-irratia",
+  "stream_url": "http://server4.beatproducciones.com:8014/",
+  "website_url": "https://euskalerriairratia.eus",
+  "rss_url": "",
+  "territory": "Nafarroa",
+  "languages": [
+   "eu"
+  ]
+ },
+ {
+  "id": 6587,
+  "name": "Hala Bedi Irratia (zuzenean)",
+  "slug": "hala-bedi-irratia-zuzenean",
+  "stream_url": "https://stream.halabedi.eus/1A",
+  "website_url": "https://halabedi.eus",
+  "rss_url": "https://halabedi.eus/feed/",
+  "territory": "Araba",
+  "languages": [
+   "eu",
+   "es"
+  ]
+ },
+ {
+  "id": 6588,
+  "name": "Irola Irratia",
+  "slug": "irola-irratia",
+  "stream_url": "https://radiobot.radioslibres.info/listen/irola/radio.mp3",
+  "website_url": "https://irola.eus",
+  "rss_url": "",
+  "territory": "Bizkaia",
+  "languages": [
+   "eu"
+  ]
+ },
+ {
+  "id": 6605,
+  "name": "Irulegiko Irratia",
+  "slug": "irulegiko-irratia",
+  "stream_url": "https://hosting.studioradiomedia.fr:1365/stream",
+  "website_url": "https://irulegikoirratia.eus",
+  "rss_url": "",
+  "territory": "Nafarroa",
+  "languages": [
+   "eu"
+  ]
+ },
+ {
+  "id": 6597,
+  "name": "Onda Color",
+  "slug": "onda-color",
+  "stream_url": "https://cervera.eldialdigital.com:21201/stream",
+  "website_url": "https://ondacolor.org",
+  "rss_url": "https://ondacolor.org/feed/",
+  "territory": "Andalucía",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6596,
+  "name": "Radio Almaina",
+  "slug": "radio-almaina",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_almaina/radio.mp3",
+  "website_url": "https://radioalmaina.org",
+  "rss_url": "https://radioalmaina.org/feed/",
+  "territory": "Andalucía",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6599,
+  "name": "Radio Argayo",
+  "slug": "radio-argayo",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_argayo/radio.ogg",
+  "website_url": "https://radioargayo.org",
+  "rss_url": "",
+  "territory": "Asturias",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6591,
+  "name": "Ràdio Bronka",
+  "slug": "radio-bronka",
+  "stream_url": "https://radiobot.radioslibres.info/listen/bronka/radio.mp3",
+  "website_url": "https://radiobronka.info",
+  "rss_url": "",
+  "territory": "Catalunya",
+  "languages": [
+   "ca",
+   "es"
+  ]
+ },
+ {
+  "id": 6601,
+  "name": "Radio Cadenazo",
+  "slug": "radio-cadenazo",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_cadenazo_libre/cadenazo.mp3",
+  "website_url": "",
+  "rss_url": "",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6603,
+  "name": "Radio Espiritrompa",
+  "slug": "radio-espiritrompa",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_espiritrompa/radio.mp3",
+  "website_url": "",
+  "rss_url": "",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6593,
+  "name": "Ràdio Gallinera",
+  "slug": "radio-gallinera",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_gallinera/radio.mp3",
+  "website_url": "https://radiogallinera.net",
+  "rss_url": "https://radiogallinera.net/feed/",
+  "territory": "País Valencià",
+  "languages": [
+   "ca",
+   "es"
+  ]
+ },
+ {
+  "id": 6600,
+  "name": "Radio La Granja 102.1 FM",
+  "slug": "radio-la-granja-102-1-fm",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_la_granja/rlg.mp3",
+  "website_url": "https://radiolagranja.net",
+  "rss_url": "",
+  "territory": "Castilla y León",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6592,
+  "name": "Ràdio Malva",
+  "slug": "radio-malva",
+  "stream_url": "http://radiomalva.ddns.net:8000/rmbc.mp3",
+  "website_url": "https://radiomalva.net",
+  "rss_url": "",
+  "territory": "Catalunya",
+  "languages": [
+   "ca",
+   "es"
+  ]
+ },
+ {
+  "id": 6602,
+  "name": "Radio Mistelera",
+  "slug": "radio-mistelera",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_mistelera/radio.mp3",
+  "website_url": "",
+  "rss_url": "",
+  "territory": "País Valencià",
+  "languages": [
+   "ca",
+   "es"
+  ]
+ },
+ {
+  "id": 6598,
+  "name": "Radio Topo",
+  "slug": "radio-topo",
+  "stream_url": "https://radiobot.radioslibres.info/listen/radio_topo/radio.mp3",
+  "website_url": "https://radiotopo.net",
+  "rss_url": "",
+  "territory": "Aragón",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6595,
+  "name": "Radio Vallekas",
+  "slug": "radio-vallekas",
+  "stream_url": "https://radio.radiobot.org/listen/rvk/rvk.mp3",
+  "website_url": "https://radiovallekas.org",
+  "rss_url": "https://radiovallekas.org/feed/",
+  "territory": "Madrid",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6604,
+  "name": "Ruido Feminista Radio",
+  "slug": "ruido-feminista-radio",
+  "stream_url": "https://radiobot.radioslibres.info/listen/ruidofeminista/ruidofeminista.mp3",
+  "website_url": "",
+  "rss_url": "",
+  "territory": "Estado",
+  "languages": [
+   "es"
+  ]
+ },
+ {
+  "id": 6606,
+  "name": "Segura Irratia",
+  "slug": "segura-irratia",
+  "stream_url": "https://soporte.ikernet.net:6443/listen/segura_irratia/radio.mp3",
+  "website_url": "https://www.seguraonline.eus/irratia",
+  "rss_url": "",
+  "territory": "Gipuzkoa",
+  "languages": [
+   "eu"
+  ]
+ }
+]
