@@ -153,11 +153,14 @@ class _ItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final esquema = Theme.of(context).colorScheme;
-    final fecha = DateFormat.yMMMd().format(item.publishedAt.toLocal());
+    final fechaDt = DateTime.tryParse(item.publishedAt);
+    final fecha = fechaDt != null
+        ? DateFormat.yMMMd().format(fechaDt.toLocal())
+        : '';
     final subtitulo = [
       if (item.source?.name != null && item.source!.name.isNotEmpty)
         item.source!.name,
-      fecha,
+      if (fecha.isNotEmpty) fecha,
     ].join(' · ');
     return ListTile(
       leading: item.mediaUrl.isNotEmpty
