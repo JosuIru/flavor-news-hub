@@ -89,15 +89,52 @@ final class Shortcodes
         .fnh-radios-lista .fnh-radio{border:1px solid #ececec;border-radius:8px;padding:10px}
         .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
         .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
-        #fnh-landing{display:flex !important;flex-direction:column;gap:3rem;padding:1rem 1.25rem !important;max-width:1100px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111 !important;background:transparent !important}
+        #fnh-landing{display:flex !important;flex-direction:column;gap:2.5rem;padding:0 !important;max-width:1200px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111 !important;background:transparent !important}
         #fnh-landing *{box-sizing:border-box}
-        #fnh-landing h1,#fnh-landing h2,#fnh-landing h3{font-family:inherit;color:#111 !important;font-weight:700}
+        #fnh-landing h1,#fnh-landing h2,#fnh-landing h3,#fnh-landing h4{font-family:inherit;color:#111 !important;font-weight:700}
         #fnh-landing a{color:inherit;text-decoration:none}
-        #fnh-landing .fnh-hero{text-align:center !important;padding:2rem 0 1rem !important;border-bottom:1px solid #ececec;margin:0 !important;background:transparent !important}
-        #fnh-landing .fnh-hero h1{font-size:2.2em !important;margin:0 0 .4em !important;border:0;padding:0 !important;color:#111 !important}
-        #fnh-landing .fnh-hero .fnh-lema{font-size:1.15em !important;color:#555 !important;max-width:42ch;margin:0 auto !important}
-        #fnh-landing .fnh-bloque{margin:0 !important;padding:0 !important;background:transparent !important}
-        #fnh-landing .fnh-bloque h2{margin:0 0 1rem !important;font-size:1.4em !important;border-bottom:2px solid #111 !important;padding-bottom:.3em !important;display:inline-block !important;color:#111 !important;background:transparent !important}
+
+        /* HERO con gradiente oscuro. */
+        #fnh-landing .fnh-hero{background:linear-gradient(135deg,#1a2332 0%,#2d1b4e 60%,#4a1d3e 100%) !important;color:#fff !important;padding:5rem 2rem !important;border-radius:20px !important;border:0 !important;text-align:center !important;margin:0 !important;position:relative;overflow:hidden}
+        #fnh-landing .fnh-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(61,220,132,.15),transparent 60%),radial-gradient(circle at 75% 60%,rgba(147,80,220,.2),transparent 55%);pointer-events:none}
+        #fnh-landing .fnh-hero-inner{position:relative;max-width:780px;margin:0 auto}
+        #fnh-landing .fnh-hero h1{color:#fff !important;font-size:clamp(2.2em,5vw,3.4em) !important;margin:0 0 .3em !important;border:0;padding:0 !important;line-height:1.1 !important;letter-spacing:-.01em}
+        #fnh-landing .fnh-hero .fnh-lema{font-size:clamp(1.05em,2vw,1.3em) !important;color:rgba(255,255,255,.85) !important;max-width:52ch;margin:0 auto 1.8em !important;line-height:1.45}
+        #fnh-landing .fnh-hero-ctas{display:flex !important;gap:.8rem;flex-wrap:wrap;justify-content:center}
+        #fnh-landing .fnh-btn{display:inline-flex !important;align-items:center;padding:.85rem 1.75rem !important;border-radius:999px !important;font-weight:600 !important;font-size:1em !important;text-decoration:none !important;transition:transform .15s,box-shadow .15s;border:2px solid transparent}
+        #fnh-landing .fnh-btn-primary{background:#3ddc84 !important;color:#0a0a0a !important}
+        #fnh-landing .fnh-btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(61,220,132,.35)}
+        #fnh-landing .fnh-btn-ghost{background:transparent !important;color:#fff !important;border-color:rgba(255,255,255,.35) !important}
+        #fnh-landing .fnh-btn-ghost:hover{background:rgba(255,255,255,.08) !important;border-color:#fff !important}
+        #fnh-landing .fnh-bloque{margin:0 !important;padding:.5rem 1rem !important;background:transparent !important}
+        #fnh-landing .fnh-bloque-alt{background:#f7f7f9 !important;padding:2.5rem 1.5rem !important;border-radius:16px !important;margin:0 !important}
+        #fnh-landing .fnh-seccion-titulo{margin:0 0 1.25rem !important;font-size:1.55em !important;font-weight:800 !important;letter-spacing:-.01em;color:#111 !important;background:transparent !important;border:0 !important;padding:0 !important;display:flex !important;align-items:center;gap:.6rem}
+        #fnh-landing .fnh-seccion-ico{font-size:.95em;display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;background:#111;color:#fff;border-radius:8px}
+        #fnh-landing .fnh-bloque h2{margin:0 0 1rem !important;font-size:1.4em !important;color:#111 !important;background:transparent !important;border:0 !important;padding:0 !important}
+        #fnh-landing .fnh-subseccion{margin:0 0 .75rem !important;font-size:.78em !important;text-transform:uppercase !important;letter-spacing:.08em !important;color:#666 !important;font-weight:600 !important;border:0 !important;padding:0 !important}
+
+        /* PORTADA EDITORIAL: una destacada grande + 4 mini en grid 2fr 1fr 1fr. */
+        #fnh-landing .fnh-portada-grid{display:grid !important;grid-template-columns:2fr 1fr 1fr;grid-template-rows:auto auto;gap:1rem !important}
+        #fnh-landing .fnh-portada-card{display:flex !important;flex-direction:column;text-decoration:none !important;border-radius:12px !important;overflow:hidden;background:#fff !important;border:1px solid #eee;transition:transform .15s,box-shadow .15s;color:inherit !important}
+        #fnh-landing .fnh-portada-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+        #fnh-landing .fnh-portada-destacada{grid-column:1;grid-row:1/span 2}
+        #fnh-landing .fnh-portada-destacada .fnh-portada-imagen{aspect-ratio:16/9}
+        #fnh-landing .fnh-portada-destacada .fnh-portada-imagen img{width:100% !important;height:100% !important;object-fit:cover;display:block}
+        #fnh-landing .fnh-portada-destacada .fnh-portada-titulo{font-size:1.6em !important;line-height:1.2 !important}
+        #fnh-landing .fnh-portada-mini .fnh-portada-imagen{aspect-ratio:16/10}
+        #fnh-landing .fnh-portada-mini .fnh-portada-imagen img{width:100% !important;height:100% !important;object-fit:cover;display:block}
+        #fnh-landing .fnh-portada-mini .fnh-portada-titulo{font-size:1em !important;line-height:1.3 !important}
+        #fnh-landing .fnh-portada-texto{padding:.85rem 1rem 1rem !important;flex:1;display:flex;flex-direction:column;gap:.35rem}
+        #fnh-landing .fnh-portada-fuente{font-size:.7em !important;text-transform:uppercase !important;letter-spacing:.08em;color:#c32e2e !important;font-weight:700}
+        #fnh-landing .fnh-portada-titulo{margin:0 !important;color:#111 !important;font-weight:700}
+        @media (max-width:900px){
+          #fnh-landing .fnh-portada-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+          #fnh-landing .fnh-portada-destacada{grid-column:1/-1;grid-row:auto}
+        }
+        @media (max-width:560px){
+          #fnh-landing .fnh-portada-grid{grid-template-columns:1fr}
+          #fnh-landing .fnh-portada-destacada{grid-column:auto}
+        }
         #fnh-landing .fnh-ver-mas{margin-top:.75rem;text-align:right}
         #fnh-landing .fnh-ver-mas a{color:#555;text-decoration:none;font-size:.92em}
         #fnh-landing .fnh-ver-mas a:hover{color:#000}
@@ -109,11 +146,16 @@ final class Shortcodes
         #fnh-landing .fnh-destacado .fnh-destacado-card{display:block;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
         #fnh-landing .fnh-destacado .fnh-destacado-card img{width:100%;height:100%;object-fit:cover;display:block}
         #fnh-landing .fnh-destacado .fnh-destacado-meta{margin-top:.6rem;font-size:.95em;color:#444}
-        #fnh-landing .fnh-descarga{background:#0a0a0a !important;color:#fff !important;padding:2rem !important;border-radius:12px !important;text-align:center !important}
-        #fnh-landing .fnh-descarga h2{margin-top:0 !important;color:#fff !important;border-color:#3ddc84 !important}
-        #fnh-landing .fnh-descarga .fnh-version{font-size:.9em;opacity:.75;margin-bottom:1.2em !important;color:#fff !important}
-        #fnh-landing .fnh-boton-descarga{display:inline-block !important;padding:.9rem 2rem !important;background:#3ddc84 !important;color:#0a0a0a !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.05em !important}
-        #fnh-landing .fnh-boton-descarga:hover{background:#5ae89a !important}
+        /* CTA descarga con carácter: fondo oscuro, ilustración tipográfica. */
+        #fnh-landing .fnh-descarga{background:radial-gradient(ellipse at top,#1a1a1a 0%,#0a0a0a 100%) !important;color:#fff !important;padding:3.5rem 2rem !important;border-radius:20px !important;text-align:center !important;border:0 !important;position:relative;overflow:hidden}
+        #fnh-landing .fnh-descarga::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(61,220,132,.18),transparent 50%);pointer-events:none}
+        #fnh-landing .fnh-descarga-inner{position:relative;max-width:560px;margin:0 auto}
+        #fnh-landing .fnh-descarga .fnh-descarga-titulo{margin:0 0 .5em !important;font-size:clamp(1.7em,3.5vw,2.4em) !important;color:#fff !important;border:0 !important;padding:0 !important;font-weight:800;letter-spacing:-.01em}
+        #fnh-landing .fnh-descarga-copy{color:rgba(255,255,255,.78) !important;font-size:1.05em;margin:0 0 1.6em !important;line-height:1.55}
+        #fnh-landing .fnh-descarga .fnh-version{font-size:.85em;opacity:.6;margin:1em 0 0 !important;color:#fff !important;letter-spacing:.02em}
+        #fnh-landing .fnh-boton-descarga{display:inline-flex !important;align-items:center;gap:.5rem;padding:1rem 2.2rem !important;background:#3ddc84 !important;color:#0a0a0a !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.1em !important;transition:transform .15s,box-shadow .2s}
+        #fnh-landing .fnh-boton-descarga:hover{background:#5ae89a !important;transform:translateY(-2px);box-shadow:0 10px 25px rgba(61,220,132,.4)}
+        #fnh-landing .fnh-boton-descarga-ico{font-size:.85em}
         #fnh-landing .fnh-repo{text-align:center;font-size:.9em;color:#777}
 
         /* Noticias dentro de la landing: tarjeta horizontal (imagen izquierda, texto derecha). */
@@ -524,40 +566,81 @@ final class Shortcodes
             : '';
 
         $videoDestacado = self::obtenerItemVideoCCAleatorio();
+        $noticiasPortada = self::obtenerItemsRecientes(5);
+        $urlNoticias = self::urlPaginaAuto('noticias');
+        $urlVideos = self::urlPaginaAuto('videos');
+        $urlRadios = self::urlPaginaAuto('radios');
 
         ob_start();
-        // `not-prose` neutraliza los estilos de Tailwind Typography que
-        // aplican algunos temas (Flavor Starter, p.ej.) sobre
-        // `.entry-content`, y que machacarían nuestros tamaños/márgenes.
-        // Sin whitespace antes del primer tag para que wpautop no meta
-        // un `<p>` alrededor que rompa el HTML.
         ?><div id="fnh-landing" class="fnh-landing not-prose">
+            <!-- HERO con gradiente oscuro -->
             <section class="fnh-hero">
-                <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
-                <p class="fnh-lema"><?php esc_html_e('Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados).', 'flavor-news-hub'); ?></p>
+                <div class="fnh-hero-inner">
+                    <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
+                    <p class="fnh-lema"><?php esc_html_e('Medios alternativos y colectivos organizados. Informarte y actuar, en un solo sitio.', 'flavor-news-hub'); ?></p>
+                    <div class="fnh-hero-ctas">
+                        <?php if ($urlNoticias !== '') : ?>
+                            <a class="fnh-btn fnh-btn-primary" href="<?php echo esc_url($urlNoticias); ?>">
+                                <?php esc_html_e('Explora noticias', 'flavor-news-hub'); ?>
+                            </a>
+                        <?php endif; ?>
+                        <a class="fnh-btn fnh-btn-ghost" href="#fnh-descarga">
+                            <?php esc_html_e('Descargar app', 'flavor-news-hub'); ?>
+                        </a>
+                    </div>
+                </div>
             </section>
 
-            <section class="fnh-bloque">
-                <h2><?php esc_html_e('Últimas noticias', 'flavor-news-hub'); ?></h2>
-                <?php echo self::renderFeed(['limit' => 6, 'show_excerpt' => 1, 'show_media' => 1]); ?>
-                <?php echo self::enlaceVerMas('noticias'); ?>
+            <!-- PORTADA EDITORIAL: 1 noticia destacada + 4 mini -->
+            <?php if (!empty($noticiasPortada)) : ?>
+            <section class="fnh-bloque fnh-portada">
+                <h2 class="fnh-seccion-titulo"><span class="fnh-seccion-ico" aria-hidden="true">📰</span><?php esc_html_e('Actualidad', 'flavor-news-hub'); ?></h2>
+                <div class="fnh-portada-grid">
+                    <?php foreach ($noticiasPortada as $idx => $noticia) :
+                        $claseCard = $idx === 0
+                            ? 'fnh-portada-card fnh-portada-destacada'
+                            : 'fnh-portada-card fnh-portada-mini';
+                    ?>
+                        <a class="<?php echo esc_attr($claseCard); ?>" href="<?php echo esc_url($noticia['url']); ?>" target="_blank" rel="noopener">
+                            <?php if ($noticia['image'] !== '') : ?>
+                                <div class="fnh-portada-imagen">
+                                    <img src="<?php echo esc_url($noticia['image']); ?>" alt="" loading="lazy" />
+                                </div>
+                            <?php endif; ?>
+                            <div class="fnh-portada-texto">
+                                <?php if ($noticia['source_name'] !== '') : ?>
+                                    <span class="fnh-portada-fuente"><?php echo esc_html($noticia['source_name']); ?></span>
+                                <?php endif; ?>
+                                <h3 class="fnh-portada-titulo"><?php echo esc_html($noticia['title']); ?></h3>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php if ($urlNoticias !== '') : ?>
+                    <p class="fnh-ver-mas"><a href="<?php echo esc_url($urlNoticias); ?>"><?php esc_html_e('Todas las noticias', 'flavor-news-hub'); ?> →</a></p>
+                <?php endif; ?>
             </section>
+            <?php endif; ?>
 
-            <section class="fnh-bloque">
-                <h2><?php esc_html_e('Últimos vídeos', 'flavor-news-hub'); ?></h2>
+            <!-- VÍDEOS (fondo alternado) -->
+            <section class="fnh-bloque fnh-bloque-alt">
+                <h2 class="fnh-seccion-titulo"><span class="fnh-seccion-ico" aria-hidden="true">🎬</span><?php esc_html_e('Últimos vídeos', 'flavor-news-hub'); ?></h2>
                 <?php echo self::renderVideos(['limit' => 4]); ?>
-                <?php echo self::enlaceVerMas('videos'); ?>
+                <?php if ($urlVideos !== '') : ?>
+                    <p class="fnh-ver-mas"><a href="<?php echo esc_url($urlVideos); ?>"><?php esc_html_e('Ver todos', 'flavor-news-hub'); ?> →</a></p>
+                <?php endif; ?>
             </section>
 
+            <!-- SONANDO AHORA: radios + podcasts -->
             <section class="fnh-bloque">
-                <h2><?php esc_html_e('Sonando ahora', 'flavor-news-hub'); ?></h2>
+                <h2 class="fnh-seccion-titulo"><span class="fnh-seccion-ico" aria-hidden="true">🎧</span><?php esc_html_e('Escucha en directo', 'flavor-news-hub'); ?></h2>
                 <div class="fnh-sonando-cols">
                     <div class="fnh-sonando-col">
-                        <h3><?php esc_html_e('Radios libres', 'flavor-news-hub'); ?></h3>
+                        <h3 class="fnh-subseccion"><?php esc_html_e('Radios libres', 'flavor-news-hub'); ?></h3>
                         <?php echo self::renderRadios(['limit' => 4]); ?>
                     </div>
                     <div class="fnh-sonando-col">
-                        <h3><?php esc_html_e('Podcasts recientes', 'flavor-news-hub'); ?></h3>
+                        <h3 class="fnh-subseccion"><?php esc_html_e('Podcasts recientes', 'flavor-news-hub'); ?></h3>
                         <?php echo self::renderFeed([
                             'limit'               => 5,
                             'show_excerpt'        => 0,
@@ -567,14 +650,17 @@ final class Shortcodes
                         ]); ?>
                     </div>
                 </div>
-                <?php echo self::enlaceVerMas('radios'); ?>
+                <?php if ($urlRadios !== '') : ?>
+                    <p class="fnh-ver-mas"><a href="<?php echo esc_url($urlRadios); ?>"><?php esc_html_e('Ver todo', 'flavor-news-hub'); ?> →</a></p>
+                <?php endif; ?>
             </section>
 
+            <!-- VÍDEO DESTACADO (ancho completo, fondo alternado) -->
             <?php if ($videoDestacado !== null) :
                 $embed = self::peertubeEmbedUrl($videoDestacado['url']);
             ?>
-            <section class="fnh-bloque fnh-destacado">
-                <h2><?php esc_html_e('Vídeo destacado', 'flavor-news-hub'); ?></h2>
+            <section class="fnh-bloque fnh-bloque-alt fnh-destacado">
+                <h2 class="fnh-seccion-titulo"><span class="fnh-seccion-ico" aria-hidden="true">✨</span><?php esc_html_e('Vídeo destacado', 'flavor-news-hub'); ?></h2>
                 <?php if ($embed !== null) : ?>
                     <div class="fnh-embed-ratio">
                         <iframe src="<?php echo esc_url($embed); ?>"
@@ -597,24 +683,30 @@ final class Shortcodes
             </section>
             <?php endif; ?>
 
-            <section class="fnh-descarga">
-                <h2><?php esc_html_e('Descarga la app Android', 'flavor-news-hub'); ?></h2>
-                <?php if ($version !== '') : ?>
-                    <div class="fnh-version"><?php
-                        echo esc_html(sprintf(
-                            /* translators: %s: número de versión publicado */
-                            __('Versión %s', 'flavor-news-hub'),
-                            $version
-                        ));
-                    ?></div>
-                <?php endif; ?>
-                <a class="fnh-boton-descarga"
-                   href="<?php echo esc_url($urlDescarga); ?>"
-                   <?php echo str_ends_with($urlDescarga, '.apk') ? 'download' : 'target="_blank" rel="noopener"'; ?>>
-                    <?php esc_html_e('Descargar APK', 'flavor-news-hub'); ?>
-                </a>
+            <!-- CTA DESCARGA APP -->
+            <section class="fnh-descarga" id="fnh-descarga">
+                <div class="fnh-descarga-inner">
+                    <h2 class="fnh-descarga-titulo"><?php esc_html_e('Llévatela contigo', 'flavor-news-hub'); ?></h2>
+                    <p class="fnh-descarga-copy"><?php esc_html_e('Lee, escucha y mantente conectado sin salir de la app. Android, código abierto, sin anuncios.', 'flavor-news-hub'); ?></p>
+                    <a class="fnh-boton-descarga"
+                       href="<?php echo esc_url($urlDescarga); ?>"
+                       <?php echo str_ends_with($urlDescarga, '.apk') ? 'download' : 'target="_blank" rel="noopener"'; ?>>
+                        <span class="fnh-boton-descarga-ico" aria-hidden="true">▶</span>
+                        <?php esc_html_e('Descargar APK', 'flavor-news-hub'); ?>
+                    </a>
+                    <?php if ($version !== '') : ?>
+                        <div class="fnh-version"><?php
+                            echo esc_html(sprintf(
+                                /* translators: %s: número de versión publicado */
+                                __('Versión %s', 'flavor-news-hub'),
+                                $version
+                            ));
+                        ?></div>
+                    <?php endif; ?>
+                </div>
             </section>
 
+            <!-- FIRMA -->
             <section class="fnh-repo">
                 <p>
                     <a href="https://github.com/JosuIru/flavor-news-hub" target="_blank" rel="noopener">
@@ -625,6 +717,57 @@ final class Shortcodes
             </section>
         </div><?php
         return (string) ob_get_clean();
+    }
+
+    /**
+     * Devuelve los N items más recientes como arrays listos para
+     * renderizar en la portada editorial. Distinto de renderFeed
+     * porque necesitamos control granular del markup (card destacada
+     * vs mini).
+     *
+     * @return list<array{title:string,url:string,image:string,source_name:string,published_at:string}>
+     */
+    private static function obtenerItemsRecientes(int $cuantos): array
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => Item::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => $cuantos,
+            'orderby'        => 'meta_value',
+            'meta_key'       => '_fnh_published_at',
+            'order'          => 'DESC',
+            'no_found_rows'  => true,
+        ]);
+        $resultado = [];
+        foreach ($consulta->posts as $post) {
+            $idSource = (int) get_post_meta($post->ID, '_fnh_source_id', true);
+            $sourceName = $idSource > 0 ? (string) get_the_title($idSource) : '';
+            $resultado[] = [
+                'title'        => (string) get_the_title($post),
+                'url'          => (string) get_post_meta($post->ID, '_fnh_original_url', true),
+                'image'        => (string) get_post_meta($post->ID, '_fnh_media_url', true),
+                'source_name'  => $sourceName,
+                'published_at' => (string) get_post_meta($post->ID, '_fnh_published_at', true),
+            ];
+        }
+        return $resultado;
+    }
+
+    /**
+     * URL pública de una página auto-generada por clave, o cadena vacía.
+     */
+    private static function urlPaginaAuto(string $clave): string
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => 'page',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'no_found_rows'  => true,
+            'meta_key'       => '_fnh_pagina_auto',
+            'meta_value'     => $clave,
+        ]);
+        if (empty($consulta->posts)) return '';
+        return (string) get_permalink($consulta->posts[0]->ID);
     }
 
     /**
