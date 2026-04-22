@@ -68,6 +68,38 @@ final class CreadorPaginas
             'preset_vbp'   => 'community',
             'secciones_vbp'=> ['hero'],
         ],
+        [
+            'clave'        => 'tv',
+            'titulo'       => 'TV',
+            'slug'         => 'tv',
+            'shortcode'    => '[flavor_news_tv]',
+            'preset_vbp'   => 'modern',
+            'secciones_vbp'=> ['hero'],
+        ],
+        [
+            'clave'        => 'podcasts',
+            'titulo'       => 'Podcasts',
+            'slug'         => 'podcasts',
+            'shortcode'    => '[flavor_news_podcasts per_page="30"]',
+            'preset_vbp'   => 'modern',
+            'secciones_vbp'=> ['hero'],
+        ],
+        [
+            'clave'        => 'fuentes',
+            'titulo'       => 'Fuentes',
+            'slug'         => 'fuentes',
+            'shortcode'    => '[flavor_news_sources]',
+            'preset_vbp'   => 'modern',
+            'secciones_vbp'=> ['hero'],
+        ],
+        [
+            'clave'        => 'sobre',
+            'titulo'       => 'Sobre el proyecto',
+            'slug'         => 'sobre',
+            'shortcode'    => '[flavor_news_sobre]',
+            'preset_vbp'   => 'modern',
+            'secciones_vbp'=> ['hero'],
+        ],
     ];
 
     /**

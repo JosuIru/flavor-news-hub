@@ -35,6 +35,10 @@ final class Shortcodes
         add_shortcode('flavor_news_videos', [self::class, 'renderVideos']);
         add_shortcode('flavor_news_source', [self::class, 'renderSource']);
         add_shortcode('flavor_news_landing', [self::class, 'renderLanding']);
+        add_shortcode('flavor_news_tv', [self::class, 'renderTv']);
+        add_shortcode('flavor_news_podcasts', [self::class, 'renderPodcasts']);
+        add_shortcode('flavor_news_sources', [self::class, 'renderSources']);
+        add_shortcode('flavor_news_sobre', [self::class, 'renderSobre']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
         // Prio 9 (antes de wpautop en prio 10): anteponemos un menú
         // de navegación entre las 5 páginas auto-generadas del plugin.
@@ -68,9 +72,13 @@ final class Shortcodes
         $paginas = [
             ['clave' => 'inicio',     'titulo' => __('Inicio', 'flavor-news-hub')],
             ['clave' => 'noticias',   'titulo' => __('Noticias', 'flavor-news-hub')],
+            ['clave' => 'tv',         'titulo' => __('TV', 'flavor-news-hub')],
             ['clave' => 'videos',     'titulo' => __('Vídeos', 'flavor-news-hub')],
             ['clave' => 'radios',     'titulo' => __('Radios', 'flavor-news-hub')],
+            ['clave' => 'podcasts',   'titulo' => __('Podcasts', 'flavor-news-hub')],
             ['clave' => 'colectivos', 'titulo' => __('Colectivos', 'flavor-news-hub')],
+            ['clave' => 'fuentes',    'titulo' => __('Fuentes', 'flavor-news-hub')],
+            ['clave' => 'sobre',      'titulo' => __('Sobre', 'flavor-news-hub')],
         ];
         ob_start();
         ?><nav class="fnh-nav-auto" aria-label="<?php esc_attr_e('Secciones del hub', 'flavor-news-hub'); ?>"><ul class="fnh-nav-auto-lista"><?php
@@ -123,6 +131,10 @@ final class Shortcodes
             || has_shortcode($post->post_content, 'flavor_news_videos')
             || has_shortcode($post->post_content, 'flavor_news_source')
             || has_shortcode($post->post_content, 'flavor_news_landing')
+            || has_shortcode($post->post_content, 'flavor_news_tv')
+            || has_shortcode($post->post_content, 'flavor_news_podcasts')
+            || has_shortcode($post->post_content, 'flavor_news_sources')
+            || has_shortcode($post->post_content, 'flavor_news_sobre')
         );
         $esPaginaAuto = $post && (string) get_post_meta($post->ID, '_fnh_pagina_auto', true) !== '';
         if (!$tieneShortcode && !$esPaginaAuto) {
@@ -138,6 +150,40 @@ final class Shortcodes
         .fnh-nav-auto-item a:hover{background:#e4e4ea;color:#111;transform:translateY(-1px)}
         .fnh-nav-auto-item--activo a{background:#111;color:#fff}
         .fnh-nav-auto-item--activo a:hover{background:#000;color:#fff;transform:none}
+
+        /* Página TV: grid de canales */
+        .fnh-tv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:0}
+        .fnh-tv-card{display:block;padding:1.25rem;border:1px solid #e5e5e5;border-radius:12px;background:#fff;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
+        .fnh-tv-card:hover{box-shadow:0 8px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+        .fnh-tv-card h3{margin:0 0 .5em;font-size:1.05em;color:#111;font-weight:700}
+        .fnh-tv-terr,.fnh-tv-idiomas,.fnh-tv-cc{display:inline-block;margin-right:.4em;margin-bottom:.3em;padding:.15em .6em;background:#f0f0f2;border-radius:999px;font-size:.78em;color:#555}
+        .fnh-tv-cc{background:#dcfce7;color:#166534;font-weight:600}
+
+        /* Página Fuentes: directorio agrupado por territorio */
+        .fnh-sources-directorio{padding:0}
+        .fnh-sources-territorio{margin:1.5rem 0 .5rem;font-size:1.1em;color:#111;font-weight:700;border-bottom:2px solid #111;padding-bottom:.2em;display:inline-block}
+        .fnh-sources-total{color:#888;font-weight:400;font-size:.88em}
+        .fnh-sources-lista{list-style:none;padding:0;margin:0 0 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.4rem}
+        .fnh-source-item a{display:flex;align-items:center;gap:.5rem;padding:.6rem .85rem;border:1px solid #ececec;border-radius:8px;text-decoration:none;color:inherit;background:#fafafa;transition:background .15s}
+        .fnh-source-item a:hover{background:#f0f0f2}
+        .fnh-source-nombre{flex:1;font-weight:600;color:#111}
+        .fnh-source-idiomas,.fnh-source-tipo{font-size:.75em;color:#777;background:#fff;padding:.1em .5em;border-radius:4px}
+
+        /* Página Sobre */
+        .fnh-sobre{max-width:760px;margin:0 auto;line-height:1.6}
+        .fnh-sobre-hero{padding:1.5rem 0;border-bottom:1px solid #ececec;margin-bottom:1.5rem}
+        .fnh-sobre-hero h2{margin:0 0 .4em;font-size:1.7em;color:#111}
+        .fnh-sobre-hero p{font-size:1.1em;color:#444;margin:0}
+        .fnh-sobre-bloque{margin:2rem 0}
+        .fnh-sobre-bloque h3{margin:0 0 .8em;font-size:1.2em;color:#111;border-left:4px solid #3ddc84;padding-left:.6em}
+        .fnh-sobre-principios{padding-left:1.3em;margin:0}
+        .fnh-sobre-principios li{margin:.7em 0;color:#333}
+        .fnh-sobre-lista-plana{list-style:none;padding:0;margin:0}
+        .fnh-sobre-lista-plana li{padding:.4em 0 .4em 1.2em;position:relative;color:#444}
+        .fnh-sobre-lista-plana li::before{content:\"·\";position:absolute;left:0;color:#3ddc84;font-size:1.4em;top:-.15em}
+        .fnh-sobre-cta{display:inline-block;padding:.6rem 1.25rem;background:#111;color:#fff !important;border-radius:999px;text-decoration:none;font-weight:600;margin-top:.4em}
+        .fnh-sobre-cta:hover{background:#000}
+        .fnh-vacio{text-align:center;padding:2rem;color:#888;font-style:italic}
 
         .fnh-feed-lista,.fnh-radios-lista,.fnh-videos-grid{list-style:none;padding:0;margin:0}
         .fnh-feed-lista li{padding:12px 0;border-bottom:1px solid #ececec}
@@ -918,5 +964,165 @@ final class Shortcodes
             return $m[1] . '/videos/embed/' . $m[2];
         }
         return null;
+    }
+
+    /**
+     * Página TV: grid de canales (sources con medium_type=tv_station o
+     * feed_type en [youtube,video,peertube] como fallback para fuentes
+     * preexistentes sin medium_type migrado).
+     */
+    public static function renderTv($atribs = [], $contenido = null): string
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => Source::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => 100,
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                ['key' => '_fnh_active', 'value' => '1'],
+            ],
+        ]);
+        $tvStations = [];
+        foreach ($consulta->posts as $post) {
+            $medio = (string) get_post_meta($post->ID, '_fnh_medium_type', true);
+            $tipo  = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
+            $esTv  = $medio === 'tv_station'
+                  || in_array($tipo, ['youtube', 'video', 'peertube'], true);
+            if ($esTv) $tvStations[] = $post;
+        }
+        if (empty($tvStations)) {
+            return '<p class="fnh-vacio">' . esc_html__('Todavía no hay canales de TV en el catálogo.', 'flavor-news-hub') . '</p>';
+        }
+        ob_start();
+        ?><div class="fnh-tv-grid"><?php
+        foreach ($tvStations as $post) {
+            $territ = (string) get_post_meta($post->ID, '_fnh_territory', true);
+            $licencia = (string) get_post_meta($post->ID, '_fnh_content_license', true);
+            $idiomas = get_post_meta($post->ID, '_fnh_languages', true);
+            if (!is_array($idiomas)) $idiomas = [];
+            printf(
+                '<a class="fnh-tv-card" href="%s"><div class="fnh-tv-card-cuerpo"><h3>%s</h3>%s%s%s</div></a>',
+                esc_url((string) get_permalink($post)),
+                esc_html((string) get_the_title($post)),
+                $territ !== '' ? '<span class="fnh-tv-terr">' . esc_html($territ) . '</span>' : '',
+                !empty($idiomas) ? '<span class="fnh-tv-idiomas">' . esc_html(implode(', ', array_map('strval', $idiomas))) . '</span>' : '',
+                strpos($licencia, 'cc-') === 0 ? '<span class="fnh-tv-cc">CC</span>' : ''
+            );
+        }
+        ?></div><?php
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Página Podcasts: delega a renderFeed con filtro por
+     * feed_type=podcast y sin exclusión, para que los episodios
+     * aparezcan aunque el feed general los excluya de titulares.
+     */
+    public static function renderPodcasts($atribs = [], $contenido = null): string
+    {
+        $a = shortcode_atts(['limit' => 30], $atribs);
+        return self::renderFeed([
+            'limit'               => (int) $a['limit'],
+            'show_excerpt'        => 1,
+            'show_media'          => 1,
+            'source_type'         => 'podcast',
+            'exclude_source_type' => '',
+        ]);
+    }
+
+    /**
+     * Página Fuentes: directorio de todas las fuentes activas con
+     * ficha editorial mínima. Ordenadas por nombre alfabético.
+     */
+    public static function renderSources($atribs = [], $contenido = null): string
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => Source::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => 200,
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                ['key' => '_fnh_active', 'value' => '1'],
+            ],
+        ]);
+        if (empty($consulta->posts)) {
+            return '<p class="fnh-vacio">' . esc_html__('Todavía no hay fuentes en el catálogo.', 'flavor-news-hub') . '</p>';
+        }
+        // Agrupar por territorio para dar estructura.
+        $porTerritorio = [];
+        foreach ($consulta->posts as $post) {
+            $t = (string) get_post_meta($post->ID, '_fnh_territory', true);
+            $t = $t === '' ? __('Sin territorio', 'flavor-news-hub') : $t;
+            $porTerritorio[$t] ??= [];
+            $porTerritorio[$t][] = $post;
+        }
+        ksort($porTerritorio);
+        ob_start();
+        ?><div class="fnh-sources-directorio"><?php
+        foreach ($porTerritorio as $terr => $posts) {
+            printf('<h3 class="fnh-sources-territorio">%s <span class="fnh-sources-total">(%d)</span></h3>', esc_html($terr), count($posts));
+            echo '<ul class="fnh-sources-lista">';
+            foreach ($posts as $post) {
+                $idiomas = get_post_meta($post->ID, '_fnh_languages', true);
+                if (!is_array($idiomas)) $idiomas = [];
+                $tipo = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
+                printf(
+                    '<li class="fnh-source-item"><a href="%s"><span class="fnh-source-nombre">%s</span>%s%s</a></li>',
+                    esc_url((string) get_permalink($post)),
+                    esc_html((string) get_the_title($post)),
+                    !empty($idiomas) ? '<span class="fnh-source-idiomas">' . esc_html(implode(', ', array_map('strval', $idiomas))) . '</span>' : '',
+                    $tipo !== '' ? '<span class="fnh-source-tipo">' . esc_html($tipo) . '</span>' : ''
+                );
+            }
+            echo '</ul>';
+        }
+        ?></div><?php
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Página Sobre: presentación del proyecto con los principios
+     * irrenunciables del manifiesto. Texto estático, editable desde
+     * WP admin si hace falta retoque puntual.
+     */
+    public static function renderSobre($atribs = [], $contenido = null): string
+    {
+        ob_start();
+        ?><div class="fnh-sobre">
+            <section class="fnh-sobre-hero">
+                <h2><?php esc_html_e('Puerta de entrada común', 'flavor-news-hub'); ?></h2>
+                <p><?php esc_html_e('Flavor News Hub es un agregador de medios alternativos y un directorio de colectivos organizados. Dos cosas que suelen vivir en pestañas distintas del navegador y que aquí conviven en la misma app: informarte y actuar.', 'flavor-news-hub'); ?></p>
+            </section>
+
+            <section class="fnh-sobre-bloque">
+                <h3><?php esc_html_e('Principios irrenunciables', 'flavor-news-hub'); ?></h3>
+                <ol class="fnh-sobre-principios">
+                    <li><strong><?php esc_html_e('Sin algoritmo de engagement.', 'flavor-news-hub'); ?></strong> <?php esc_html_e('El orden es cronológico. Nunca un feed optimizado para que te quedes más.', 'flavor-news-hub'); ?></li>
+                    <li><strong><?php esc_html_e('Sin tracking, sin publicidad, sin telemetría.', 'flavor-news-hub'); ?></strong> <?php esc_html_e('Ni propia ni de terceros. Ni Analytics, ni Crashlytics, ni píxeles.', 'flavor-news-hub'); ?></li>
+                    <li><strong><?php esc_html_e('Sin dark patterns.', 'flavor-news-hub'); ?></strong> <?php esc_html_e('La app debería poder no abrirse en una semana y seguir siendo útil cuando vuelvas.', 'flavor-news-hub'); ?></li>
+                    <li><strong><?php esc_html_e('Transparencia editorial.', 'flavor-news-hub'); ?></strong> <?php esc_html_e('Cada medio expone quién lo posee, cómo se financia y qué línea editorial declara.', 'flavor-news-hub'); ?></li>
+                    <li><strong><?php esc_html_e('Apropiabilidad.', 'flavor-news-hub'); ?></strong> <?php esc_html_e('AGPL-3.0. Cualquier colectivo puede autohospedar su instancia sin pedir permiso.', 'flavor-news-hub'); ?></li>
+                    <li><strong><?php esc_html_e('Multilingüe desde el día 1.', 'flavor-news-hub'); ?></strong> <?php esc_html_e('Castellano, catalán, euskera y gallego como idiomas de primera clase. Inglés como cuarto.', 'flavor-news-hub'); ?></li>
+                </ol>
+            </section>
+
+            <section class="fnh-sobre-bloque">
+                <h3><?php esc_html_e('Qué no es', 'flavor-news-hub'); ?></h3>
+                <ul class="fnh-sobre-lista-plana">
+                    <li><?php esc_html_e('Una red social. No hay perfiles, ni likes, ni comentarios.', 'flavor-news-hub'); ?></li>
+                    <li><?php esc_html_e('Un negocio publicitario. No hay anuncios, ni hoy ni nunca.', 'flavor-news-hub'); ?></li>
+                    <li><?php esc_html_e('Un monopolio. Cualquiera puede hacer fork y montar su propia instancia.', 'flavor-news-hub'); ?></li>
+                </ul>
+            </section>
+
+            <section class="fnh-sobre-bloque">
+                <h3><?php esc_html_e('Cómo colaborar', 'flavor-news-hub'); ?></h3>
+                <p><?php esc_html_e('El código es libre y está en GitHub. Cualquier aportación —proponer nuevas fuentes, reportar bugs, traducir, documentar— se hace desde allí.', 'flavor-news-hub'); ?></p>
+                <p><a class="fnh-sobre-cta" href="https://github.com/JosuIru/flavor-news-hub" target="_blank" rel="noopener"><?php esc_html_e('Repositorio en GitHub', 'flavor-news-hub'); ?> →</a></p>
+            </section>
+        </div><?php
+        return (string) ob_get_clean();
     }
 }
