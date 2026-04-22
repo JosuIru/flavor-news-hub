@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
+import '../../../core/providers/api_provider.dart';
+import '../../videos/data/videos_provider.dart';
 import '../data/tv_provider.dart';
 
 /// Pestaña "TV" del shell: canales de TV (medios con
@@ -90,12 +92,18 @@ class _MediosTvBody extends ConsumerWidget {
   }
 }
 
-class _TileTv extends StatelessWidget {
+/// Tarjeta de un canal: tap "enciende el canal" (modo TV 24h —
+/// arranca el reproductor con el vídeo más reciente y va pasando
+/// al siguiente automáticamente gracias al autoplay de
+/// ReproductorVideoScreen filtrado por el source). El botón info
+/// del trailing abre la ficha editorial del canal para quien quiera
+/// ver datos del medio sin ponerse a mirarlo.
+class _TileTv extends ConsumerWidget {
   const _TileTv({required this.source});
   final Source source;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final esquema = Theme.of(context).colorScheme;
     final subtitulo = [
       if (source.territory.isNotEmpty) source.territory,
@@ -108,9 +116,42 @@ class _TileTv extends StatelessWidget {
       ),
       title: Text(source.name),
       subtitle: subtitulo.isEmpty ? null : Text(subtitulo),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push('/sources/${source.id}'),
+      trailing: IconButton(
+        icon: const Icon(Icons.info_outline),
+        tooltip: 'Ficha del canal',
+        onPressed: () => context.push('/sources/${source.id}'),
+      ),
+      onTap: () => _encenderCanal(context, ref),
     );
+  }
+
+  Future<void> _encenderCanal(BuildContext context, WidgetRef ref) async {
+    // Setear el filtro antes de navegar es esencial: el reproductor
+    // al terminar un vídeo lee `videosProvider`, que usa estos
+    // filtros, y así el "siguiente" es otro vídeo del mismo canal.
+    ref.read(filtrosVideosProvider.notifier).state =
+        FiltrosVideos.vacios.conSource(source.id);
+
+    final api = ref.read(flavorNewsApiProvider);
+    try {
+      final pagina = await api.fetchItems(perPage: 1, source: source.id);
+      if (!context.mounted) return;
+      if (pagina.items.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Este canal no tiene vídeos disponibles aún.'),
+          ),
+        );
+        return;
+      }
+      context.push('/videos/play/${pagina.items.first.id}');
+    } catch (_) {
+      if (!context.mounted) return;
+      // Fallback: abrimos la ficha del canal, donde el usuario puede
+      // al menos ver el canal e intentar entrar por el botón "Ver
+      // vídeos".
+      context.push('/sources/${source.id}');
+    }
   }
 }
 
