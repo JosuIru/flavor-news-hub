@@ -24,6 +24,7 @@ import '../../features/videos/presentation/reproductor_video_screen.dart';
 import '../../features/videos/presentation/videos_screen.dart';
 import '../../features/sources/presentation/source_detail_screen.dart';
 import '../../features/sources/presentation/source_submit_screen.dart';
+import '../../features/tv/presentation/tv_screen.dart';
 
 /// Configuración de rutas con `go_router`.
 ///
@@ -55,6 +56,10 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/radios',
             pageBuilder: (context, state) => const NoTransitionPage(child: AudioScreen()),
+          ),
+          GoRoute(
+            path: '/tv',
+            pageBuilder: (context, state) => const NoTransitionPage(child: TvScreen()),
           ),
           GoRoute(
             path: '/collectives',

@@ -24,11 +24,12 @@ class ShellScreen extends ConsumerWidget {
   final Widget child;
   final String rutaActual;
 
-  static const List<String> _rutasPorIndice = ['/', '/audio', '/collectives', '/settings'];
+  static const List<String> _rutasPorIndice = ['/', '/audio', '/tv', '/collectives', '/settings'];
 
   int _indiceDesdeRuta(String ruta) {
-    if (ruta.startsWith('/settings')) return 3;
-    if (ruta.startsWith('/collectives')) return 2;
+    if (ruta.startsWith('/settings')) return 4;
+    if (ruta.startsWith('/collectives')) return 3;
+    if (ruta.startsWith('/tv')) return 2;
     // `/radios` se queda como alias histórico de `/audio` para no romper
     // los deep-links que ya existieran; el shell los trata igual.
     if (ruta.startsWith('/audio') || ruta.startsWith('/radios')) return 1;
@@ -64,6 +65,11 @@ class ShellScreen extends ConsumerWidget {
                 icon: const Icon(Icons.headphones_outlined),
                 selectedIcon: const Icon(Icons.headphones),
                 label: textos.tabAudio,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.tv_outlined),
+                selectedIcon: const Icon(Icons.tv),
+                label: textos.tabTv,
               ),
               NavigationDestination(
                 icon: const Icon(Icons.groups_outlined),
