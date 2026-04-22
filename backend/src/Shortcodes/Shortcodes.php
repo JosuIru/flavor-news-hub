@@ -68,10 +68,14 @@ final class Shortcodes
         .fnh-radios-lista .fnh-radio{border:1px solid #ececec;border-radius:8px;padding:10px}
         .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
         .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
-        .fnh-landing{display:flex;flex-direction:column;gap:3rem;padding:1rem 0}
-        .fnh-landing .fnh-hero{text-align:center;padding:2rem 0 1rem;border-bottom:1px solid #ececec}
-        .fnh-landing .fnh-hero h1{font-size:2.2em;margin:0 0 .4em}
+        .fnh-landing{display:flex;flex-direction:column;gap:3rem;padding:1rem 1.25rem;max-width:1100px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111}
+        .fnh-landing *{box-sizing:border-box}
+        .fnh-landing h1,.fnh-landing h2,.fnh-landing h3{font-family:inherit;color:#111;font-weight:700}
+        .fnh-landing a{color:inherit}
+        .fnh-landing .fnh-hero{text-align:center;padding:2rem 0 1rem;border-bottom:1px solid #ececec;margin:0}
+        .fnh-landing .fnh-hero h1{font-size:2.2em;margin:0 0 .4em;border:0;padding:0}
         .fnh-landing .fnh-hero .fnh-lema{font-size:1.15em;color:#555;max-width:42ch;margin:0 auto}
+        .fnh-landing .fnh-bloque{margin:0}
         .fnh-landing .fnh-bloque h2{margin:0 0 1rem;font-size:1.4em;border-bottom:2px solid #111;padding-bottom:.3em;display:inline-block}
         .fnh-landing .fnh-ver-mas{margin-top:.75rem;text-align:right}
         .fnh-landing .fnh-ver-mas a{color:#555;text-decoration:none;font-size:.92em}
@@ -461,8 +465,12 @@ final class Shortcodes
         $videoDestacado = self::obtenerItemVideoCCAleatorio();
 
         ob_start();
-        ?>
-        <div class="fnh-landing">
+        // `not-prose` neutraliza los estilos de Tailwind Typography que
+        // aplican algunos temas (Flavor Starter, p.ej.) sobre
+        // `.entry-content`, y que machacarían nuestros tamaños/márgenes.
+        // Sin whitespace antes del primer tag para que wpautop no meta
+        // un `<p>` alrededor que rompa el HTML.
+        ?><div class="fnh-landing not-prose">
             <section class="fnh-hero">
                 <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
                 <p class="fnh-lema"><?php esc_html_e('Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados).', 'flavor-news-hub'); ?></p>
@@ -554,8 +562,7 @@ final class Shortcodes
                     &nbsp;·&nbsp; <?php esc_html_e('Licencia AGPL 3.0', 'flavor-news-hub'); ?>
                 </p>
             </section>
-        </div>
-        <?php
+        </div><?php
         return (string) ob_get_clean();
     }
 
