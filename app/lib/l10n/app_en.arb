@@ -1,9 +1,7 @@
 {
   "@@locale": "en",
-
   "appName": "Flavor News Hub",
   "appTagline": "Alternative media and collectives organising",
-
   "tabFeed": "Headlines",
   "tabAudio": "Audio",
   "tabRadios": "Radios",
@@ -32,27 +30,33 @@
   "opmlImportHint": "Paste here the OPML content from another aggregator.",
   "opmlImportSuccess": "Imported {count} sources.",
   "@opmlImportSuccess": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "opmlImportEmpty": "No valid sources found in the OPML.",
   "privacyPolicyTitle": "Privacy policy",
   "videoDescription": "Description",
   "videoOpenExternal": "Open on {platform}",
   "@videoOpenExternal": {
-    "placeholders": { "platform": { "type": "String" } }
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
   },
   "videoChannelWebsite": "Channel website",
   "videoPlatformYoutube": "YouTube",
   "videoPlatformPeertube": "PeerTube",
   "videoPlatformExternal": "browser",
   "videoCommentsHint": "Comments are available on the original platform.",
-
   "feedTitle": "Headlines",
   "feedEmptyWithFilters": "No headline matches the active filters. Clear them to see everything.",
   "feedEmpty": "No news yet.",
   "feedLoading": "Loading headlines…",
   "feedError": "Could not load the feed.",
-
   "filtersTitle": "Filters",
   "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "By topic",
@@ -60,11 +64,12 @@
   "filterByLanguage": "By language",
   "filtersClear": "Clear filters",
   "filtersApply": "Apply",
-
   "itemOpenInSource": "Read on {sourceName}",
   "@itemOpenInSource": {
     "placeholders": {
-      "sourceName": { "type": "String" }
+      "sourceName": {
+        "type": "String"
+      }
     }
   },
   "itemShare": "Share",
@@ -79,7 +84,11 @@
   "tusInteresesEmptyHelp": "Use the lightbulb button (💡) on each item to mark it useful. Here you'll see a summary of your most recurrent topics and outlets — nothing leaves your device.",
   "tusInteresesCount": "{count, plural, one{{count} headline marked useful} other{{count} headlines marked useful}}",
   "@tusInteresesCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "tusInteresesTopTopics": "Topics you mark most",
   "tusInteresesTopSources": "Outlets you mark most",
@@ -95,7 +104,6 @@
   "itemOrganizingTitle": "Who's organising around this?",
   "itemOrganizingEmpty": "No verified collectives yet in this directory for these topics. If your collective fits, you can submit it.",
   "itemOrganizingSeeAll": "See all",
-
   "sourceTitle": "Source",
   "sourceListNews": "See this medium's news",
   "sourceListVideos": "See videos from this channel",
@@ -108,15 +116,12 @@
   "sourceTerritory": "Territory",
   "sourceLanguages": "Languages",
   "sourceWebsite": "Website",
-
   "directoryTitle": "Collectives",
   "directoryEmpty": "No verified collectives yet in this instance.",
   "directoryAddCta": "Is your collective missing? Add it",
-
   "collectiveVisitWebsite": "Visit website",
   "collectiveFlavorCommunity": "Community on Flavor",
   "collectiveShare": "Share",
-
   "submitTitle": "Submit a collective",
   "submitName": "Collective name",
   "submitDescription": "Description",
@@ -132,7 +137,6 @@
   "submitRequiredName": "Name is required.",
   "submitRequiredDescription": "Description is required.",
   "submitRequiredEmail": "A valid contact email is required.",
-
   "settingsTitle": "Settings",
   "settingsInterfaceLanguage": "Interface language",
   "settingsInterfaceLanguageSystem": "Follow system",
@@ -209,7 +213,6 @@
   "musicGenresHeader": "Genres",
   "musicNewHeader": "Latest uploads",
   "musicNewEmpty": "Nothing new right now.",
-
   "personalSourcesTitle": "My sources",
   "personalSourcesEmpty": "You haven't added any personal source yet.",
   "personalSourcesEmptyHelp": "Sources you add here stay on your phone and their headlines are mixed into the main feed.",
@@ -232,7 +235,11 @@
   "personalSourcesImportInvalid": "Clipboard content is not a valid list.",
   "personalSourcesImportedSnackbar": "Imported {count} sources.",
   "@personalSourcesImportedSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "personalSourcesNote": "Headlines for these sources are fetched directly from your phone on every refresh. Nothing is shared with the server.",
   "personalSourcesCategoryReading": "Reading",
@@ -241,7 +248,6 @@
   "personalSourcesDiscoverFeed": "Auto-discover feed",
   "personalSourcesDiscoverNothing": "Couldn't find a feed at that URL. Paste it directly if you know it.",
   "personalSourcesDiscoverPickerTitle": "Multiple feeds found",
-
   "sourceSubmitTitle": "Propose a source",
   "sourceSubmitIntro": "Suggest a source (website, podcast, video channel, Mastodon account…). The editorial team will review it before activating.",
   "sourceSubmitName": "Source name",
@@ -256,18 +262,15 @@
   "sourceSubmitSuccess": "Thanks. We'll review the submission; it'll appear once verified.",
   "sourceSubmitRequiredFeedUrl": "Feed URL is required.",
   "sourceSubmitInvalidFeedUrl": "Feed URL must start with http:// or https://",
-
   "aboutTitle": "About",
   "aboutManifestoHeader": "What this is",
   "aboutManifestoBody": "A small tool to break the loop between learning about something and being able to do something about it. No engagement algorithm, no tracking, no ads. AGPL-3.0.",
   "aboutRepository": "Repository",
   "aboutLicense": "License",
-
   "commonBack": "Back",
   "commonRetry": "Retry",
   "commonClose": "Close",
   "commonCancel": "Cancel",
-
   "searchTooltip": "Search",
   "searchHint": "Search news, sources, radios…",
   "searchPromptHint": "Type to search across the app.",
@@ -276,15 +279,24 @@
   "searchSectionSources": "Sources",
   "searchSectionRadios": "Radios",
   "searchSectionCollectives": "Collectives",
-
   "radioWebsite": "Website",
   "radioPrograms": "Programmes",
   "radioProgramsEmpty": "No programmes in the feed.",
   "radioProgramsFetchError": "Couldn't load the programmes feed.",
-
   "flavorActivityHeader": "Activity on Flavor",
   "flavorActivityEvents": "Events",
   "flavorActivityContent": "Catalogue",
   "flavorActivityBoard": "Board",
-  "flavorActivityEmpty": "This node hasn't published any public activity yet."
+  "flavorActivityEmpty": "This node hasn't published any public activity yet.",
+  "updateTitle": "New version {version} available",
+  "@updateTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateBodyGeneric": "An update is available. Download it for the latest fixes and features.",
+  "updateDownload": "Download",
+  "updateDismiss": "Not now"
 }

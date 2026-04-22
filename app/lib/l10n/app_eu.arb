@@ -1,9 +1,7 @@
 {
   "@@locale": "eu",
-
   "appName": "Flavor News Hub",
   "appTagline": "Hedabide alternatiboak eta antolatzen diren kolektiboak",
-
   "tabFeed": "Titularrak",
   "tabAudio": "Audioa",
   "tabRadios": "Irratiak",
@@ -92,27 +90,33 @@
   "opmlImportHint": "Itsatsi hemen beste agregatzaile baten OPML edukia.",
   "opmlImportSuccess": "{count} iturri inportatuta.",
   "@opmlImportSuccess": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "opmlImportEmpty": "Ez da OPML-n iturri baliodunik aurkitu.",
   "privacyPolicyTitle": "Pribatutasun-politika",
   "videoDescription": "Deskribapena",
   "videoOpenExternal": "Ikusi {platform}-en",
   "@videoOpenExternal": {
-    "placeholders": { "platform": { "type": "String" } }
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
   },
   "videoChannelWebsite": "Kanalaren webgunea",
   "videoPlatformYoutube": "YouTube",
   "videoPlatformPeertube": "PeerTube",
   "videoPlatformExternal": "nabigatzailea",
   "videoCommentsHint": "Iruzkinak jatorrizko plataforman ikus daitezke.",
-
   "feedTitle": "Titularrak",
   "feedEmptyWithFilters": "Ez dago iragazki aktiboekin bat datorren titularrik. Garbitu denak ikusteko.",
   "feedEmpty": "Oraindik ez dago kargatutako albisterik.",
   "feedLoading": "Titularrak kargatzen…",
   "feedError": "Ezin izan da jarioa kargatu.",
-
   "filtersTitle": "Iragazkiak",
   "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "Gaiaren arabera",
@@ -120,11 +124,12 @@
   "filterByLanguage": "Hizkuntzaren arabera",
   "filtersClear": "Garbitu iragazkiak",
   "filtersApply": "Aplikatu",
-
   "itemOpenInSource": "Irakurri {sourceName}-en",
   "@itemOpenInSource": {
     "placeholders": {
-      "sourceName": { "type": "String" }
+      "sourceName": {
+        "type": "String"
+      }
     }
   },
   "itemShare": "Partekatu",
@@ -139,7 +144,11 @@
   "tusInteresesEmptyHelp": "Erabili bonbilla botoia (💡) albiste bakoitzean baliagarri gisa markatzeko. Hemen zure gai eta hedabide errekurrenteenen laburpena ikusiko duzu — ezer ez da zerbitzarira bidaltzen.",
   "tusInteresesCount": "{count, plural, one{{count} titular baliagarri gisa markatuta} other{{count} titular baliagarri gisa markatuta}}",
   "@tusInteresesCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "tusInteresesTopTopics": "Gehien interesatzen zaizkizun gaiak",
   "tusInteresesTopSources": "Gehien interesatzen zaizkizun hedabideak",
@@ -155,7 +164,6 @@
   "itemOrganizingTitle": "Nor ari da horren inguruan antolatzen?",
   "itemOrganizingEmpty": "Oraindik ez dago kolektibo egiaztaturik gai hauentzako. Zure kolektiboa sartzen bada, alta eman dezakezu.",
   "itemOrganizingSeeAll": "Ikusi guztiak",
-
   "sourceTitle": "Hedabidea",
   "sourceListNews": "Ikusi hedabide honen albisteak",
   "sourceListVideos": "Ikusi kanal honen bideoak",
@@ -168,15 +176,12 @@
   "sourceTerritory": "Lurraldea",
   "sourceLanguages": "Hizkuntzak",
   "sourceWebsite": "Webgunea",
-
   "directoryTitle": "Kolektiboak",
   "directoryEmpty": "Oraindik ez dago egiaztatutako kolektiborik instantzia honetan.",
   "directoryAddCta": "Zure kolektiboa ez dago? Gehitu",
-
   "collectiveVisitWebsite": "Bisitatu webgunea",
   "collectiveFlavorCommunity": "Komunitatea Flavor-en",
   "collectiveShare": "Partekatu",
-
   "submitTitle": "Kolektibo bat eman alta",
   "submitName": "Kolektiboaren izena",
   "submitDescription": "Deskribapena",
@@ -192,7 +197,6 @@
   "submitRequiredName": "Izena derrigorrezkoa da.",
   "submitRequiredDescription": "Deskribapena derrigorrezkoa da.",
   "submitRequiredEmail": "Harremanetarako e-posta baliagarria behar da.",
-
   "settingsTitle": "Ezarpenak",
   "settingsInterfaceLanguage": "Interfazearen hizkuntza",
   "settingsInterfaceLanguageSystem": "Sistemari jarraitu",
@@ -209,7 +213,6 @@
   "settingsProposeSourceSubtitle": "Hedabide alternatiboren bat falta zaizu? Proposa ezazu berrikusteko.",
   "settingsMyMedia": "Nire hedabideak",
   "settingsMyMediaSubtitle": "Zure RSS, podcast edo bideo-kanalak. Telefonoan bakarrik.",
-
   "personalSourcesTitle": "Nire hedabideak",
   "personalSourcesEmpty": "Oraindik ez duzu hedabiderik erantsi.",
   "personalSourcesEmptyHelp": "Hemen erantsitako hedabideak zure telefonoan gordetzen dira eta euren titularrak jario nagusiarekin nahasten dira.",
@@ -232,7 +235,11 @@
   "personalSourcesImportInvalid": "Arbeleko edukia ez da zerrenda baliagarria.",
   "personalSourcesImportedSnackbar": "{count} iturri inportatu dira.",
   "@personalSourcesImportedSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "personalSourcesNote": "Hedabide hauen titularrak zure telefonotik zuzenean deskargatzen dira freskatze bakoitzean. Ezer ez da zerbitzariarekin partekatzen.",
   "personalSourcesCategoryReading": "Irakurketa",
@@ -241,7 +248,6 @@
   "personalSourcesDiscoverFeed": "Bilatu jarioa automatikoki",
   "personalSourcesDiscoverNothing": "Ez dugu jariorik aurkitu URL horretan. Itsatsi zuzenean ezagutzen baduzu.",
   "personalSourcesDiscoverPickerTitle": "Hainbat jario aurkitu ditugu",
-
   "sourceSubmitTitle": "Hedabide bat proposatu",
   "sourceSubmitIntro": "Hedabide bat proposatu (webgunea, podcast-a, bideo-kanala, Mastodon kontua…). Talde editorialak berrikusiko du aktibatu aurretik.",
   "sourceSubmitName": "Hedabidearen izena",
@@ -256,18 +262,15 @@
   "sourceSubmitSuccess": "Eskerrik asko. Proposamena berrikusiko dugu eta hedabidea egiaztatutakoan agertuko da.",
   "sourceSubmitRequiredFeedUrl": "Jarioaren URLa beharrezkoa da.",
   "sourceSubmitInvalidFeedUrl": "Jarioaren URLak http:// edo https:// izan behar du hasieran",
-
   "aboutTitle": "Honi buruz",
   "aboutManifestoHeader": "Zer da hau",
   "aboutManifestoBody": "Informatzea eta ekitea arteko zirkuitua haustera bideratutako tresna sinple bat. Engagement algoritmorik gabe, tracking gabe, publizitaterik gabe. AGPL-3.0.",
   "aboutRepository": "Biltegia",
   "aboutLicense": "Lizentzia",
-
   "commonBack": "Itzuli",
   "commonRetry": "Saiatu berriro",
   "commonClose": "Itxi",
   "commonCancel": "Utzi",
-
   "searchTooltip": "Bilatu",
   "searchHint": "Bilatu albisteetan, hedabideetan, irratietan…",
   "searchPromptHint": "Idatzi app osoan bilatzeko.",
@@ -276,15 +279,24 @@
   "searchSectionSources": "Hedabideak",
   "searchSectionRadios": "Irratiak",
   "searchSectionCollectives": "Kolektiboak",
-
   "radioWebsite": "Webgunea",
   "radioPrograms": "Programak",
   "radioProgramsEmpty": "Jarioan ez dago programarik.",
   "radioProgramsFetchError": "Ezin izan da programen jarioa kargatu.",
-
   "flavorActivityHeader": "Jarduera Flavor-en",
   "flavorActivityEvents": "Ekitaldiak",
   "flavorActivityContent": "Katalogoa",
   "flavorActivityBoard": "Iragarki-taula",
-  "flavorActivityEmpty": "Nodo honek ez du jarduera publikorik orain."
+  "flavorActivityEmpty": "Nodo honek ez du jarduera publikorik orain.",
+  "updateTitle": "{version} bertsio berria eskuragarri",
+  "@updateTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateBodyGeneric": "Eguneratzea eskuragarri dago. Deskargatu azken hobekuntzak izateko.",
+  "updateDownload": "Deskargatu",
+  "updateDismiss": "Orain ez"
 }

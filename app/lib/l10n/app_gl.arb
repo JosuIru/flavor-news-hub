@@ -1,9 +1,7 @@
 {
   "@@locale": "gl",
-
   "appName": "Flavor News Hub",
   "appTagline": "Medios alternativos e colectivos que se organizan",
-
   "tabFeed": "Titulares",
   "tabAudio": "Audio",
   "tabRadios": "Radios",
@@ -92,27 +90,33 @@
   "opmlImportHint": "Pega aquí o contido OPML doutro agregador.",
   "opmlImportSuccess": "Importadas {count} fontes.",
   "@opmlImportSuccess": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "opmlImportEmpty": "Non se atoparon fontes válidas no OPML.",
   "privacyPolicyTitle": "Política de privacidade",
   "videoDescription": "Descrición",
   "videoOpenExternal": "Ver en {platform}",
   "@videoOpenExternal": {
-    "placeholders": { "platform": { "type": "String" } }
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
   },
   "videoChannelWebsite": "Web da canle",
   "videoPlatformYoutube": "YouTube",
   "videoPlatformPeertube": "PeerTube",
   "videoPlatformExternal": "o navegador",
   "videoCommentsHint": "Os comentarios vense na plataforma orixinal.",
-
   "feedTitle": "Titulares",
   "feedEmptyWithFilters": "Ningún titular coincide cos filtros activos. Límpaos para ver todo.",
   "feedEmpty": "Aínda non hai novas cargadas.",
   "feedLoading": "Cargando titulares…",
   "feedError": "Non se puido cargar a canle.",
-
   "filtersTitle": "Filtros",
   "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "Por temática",
@@ -120,11 +124,12 @@
   "filterByLanguage": "Por idioma",
   "filtersClear": "Limpar filtros",
   "filtersApply": "Aplicar",
-
   "itemOpenInSource": "Ler en {sourceName}",
   "@itemOpenInSource": {
     "placeholders": {
-      "sourceName": { "type": "String" }
+      "sourceName": {
+        "type": "String"
+      }
     }
   },
   "itemShare": "Compartir",
@@ -139,7 +144,11 @@
   "tusInteresesEmptyHelp": "Usa o botón da lámpada (💡) en cada nova para marcala útil. Aquí verás un resumo coas túas temáticas e medios máis recorrentes — nada viaxa ao servidor.",
   "tusInteresesCount": "{count, plural, one{{count} titular marcado útil} other{{count} titulares marcados útiles}}",
   "@tusInteresesCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "tusInteresesTopTopics": "Temáticas que máis che interesan",
   "tusInteresesTopSources": "Medios que máis che interesan",
@@ -155,7 +164,6 @@
   "itemOrganizingTitle": "Quen se organiza sobre isto?",
   "itemOrganizingEmpty": "Aínda non hai colectivos verificados neste directorio sobre estas temáticas. Se o teu colectivo encaixa, podes dalo de alta.",
   "itemOrganizingSeeAll": "Ver todos",
-
   "sourceTitle": "Medio",
   "sourceListNews": "Ver novas deste medio",
   "sourceListVideos": "Ver vídeos desta canle",
@@ -168,15 +176,12 @@
   "sourceTerritory": "Territorio",
   "sourceLanguages": "Idiomas",
   "sourceWebsite": "Web",
-
   "directoryTitle": "Colectivos",
   "directoryEmpty": "Aínda non hai colectivos verificados nesta instancia.",
   "directoryAddCta": "O teu colectivo non está aquí? Engádeo",
-
   "collectiveVisitWebsite": "Visitar web",
   "collectiveFlavorCommunity": "Comunidade en Flavor",
   "collectiveShare": "Compartir",
-
   "submitTitle": "Dar de alta un colectivo",
   "submitName": "Nome do colectivo",
   "submitDescription": "Descrición",
@@ -192,7 +197,6 @@
   "submitRequiredName": "O nome é obrigatorio.",
   "submitRequiredDescription": "A descrición é obrigatoria.",
   "submitRequiredEmail": "Fai falta un email de contacto válido.",
-
   "settingsTitle": "Axustes",
   "settingsInterfaceLanguage": "Idioma da interface",
   "settingsInterfaceLanguageSystem": "Seguir sistema",
@@ -209,7 +213,6 @@
   "settingsProposeSourceSubtitle": "Bótase de menos un medio alternativo? Propóno para revisión.",
   "settingsMyMedia": "Os meus medios",
   "settingsMyMediaSubtitle": "As túas propias fontes RSS, pódcast ou canles de vídeo. Só no teu teléfono.",
-
   "personalSourcesTitle": "Os meus medios",
   "personalSourcesEmpty": "Aínda non engadiches ningún medio propio.",
   "personalSourcesEmptyHelp": "Os medios que engadas aquí quedan no teu teléfono e os seus titulares mestúranse co feed principal.",
@@ -232,7 +235,11 @@
   "personalSourcesImportInvalid": "O contido do portapapeis non é unha lista válida.",
   "personalSourcesImportedSnackbar": "Importáronse {count} fontes.",
   "@personalSourcesImportedSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "personalSourcesNote": "Os titulares destes medios descárganse directamente dende o teu teléfono en cada refresco. Non se comparte nada co servidor.",
   "personalSourcesCategoryReading": "Lectura",
@@ -241,7 +248,6 @@
   "personalSourcesDiscoverFeed": "Buscar canle automaticamente",
   "personalSourcesDiscoverNothing": "Non atopamos ningunha canle nesa URL. Pégaa directamente se a coñeces.",
   "personalSourcesDiscoverPickerTitle": "Atopamos varias canles",
-
   "sourceSubmitTitle": "Propor un medio",
   "sourceSubmitIntro": "Propón un medio (web, podcast, canle de vídeo, conta de Mastodon…). O equipo editorial revisarao antes de activalo.",
   "sourceSubmitName": "Nome do medio",
@@ -256,18 +262,15 @@
   "sourceSubmitSuccess": "Grazas. Revisaremos a proposta e o medio aparecerá unha vez verificado.",
   "sourceSubmitRequiredFeedUrl": "Fai falta a URL do feed.",
   "sourceSubmitInvalidFeedUrl": "A URL do feed debe comezar por http:// ou https://",
-
   "aboutTitle": "Acerca de",
   "aboutManifestoHeader": "Que é isto",
   "aboutManifestoBody": "Unha ferramenta sinxela para romper o circuíto entre informarse e actuar. Sen algoritmo de engagement, sen tracking, sen publicidade. AGPL-3.0.",
   "aboutRepository": "Repositorio",
   "aboutLicense": "Licenza",
-
   "commonBack": "Volver",
   "commonRetry": "Reintentar",
   "commonClose": "Pechar",
   "commonCancel": "Cancelar",
-
   "searchTooltip": "Buscar",
   "searchHint": "Buscar en novas, medios, radios…",
   "searchPromptHint": "Escribe para buscar en toda a app.",
@@ -276,15 +279,24 @@
   "searchSectionSources": "Medios",
   "searchSectionRadios": "Radios",
   "searchSectionCollectives": "Colectivos",
-
   "radioWebsite": "Web",
   "radioPrograms": "Programas",
   "radioProgramsEmpty": "Non hai programas no feed.",
   "radioProgramsFetchError": "Non se puido cargar o feed de programas.",
-
   "flavorActivityHeader": "Actividade en Flavor",
   "flavorActivityEvents": "Eventos",
   "flavorActivityContent": "Catálogo",
   "flavorActivityBoard": "Taboleiro",
-  "flavorActivityEmpty": "Este nodo non publica actividade pública agora mesmo."
+  "flavorActivityEmpty": "Este nodo non publica actividade pública agora mesmo.",
+  "updateTitle": "Nova versión {version} dispoñible",
+  "@updateTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateBodyGeneric": "Hai unha actualización dispoñible. Descárgaa para ter as últimas novidades.",
+  "updateDownload": "Descargar",
+  "updateDismiss": "Agora non"
 }

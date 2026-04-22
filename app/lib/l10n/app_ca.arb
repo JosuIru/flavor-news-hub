@@ -1,9 +1,7 @@
 {
   "@@locale": "ca",
-
   "appName": "Flavor News Hub",
   "appTagline": "Mitjans alternatius i col·lectius que s'organitzen",
-
   "tabFeed": "Titulars",
   "tabAudio": "Àudio",
   "tabRadios": "Ràdios",
@@ -32,27 +30,33 @@
   "opmlImportHint": "Enganxa aquí el contingut OPML d'un altre agregador.",
   "opmlImportSuccess": "Importades {count} fonts.",
   "@opmlImportSuccess": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "opmlImportEmpty": "No s'han trobat fonts vàlides a l'OPML.",
   "privacyPolicyTitle": "Política de privacitat",
   "videoDescription": "Descripció",
   "videoOpenExternal": "Veure a {platform}",
   "@videoOpenExternal": {
-    "placeholders": { "platform": { "type": "String" } }
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
   },
   "videoChannelWebsite": "Web del canal",
   "videoPlatformYoutube": "YouTube",
   "videoPlatformPeertube": "PeerTube",
   "videoPlatformExternal": "el navegador",
   "videoCommentsHint": "Els comentaris es veuen a la plataforma original.",
-
   "feedTitle": "Titulars",
   "feedEmptyWithFilters": "Cap titular no coincideix amb els filtres actius. Neteja'ls per veure-ho tot.",
   "feedEmpty": "Encara no hi ha notícies carregades.",
   "feedLoading": "S'estan carregant els titulars…",
   "feedError": "No s'ha pogut carregar el canal.",
-
   "filtersTitle": "Filtres",
   "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "Per temàtica",
@@ -60,11 +64,12 @@
   "filterByLanguage": "Per idioma",
   "filtersClear": "Buida els filtres",
   "filtersApply": "Aplica",
-
   "itemOpenInSource": "Llegeix a {sourceName}",
   "@itemOpenInSource": {
     "placeholders": {
-      "sourceName": { "type": "String" }
+      "sourceName": {
+        "type": "String"
+      }
     }
   },
   "itemShare": "Comparteix",
@@ -79,7 +84,11 @@
   "tusInteresesEmptyHelp": "Fes servir el botó de la bombeta (💡) a cada notícia per marcar-la útil. Aquí veuràs un resum amb les teves temàtiques i mitjans més recurrents — res no surt del dispositiu.",
   "tusInteresesCount": "{count, plural, one{{count} titular marcat útil} other{{count} titulars marcats útils}}",
   "@tusInteresesCount": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "tusInteresesTopTopics": "Temàtiques que més t'interessen",
   "tusInteresesTopSources": "Mitjans que més t'interessen",
@@ -95,7 +104,6 @@
   "itemOrganizingTitle": "Qui s'organitza al voltant d'això?",
   "itemOrganizingEmpty": "Encara no hi ha col·lectius verificats en aquest directori per a aquestes temàtiques. Si el teu col·lectiu hi encaixa, pots donar-lo d'alta.",
   "itemOrganizingSeeAll": "Vés-hi tots",
-
   "sourceTitle": "Mitjà",
   "sourceListNews": "Veure les notícies d'aquest mitjà",
   "sourceListVideos": "Veure vídeos d'aquest canal",
@@ -108,15 +116,12 @@
   "sourceTerritory": "Territori",
   "sourceLanguages": "Idiomes",
   "sourceWebsite": "Web",
-
   "directoryTitle": "Col·lectius",
   "directoryEmpty": "Encara no hi ha col·lectius verificats en aquesta instància.",
   "directoryAddCta": "El teu col·lectiu no hi és? Afegeix-lo",
-
   "collectiveVisitWebsite": "Visita la web",
   "collectiveFlavorCommunity": "Comunitat a Flavor",
   "collectiveShare": "Comparteix",
-
   "submitTitle": "Dóna d'alta un col·lectiu",
   "submitName": "Nom del col·lectiu",
   "submitDescription": "Descripció",
@@ -132,7 +137,6 @@
   "submitRequiredName": "El nom és obligatori.",
   "submitRequiredDescription": "La descripció és obligatòria.",
   "submitRequiredEmail": "Cal un correu de contacte vàlid.",
-
   "settingsTitle": "Ajustaments",
   "settingsInterfaceLanguage": "Idioma de la interfície",
   "settingsInterfaceLanguageSystem": "Segueix el sistema",
@@ -209,7 +213,6 @@
   "musicGenresHeader": "Gèneres",
   "musicNewHeader": "Novetats",
   "musicNewEmpty": "No hi ha novetats ara mateix.",
-
   "personalSourcesTitle": "Els meus mitjans",
   "personalSourcesEmpty": "Encara no has afegit cap mitjà propi.",
   "personalSourcesEmptyHelp": "Els mitjans que afegeixis aquí es queden al teu telèfon i els seus titulars es barregen al canal principal.",
@@ -232,7 +235,11 @@
   "personalSourcesImportInvalid": "El contingut del porta-retalls no és una llista vàlida.",
   "personalSourcesImportedSnackbar": "Importades {count} fonts.",
   "@personalSourcesImportedSnackbar": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "personalSourcesNote": "Els titulars d'aquests mitjans es descarreguen directament des del teu telèfon a cada refresc. Res es comparteix amb el servidor.",
   "personalSourcesCategoryReading": "Lectura",
@@ -241,7 +248,6 @@
   "personalSourcesDiscoverFeed": "Cerca el canal automàticament",
   "personalSourcesDiscoverNothing": "No hem trobat cap canal en aquesta URL. Enganxa-la directament si la coneixes.",
   "personalSourcesDiscoverPickerTitle": "Hem trobat diversos canals",
-
   "sourceSubmitTitle": "Proposa un mitjà",
   "sourceSubmitIntro": "Suggereix un mitjà (web, podcast, canal de vídeo, compte de Mastodon…). L'equip editorial el revisarà abans d'activar-lo.",
   "sourceSubmitName": "Nom del mitjà",
@@ -256,18 +262,15 @@
   "sourceSubmitSuccess": "Gràcies. Revisarem la proposta i el mitjà apareixerà un cop verificat.",
   "sourceSubmitRequiredFeedUrl": "Cal l'URL del feed.",
   "sourceSubmitInvalidFeedUrl": "L'URL del feed ha de començar per http:// o https://",
-
   "aboutTitle": "Quant a",
   "aboutManifestoHeader": "Què és això",
   "aboutManifestoBody": "Una eina senzilla per trencar el cicle entre informar-se i actuar. Sense algorisme d'engagement, sense tracking, sense publicitat. AGPL-3.0.",
   "aboutRepository": "Repositori",
   "aboutLicense": "Llicència",
-
   "commonBack": "Torna",
   "commonRetry": "Reintenta",
   "commonClose": "Tanca",
   "commonCancel": "Cancel·la",
-
   "searchTooltip": "Cerca",
   "searchHint": "Cerca a notícies, mitjans, ràdios…",
   "searchPromptHint": "Escriu per cercar a tota l'app.",
@@ -276,15 +279,24 @@
   "searchSectionSources": "Mitjans",
   "searchSectionRadios": "Ràdios",
   "searchSectionCollectives": "Col·lectius",
-
   "radioWebsite": "Web",
   "radioPrograms": "Programes",
   "radioProgramsEmpty": "No hi ha programes al feed.",
   "radioProgramsFetchError": "No s'ha pogut carregar el feed de programes.",
-
   "flavorActivityHeader": "Activitat a Flavor",
   "flavorActivityEvents": "Esdeveniments",
   "flavorActivityContent": "Catàleg",
   "flavorActivityBoard": "Tauler",
-  "flavorActivityEmpty": "Aquest node no publica activitat pública ara mateix."
+  "flavorActivityEmpty": "Aquest node no publica activitat pública ara mateix.",
+  "updateTitle": "Nova versió {version} disponible",
+  "@updateTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateBodyGeneric": "Hi ha una actualització disponible. Descarrega-la per tenir les darreres novetats.",
+  "updateDownload": "Descarrega",
+  "updateDismiss": "Ara no"
 }

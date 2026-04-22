@@ -9,6 +9,7 @@ import 'core/providers/api_provider.dart';
 import 'features/audio/data/reproductor_episodio_notifier.dart';
 import 'features/radios/data/radios_favoritas_notifier.dart';
 import 'features/radios/data/reproductor_radio_notifier.dart';
+import 'features/actualizaciones/presentation/aviso_actualizacion.dart';
 import 'features/deep_links/deep_link_listener.dart';
 import 'features/share_intake/share_intake_listener.dart';
 import 'features/widgets/widget_favoritos_writer.dart';
@@ -68,7 +69,9 @@ class FlavorNewsHubApp extends ConsumerWidget {
           data: mediaQueryOriginal.copyWith(textScaler: TextScaler.linear(escalaFinal)),
           child: ShareIntakeListener(
             child: DeepLinkListener(
-              child: child ?? const SizedBox.shrink(),
+              child: AvisoActualizacion(
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         );

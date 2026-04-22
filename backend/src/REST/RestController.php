@@ -26,5 +26,6 @@ final class RestController
         CollectiveSubmitEndpoint::registrarRutas();
         SourceSubmitEndpoint::registrarRutas();
         RadiosEndpoint::registrarRutas();
+        AppUpdateEndpoint::registrarRutas();
     }
 }
