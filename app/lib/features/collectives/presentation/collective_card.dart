@@ -64,7 +64,7 @@ class CollectiveCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 4,
                 children: [
-                  for (final topic in colectivo.topics.take(3))
+                  for (final topic in colectivo.topics)
                     Chip(
                       label: Text(topic.name),
                       visualDensity: VisualDensity.compact,

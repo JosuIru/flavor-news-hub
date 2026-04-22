@@ -86,7 +86,7 @@ class ItemCard extends StatelessWidget {
                         spacing: 6,
                         runSpacing: 4,
                         children: [
-                          for (final topic in item.topics.take(3))
+                          for (final topic in item.topics)
                             ActionChip(
                               label: Text(topic.name),
                               onPressed: () => onTopicTap(topic.slug),
