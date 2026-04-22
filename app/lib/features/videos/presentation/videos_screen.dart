@@ -33,9 +33,48 @@ class VideosScreen extends ConsumerWidget {
     final asyncVideos = ref.watch(videosProvider);
 
     final filtros = ref.watch(filtrosVideosProvider);
+    // Cuando llegamos con filtro de canal (desde la ficha del medio
+    // o al encender un canal en TV), mostramos un back visible y el
+    // nombre del canal en el título. Si no, mantenemos la pantalla
+    // global sin leading — está dentro del shell con bottom nav.
+    final hayFiltroCanal = filtros.idSource != null;
+    String? nombreCanal;
+    if (hayFiltroCanal) {
+      final cargados = ref.watch(videosProvider).valueOrNull;
+      final primerVideoDelCanal = cargados?.firstWhere(
+        (v) => v.source?.id == filtros.idSource,
+        orElse: () => cargados.first,
+      );
+      nombreCanal = primerVideoDelCanal?.source?.name;
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(textos.videosTitle),
+        leading: hayFiltroCanal
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: textos.commonBack,
+                onPressed: () {
+                  // Salimos del modo "vídeos del canal": limpiamos el
+                  // filtro y volvemos al detalle del canal si lo hay en
+                  // el stack, si no a la pestaña TV.
+                  final idSource = filtros.idSource;
+                  ref.read(filtrosVideosProvider.notifier).state =
+                      FiltrosVideos.vacios;
+                  if (context.canPop()) {
+                    context.pop();
+                  } else if (idSource != null) {
+                    context.go('/sources/$idSource');
+                  } else {
+                    context.go('/tv');
+                  }
+                },
+              )
+            : null,
+        title: Text(
+          hayFiltroCanal && nombreCanal != null && nombreCanal.isNotEmpty
+              ? nombreCanal
+              : textos.videosTitle,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
