@@ -1548,5 +1548,422 @@
    "memoria-historica",
    "internacional"
   ]
+ },
+ {
+  "id": 7274,
+  "name": "Democracy Now!",
+  "slug": "democracy-now",
+  "feed_url": "https://www.democracynow.org/podcast-video.xml",
+  "feed_type": "podcast",
+  "website_url": "https://www.democracynow.org",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "tv_station",
+  "broadcast_format": [
+   "web",
+   "cable",
+   "satelite"
+  ],
+  "content_license": "cc-by-nc-nd-3.0-us",
+  "legal_note": "Licencia Creative Commons BY-NC-ND 3.0 US. Archivo completo desde 1996 disponible bajo esa licencia.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7275,
+  "name": "Kolektiva Media",
+  "slug": "kolektiva-media",
+  "feed_url": "https://kolektiva.media/feeds/videos.xml",
+  "feed_type": "rss",
+  "website_url": "https://kolektiva.media",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional",
+   "antirracismo",
+   "ecologismo"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "peertube",
+   "web"
+  ],
+  "content_license": "mixed",
+  "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7276,
+  "name": "La Veïnal TV",
+  "slug": "la-veinal-tv",
+  "feed_url": "https://www.laveinal.cat/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.laveinal.cat",
+  "territory": "Catalunya",
+  "languages": [
+   "ca"
+  ],
+  "topics": [],
+  "medium_type": "tv_station",
+  "broadcast_format": [
+   "web",
+   "tdt_sin_licencia"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7277,
+  "name": "Onda Color TV",
+  "slug": "onda-color-tv",
+  "feed_url": "https://ondacolor.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://ondacolor.org",
+  "territory": "Andalucía",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "migraciones",
+   "cultura"
+  ],
+  "medium_type": "tv_station",
+  "broadcast_format": [
+   "web",
+   "tdt_sin_licencia"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7278,
+  "name": "Blender Video",
+  "slug": "video-blender",
+  "feed_url": "https://video.blender.org/feeds/videos.xml",
+  "feed_type": "rss",
+  "website_url": "https://video.blender.org",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "peertube",
+   "web"
+  ],
+  "content_license": "cc-by-4.0",
+  "legal_note": "Blender Foundation. Todo el contenido bajo CC BY 4.0.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7279,
+  "name": "Framatube",
+  "slug": "framatube",
+  "feed_url": "https://framatube.org/feeds/videos.xml",
+  "feed_type": "rss",
+  "website_url": "https://framatube.org",
+  "territory": "Francia",
+  "languages": [
+   "fr"
+  ],
+  "topics": [
+   "tecnologia-soberana",
+   "cultura"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "peertube",
+   "web"
+  ],
+  "content_license": "mixed",
+  "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7280,
+  "name": "TILvids",
+  "slug": "tilvids",
+  "feed_url": "https://tilvids.com/feeds/videos.xml",
+  "feed_type": "rss",
+  "website_url": "https://tilvids.com",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "peertube",
+   "web"
+  ],
+  "content_license": "mixed",
+  "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7281,
+  "name": "Diode Zone",
+  "slug": "diode-zone",
+  "feed_url": "https://diode.zone/feeds/videos.xml",
+  "feed_type": "rss",
+  "website_url": "https://diode.zone",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "peertube",
+   "web"
+  ],
+  "content_license": "mixed",
+  "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7282,
+  "name": "The Real News Network",
+  "slug": "real-news-network",
+  "feed_url": "https://therealnews.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://therealnews.com",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional",
+   "laboral"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "Periodismo en vídeo independiente con sede en Baltimore. Todos los derechos reservados salvo indicación contraria en cada pieza.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7283,
+  "name": "Novara Media",
+  "slug": "novara-media",
+  "feed_url": "https://novaramedia.com/feed/",
+  "feed_type": "rss",
+  "website_url": "https://novaramedia.com",
+  "territory": "Reino Unido",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional",
+   "laboral"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7284,
+  "name": "Breakthrough News",
+  "slug": "breakthrough-news",
+  "feed_url": "https://breakthroughnews.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://breakthroughnews.org",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7285,
+  "name": "Al Jazeera English",
+  "slug": "al-jazeera-english",
+  "feed_url": "https://www.aljazeera.com/xml/rss/all.xml",
+  "feed_type": "rss",
+  "website_url": "https://www.aljazeera.com/english/",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web",
+   "cable",
+   "satelite"
+  ],
+  "content_license": "all-rights-reserved",
+  "ownership": "Financiación: Estado de Qatar (Qatar Media Corporation).",
+  "legal_note": "Financiación estatal: Estado de Qatar. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7286,
+  "name": "Telesur",
+  "slug": "telesur",
+  "feed_url": "https://www.telesurtv.net/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.telesurtv.net",
+  "territory": "Latinoamérica",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "tv_station",
+  "broadcast_format": [
+   "web",
+   "cable",
+   "satelite"
+  ],
+  "content_license": "all-rights-reserved",
+  "ownership": "Financiación: Estado de Venezuela (con participación histórica de Cuba, Nicaragua, Bolivia y Uruguay).",
+  "legal_note": "Financiación estatal: Estado de Venezuela. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7287,
+  "name": "Resumen Latinoamericano",
+  "slug": "resumen-latinoamericano",
+  "feed_url": "https://www.resumenlatinoamericano.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.resumenlatinoamericano.org",
+  "territory": "Latinoamérica",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7288,
+  "name": "Avispa Midia",
+  "slug": "avispa-midia",
+  "feed_url": "https://avispa.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://avispa.org",
+  "territory": "México",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional",
+   "ecologismo",
+   "antirracismo"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7289,
+  "name": "RT English",
+  "slug": "rt-english",
+  "feed_url": "https://www.rt.com/rss/",
+  "feed_type": "rss",
+  "website_url": "https://www.rt.com",
+  "territory": "Internacional",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web",
+   "cable",
+   "satelite"
+  ],
+  "content_license": "all-rights-reserved",
+  "ownership": "Financiación: Estado ruso (TV-Novosti).",
+  "legal_note": "Financiación estatal: Estado ruso. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7290,
+  "name": "HispanTV",
+  "slug": "hispantv",
+  "feed_url": "https://feeds.feedburner.com/hispantv",
+  "feed_type": "rss",
+  "website_url": "https://www.hispantv.com",
+  "territory": "Internacional",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web",
+   "satelite"
+  ],
+  "content_license": "all-rights-reserved",
+  "ownership": "Financiación: Estado iraní (IRIB).",
+  "legal_note": "Financiación estatal: Estado iraní. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
  }
 ]
