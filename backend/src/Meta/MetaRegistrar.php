@@ -112,6 +112,80 @@ final class MetaRegistrar
             'sanitize_callback' => 'rest_sanitize_boolean',
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
+
+        // `medium_type` es el tipo de medio (news, video, radio, tv_station),
+        // distinto de `feed_type` (rss/youtube/podcast...) que describe el
+        // transporte técnico. Una TV comunitaria puede publicar vía YouTube
+        // (feed_type=youtube) siendo conceptualmente una tv_station.
+        register_post_meta($tipoPostSource, '_fnh_medium_type', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => 'news',
+            'sanitize_callback' => [self::class, 'saneatTipoMedio'],
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        // Formatos en los que el medio emite/distribuye contenido. Útil
+        // para filtrar (p. ej. "TVs con TDT legal" o "solo PeerTube").
+        register_post_meta($tipoPostSource, '_fnh_broadcast_format', [
+            'type'              => 'array',
+            'single'            => true,
+            'default'           => [],
+            'show_in_rest'      => [
+                'schema' => [
+                    'type'  => 'array',
+                    'items' => ['type' => 'string'],
+                ],
+            ],
+            'sanitize_callback' => [self::class, 'saneatFormatosEmision'],
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        // Licencia declarada del contenido. Cadena vacía = no declarada.
+        // Sólo las CC explícitas habilitan embed en la pantalla "En directo".
+        register_post_meta($tipoPostSource, '_fnh_content_license', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => [self::class, 'saneatLicenciaContenido'],
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        // Nota breve de contexto legal/editorial. Campo educativo: aquí
+        // va, p. ej., "emite sin licencia de TDT porque España no ha
+        // convocado el concurso de frecuencias comunitarias desde 2010".
+        register_post_meta($tipoPostSource, '_fnh_legal_note', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'wp_kses_post',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPostSource, '_fnh_has_live_stream', [
+            'type'              => 'boolean',
+            'single'            => true,
+            'default'           => false,
+            'show_in_rest'      => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        // Permiso para embeber el stream en la app. Sólo `cc-license`
+        // habilita el embed por política del proyecto: no pedimos
+        // permisos por email; si un medio quiere entrar bajo written-permission
+        // es él quien contacta.
+        register_post_meta($tipoPostSource, '_fnh_live_stream_permit', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => 'none',
+            'sanitize_callback' => [self::class, 'saneatPermisoStream'],
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
     }
 
     private static function registrarMetaDeItem(): void
@@ -330,6 +404,71 @@ final class MetaRegistrar
         $tiposPermitidos = ['rss', 'atom', 'youtube', 'mastodon', 'podcast', 'video', 'flavor_platform'];
         $valorLimpio = sanitize_key((string) $valorEntrada);
         return in_array($valorLimpio, $tiposPermitidos, true) ? $valorLimpio : 'rss';
+    }
+
+    /**
+     * Tipo de medio (ortogonal al transporte del feed). Valor desconocido
+     * cae a 'news' para no alterar el comportamiento de las fuentes
+     * existentes que aún no tengan este meta poblado.
+     */
+    public static function saneatTipoMedio($valorEntrada): string
+    {
+        $tiposPermitidos = ['news', 'video', 'radio', 'tv_station'];
+        $valorLimpio = sanitize_key((string) $valorEntrada);
+        return in_array($valorLimpio, $tiposPermitidos, true) ? $valorLimpio : 'news';
+    }
+
+    /**
+     * Lista de formatos de emisión/distribución. Valores desconocidos se
+     * descartan silenciosamente.
+     *
+     * @param mixed $valorEntrada
+     * @return list<string>
+     */
+    public static function saneatFormatosEmision($valorEntrada): array
+    {
+        if (!is_array($valorEntrada)) {
+            return [];
+        }
+        $permitidos = ['web', 'peertube', 'youtube', 'tdt_legal', 'tdt_sin_licencia', 'cable', 'satelite', 'streaming_propio'];
+        $saneados = [];
+        foreach ($valorEntrada as $bruto) {
+            $limpio = sanitize_key((string) $bruto);
+            if (in_array($limpio, $permitidos, true)) {
+                $saneados[] = $limpio;
+            }
+        }
+        return array_values(array_unique($saneados));
+    }
+
+    /**
+     * Licencia de contenido declarada. Admite las CC comunes, dominio
+     * público, "all-rights-reserved" y "mixed". Cadena vacía = no declarada.
+     */
+    public static function saneatLicenciaContenido($valorEntrada): string
+    {
+        $permitidas = [
+            '',
+            'cc-by-4.0', 'cc-by-sa-4.0', 'cc-by-nc-4.0', 'cc-by-nc-sa-4.0',
+            'cc-by-nd-4.0', 'cc-by-nc-nd-4.0', 'cc-by-nc-nd-3.0', 'cc-by-nc-nd-3.0-us',
+            'cc0-1.0', 'public-domain',
+            'all-rights-reserved', 'mixed',
+        ];
+        // No usamos sanitize_key aquí: las licencias contienen puntos y guiones.
+        $limpio = strtolower(trim((string) $valorEntrada));
+        $limpio = preg_replace('/[^a-z0-9\-.]/', '', $limpio) ?? '';
+        return in_array($limpio, $permitidas, true) ? $limpio : '';
+    }
+
+    /**
+     * Permiso para embeber el stream en "En directo". Por política, sólo
+     * `cc-license` habilita el embed en la app.
+     */
+    public static function saneatPermisoStream($valorEntrada): string
+    {
+        $permitidos = ['none', 'cc-license', 'written-permission'];
+        $limpio = sanitize_key((string) $valorEntrada);
+        return in_array($limpio, $permitidos, true) ? $limpio : 'none';
     }
 
     /**

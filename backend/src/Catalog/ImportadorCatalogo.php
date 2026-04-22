@@ -85,6 +85,36 @@ final class ImportadorCatalogo
             // con `--actualizar`. Sin esa flag el `saltados` ya cortó.
             update_post_meta($idPost, '_fnh_active', true);
 
+            // Campos opcionales introducidos con Vol. 3 (TV, PeerTube,
+            // licencias). Sólo sobreescribimos si el seed los trae — así
+            // no machacamos valores que un admin haya editado a mano en
+            // fuentes ya presentes. El fallback sensato lo da el meta
+            // registrar (medium_type=news, licencia vacía, sin stream).
+            if (array_key_exists('medium_type', $raw)) {
+                update_post_meta($idPost, '_fnh_medium_type', (string) $raw['medium_type']);
+            }
+            if (array_key_exists('broadcast_format', $raw)) {
+                $formatos = $raw['broadcast_format'];
+                if (!is_array($formatos)) $formatos = [];
+                update_post_meta(
+                    $idPost,
+                    '_fnh_broadcast_format',
+                    array_values(array_map('strval', $formatos))
+                );
+            }
+            if (array_key_exists('content_license', $raw)) {
+                update_post_meta($idPost, '_fnh_content_license', (string) $raw['content_license']);
+            }
+            if (array_key_exists('legal_note', $raw)) {
+                update_post_meta($idPost, '_fnh_legal_note', (string) $raw['legal_note']);
+            }
+            if (array_key_exists('has_live_stream', $raw)) {
+                update_post_meta($idPost, '_fnh_has_live_stream', (bool) $raw['has_live_stream']);
+            }
+            if (array_key_exists('live_stream_permit', $raw)) {
+                update_post_meta($idPost, '_fnh_live_stream_permit', (string) $raw['live_stream_permit']);
+            }
+
             self::asignarTopics($idPost, $raw['topics'] ?? []);
 
             if ($existente) {
