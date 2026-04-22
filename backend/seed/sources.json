@@ -60,7 +60,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCe81jZxbCPX8PilT3IQKxFw",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCe81jZxbCPX8PilT3IQKxFw",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -86,7 +86,7 @@
   "feed_url": "https://www.ballenablanca.es/feed/",
   "feed_type": "rss",
   "website_url": "https://www.ballenablanca.es",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -112,7 +112,7 @@
   "feed_url": "https://climatica.coop/feed/",
   "feed_type": "rss",
   "website_url": "https://climatica.coop",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -138,7 +138,7 @@
   "feed_url": "https://www.cuartopoder.es/feed/",
   "feed_type": "rss",
   "website_url": "https://www.cuartopoder.es/",
-  "territory": "Estado Español",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -153,7 +153,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCvLrMnloIn_RqITF4Ly5ZEA",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCvLrMnloIn_RqITF4Ly5ZEA",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -166,7 +166,7 @@
   "feed_url": "https://www.ecologistasenaccion.org/feed/",
   "feed_type": "rss",
   "website_url": "https://www.ecologistasenaccion.org",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -179,7 +179,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfxxmFIJGD_S6xim0EphBw",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCbfxxmFIJGD_S6xim0EphBw",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -192,7 +192,7 @@
   "feed_url": "https://www.elsaltodiario.com/general/feed",
   "feed_type": "rss",
   "website_url": "https://www.elsaltodiario.com",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [],
   "topics": [
    "vivienda",
@@ -228,19 +228,6 @@
   "topics": []
  },
  {
-  "id": 6919,
-  "name": "Flavor Platform (local)",
-  "slug": "flavor-platform-local",
-  "feed_url": "http://sitio-prueba.local/",
-  "feed_type": "flavor_platform",
-  "website_url": "http://sitio-prueba.local/",
-  "territory": "Navarra",
-  "languages": [
-   "es"
-  ],
-  "topics": []
- },
- {
   "id": 7101,
   "name": "Free Software Foundation Europe",
   "slug": "free-software-foundation-europe",
@@ -260,7 +247,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCF2k6ZA_4LP7v7Wq5qOtQpA",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/@SaviaYT",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -273,7 +260,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH6Xr67k_7_KAgeDgQiFamw",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/@furortv",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -302,7 +289,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSU1606eim0bCnIpvYsz4_w",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/@homodeus_espanol",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -330,7 +317,7 @@
   "feed_url": "https://www.infolibre.es/rss",
   "feed_type": "rss",
   "website_url": "https://www.infolibre.es/",
-  "territory": "Estado Español",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -359,7 +346,7 @@
   "feed_url": "https://www.ivoox.com/feed_fg_f1893330_filtro_1.xml",
   "feed_type": "podcast",
   "website_url": "https://www.publico.es/podcasts/la-base",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -385,7 +372,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCvt0OljLuvQW017ppgmSVog",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCvt0OljLuvQW017ppgmSVog",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -398,7 +385,7 @@
   "feed_url": "https://www.lamarea.com/feed/",
   "feed_type": "rss",
   "website_url": "https://www.lamarea.com",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -446,7 +433,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCoL-njX4mEWsaHlXFzWvUZw",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCoL-njX4mEWsaHlXFzWvUZw",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -459,7 +446,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCgms7r9SaeYhuIBaPGOjnhw",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/@miguelruizcalvo",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -489,7 +476,7 @@
   "feed_url": "https://www.naukas.com/feed/",
   "feed_type": "rss",
   "website_url": "https://www.naukas.com/",
-  "territory": "Estado Español",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -505,7 +492,7 @@
   "feed_url": "https://nodo50.org/spip.php?page=backend",
   "feed_type": "rss",
   "website_url": "https://info.nodo50.org/",
-  "territory": "Estado Español",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -537,7 +524,7 @@
   "feed_url": "https://www.pikaramagazine.com/feed/",
   "feed_type": "rss",
   "website_url": "https://www.pikaramagazine.com",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -553,7 +540,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSvkCc8rbluGVsZV-KKHCFA",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCSvkCc8rbluGVsZV-KKHCFA",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -596,7 +583,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC_Q7-uOJy3BPWjKNdATqrag",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UC_Q7-uOJy3BPWjKNdATqrag",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -609,7 +596,7 @@
   "feed_url": "https://spanishrevolution.org/feed/",
   "feed_type": "video",
   "website_url": "https://spanishrevolution.org",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -637,7 +624,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCKNW2TrrUlof4ES2y1BWjpA",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCKNW2TrrUlof4ES2y1BWjpA",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -678,7 +665,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC8-6gikVs0MvKebAHEGiwHg",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UC8-6gikVs0MvKebAHEGiwHg",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -705,7 +692,7 @@
   "feed_url": "https://vientosur.info/feed/",
   "feed_type": "rss",
   "website_url": "https://vientosur.info",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -737,7 +724,7 @@
   "feed_url": "https://www.xatakaciencia.com/rss2.xml",
   "feed_type": "rss",
   "website_url": "https://www.xatakaciencia.com/",
-  "territory": "Estado Español",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -934,7 +921,7 @@
   "feed_url": "https://mastodon.social/@maldita.rss",
   "feed_type": "mastodon",
   "website_url": "https://mastodon.social/@maldita",
-  "territory": "España",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -949,7 +936,7 @@
   "feed_url": "https://mastodon.social/@civio.rss",
   "feed_type": "mastodon",
   "website_url": "https://mastodon.social/@civio",
-  "territory": "España",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
