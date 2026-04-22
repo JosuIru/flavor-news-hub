@@ -36,11 +36,59 @@ final class Shortcodes
         add_shortcode('flavor_news_source', [self::class, 'renderSource']);
         add_shortcode('flavor_news_landing', [self::class, 'renderLanding']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
+        // Prio 9 (antes de wpautop en prio 10): anteponemos un menú
+        // de navegación entre las 5 páginas auto-generadas del plugin.
+        // Antes de wpautop evita que WP envuelva el nav en un <p>.
+        add_filter('the_content', [self::class, 'prependMenuPaginasAuto'], 9);
         // Prio 12: después de do_shortcode (11). Cuando la landing vive
         // en una página con bloques alrededor (VBP u otros), WordPress
         // envuelve el shortcode en `<p>...</p>` y shortcode_unautop no
         // lo limpia porque no está solo. Desenvolvemos a posteriori.
         add_filter('the_content', [self::class, 'desenvolverLanding'], 12);
+    }
+
+    /**
+     * Prepend un menú de navegación a las páginas auto-generadas por
+     * CreadorPaginas (marcadas con el meta `_fnh_pagina_auto`). Así
+     * Inicio / Noticias / Vídeos / Radios / Colectivos comparten una
+     * navegación coherente sin depender del menú del tema.
+     */
+    public static function prependMenuPaginasAuto(string $contenido): string
+    {
+        if (!is_singular('page')) return $contenido;
+        $idPost = (int) get_the_ID();
+        if ($idPost <= 0) return $contenido;
+        $clave = (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
+        if ($clave === '') return $contenido;
+        return self::renderMenuPaginasAuto($clave) . $contenido;
+    }
+
+    private static function renderMenuPaginasAuto(string $claveActual): string
+    {
+        $paginas = [
+            ['clave' => 'inicio',     'titulo' => __('Inicio', 'flavor-news-hub')],
+            ['clave' => 'noticias',   'titulo' => __('Noticias', 'flavor-news-hub')],
+            ['clave' => 'videos',     'titulo' => __('Vídeos', 'flavor-news-hub')],
+            ['clave' => 'radios',     'titulo' => __('Radios', 'flavor-news-hub')],
+            ['clave' => 'colectivos', 'titulo' => __('Colectivos', 'flavor-news-hub')],
+        ];
+        ob_start();
+        ?><nav class="fnh-nav-auto" aria-label="<?php esc_attr_e('Secciones del hub', 'flavor-news-hub'); ?>"><ul class="fnh-nav-auto-lista"><?php
+        foreach ($paginas as $p) {
+            $url = self::urlPaginaAuto($p['clave']);
+            if ($url === '') continue;
+            $activa = $p['clave'] === $claveActual;
+            $clase = 'fnh-nav-auto-item' . ($activa ? ' fnh-nav-auto-item--activo' : '');
+            printf(
+                '<li class="%s"><a href="%s"%s>%s</a></li>',
+                esc_attr($clase),
+                esc_url($url),
+                $activa ? ' aria-current="page"' : '',
+                esc_html($p['titulo'])
+            );
+        }
+        ?></ul></nav><?php
+        return (string) ob_get_clean();
     }
 
     /**
@@ -69,14 +117,28 @@ final class Shortcodes
             return;
         }
         global $post;
-        if (!$post || !has_shortcode($post->post_content, 'flavor_news_feed')
-            && !has_shortcode($post->post_content, 'flavor_news_radios')
-            && !has_shortcode($post->post_content, 'flavor_news_videos')
-            && !has_shortcode($post->post_content, 'flavor_news_source')
-            && !has_shortcode($post->post_content, 'flavor_news_landing')) {
+        $tieneShortcode = $post && (
+            has_shortcode($post->post_content, 'flavor_news_feed')
+            || has_shortcode($post->post_content, 'flavor_news_radios')
+            || has_shortcode($post->post_content, 'flavor_news_videos')
+            || has_shortcode($post->post_content, 'flavor_news_source')
+            || has_shortcode($post->post_content, 'flavor_news_landing')
+        );
+        $esPaginaAuto = $post && (string) get_post_meta($post->ID, '_fnh_pagina_auto', true) !== '';
+        if (!$tieneShortcode && !$esPaginaAuto) {
             return;
         }
         $css = "
+        /* Menú de navegación entre las páginas auto (Inicio/Noticias/...). */
+        .fnh-nav-auto{max-width:1200px;margin:1rem auto 1.5rem;padding:0 1.25rem}
+        .fnh-nav-auto-lista{display:flex;list-style:none;gap:.35rem;padding:.4rem;margin:0;background:#f1f1f4;border-radius:999px;overflow-x:auto;scrollbar-width:none}
+        .fnh-nav-auto-lista::-webkit-scrollbar{display:none}
+        .fnh-nav-auto-item{list-style:none;margin:0}
+        .fnh-nav-auto-item a{display:inline-block;padding:.55rem 1.2rem;border-radius:999px;color:#555;font-weight:600;font-size:.95em;white-space:nowrap;text-decoration:none;transition:background .15s,color .15s,transform .15s}
+        .fnh-nav-auto-item a:hover{background:#e4e4ea;color:#111;transform:translateY(-1px)}
+        .fnh-nav-auto-item--activo a{background:#111;color:#fff}
+        .fnh-nav-auto-item--activo a:hover{background:#000;color:#fff;transform:none}
+
         .fnh-feed-lista,.fnh-radios-lista,.fnh-videos-grid{list-style:none;padding:0;margin:0}
         .fnh-feed-lista li{padding:12px 0;border-bottom:1px solid #ececec}
         .fnh-feed-lista h3{margin:0 0 4px;font-size:1.05em;line-height:1.3}

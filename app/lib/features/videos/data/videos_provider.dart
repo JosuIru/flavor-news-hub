@@ -75,10 +75,15 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
     final idiomasCsv = filtros.codigosIdiomas.isEmpty
         ? null
         : filtros.codigosIdiomas.join(',');
+    // Si el usuario pidió un canal concreto, no restringimos por
+    // `source_type` — él ya eligió qué fuente ver y el tipo de feed
+    // es irrelevante para "ver los últimos items de este medio". Sin
+    // este relajo, un canal PeerTube con feed_type=rss se quedaba sin
+    // resultados porque `video,youtube` lo excluía.
     paginaBackend = await api.fetchItems(
       page: 1,
       perPage: 50,
-      sourceType: 'video,youtube',
+      sourceType: filtros.idSource == null ? 'video,youtube' : null,
       topic: slugCsv,
       source: filtros.idSource,
       language: idiomasCsv,
