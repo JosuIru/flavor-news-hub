@@ -11,13 +11,21 @@ import '../../../core/providers/api_provider.dart';
 /// se ha desdibujado en la práctica y el usuario final no distingue.
 /// Filtramos en cliente porque la API no expone el filtro por
 /// medium_type (son pocas fuentes y el coste es despreciable).
+///
+/// Fallback por `feed_type`: una fuente de YouTube / PeerTube / vídeo
+/// declarado es audiovisual aunque su `medium_type` aún no se haya
+/// migrado (fuentes existentes en instancias actualizadas desde una
+/// versión previa al campo medium_type se crean con default 'news').
 final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
   final pagina = await api.fetchSources(perPage: 100);
   const mediosAudiovisuales = {'tv_station', 'video'};
-  return pagina.items
-      .where((s) => mediosAudiovisuales.contains(s.mediumType) && s.active)
-      .toList();
+  const feedTypesAudiovisuales = {'youtube', 'video', 'peertube'};
+  return pagina.items.where((s) {
+    if (!s.active) return false;
+    return mediosAudiovisuales.contains(s.mediumType) ||
+        feedTypesAudiovisuales.contains(s.feedType);
+  }).toList();
 });
 
 /// Items recientes de cualquier fuente `tv_station`. Hacemos una
