@@ -62,6 +62,44 @@ final class CreadorPaginas
         ],
     ];
 
+    /**
+     * Devuelve el estado de cada página auto-generada: si existe, su ID, URL pública y URL de edición.
+     *
+     * @return list<array{clave:string,titulo:string,slug:string,id:int,url:string,edit_url:string}>
+     */
+    public static function obtenerEstadoPaginas(): array
+    {
+        $estado = [];
+        foreach (self::PAGINAS as $config) {
+            $consulta = new \WP_Query([
+                'post_type'      => 'page',
+                'post_status'    => ['publish', 'draft', 'pending'],
+                'posts_per_page' => 1,
+                'no_found_rows'  => true,
+                'meta_key'       => '_fnh_pagina_auto',
+                'meta_value'     => $config['clave'],
+            ]);
+            $id      = 0;
+            $url     = '';
+            $editUrl = '';
+            if (!empty($consulta->posts)) {
+                $post    = $consulta->posts[0];
+                $id      = (int) $post->ID;
+                $url     = (string) (get_permalink($id) ?: '');
+                $editUrl = (string) (get_edit_post_link($id, 'url') ?: '');
+            }
+            $estado[] = [
+                'clave'    => $config['clave'],
+                'titulo'   => $config['titulo'],
+                'slug'     => $config['slug'],
+                'id'       => $id,
+                'url'      => $url,
+                'edit_url' => $editUrl,
+            ];
+        }
+        return $estado;
+    }
+
     public static function crearSiNoExisten(): void
     {
         foreach (self::PAGINAS as $config) {

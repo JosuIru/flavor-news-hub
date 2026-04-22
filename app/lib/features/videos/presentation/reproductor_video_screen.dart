@@ -11,11 +11,20 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/models/item.dart';
+import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/pip_service.dart';
 import '../../feed/presentation/item_detail_screen.dart';
 import '../../history/data/historial_provider.dart';
 import '../data/url_video_helper.dart';
 import '../data/videos_provider.dart';
+
+/// Origen que YouTube valida en los postMessage del IFrame Player API.
+/// Debe ser scheme+host del dominio que controla la app.
+///
+/// Si alguna vez cambia el dominio oficial (urlInstanciaOficialDefault en
+/// preferences_provider.dart), actualiza también esta constante — el assert
+/// de _crearControladorYoutube lo recordará en debug.
+const _kOrigenEmbedYoutube = 'https://flavor.gailu.it';
 
 /// Reproductor in-app.
 ///
@@ -206,7 +215,15 @@ class _EstadoReproductorVideo extends ConsumerState<ReproductorVideoScreen> {
   }
 
   WebViewController _crearControladorYoutube(String idYoutube) {
-    const origenEmbed = 'https://app.flavornewshub.local';
+    const origenEmbed = _kOrigenEmbedYoutube;
+    assert(
+      urlInstanciaOficialDefault.startsWith(origenEmbed),
+      '\n⚠️  El dominio de urlInstanciaOficialDefault ha cambiado pero '
+      '_kOrigenEmbedYoutube sigue apuntando a "$origenEmbed".\n'
+      '   Actualiza _kOrigenEmbedYoutube en reproductor_video_screen.dart '
+      'para que coincida con el nuevo dominio, o los postMessage de la '
+      'IFrame Player API de YouTube dejarán de funcionar.',
+    );
     return WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)

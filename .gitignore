@@ -4,6 +4,10 @@ Thumbs.db
 *.swp
 *~
 
+# === Herramientas de dev (local, no del repo) ===
+.claude/
+flavor-news-hub-*.zip
+
 # === Editores / IDE ===
 .idea/
 .vscode/

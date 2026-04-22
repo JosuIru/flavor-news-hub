@@ -10,6 +10,7 @@ use FlavorNewsHub\Admin\MetaBoxes\SourceMetaBox;
 use FlavorNewsHub\Admin\MetaBoxes\ItemMetaBox;
 use FlavorNewsHub\Admin\MetaBoxes\CollectiveMetaBox;
 use FlavorNewsHub\Admin\Actions\IngestNowHandler;
+use FlavorNewsHub\Admin\Actions\CrearPaginasHandler;
 use FlavorNewsHub\Admin\Actions\VerifyCollectivesBulk;
 use FlavorNewsHub\Admin\Actions\ActivateSourcesBulk;
 use FlavorNewsHub\Admin\Hooks\SourceDefaults;
@@ -45,6 +46,10 @@ final class AdminController
         // Ingest now: admin-post endpoint.
         add_action(IngestNowHandler::HOOK_ADMIN_POST, [IngestNowHandler::class, 'manejar']);
         add_action('admin_notices', [IngestNowHandler::class, 'mostrarAvisoTrasIngesta']);
+
+        // Crear páginas de frontend: admin-post endpoint.
+        add_action(CrearPaginasHandler::HOOK_ADMIN_POST, [CrearPaginasHandler::class, 'manejar']);
+        add_action('admin_notices', [CrearPaginasHandler::class, 'mostrarAviso']);
 
         // Bulk action "Verify and publish" en la lista de colectivos.
         add_filter('bulk_actions-edit-' . Collective::SLUG, [VerifyCollectivesBulk::class, 'registrarAccion']);

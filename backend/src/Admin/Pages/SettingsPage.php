@@ -5,6 +5,8 @@ namespace FlavorNewsHub\Admin\Pages;
 
 use FlavorNewsHub\Options\OptionsRepository;
 use FlavorNewsHub\Ingest\Scheduler;
+use FlavorNewsHub\Catalog\CreadorPaginas;
+use FlavorNewsHub\Admin\Actions\CrearPaginasHandler;
 
 /**
  * Pantalla de ajustes del plugin. Usa la Settings API de WordPress con un
@@ -83,6 +85,53 @@ final class SettingsPage
                 do_settings_sections('fnh-settings');
                 submit_button();
                 ?>
+            </form>
+
+            <hr />
+
+            <h2><?php esc_html_e('Páginas de frontend', 'flavor-news-hub'); ?></h2>
+            <p><?php esc_html_e('El plugin puede generar automáticamente las páginas de Noticias, Radios, Vídeos y Colectivos con los shortcodes correspondientes.', 'flavor-news-hub'); ?></p>
+
+            <table class="widefat striped" style="max-width:700px">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Página', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Estado', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Acciones', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach (CreadorPaginas::obtenerEstadoPaginas() as $pagina) : ?>
+                    <tr>
+                        <td>
+                            <strong><?php echo esc_html($pagina['titulo']); ?></strong>
+                            <code>/<?php echo esc_html($pagina['slug']); ?></code>
+                        </td>
+                        <td>
+                            <?php if ($pagina['id'] > 0) : ?>
+                                <span style="color:#46b450">&#10003; <?php esc_html_e('Creada', 'flavor-news-hub'); ?></span>
+                            <?php else : ?>
+                                <span style="color:#dc3232">&#10007; <?php esc_html_e('No existe', 'flavor-news-hub'); ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($pagina['id'] > 0) : ?>
+                                <a href="<?php echo esc_url($pagina['url']); ?>" target="_blank"><?php esc_html_e('Ver', 'flavor-news-hub'); ?></a>
+                                &nbsp;&middot;&nbsp;
+                                <a href="<?php echo esc_url($pagina['edit_url']); ?>"><?php esc_html_e('Editar', 'flavor-news-hub'); ?></a>
+                            <?php else : ?>
+                                &mdash;
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:1rem">
+                <input type="hidden" name="action" value="fnh_crear_paginas" />
+                <?php wp_nonce_field(CrearPaginasHandler::NONCE_ACCION); ?>
+                <?php submit_button(__('Crear páginas que faltan', 'flavor-news-hub'), 'secondary', 'fnh_crear_paginas', false); ?>
             </form>
         </div>
         <?php
