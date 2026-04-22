@@ -78,7 +78,12 @@ if (is_readable(FNH_PLUGIN_DIR . 'vendor/autoload.php')) {
         'flavor-news-hub'
     );
     $fnhUpdateChecker->setBranch('main');
-    $fnhUpdateChecker->getVcsApi()->enableReleaseAssets();
+    // Filtramos por nombre: las releases llevan tanto el APK de la app
+    // Flutter (`app-release.apk`) como el zip del plugin
+    // (`flavor-news-hub-plugin-*.zip`). Si no especificamos nada, PUC
+    // puede coger el primero que encuentre — y descargar el APK
+    // creyéndolo un plugin provoca "No se ha podido descomprimir".
+    $fnhUpdateChecker->getVcsApi()->enableReleaseAssets('/flavor-news-hub-plugin-.*\.zip$/i');
 }
 
 // Arranque tras cargar todos los plugins, para que las traducciones y otros
