@@ -57,13 +57,20 @@ final class Shortcodes
      * Inicio / Noticias / Vídeos / Radios / Colectivos comparten una
      * navegación coherente sin depender del menú del tema.
      */
+    /** @var bool Evita reinyectar el menú si algún shortcode (p.ej.
+     *  renderSource) vuelve a llamar apply_filters('the_content'),
+     *  lo que de otro modo duplica el menú por cada item del feed. */
+    private static bool $menuInyectado = false;
+
     public static function prependMenuPaginasAuto(string $contenido): string
     {
+        if (self::$menuInyectado) return $contenido;
         if (!is_singular('page')) return $contenido;
         $idPost = (int) get_the_ID();
         if ($idPost <= 0) return $contenido;
         $clave = (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
         if ($clave === '') return $contenido;
+        self::$menuInyectado = true;
         return self::renderMenuPaginasAuto($clave) . $contenido;
     }
 
@@ -95,8 +102,26 @@ final class Shortcodes
                 esc_html($p['titulo'])
             );
         }
+        // Entrada especial al final: botón de apoyo al proyecto, link
+        // externo a PayPal. Se destaca con estilo distinto (verde)
+        // para que no se confunda con navegación interna.
+        printf(
+            '<li class="fnh-nav-auto-item fnh-nav-auto-item--cta"><a href="%s" target="_blank" rel="noopener">♥ %s</a></li>',
+            esc_url(self::urlDonaciones()),
+            esc_html__('Apoyar', 'flavor-news-hub')
+        );
         ?></ul></nav><?php
         return (string) ob_get_clean();
+    }
+
+    /**
+     * URL de donación del proyecto. Misma que la app móvil, para que
+     * cualquier donante aterrice al mismo sitio sin importar el canal.
+     * Idealmente vendría de una option de WP; por ahora es constante.
+     */
+    private static function urlDonaciones(): string
+    {
+        return 'https://www.paypal.com/paypalme/codigodespierto';
     }
 
     /**
@@ -150,6 +175,8 @@ final class Shortcodes
         .fnh-nav-auto-item a:hover{background:#e4e4ea;color:#111;transform:translateY(-1px)}
         .fnh-nav-auto-item--activo a{background:#111;color:#fff}
         .fnh-nav-auto-item--activo a:hover{background:#000;color:#fff;transform:none}
+        .fnh-nav-auto-item--cta a{background:#ff4d6d;color:#fff}
+        .fnh-nav-auto-item--cta a:hover{background:#e0334e;color:#fff}
 
         /* Página TV: grid de canales */
         .fnh-tv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:0}
@@ -265,6 +292,12 @@ final class Shortcodes
         #fnh-landing .fnh-boton-descarga:hover{background:#5ae89a !important;transform:translateY(-2px);box-shadow:0 10px 25px rgba(61,220,132,.4)}
         #fnh-landing .fnh-boton-descarga-ico{font-size:.85em}
         #fnh-landing .fnh-repo{text-align:center;font-size:.9em;color:#777}
+        #fnh-landing .fnh-apoyo{background:linear-gradient(135deg,#fff1f3 0%,#ffe4e9 100%) !important;padding:2.5rem 1.5rem !important;border-radius:16px !important;border:1px solid #ffc3cf !important;text-align:center !important;margin:0 !important}
+        #fnh-landing .fnh-apoyo-inner{max-width:560px;margin:0 auto}
+        #fnh-landing .fnh-apoyo-titulo{margin:0 0 .5em !important;font-size:1.6em !important;color:#b5193a !important;border:0 !important;padding:0 !important;font-weight:800}
+        #fnh-landing .fnh-apoyo-copy{color:#4a1020 !important;font-size:1em;margin:0 0 1.2em !important;line-height:1.55}
+        #fnh-landing .fnh-boton-apoyo{display:inline-block !important;padding:.85rem 2rem !important;background:#ff4d6d !important;color:#fff !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.05em !important;transition:transform .15s,box-shadow .2s}
+        #fnh-landing .fnh-boton-apoyo:hover{background:#e0334e !important;transform:translateY(-1px);box-shadow:0 8px 20px rgba(255,77,109,.4)}
 
         /* Noticias dentro de la landing: tarjeta horizontal (imagen izquierda, texto derecha). */
         #fnh-landing .fnh-feed-lista{display:flex !important;flex-direction:column;gap:1.1rem}
@@ -811,6 +844,17 @@ final class Shortcodes
                             ));
                         ?></div>
                     <?php endif; ?>
+                </div>
+            </section>
+
+            <!-- APOYO AL PROYECTO -->
+            <section class="fnh-apoyo">
+                <div class="fnh-apoyo-inner">
+                    <h2 class="fnh-apoyo-titulo">♥ <?php esc_html_e('Apoya el proyecto', 'flavor-news-hub'); ?></h2>
+                    <p class="fnh-apoyo-copy"><?php esc_html_e('Sin publicidad, sin tracking, sin fondos opacos. Si lo que hacemos te sirve y puedes, una donación ayuda a mantenerlo y crecer.', 'flavor-news-hub'); ?></p>
+                    <a class="fnh-boton-apoyo" href="<?php echo esc_url(self::urlDonaciones()); ?>" target="_blank" rel="noopener">
+                        <?php esc_html_e('Donar vía PayPal', 'flavor-news-hub'); ?>
+                    </a>
                 </div>
             </section>
 
