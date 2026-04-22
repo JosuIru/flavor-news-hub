@@ -7,6 +7,7 @@ use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Admin\Pages\SettingsPage;
 use FlavorNewsHub\Admin\Pages\IngestLogPage;
 use FlavorNewsHub\Admin\Pages\DashboardPage;
+use FlavorNewsHub\Admin\Pages\CatalogoPage;
 
 /**
  * Menú principal del plugin en el admin de WordPress.
@@ -49,6 +50,15 @@ final class Menu
             __('Temáticas', 'flavor-news-hub'),
             'manage_categories',
             'edit-tags.php?taxonomy=' . Topic::SLUG
+        );
+
+        add_submenu_page(
+            self::SLUG_MENU,
+            __('Catálogo por defecto', 'flavor-news-hub'),
+            __('Catálogo', 'flavor-news-hub'),
+            'manage_options',
+            CatalogoPage::SLUG,
+            [CatalogoPage::class, 'render']
         );
 
         add_submenu_page(

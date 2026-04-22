@@ -8,6 +8,7 @@ use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\Taxonomy\Topic;
+use FlavorNewsHub\Catalog\CreadorPaginas;
 use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Options\OptionsRepository;
@@ -37,6 +38,18 @@ final class Activator
 
         // Migraciones idempotentes.
         self::ejecutarMigracionesPendientes();
+
+        // Crea las 4 páginas frontend (Noticias / Radios / Vídeos /
+        // Colectivos) con shortcode dentro. Si Flavor Platform + VBP
+        // están disponibles, usa su endpoint styled para wrap visual;
+        // si no, páginas WP planas. Idempotente: `_fnh_pagina_auto`
+        // evita recrearlas.
+        CreadorPaginas::crearSiNoExisten();
+
+        // Las rewrite rules de los CPTs /n /f /c necesitan que esta
+        // función corra tras `Item/Source/Collective::registrar()`,
+        // que ya sucedió arriba — `flush_rewrite_rules()` al final
+        // del método las graba.
 
         // `wp_schedule_event()` valida la recurrence contra el filtro
         // `cron_schedules`, y en la request de activación `plugins_loaded`
