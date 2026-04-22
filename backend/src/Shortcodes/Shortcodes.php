@@ -89,32 +89,32 @@ final class Shortcodes
         .fnh-radios-lista .fnh-radio{border:1px solid #ececec;border-radius:8px;padding:10px}
         .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
         .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
-        .fnh-landing{display:flex;flex-direction:column;gap:3rem;padding:1rem 1.25rem;max-width:1100px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111}
-        .fnh-landing *{box-sizing:border-box}
-        .fnh-landing h1,.fnh-landing h2,.fnh-landing h3{font-family:inherit;color:#111;font-weight:700}
-        .fnh-landing a{color:inherit}
-        .fnh-landing .fnh-hero{text-align:center;padding:2rem 0 1rem;border-bottom:1px solid #ececec;margin:0}
-        .fnh-landing .fnh-hero h1{font-size:2.2em;margin:0 0 .4em;border:0;padding:0}
-        .fnh-landing .fnh-hero .fnh-lema{font-size:1.15em;color:#555;max-width:42ch;margin:0 auto}
-        .fnh-landing .fnh-bloque{margin:0}
-        .fnh-landing .fnh-bloque h2{margin:0 0 1rem;font-size:1.4em;border-bottom:2px solid #111;padding-bottom:.3em;display:inline-block}
-        .fnh-landing .fnh-ver-mas{margin-top:.75rem;text-align:right}
-        .fnh-landing .fnh-ver-mas a{color:#555;text-decoration:none;font-size:.92em}
-        .fnh-landing .fnh-ver-mas a:hover{color:#000}
-        .fnh-landing .fnh-sonando-cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
-        .fnh-landing .fnh-sonando-col h3{margin:0 0 .6rem;font-size:1em;text-transform:uppercase;letter-spacing:.05em;color:#666}
-        @media (max-width:640px){.fnh-landing .fnh-sonando-cols{grid-template-columns:1fr}}
-        .fnh-landing .fnh-destacado .fnh-embed-ratio{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
-        .fnh-landing .fnh-destacado .fnh-embed-ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-        .fnh-landing .fnh-destacado .fnh-destacado-card{display:block;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
-        .fnh-landing .fnh-destacado .fnh-destacado-card img{width:100%;height:100%;object-fit:cover;display:block}
-        .fnh-landing .fnh-destacado .fnh-destacado-meta{margin-top:.6rem;font-size:.95em;color:#444}
-        .fnh-landing .fnh-descarga{background:#0a0a0a;color:#fff;padding:2rem;border-radius:12px;text-align:center}
-        .fnh-landing .fnh-descarga h2{margin-top:0;color:#fff;border-color:#3ddc84}
-        .fnh-landing .fnh-descarga .fnh-version{font-size:.9em;opacity:.75;margin-bottom:1.2em}
-        .fnh-landing .fnh-boton-descarga{display:inline-block;padding:.9rem 2rem;background:#3ddc84;color:#0a0a0a;border-radius:999px;font-weight:700;text-decoration:none;font-size:1.05em}
-        .fnh-landing .fnh-boton-descarga:hover{background:#5ae89a}
-        .fnh-landing .fnh-repo{text-align:center;font-size:.9em;color:#777}
+        #fnh-landing{display:flex !important;flex-direction:column;gap:3rem;padding:1rem 1.25rem !important;max-width:1100px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111 !important;background:transparent !important}
+        #fnh-landing *{box-sizing:border-box}
+        #fnh-landing h1,#fnh-landing h2,#fnh-landing h3{font-family:inherit;color:#111 !important;font-weight:700}
+        #fnh-landing a{color:inherit;text-decoration:none}
+        #fnh-landing .fnh-hero{text-align:center !important;padding:2rem 0 1rem !important;border-bottom:1px solid #ececec;margin:0 !important;background:transparent !important}
+        #fnh-landing .fnh-hero h1{font-size:2.2em !important;margin:0 0 .4em !important;border:0;padding:0 !important;color:#111 !important}
+        #fnh-landing .fnh-hero .fnh-lema{font-size:1.15em !important;color:#555 !important;max-width:42ch;margin:0 auto !important}
+        #fnh-landing .fnh-bloque{margin:0 !important;padding:0 !important;background:transparent !important}
+        #fnh-landing .fnh-bloque h2{margin:0 0 1rem !important;font-size:1.4em !important;border-bottom:2px solid #111 !important;padding-bottom:.3em !important;display:inline-block !important;color:#111 !important;background:transparent !important}
+        #fnh-landing .fnh-ver-mas{margin-top:.75rem;text-align:right}
+        #fnh-landing .fnh-ver-mas a{color:#555;text-decoration:none;font-size:.92em}
+        #fnh-landing .fnh-ver-mas a:hover{color:#000}
+        #fnh-landing .fnh-sonando-cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+        #fnh-landing .fnh-sonando-col h3{margin:0 0 .6rem;font-size:1em;text-transform:uppercase;letter-spacing:.05em;color:#666}
+        @media (max-width:640px){#fnh-landing .fnh-sonando-cols{grid-template-columns:1fr}}
+        #fnh-landing .fnh-destacado .fnh-embed-ratio{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+        #fnh-landing .fnh-destacado .fnh-embed-ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+        #fnh-landing .fnh-destacado .fnh-destacado-card{display:block;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+        #fnh-landing .fnh-destacado .fnh-destacado-card img{width:100%;height:100%;object-fit:cover;display:block}
+        #fnh-landing .fnh-destacado .fnh-destacado-meta{margin-top:.6rem;font-size:.95em;color:#444}
+        #fnh-landing .fnh-descarga{background:#0a0a0a !important;color:#fff !important;padding:2rem !important;border-radius:12px !important;text-align:center !important}
+        #fnh-landing .fnh-descarga h2{margin-top:0 !important;color:#fff !important;border-color:#3ddc84 !important}
+        #fnh-landing .fnh-descarga .fnh-version{font-size:.9em;opacity:.75;margin-bottom:1.2em !important;color:#fff !important}
+        #fnh-landing .fnh-boton-descarga{display:inline-block !important;padding:.9rem 2rem !important;background:#3ddc84 !important;color:#0a0a0a !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.05em !important}
+        #fnh-landing .fnh-boton-descarga:hover{background:#5ae89a !important}
+        #fnh-landing .fnh-repo{text-align:center;font-size:.9em;color:#777}
         ";
         wp_register_style('flavor-news-hub-shortcodes', false);
         wp_enqueue_style('flavor-news-hub-shortcodes');
@@ -491,7 +491,7 @@ final class Shortcodes
         // `.entry-content`, y que machacarían nuestros tamaños/márgenes.
         // Sin whitespace antes del primer tag para que wpautop no meta
         // un `<p>` alrededor que rompa el HTML.
-        ?><div class="fnh-landing not-prose">
+        ?><div id="fnh-landing" class="fnh-landing not-prose">
             <section class="fnh-hero">
                 <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
                 <p class="fnh-lema"><?php esc_html_e('Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados).', 'flavor-news-hub'); ?></p>
