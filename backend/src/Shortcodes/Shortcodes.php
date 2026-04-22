@@ -140,6 +140,404 @@ final class Shortcodes
         return $resultado === null ? $contenido : $resultado;
     }
 
+    private static function paginaAutoActual(): string
+    {
+        if (!is_singular('page')) {
+            return '';
+        }
+
+        $idPost = (int) get_the_ID();
+        if ($idPost <= 0) {
+            return '';
+        }
+
+        return (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
+    }
+
+    /**
+     * @param array<string, mixed> $atributos
+     * @param list<string> $permitidos
+     * @param list<string> $paginas
+     * @return array<string, mixed>
+     */
+    private static function aplicarFiltrosRequest(array $atributos, array $permitidos, array $paginas): array
+    {
+        $clavePagina = self::paginaAutoActual();
+        if ($clavePagina === '' || !in_array($clavePagina, $paginas, true)) {
+            return $atributos;
+        }
+
+        foreach ($permitidos as $clave) {
+            $param = 'fnh_' . $clave;
+            if (!isset($_GET[$param])) {
+                continue;
+            }
+            $atributos[$clave] = self::sanitizarValorFiltro(
+                $clave,
+                (string) wp_unslash($_GET[$param])
+            );
+        }
+
+        return $atributos;
+    }
+
+    private static function sanitizarValorFiltro(string $clave, string $valor): string
+    {
+        $valor = trim($valor);
+        if ($valor === '') {
+            return '';
+        }
+
+        return match ($clave) {
+            'language', 'source_type' => implode(',', array_filter(array_map(
+                'sanitize_key',
+                array_map('trim', explode(',', $valor))
+            ))),
+            'topic' => implode(',', array_filter(array_map(
+                'sanitize_title',
+                array_map('trim', explode(',', $valor))
+            ))),
+            default => sanitize_text_field($valor),
+        };
+    }
+
+    /**
+     * @param list<string> $campos
+     */
+    private static function renderFiltrosPaginaAuto(string $contexto, array $campos): string
+    {
+        $clavePagina = self::paginaAutoActual();
+        if ($clavePagina === '') {
+            return '';
+        }
+
+        $valores = [];
+        foreach ($campos as $campo) {
+            $valores[$campo] = self::sanitizarValorFiltro(
+                $campo,
+                isset($_GET['fnh_' . $campo]) ? (string) wp_unslash($_GET['fnh_' . $campo]) : ''
+            );
+        }
+
+        $hayFiltros = array_filter($valores, static fn(string $valor): bool => $valor !== '') !== [];
+        $action = self::urlActual();
+        if ($action === '') {
+            return '';
+        }
+
+        ob_start();
+        ?>
+        <form class="fnh-filtros" method="get" action="<?php echo esc_url($action); ?>" data-fnh-contexto="<?php echo esc_attr($contexto); ?>">
+            <div class="fnh-filtros-grid">
+                <?php if (in_array('topic', $campos, true)) : ?>
+                    <label class="fnh-filtro-campo">
+                        <span><?php esc_html_e('Temática', 'flavor-news-hub'); ?></span>
+                        <select name="fnh_topic">
+                            <option value=""><?php esc_html_e('Todas', 'flavor-news-hub'); ?></option>
+                            <?php foreach (self::obtenerOpcionesTopics() as $slug => $nombre) : ?>
+                                <option value="<?php echo esc_attr($slug); ?>"<?php selected($valores['topic'], $slug); ?>>
+                                    <?php echo esc_html($nombre); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                <?php endif; ?>
+
+                <?php if (in_array('territory', $campos, true)) : ?>
+                    <label class="fnh-filtro-campo">
+                        <span><?php esc_html_e('Territorio', 'flavor-news-hub'); ?></span>
+                        <select name="fnh_territory">
+                            <option value=""><?php esc_html_e('Todos', 'flavor-news-hub'); ?></option>
+                            <?php foreach (self::obtenerOpcionesTerritorios($contexto) as $valor => $label) : ?>
+                                <option value="<?php echo esc_attr($valor); ?>"<?php selected($valores['territory'], $valor); ?>>
+                                    <?php echo esc_html($label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                <?php endif; ?>
+
+                <?php if (in_array('language', $campos, true)) : ?>
+                    <label class="fnh-filtro-campo">
+                        <span><?php esc_html_e('Idioma', 'flavor-news-hub'); ?></span>
+                        <select name="fnh_language">
+                            <option value=""><?php esc_html_e('Todos', 'flavor-news-hub'); ?></option>
+                            <?php foreach (self::obtenerOpcionesIdiomas($contexto) as $valor => $label) : ?>
+                                <option value="<?php echo esc_attr($valor); ?>"<?php selected($valores['language'], $valor); ?>>
+                                    <?php echo esc_html($label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                <?php endif; ?>
+
+                <?php if (in_array('source_type', $campos, true)) : ?>
+                    <label class="fnh-filtro-campo">
+                        <span><?php esc_html_e('Tipo', 'flavor-news-hub'); ?></span>
+                        <select name="fnh_source_type">
+                            <option value=""><?php esc_html_e('Todos', 'flavor-news-hub'); ?></option>
+                            <?php foreach (self::obtenerOpcionesTiposFuente() as $valor => $label) : ?>
+                                <option value="<?php echo esc_attr($valor); ?>"<?php selected($valores['source_type'], $valor); ?>>
+                                    <?php echo esc_html($label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                <?php endif; ?>
+            </div>
+
+            <div class="fnh-filtros-acciones">
+                <button type="submit" class="fnh-filtros-boton"><?php esc_html_e('Aplicar filtros', 'flavor-news-hub'); ?></button>
+                <?php if ($hayFiltros) : ?>
+                    <a class="fnh-filtros-reset" href="<?php echo esc_url($action); ?>"><?php esc_html_e('Limpiar', 'flavor-news-hub'); ?></a>
+                <?php endif; ?>
+            </div>
+        </form>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function obtenerOpcionesTopics(): array
+    {
+        $terms = get_terms([
+            'taxonomy'   => Topic::SLUG,
+            'hide_empty' => true,
+        ]);
+        if (is_wp_error($terms) || empty($terms)) {
+            return [];
+        }
+
+        $opciones = [];
+        foreach ($terms as $term) {
+            if (!$term instanceof \WP_Term) {
+                continue;
+            }
+            $opciones[$term->slug] = $term->name;
+        }
+
+        return $opciones;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function obtenerOpcionesTerritorios(string $contexto): array
+    {
+        return self::obtenerOpcionesMetaTexto(
+            $contexto === 'radios' ? Radio::SLUG : Source::SLUG,
+            '_fnh_territory'
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function obtenerOpcionesIdiomas(string $contexto): array
+    {
+        return self::obtenerOpcionesMetaLista(
+            $contexto === 'radios' ? Radio::SLUG : Source::SLUG,
+            '_fnh_languages'
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function obtenerOpcionesTiposFuente(): array
+    {
+        return [
+            'rss' => 'RSS',
+            'podcast' => 'Podcast',
+            'youtube' => 'YouTube',
+            'video' => __('Vídeo', 'flavor-news-hub'),
+            'peertube' => 'PeerTube',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function obtenerOpcionesMetaTexto(string $postType, string $metaKey): array
+    {
+        $posts = get_posts([
+            'post_type'      => $postType,
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+        ]);
+
+        $opciones = [];
+        foreach ($posts as $postId) {
+            $valor = trim((string) get_post_meta((int) $postId, $metaKey, true));
+            if ($valor === '') {
+                continue;
+            }
+            $opciones[$valor] = $valor;
+        }
+
+        natcasesort($opciones);
+        return $opciones;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function obtenerOpcionesMetaLista(string $postType, string $metaKey): array
+    {
+        $posts = get_posts([
+            'post_type'      => $postType,
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+        ]);
+
+        $opciones = [];
+        foreach ($posts as $postId) {
+            $valores = get_post_meta((int) $postId, $metaKey, true);
+            if (!is_array($valores)) {
+                $valores = [];
+            }
+            foreach ($valores as $valor) {
+                $codigo = sanitize_key((string) $valor);
+                if ($codigo === '') {
+                    continue;
+                }
+                $opciones[$codigo] = strtoupper($codigo);
+            }
+        }
+
+        natcasesort($opciones);
+        return $opciones;
+    }
+
+    private static function envolverShortcode(string $variant, string $contenido, string $filtros = ''): string
+    {
+        return sprintf(
+            '<div class="fnh-shortcode-wrap fnh-shortcode-wrap--%1$s">%2$s<div class="fnh-shortcode-body">%3$s</div></div>',
+            esc_attr($variant),
+            $filtros,
+            $contenido
+        );
+    }
+
+    /**
+     * `_fnh_languages` se guarda como array PHP serializado. Buscamos la
+     * secuencia exacta `"xx"` para no confundir `en` con otras cadenas.
+     *
+     * @return array<string,mixed>
+     */
+    private static function construirMetaQueryIdiomas(string $idioma): array
+    {
+        $codigos = array_values(array_filter(array_map(
+            'sanitize_key',
+            array_map('trim', explode(',', $idioma))
+        )));
+
+        if ($codigos === []) {
+            return [];
+        }
+
+        if (count($codigos) === 1) {
+            return [
+                'key'     => '_fnh_languages',
+                'value'   => '"' . $codigos[0] . '"',
+                'compare' => 'LIKE',
+            ];
+        }
+
+        $orQuery = ['relation' => 'OR'];
+        foreach ($codigos as $codigo) {
+            $orQuery[] = [
+                'key'     => '_fnh_languages',
+                'value'   => '"' . $codigo . '"',
+                'compare' => 'LIKE',
+            ];
+        }
+
+        return $orQuery;
+    }
+
+    private static function renderBotonesCompartir(string $url, string $titulo): string
+    {
+        if ($url === '') {
+            return '';
+        }
+
+        $urlEncoded = rawurlencode($url);
+        $tituloEncoded = rawurlencode($titulo);
+
+        ob_start();
+        ?>
+        <div class="fnh-share" aria-label="<?php esc_attr_e('Compartir', 'flavor-news-hub'); ?>">
+            <a class="fnh-share-link" href="<?php echo esc_url('https://t.me/share/url?url=' . $urlEncoded . '&text=' . $tituloEncoded); ?>" target="_blank" rel="noopener">
+                <?php esc_html_e('Telegram', 'flavor-news-hub'); ?>
+            </a>
+            <a class="fnh-share-link" href="<?php echo esc_url('https://wa.me/?text=' . $tituloEncoded . '%20' . $urlEncoded); ?>" target="_blank" rel="noopener">
+                <?php esc_html_e('WhatsApp', 'flavor-news-hub'); ?>
+            </a>
+            <a class="fnh-share-link" href="<?php echo esc_url('https://mastodonshare.com/?text=' . $tituloEncoded . '&url=' . $urlEncoded); ?>" target="_blank" rel="noopener">
+                <?php esc_html_e('Mastodon', 'flavor-news-hub'); ?>
+            </a>
+            <a class="fnh-share-link" href="<?php echo esc_url($url); ?>" data-fnh-copy-url="<?php echo esc_attr($url); ?>">
+                <?php esc_html_e('Copiar enlace', 'flavor-news-hub'); ?>
+            </a>
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    private static function idiomaActual(): string
+    {
+        if (function_exists('pll_current_language')) {
+            $idioma = pll_current_language('slug');
+            return is_string($idioma) ? $idioma : '';
+        }
+
+        if (defined('ICL_LANGUAGE_CODE') && is_string(ICL_LANGUAGE_CODE)) {
+            return ICL_LANGUAGE_CODE;
+        }
+
+        $idioma = apply_filters('wpml_current_language', null);
+        return is_string($idioma) ? $idioma : '';
+    }
+
+    private static function urlActual(): string
+    {
+        $url = get_permalink(get_the_ID()) ?: '';
+        return is_string($url) ? $url : '';
+    }
+
+    private static function traducirPostId(int $postId): int
+    {
+        if ($postId <= 0) {
+            return 0;
+        }
+
+        $idioma = self::idiomaActual();
+        if ($idioma === '') {
+            return $postId;
+        }
+
+        if (function_exists('pll_get_post')) {
+            $traducido = pll_get_post($postId, $idioma);
+            if (is_int($traducido) && $traducido > 0) {
+                return $traducido;
+            }
+        }
+
+        $traducido = apply_filters('wpml_object_id', $postId, 'page', true, $idioma);
+        if (is_int($traducido) && $traducido > 0) {
+            return $traducido;
+        }
+
+        return $postId;
+    }
+
     /**
      * Encola un CSS ligero con estilos base. Sólo se carga cuando el
      * shortcode se usa en la página (el hook va por post_content).
@@ -166,6 +564,27 @@ final class Shortcodes
             return;
         }
         $css = "
+        .fnh-shortcode-wrap{--fnh-color-text:var(--flavor-text,#111);--fnh-color-text-soft:var(--flavor-text-muted,#666);--fnh-color-border:var(--flavor-border,#e5e7eb);--fnh-color-surface:var(--flavor-surface,#fff);--fnh-color-surface-alt:var(--flavor-surface-alt,#f7f7f9);--fnh-color-accent:var(--flavor-primary,#111);--fnh-color-accent-contrast:var(--flavor-primary-contrast,#fff);display:grid;gap:1rem;color:var(--fnh-color-text);font:inherit;max-width:100%}
+        .fnh-shortcode-wrap,.fnh-shortcode-wrap *{box-sizing:border-box}
+        .fnh-shortcode-wrap .fnh-shortcode-body{min-width:0}
+        .fnh-shortcode-wrap :where(h2,h3,h4,p,ul,ol){margin-block-start:0}
+        .fnh-shortcode-wrap :where(ul,ol){padding-left:0}
+        .fnh-shortcode-wrap :where(a){color:inherit}
+        .fnh-shortcode-wrap .fnh-empty,.fnh-shortcode-wrap .fnh-vacio{text-align:center;padding:2rem;color:var(--fnh-color-text-soft);font-style:italic;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);border-radius:14px}
+        .fnh-filtros{display:grid;gap:.9rem;padding:1rem 1.05rem;border:1px solid var(--fnh-color-border);border-radius:14px;background:var(--fnh-color-surface);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+        .fnh-filtros-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.85rem}
+        .fnh-filtro-campo{display:grid;gap:.35rem;font-size:.92rem;color:var(--fnh-color-text)}
+        .fnh-filtro-campo span{font-weight:600}
+        .fnh-filtro-campo select{width:100%;min-height:42px;padding:.65rem .8rem;border:1px solid var(--fnh-color-border);border-radius:10px;background:var(--fnh-color-surface-alt);color:var(--fnh-color-text);font:inherit}
+        .fnh-filtros-acciones{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+        .fnh-filtros-boton,.fnh-filtros-reset{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.65rem 1rem;border-radius:999px;text-decoration:none;font:inherit;font-weight:600}
+        .fnh-filtros-boton{border:0;background:var(--fnh-color-accent);color:var(--fnh-color-accent-contrast);cursor:pointer}
+        .fnh-filtros-reset{border:1px solid var(--fnh-color-border);background:transparent;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap .fnh-share{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}
+        .fnh-shortcode-wrap .fnh-share-link{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:.35rem .7rem;border:1px solid var(--fnh-color-border);border-radius:999px;background:var(--fnh-color-surface);font-size:.78rem;line-height:1.2;text-decoration:none;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap .fnh-share-link:hover{background:var(--fnh-color-surface-alt);color:var(--fnh-color-text)}
+        @media (max-width:640px){.fnh-filtros{padding:.9rem}.fnh-filtros-grid{grid-template-columns:1fr}}
+
         /* Menú de navegación entre las páginas auto (Inicio/Noticias/...). */
         .fnh-nav-auto{max-width:1200px;margin:1rem auto 1.5rem;padding:0 1.25rem}
         .fnh-nav-auto-lista{display:flex;list-style:none;gap:.35rem;padding:.4rem;margin:0;background:#f1f1f4;border-radius:999px;overflow-x:auto;scrollbar-width:none}
@@ -179,51 +598,52 @@ final class Shortcodes
         .fnh-nav-auto-item--cta a:hover{background:#e0334e;color:#fff}
 
         /* Página TV: grid de canales */
-        .fnh-tv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:0}
-        .fnh-tv-card{display:block;padding:1.25rem;border:1px solid #e5e5e5;border-radius:12px;background:#fff;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
+        .fnh-shortcode-wrap .fnh-tv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:0}
+        .fnh-shortcode-wrap .fnh-tv-card{display:block;padding:1.25rem;border:1px solid var(--fnh-color-border);border-radius:12px;background:var(--fnh-color-surface);text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
         .fnh-tv-card:hover{box-shadow:0 8px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
-        .fnh-tv-card h3{margin:0 0 .5em;font-size:1.05em;color:#111;font-weight:700}
-        .fnh-tv-terr,.fnh-tv-idiomas,.fnh-tv-cc{display:inline-block;margin-right:.4em;margin-bottom:.3em;padding:.15em .6em;background:#f0f0f2;border-radius:999px;font-size:.78em;color:#555}
+        .fnh-shortcode-wrap .fnh-tv-card h3{margin:0 0 .5em;font-size:1.05em;color:var(--fnh-color-text);font-weight:700}
+        .fnh-shortcode-wrap .fnh-tv-terr,.fnh-shortcode-wrap .fnh-tv-idiomas,.fnh-shortcode-wrap .fnh-tv-cc{display:inline-block;margin-right:.4em;margin-bottom:.3em;padding:.15em .6em;background:var(--fnh-color-surface-alt);border-radius:999px;font-size:.78em;color:var(--fnh-color-text-soft)}
         .fnh-tv-cc{background:#dcfce7;color:#166534;font-weight:600}
 
         /* Página Fuentes: directorio agrupado por territorio */
-        .fnh-sources-directorio{padding:0}
-        .fnh-sources-territorio{margin:1.5rem 0 .5rem;font-size:1.1em;color:#111;font-weight:700;border-bottom:2px solid #111;padding-bottom:.2em;display:inline-block}
-        .fnh-sources-total{color:#888;font-weight:400;font-size:.88em}
-        .fnh-sources-lista{list-style:none;padding:0;margin:0 0 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.4rem}
-        .fnh-source-item a{display:flex;align-items:center;gap:.5rem;padding:.6rem .85rem;border:1px solid #ececec;border-radius:8px;text-decoration:none;color:inherit;background:#fafafa;transition:background .15s}
+        .fnh-shortcode-wrap .fnh-sources-directorio{padding:0}
+        .fnh-shortcode-wrap .fnh-sources-territorio{margin:1.5rem 0 .5rem;font-size:1.1em;color:var(--fnh-color-text);font-weight:700;border-bottom:2px solid var(--fnh-color-text);padding-bottom:.2em;display:inline-block}
+        .fnh-shortcode-wrap .fnh-sources-total{color:var(--fnh-color-text-soft);font-weight:400;font-size:.88em}
+        .fnh-shortcode-wrap .fnh-sources-lista{list-style:none;padding:0;margin:0 0 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.4rem}
+        .fnh-shortcode-wrap .fnh-source-item a{display:flex;align-items:center;gap:.5rem;padding:.6rem .85rem;border:1px solid var(--fnh-color-border);border-radius:8px;text-decoration:none;color:inherit;background:var(--fnh-color-surface-alt);transition:background .15s}
         .fnh-source-item a:hover{background:#f0f0f2}
-        .fnh-source-nombre{flex:1;font-weight:600;color:#111}
-        .fnh-source-idiomas,.fnh-source-tipo{font-size:.75em;color:#777;background:#fff;padding:.1em .5em;border-radius:4px}
+        .fnh-shortcode-wrap .fnh-source-nombre{flex:1;font-weight:600;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap .fnh-source-idiomas,.fnh-shortcode-wrap .fnh-source-tipo{font-size:.75em;color:var(--fnh-color-text-soft);background:var(--fnh-color-surface);padding:.1em .5em;border-radius:4px}
 
         /* Página Sobre */
-        .fnh-sobre{max-width:760px;margin:0 auto;line-height:1.6}
-        .fnh-sobre-hero{padding:1.5rem 0;border-bottom:1px solid #ececec;margin-bottom:1.5rem}
-        .fnh-sobre-hero h2{margin:0 0 .4em;font-size:1.7em;color:#111}
-        .fnh-sobre-hero p{font-size:1.1em;color:#444;margin:0}
-        .fnh-sobre-bloque{margin:2rem 0}
-        .fnh-sobre-bloque h3{margin:0 0 .8em;font-size:1.2em;color:#111;border-left:4px solid #3ddc84;padding-left:.6em}
-        .fnh-sobre-principios{padding-left:1.3em;margin:0}
-        .fnh-sobre-principios li{margin:.7em 0;color:#333}
-        .fnh-sobre-lista-plana{list-style:none;padding:0;margin:0}
-        .fnh-sobre-lista-plana li{padding:.4em 0 .4em 1.2em;position:relative;color:#444}
+        .fnh-shortcode-wrap .fnh-sobre{max-width:760px;margin:0 auto;line-height:1.6}
+        .fnh-shortcode-wrap .fnh-sobre-hero{padding:1.5rem 0;border-bottom:1px solid var(--fnh-color-border);margin-bottom:1.5rem}
+        .fnh-shortcode-wrap .fnh-sobre-hero h2{margin:0 0 .4em;font-size:1.7em;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap .fnh-sobre-hero p{font-size:1.1em;color:#444;margin:0}
+        .fnh-shortcode-wrap .fnh-sobre-bloque{margin:2rem 0}
+        .fnh-shortcode-wrap .fnh-sobre-bloque h3{margin:0 0 .8em;font-size:1.2em;color:var(--fnh-color-text);border-left:4px solid #3ddc84;padding-left:.6em}
+        .fnh-shortcode-wrap .fnh-sobre-principios{padding-left:1.3em;margin:0}
+        .fnh-shortcode-wrap .fnh-sobre-principios li{margin:.7em 0;color:#333}
+        .fnh-shortcode-wrap .fnh-sobre-lista-plana{list-style:none;padding:0;margin:0}
+        .fnh-shortcode-wrap .fnh-sobre-lista-plana li{padding:.4em 0 .4em 1.2em;position:relative;color:#444}
         .fnh-sobre-lista-plana li::before{content:\"·\";position:absolute;left:0;color:#3ddc84;font-size:1.4em;top:-.15em}
         .fnh-sobre-cta{display:inline-block;padding:.6rem 1.25rem;background:#111;color:#fff !important;border-radius:999px;text-decoration:none;font-weight:600;margin-top:.4em}
         .fnh-sobre-cta:hover{background:#000}
-        .fnh-vacio{text-align:center;padding:2rem;color:#888;font-style:italic}
 
-        .fnh-feed-lista,.fnh-radios-lista,.fnh-videos-grid{list-style:none;padding:0;margin:0}
-        .fnh-feed-lista li{padding:12px 0;border-bottom:1px solid #ececec}
-        .fnh-feed-lista h3{margin:0 0 4px;font-size:1.05em;line-height:1.3}
-        .fnh-feed-lista .fnh-meta{font-size:.85em;color:#666}
-        .fnh-videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-        .fnh-videos-grid .fnh-video{background:#000;border-radius:8px;overflow:hidden;position:relative;aspect-ratio:16/9}
-        .fnh-videos-grid .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
-        .fnh-videos-grid .fnh-video .fnh-video-title{position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:.9em}
-        .fnh-radios-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-        .fnh-radios-lista .fnh-radio{border:1px solid #ececec;border-radius:8px;padding:10px}
-        .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
-        .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
+        .fnh-shortcode-wrap .fnh-feed-lista,.fnh-shortcode-wrap .fnh-radios-lista,.fnh-shortcode-wrap .fnh-videos-grid{list-style:none;padding:0;margin:0}
+        .fnh-shortcode-wrap .fnh-feed-lista li{padding:12px 0;border-bottom:1px solid var(--fnh-color-border)}
+        .fnh-shortcode-wrap .fnh-feed-lista h3{margin:0 0 4px;font-size:1.05em;line-height:1.3}
+        .fnh-shortcode-wrap .fnh-feed-lista .fnh-meta{font-size:.85em;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap .fnh-feed-lista .fnh-excerpt{margin-top:.45rem}
+        .fnh-shortcode-wrap .fnh-videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+        .fnh-shortcode-wrap .fnh-videos-grid .fnh-video{background:#000;border-radius:8px;overflow:hidden;position:relative;aspect-ratio:16/9}
+        .fnh-shortcode-wrap .fnh-videos-grid .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap .fnh-videos-grid .fnh-video .fnh-video-title{position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:.9em}
+        .fnh-shortcode-wrap .fnh-video-card{display:grid;gap:.55rem}
+        .fnh-shortcode-wrap .fnh-radios-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio{border:1px solid var(--fnh-color-border);border-radius:8px;padding:10px;background:var(--fnh-color-surface)}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
         #fnh-landing{display:flex !important;flex-direction:column;gap:2.5rem;padding:0 !important;max-width:1200px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111 !important;background:transparent !important}
         #fnh-landing *{box-sizing:border-box}
         #fnh-landing h1,#fnh-landing h2,#fnh-landing h3,#fnh-landing h4{font-family:inherit;color:#111 !important;font-weight:700}
@@ -342,6 +762,30 @@ final class Shortcodes
         wp_register_style('flavor-news-hub-shortcodes', false);
         wp_enqueue_style('flavor-news-hub-shortcodes');
         wp_add_inline_style('flavor-news-hub-shortcodes', $css);
+
+        $js = <<<'JS'
+document.addEventListener('click', function (event) {
+    var trigger = event.target.closest('[data-fnh-copy-url]');
+    if (!trigger) {
+        return;
+    }
+    event.preventDefault();
+    var url = trigger.getAttribute('data-fnh-copy-url');
+    if (!url || !navigator.clipboard || !navigator.clipboard.writeText) {
+        return;
+    }
+    navigator.clipboard.writeText(url).then(function () {
+        var original = trigger.textContent;
+        trigger.textContent = 'Copiado';
+        window.setTimeout(function () {
+            trigger.textContent = original;
+        }, 1400);
+    });
+});
+JS;
+        wp_register_script('flavor-news-hub-shortcodes', '', [], false, true);
+        wp_enqueue_script('flavor-news-hub-shortcodes');
+        wp_add_inline_script('flavor-news-hub-shortcodes', $js);
     }
 
     /**
@@ -356,10 +800,11 @@ final class Shortcodes
             'language'       => '',
             'source'         => 0,
             'source_type'    => '',
-            'exclude_source_type' => 'video,youtube,podcast',
+            'exclude_source_type' => 'video,youtube,peertube,podcast',
             'show_excerpt'   => 1,
             'show_media'     => 1,
         ], $atribs);
+        $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language'], ['noticias', 'colectivos', 'podcasts']);
 
         $query = [
             'post_type'      => Item::SLUG,
@@ -373,7 +818,7 @@ final class Shortcodes
             $query['tax_query'] = [[
                 'taxonomy' => Topic::SLUG,
                 'field'    => 'slug',
-                'terms'    => array_map('sanitize_title', explode(',', $a['topic'])),
+                'terms'    => array_map('sanitize_title', explode(',', (string) $a['topic'])),
             ]];
         }
         if ((int) $a['source'] > 0) {
@@ -388,8 +833,9 @@ final class Shortcodes
                 (string) $a['source_type'],
                 (string) $a['exclude_source_type']
             );
+            $filtros = self::renderFiltrosPaginaAuto(self::paginaAutoActual(), ['topic', 'territory', 'language']);
             if (empty($idsSources)) {
-                return '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>';
+                return self::envolverShortcode('feed', '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
             }
             $query['meta_query'] = $query['meta_query'] ?? [];
             $query['meta_query'][] = [
@@ -400,8 +846,9 @@ final class Shortcodes
         }
 
         $consulta = new \WP_Query($query);
+        $filtros = self::renderFiltrosPaginaAuto(self::paginaAutoActual(), ['topic', 'territory', 'language']);
         if (empty($consulta->posts)) {
-            return '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>';
+            return self::envolverShortcode('feed', '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
         }
 
         ob_start();
@@ -430,10 +877,11 @@ final class Shortcodes
             if ((int) $a['show_excerpt'] === 1 && !empty($datos['excerpt'])) {
                 echo '<div class="fnh-excerpt">' . wp_kses_post($datos['excerpt']) . '</div>';
             }
+            echo self::renderBotonesCompartir((string) $urlOriginal, (string) $datos['title']);
             echo '</li>';
         }
         echo '</ul>';
-        return (string) ob_get_clean();
+        return self::envolverShortcode('feed', (string) ob_get_clean(), $filtros);
     }
 
     /**
@@ -443,9 +891,11 @@ final class Shortcodes
     {
         $a = shortcode_atts([
             'limit'     => 50,
+            'topic'     => '',
             'territory' => '',
             'language'  => '',
         ], $atribs);
+        $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language'], ['radios']);
 
         $query = [
             'post_type'      => Radio::SLUG,
@@ -454,11 +904,21 @@ final class Shortcodes
             'orderby'        => 'title',
             'order'          => 'ASC',
             'meta_query'     => [
-                'relation' => 'OR',
-                ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
-                ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                'relation' => 'AND',
+                [
+                    'relation' => 'OR',
+                    ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
+                    ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                ],
             ],
         ];
+        if ($a['topic'] !== '') {
+            $query['tax_query'] = [[
+                'taxonomy' => Topic::SLUG,
+                'field'    => 'slug',
+                'terms'    => array_map('sanitize_title', explode(',', (string) $a['topic'])),
+            ]];
+        }
         if ($a['territory'] !== '') {
             $query['meta_query'][] = [
                 'key'     => '_fnh_territory',
@@ -467,15 +927,15 @@ final class Shortcodes
             ];
         }
         if ($a['language'] !== '') {
-            $query['meta_query'][] = [
-                'key'     => '_fnh_languages',
-                'value'   => sanitize_key((string) $a['language']),
-                'compare' => 'LIKE',
-            ];
+            $queryIdiomas = self::construirMetaQueryIdiomas((string) $a['language']);
+            if ($queryIdiomas !== []) {
+                $query['meta_query'][] = $queryIdiomas;
+            }
         }
         $consulta = new \WP_Query($query);
+        $filtros = self::renderFiltrosPaginaAuto('radios', ['topic', 'territory', 'language']);
         if (empty($consulta->posts)) {
-            return '<p class="fnh-empty">' . esc_html__('No hay radios activas.', 'flavor-news-hub') . '</p>';
+            return self::envolverShortcode('radios', '<p class="fnh-empty">' . esc_html__('No hay radios activas.', 'flavor-news-hub') . '</p>', $filtros);
         }
         ob_start();
         echo '<ul class="fnh-radios-lista">';
@@ -505,7 +965,7 @@ final class Shortcodes
             echo '</li>';
         }
         echo '</ul>';
-        return (string) ob_get_clean();
+        return self::envolverShortcode('radios', (string) ob_get_clean(), $filtros);
     }
 
     /**
@@ -517,11 +977,15 @@ final class Shortcodes
         $a = shortcode_atts([
             'limit' => 12,
             'topic' => '',
+            'territory' => '',
+            'language' => '',
         ], $atribs);
+        $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language'], ['videos']);
 
-        $idsSourcesVideo = self::resolverIdsSources('', '', 'youtube,video', '');
+        $idsSourcesVideo = self::resolverIdsSources((string) $a['territory'], (string) $a['language'], 'youtube,video,peertube', '');
+        $filtros = self::renderFiltrosPaginaAuto('videos', ['topic', 'territory', 'language']);
         if (empty($idsSourcesVideo)) {
-            return '<p class="fnh-empty">' . esc_html__('Sin canales de vídeo configurados.', 'flavor-news-hub') . '</p>';
+            return self::envolverShortcode('videos', '<p class="fnh-empty">' . esc_html__('Sin canales de vídeo configurados.', 'flavor-news-hub') . '</p>', $filtros);
         }
         $query = [
             'post_type'      => Item::SLUG,
@@ -547,22 +1011,25 @@ final class Shortcodes
         }
         $consulta = new \WP_Query($query);
         if (empty($consulta->posts)) {
-            return '<p class="fnh-empty">' . esc_html__('Sin vídeos que mostrar.', 'flavor-news-hub') . '</p>';
+            return self::envolverShortcode('videos', '<p class="fnh-empty">' . esc_html__('Sin vídeos que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
         }
         ob_start();
         echo '<div class="fnh-videos-grid">';
         foreach ($consulta->posts as $post) {
             $datos = ItemTransformer::transformar($post);
             $url = $datos['original_url'] ?: $datos['url'];
+            echo '<article class="fnh-video-card">';
             printf('<a class="fnh-video" href="%s" target="_blank" rel="noopener">', esc_url($url));
             if (!empty($datos['media_url'])) {
                 printf('<img src="%s" alt="" loading="lazy" />', esc_url($datos['media_url']));
             }
             printf('<div class="fnh-video-title">%s</div>', esc_html($datos['title']));
             echo '</a>';
+            echo self::renderBotonesCompartir((string) $url, (string) $datos['title']);
+            echo '</article>';
         }
         echo '</div>';
-        return (string) ob_get_clean();
+        return self::envolverShortcode('videos', (string) ob_get_clean(), $filtros);
     }
 
     /**
@@ -596,8 +1063,10 @@ final class Shortcodes
                 esc_html__('Visitar web', 'flavor-news-hub')
             );
         }
+        $permalinkFuente = get_permalink(self::traducirPostId((int) $post->ID));
+        echo self::renderBotonesCompartir(is_string($permalinkFuente) ? $permalinkFuente : '', (string) get_the_title($post));
         echo '</section>';
-        return (string) ob_get_clean();
+        return self::envolverShortcode('source', (string) ob_get_clean());
     }
 
     /**
@@ -622,23 +1091,9 @@ final class Shortcodes
             ];
         }
         if ($idioma !== '') {
-            $codigos = array_filter(array_map('sanitize_key', array_map('trim', explode(',', $idioma))));
-            if (count($codigos) === 1) {
-                $metaQuery[] = [
-                    'key'     => '_fnh_languages',
-                    'value'   => reset($codigos),
-                    'compare' => 'LIKE',
-                ];
-            } elseif (count($codigos) > 1) {
-                $orQuery = ['relation' => 'OR'];
-                foreach ($codigos as $codigo) {
-                    $orQuery[] = [
-                        'key'     => '_fnh_languages',
-                        'value'   => $codigo,
-                        'compare' => 'LIKE',
-                    ];
-                }
-                $metaQuery[] = $orQuery;
+            $queryIdiomas = self::construirMetaQueryIdiomas($idioma);
+            if ($queryIdiomas !== []) {
+                $metaQuery[] = $queryIdiomas;
             }
         }
         if ($tiposSource !== '') {
@@ -919,7 +1374,8 @@ final class Shortcodes
             'meta_value'     => $clave,
         ]);
         if (empty($consulta->posts)) return '';
-        return (string) get_permalink($consulta->posts[0]->ID);
+        $postId = self::traducirPostId((int) $consulta->posts[0]->ID);
+        return (string) get_permalink($postId);
     }
 
     /**
@@ -936,7 +1392,7 @@ final class Shortcodes
             'meta_value'     => $clave,
         ]);
         if (empty($consulta->posts)) return '';
-        $url = (string) get_permalink($consulta->posts[0]->ID);
+        $url = (string) get_permalink(self::traducirPostId((int) $consulta->posts[0]->ID));
         return '<p class="fnh-ver-mas"><a href="' . esc_url($url) . '">' . esc_html__('Ver todo', 'flavor-news-hub') . ' →</a></p>';
     }
 
@@ -1017,6 +1473,13 @@ final class Shortcodes
      */
     public static function renderTv($atribs = [], $contenido = null): string
     {
+        $a = shortcode_atts([
+            'topic' => '',
+            'territory' => '',
+            'language' => '',
+        ], $atribs);
+        $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language'], ['tv']);
+
         $consulta = new \WP_Query([
             'post_type'      => Source::SLUG,
             'post_status'    => 'publish',
@@ -1026,16 +1489,31 @@ final class Shortcodes
                 ['key' => '_fnh_active', 'value' => '1'],
             ],
         ]);
+        $idsFiltrados = [];
+        if ($a['territory'] !== '' || $a['language'] !== '') {
+            $idsFiltrados = self::resolverIdsSources((string) $a['territory'], (string) $a['language'], '', '');
+        }
         $tvStations = [];
         foreach ($consulta->posts as $post) {
+            if (!empty($idsFiltrados) && !in_array((int) $post->ID, $idsFiltrados, true)) {
+                continue;
+            }
+            if ($a['topic'] !== '' && !has_term(
+                array_map('sanitize_title', explode(',', (string) $a['topic'])),
+                Topic::SLUG,
+                $post
+            )) {
+                continue;
+            }
             $medio = (string) get_post_meta($post->ID, '_fnh_medium_type', true);
             $tipo  = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
             $esTv  = $medio === 'tv_station'
                   || in_array($tipo, ['youtube', 'video', 'peertube'], true);
             if ($esTv) $tvStations[] = $post;
         }
+        $filtros = self::renderFiltrosPaginaAuto('tv', ['topic', 'territory', 'language']);
         if (empty($tvStations)) {
-            return '<p class="fnh-vacio">' . esc_html__('Todavía no hay canales de TV en el catálogo.', 'flavor-news-hub') . '</p>';
+            return self::envolverShortcode('tv', '<p class="fnh-vacio">' . esc_html__('Todavía no hay canales de TV en el catálogo.', 'flavor-news-hub') . '</p>', $filtros);
         }
         ob_start();
         ?><div class="fnh-tv-grid"><?php
@@ -1046,7 +1524,7 @@ final class Shortcodes
             if (!is_array($idiomas)) $idiomas = [];
             printf(
                 '<a class="fnh-tv-card" href="%s"><div class="fnh-tv-card-cuerpo"><h3>%s</h3>%s%s%s</div></a>',
-                esc_url((string) get_permalink($post)),
+                esc_url((string) get_permalink(self::traducirPostId((int) $post->ID))),
                 esc_html((string) get_the_title($post)),
                 $territ !== '' ? '<span class="fnh-tv-terr">' . esc_html($territ) . '</span>' : '',
                 !empty($idiomas) ? '<span class="fnh-tv-idiomas">' . esc_html(implode(', ', array_map('strval', $idiomas))) . '</span>' : '',
@@ -1054,7 +1532,7 @@ final class Shortcodes
             );
         }
         ?></div><?php
-        return (string) ob_get_clean();
+        return self::envolverShortcode('tv', (string) ob_get_clean(), $filtros);
     }
 
     /**
@@ -1080,19 +1558,58 @@ final class Shortcodes
      */
     public static function renderSources($atribs = [], $contenido = null): string
     {
-        $consulta = new \WP_Query([
+        $a = shortcode_atts([
+            'territory' => '',
+            'language' => '',
+            'topic' => '',
+            'source_type' => '',
+        ], $atribs);
+        $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language', 'source_type'], ['fuentes']);
+
+        $metaQuery = [
+            ['key' => '_fnh_active', 'value' => '1'],
+        ];
+        if ($a['territory'] !== '') {
+            $metaQuery[] = [
+                'key'     => '_fnh_territory',
+                'value'   => sanitize_text_field((string) $a['territory']),
+                'compare' => 'LIKE',
+            ];
+        }
+        if ($a['language'] !== '') {
+            $queryIdiomas = self::construirMetaQueryIdiomas((string) $a['language']);
+            if ($queryIdiomas !== []) {
+                $metaQuery[] = $queryIdiomas;
+            }
+        }
+        if ($a['source_type'] !== '') {
+            $metaQuery[] = [
+                'key'     => '_fnh_feed_type',
+                'value'   => sanitize_key((string) $a['source_type']),
+                'compare' => '=',
+            ];
+        }
+
+        $query = [
             'post_type'      => Source::SLUG,
             'post_status'    => 'publish',
             'posts_per_page' => 200,
             'orderby'        => 'title',
             'order'          => 'ASC',
             'no_found_rows'  => true,
-            'meta_query'     => [
-                ['key' => '_fnh_active', 'value' => '1'],
-            ],
-        ]);
+            'meta_query'     => $metaQuery,
+        ];
+        if ($a['topic'] !== '') {
+            $query['tax_query'] = [[
+                'taxonomy' => Topic::SLUG,
+                'field'    => 'slug',
+                'terms'    => array_map('sanitize_title', explode(',', (string) $a['topic'])),
+            ]];
+        }
+        $consulta = new \WP_Query($query);
+        $filtros = self::renderFiltrosPaginaAuto('fuentes', ['topic', 'territory', 'language', 'source_type']);
         if (empty($consulta->posts)) {
-            return '<p class="fnh-vacio">' . esc_html__('Todavía no hay fuentes en el catálogo.', 'flavor-news-hub') . '</p>';
+            return self::envolverShortcode('sources', '<p class="fnh-vacio">' . esc_html__('Todavía no hay fuentes en el catálogo.', 'flavor-news-hub') . '</p>', $filtros);
         }
         // Agrupar por territorio para dar estructura.
         $porTerritorio = [];
@@ -1114,7 +1631,7 @@ final class Shortcodes
                 $tipo = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
                 printf(
                     '<li class="fnh-source-item"><a href="%s"><span class="fnh-source-nombre">%s</span>%s%s</a></li>',
-                    esc_url((string) get_permalink($post)),
+                    esc_url((string) get_permalink(self::traducirPostId((int) $post->ID))),
                     esc_html((string) get_the_title($post)),
                     !empty($idiomas) ? '<span class="fnh-source-idiomas">' . esc_html(implode(', ', array_map('strval', $idiomas))) . '</span>' : '',
                     $tipo !== '' ? '<span class="fnh-source-tipo">' . esc_html($tipo) . '</span>' : ''
@@ -1123,7 +1640,7 @@ final class Shortcodes
             echo '</ul>';
         }
         ?></div><?php
-        return (string) ob_get_clean();
+        return self::envolverShortcode('sources', (string) ob_get_clean(), $filtros);
     }
 
     /**
@@ -1167,6 +1684,6 @@ final class Shortcodes
                 <p><a class="fnh-sobre-cta" href="https://github.com/JosuIru/flavor-news-hub" target="_blank" rel="noopener"><?php esc_html_e('Repositorio en GitHub', 'flavor-news-hub'); ?> →</a></p>
             </section>
         </div><?php
-        return (string) ob_get_clean();
+        return self::envolverShortcode('sobre', (string) ob_get_clean());
     }
 }
