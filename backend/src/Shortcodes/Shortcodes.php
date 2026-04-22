@@ -154,6 +154,12 @@ final class Shortcodes
         return (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
     }
 
+    private static function clasePaginaAutoActual(): string
+    {
+        $clave = self::paginaAutoActual();
+        return $clave !== '' ? 'fnh-page-auto fnh-page-auto--' . sanitize_html_class($clave) : '';
+    }
+
     /**
      * @param array<string, mixed> $atributos
      * @param list<string> $permitidos
@@ -417,11 +423,14 @@ final class Shortcodes
 
     private static function envolverShortcode(string $variant, string $contenido, string $filtros = ''): string
     {
+        $clasePagina = self::clasePaginaAutoActual();
+        $clasePagina = $clasePagina !== '' ? ' ' . $clasePagina : '';
         return sprintf(
-            '<div class="fnh-shortcode-wrap fnh-shortcode-wrap--%1$s">%2$s<div class="fnh-shortcode-body">%3$s</div></div>',
+            '<div class="fnh-shortcode-wrap fnh-shortcode-wrap--%1$s%4$s">%2$s<div class="fnh-shortcode-body">%3$s</div></div>',
             esc_attr($variant),
             $filtros,
-            $contenido
+            $contenido,
+            esc_attr($clasePagina)
         );
     }
 
@@ -635,6 +644,32 @@ final class Shortcodes
         .fnh-shortcode-wrap .fnh-feed-lista h3{margin:0 0 4px;font-size:1.05em;line-height:1.3}
         .fnh-shortcode-wrap .fnh-feed-lista .fnh-meta{font-size:.85em;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap .fnh-feed-lista .fnh-excerpt{margin-top:.45rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-lista{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;align-items:stretch}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item{display:flex;flex-direction:column;gap:.75rem;padding:0;border:1px solid var(--fnh-color-border);border-radius:18px;overflow:hidden;background:var(--fnh-color-surface);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-media{order:-1;margin:0}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-media img{width:100%;height:180px;object-fit:cover;display:block}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item h3{font-size:1.04em;line-height:1.25;margin:0}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-meta,
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-excerpt,
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-share{padding:0 1rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item h3,
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-media,
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-meta{padding-left:1rem;padding-right:1rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-meta{margin-top:-.15rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-excerpt{padding-bottom:.25rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item--destacado{grid-column:1/span 2;grid-row:span 2}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item--destacado .fnh-media img{height:320px}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item--destacado h3{font-size:1.25em}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item--destacado .fnh-excerpt{font-size:.98em}
+        @media (max-width:960px){
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-lista{grid-template-columns:repeat(2,minmax(0,1fr))}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item--destacado{grid-column:1/-1;grid-row:auto}
+        }
+        @media (max-width:640px){
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-lista{grid-template-columns:1fr}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item--destacado .fnh-media img,
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-media img{height:220px}
+        }
         .fnh-shortcode-wrap .fnh-videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
         .fnh-shortcode-wrap .fnh-videos-grid .fnh-video{background:#000;border-radius:8px;overflow:hidden;position:relative;aspect-ratio:16/9}
         .fnh-shortcode-wrap .fnh-videos-grid .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
@@ -851,14 +886,32 @@ JS;
             return self::envolverShortcode('feed', '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
         }
 
+        $esPaginaNoticias = self::paginaAutoActual() === 'noticias';
         ob_start();
-        echo '<ul class="fnh-feed-lista">';
-        foreach ($consulta->posts as $post) {
+        printf(
+            '<ul class="fnh-feed-lista%s">',
+            $esPaginaNoticias ? ' fnh-feed-lista--noticias' : ''
+        );
+        foreach ($consulta->posts as $indice => $post) {
             $datos = ItemTransformer::transformar($post);
             $fuenteNombre = $datos['source']['name'] ?? '';
             $urlOriginal = $datos['original_url'] ?: $datos['url'];
+            $clasesItem = 'fnh-feed-item';
+            if ($esPaginaNoticias && $indice === 0) {
+                $clasesItem .= ' fnh-feed-item--destacado';
+            }
             printf(
-                '<li><h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>',
+                '<li class="%s">',
+                esc_attr($clasesItem)
+            );
+            if ($esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
+                printf(
+                    '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
+                    esc_url($datos['media_url'])
+                );
+            }
+            printf(
+                '<h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>',
                 esc_url($urlOriginal),
                 esc_html($datos['title'])
             );
@@ -868,7 +921,7 @@ JS;
                 echo ' · ' . esc_html($fecha);
             }
             echo '</div>';
-            if ((int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
+            if (!$esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
                 printf(
                     '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
                     esc_url($datos['media_url'])
