@@ -3,7 +3,7 @@
  * Plugin Name:       Flavor News Hub
  * Plugin URI:        https://github.com/JosuIru/flavor-news-hub
  * Description:       Backend headless para agregar medios alternativos y listar colectivos organizados. CPTs, ingesta RSS, REST pública y admin de verificación. Complementario a Flavor Platform.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Flavor News Hub contributors
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Constantes básicas del plugin, referenciadas por el resto de clases.
-define('FNH_VERSION', '0.1.0');
+define('FNH_VERSION', '0.2.0');
 define('FNH_PLUGIN_FILE', __FILE__);
 define('FNH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('FNH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -53,6 +53,33 @@ spl_autoload_register(static function (string $nombreClaseCompleto): void {
 // Hooks de ciclo de vida del plugin.
 register_activation_hook(__FILE__, ['FlavorNewsHub\\Activation\\Activator', 'activate']);
 register_deactivation_hook(__FILE__, ['FlavorNewsHub\\Activation\\Deactivator', 'deactivate']);
+
+/*
+ * Auto-update del plugin vía GitHub Releases, usando plugin-update-checker
+ * (PUC). Con esto, WordPress muestra "Hay una actualización disponible"
+ * en la pantalla de Plugins y la admin puede actualizar con un clic,
+ * sin pasar por "Añadir nuevo → Subir zip".
+ *
+ * Cada release de GitHub debe llevar adjunto un zip del plugin (no el
+ * zip auto-generado del repo, que incluye el monorepo entero): el
+ * `enableReleaseAssets()` de abajo le dice a PUC que coja el primer
+ * asset `.zip` de la release, no el código fuente.
+ *
+ * Cargamos PUC vía el autoloader de Composer (está en vendor/ por la
+ * dep en composer.json). Si vendor/ no existe (dev con plugin sin
+ * composer install), simplemente no se activa el checker — el plugin
+ * funciona igual, sólo sin auto-update.
+ */
+if (is_readable(FNH_PLUGIN_DIR . 'vendor/autoload.php')) {
+    require_once FNH_PLUGIN_DIR . 'vendor/autoload.php';
+    $fnhUpdateChecker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+        'https://github.com/JosuIru/flavor-news-hub',
+        FNH_PLUGIN_FILE,
+        'flavor-news-hub'
+    );
+    $fnhUpdateChecker->setBranch('main');
+    $fnhUpdateChecker->getVcsApi()->enableReleaseAssets();
+}
 
 // Arranque tras cargar todos los plugins, para que las traducciones y otros
 // plugins estén disponibles si hiciera falta.
