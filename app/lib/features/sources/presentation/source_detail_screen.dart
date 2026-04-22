@@ -329,7 +329,7 @@ class _BadgeLicencia extends StatelessWidget {
     final esquema = Theme.of(context).colorScheme;
     final esCC = codigo.startsWith('cc-') || codigo == 'cc0-1.0';
     final fondo = esCC
-        ? Colors.green.withValues(alpha: 0.18)
+        ? Colors.green.withOpacity(0.18)
         : esquema.secondaryContainer;
     final color = esCC ? Colors.green.shade800 : esquema.onSecondaryContainer;
     return Container(
