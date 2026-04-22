@@ -29,6 +29,14 @@ final class CreadorPaginas
      */
     private const PAGINAS = [
         [
+            'clave'        => 'inicio',
+            'titulo'       => 'Inicio',
+            'slug'         => 'inicio',
+            'shortcode'    => '[flavor_news_landing]',
+            'preset_vbp'   => 'modern',
+            'secciones_vbp'=> ['hero'],
+        ],
+        [
             'clave'        => 'noticias',
             'titulo'       => 'Noticias',
             'slug'         => 'noticias',

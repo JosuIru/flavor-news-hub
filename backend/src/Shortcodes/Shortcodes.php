@@ -34,6 +34,7 @@ final class Shortcodes
         add_shortcode('flavor_news_radios', [self::class, 'renderRadios']);
         add_shortcode('flavor_news_videos', [self::class, 'renderVideos']);
         add_shortcode('flavor_news_source', [self::class, 'renderSource']);
+        add_shortcode('flavor_news_landing', [self::class, 'renderLanding']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
     }
 
@@ -50,7 +51,8 @@ final class Shortcodes
         if (!$post || !has_shortcode($post->post_content, 'flavor_news_feed')
             && !has_shortcode($post->post_content, 'flavor_news_radios')
             && !has_shortcode($post->post_content, 'flavor_news_videos')
-            && !has_shortcode($post->post_content, 'flavor_news_source')) {
+            && !has_shortcode($post->post_content, 'flavor_news_source')
+            && !has_shortcode($post->post_content, 'flavor_news_landing')) {
             return;
         }
         $css = "
@@ -66,6 +68,28 @@ final class Shortcodes
         .fnh-radios-lista .fnh-radio{border:1px solid #ececec;border-radius:8px;padding:10px}
         .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
         .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
+        .fnh-landing{display:flex;flex-direction:column;gap:3rem;padding:1rem 0}
+        .fnh-landing .fnh-hero{text-align:center;padding:2rem 0 1rem;border-bottom:1px solid #ececec}
+        .fnh-landing .fnh-hero h1{font-size:2.2em;margin:0 0 .4em}
+        .fnh-landing .fnh-hero .fnh-lema{font-size:1.15em;color:#555;max-width:42ch;margin:0 auto}
+        .fnh-landing .fnh-bloque h2{margin:0 0 1rem;font-size:1.4em;border-bottom:2px solid #111;padding-bottom:.3em;display:inline-block}
+        .fnh-landing .fnh-ver-mas{margin-top:.75rem;text-align:right}
+        .fnh-landing .fnh-ver-mas a{color:#555;text-decoration:none;font-size:.92em}
+        .fnh-landing .fnh-ver-mas a:hover{color:#000}
+        .fnh-landing .fnh-sonando-cols{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+        .fnh-landing .fnh-sonando-col h3{margin:0 0 .6rem;font-size:1em;text-transform:uppercase;letter-spacing:.05em;color:#666}
+        @media (max-width:640px){.fnh-landing .fnh-sonando-cols{grid-template-columns:1fr}}
+        .fnh-landing .fnh-destacado .fnh-embed-ratio{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+        .fnh-landing .fnh-destacado .fnh-embed-ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+        .fnh-landing .fnh-destacado .fnh-destacado-card{display:block;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+        .fnh-landing .fnh-destacado .fnh-destacado-card img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-landing .fnh-destacado .fnh-destacado-meta{margin-top:.6rem;font-size:.95em;color:#444}
+        .fnh-landing .fnh-descarga{background:#0a0a0a;color:#fff;padding:2rem;border-radius:12px;text-align:center}
+        .fnh-landing .fnh-descarga h2{margin-top:0;color:#fff;border-color:#3ddc84}
+        .fnh-landing .fnh-descarga .fnh-version{font-size:.9em;opacity:.75;margin-bottom:1.2em}
+        .fnh-landing .fnh-boton-descarga{display:inline-block;padding:.9rem 2rem;background:#3ddc84;color:#0a0a0a;border-radius:999px;font-weight:700;text-decoration:none;font-size:1.05em}
+        .fnh-landing .fnh-boton-descarga:hover{background:#5ae89a}
+        .fnh-landing .fnh-repo{text-align:center;font-size:.9em;color:#777}
         ";
         wp_register_style('flavor-news-hub-shortcodes', false);
         wp_enqueue_style('flavor-news-hub-shortcodes');
@@ -405,5 +429,221 @@ final class Shortcodes
             'meta_query'     => $metaQuery,
         ]);
         return array_map('intval', $consulta->posts);
+    }
+
+    /**
+     * Landing pública del proyecto — pensada como home editorial real,
+     * no como página de descarga. Combina:
+     *  - Hero compacto con lema.
+     *  - Últimas noticias (reutiliza renderFeed).
+     *  - Últimos vídeos (reutiliza renderVideos).
+     *  - "Sonando ahora": radios libres + últimos episodios de podcast.
+     *  - Vídeo destacado aleatorio, sólo de fuentes con licencia CC
+     *    (coherencia con la política de embed: no reproducimos
+     *    contenido ajeno sin licencia libre). Si es PeerTube usamos
+     *    iframe embed; si no, card con miniatura y enlace al original.
+     *  - CTA de descarga de la app Android (URL dinámica via cache OTA).
+     *
+     * La URL de descarga sale del transient que alimenta
+     * `AppUpdateEndpoint`. Si no está poblado todavía, caemos al
+     * `releases/latest` de GitHub.
+     */
+    public static function renderLanding($atribs = [], $contenido = null): string
+    {
+        $cache       = get_transient('fnh_app_update_cache');
+        $urlDescarga = is_array($cache) && !empty($cache['download_url'])
+            ? (string) $cache['download_url']
+            : 'https://github.com/JosuIru/flavor-news-hub/releases/latest';
+        $version = is_array($cache) && !empty($cache['version'])
+            ? (string) $cache['version']
+            : '';
+
+        $videoDestacado = self::obtenerItemVideoCCAleatorio();
+
+        ob_start();
+        ?>
+        <div class="fnh-landing">
+            <section class="fnh-hero">
+                <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
+                <p class="fnh-lema"><?php esc_html_e('Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados).', 'flavor-news-hub'); ?></p>
+            </section>
+
+            <section class="fnh-bloque">
+                <h2><?php esc_html_e('Últimas noticias', 'flavor-news-hub'); ?></h2>
+                <?php echo self::renderFeed(['limit' => 6, 'show_excerpt' => 1, 'show_media' => 1]); ?>
+                <?php echo self::enlaceVerMas('noticias'); ?>
+            </section>
+
+            <section class="fnh-bloque">
+                <h2><?php esc_html_e('Últimos vídeos', 'flavor-news-hub'); ?></h2>
+                <?php echo self::renderVideos(['limit' => 4]); ?>
+                <?php echo self::enlaceVerMas('videos'); ?>
+            </section>
+
+            <section class="fnh-bloque">
+                <h2><?php esc_html_e('Sonando ahora', 'flavor-news-hub'); ?></h2>
+                <div class="fnh-sonando-cols">
+                    <div class="fnh-sonando-col">
+                        <h3><?php esc_html_e('Radios libres', 'flavor-news-hub'); ?></h3>
+                        <?php echo self::renderRadios(['limit' => 4]); ?>
+                    </div>
+                    <div class="fnh-sonando-col">
+                        <h3><?php esc_html_e('Podcasts recientes', 'flavor-news-hub'); ?></h3>
+                        <?php echo self::renderFeed([
+                            'limit'               => 5,
+                            'show_excerpt'        => 0,
+                            'show_media'          => 0,
+                            'source_type'         => 'podcast',
+                            'exclude_source_type' => '',
+                        ]); ?>
+                    </div>
+                </div>
+                <?php echo self::enlaceVerMas('radios'); ?>
+            </section>
+
+            <?php if ($videoDestacado !== null) :
+                $embed = self::peertubeEmbedUrl($videoDestacado['url']);
+            ?>
+            <section class="fnh-bloque fnh-destacado">
+                <h2><?php esc_html_e('Vídeo destacado', 'flavor-news-hub'); ?></h2>
+                <?php if ($embed !== null) : ?>
+                    <div class="fnh-embed-ratio">
+                        <iframe src="<?php echo esc_url($embed); ?>"
+                                title="<?php echo esc_attr($videoDestacado['title']); ?>"
+                                frameborder="0"
+                                allow="autoplay; fullscreen; picture-in-picture"
+                                allowfullscreen></iframe>
+                    </div>
+                <?php elseif ($videoDestacado['media_url'] !== '') : ?>
+                    <a class="fnh-destacado-card" href="<?php echo esc_url($videoDestacado['url']); ?>" target="_blank" rel="noopener">
+                        <img src="<?php echo esc_url($videoDestacado['media_url']); ?>" alt="" loading="lazy" />
+                    </a>
+                <?php endif; ?>
+                <p class="fnh-destacado-meta">
+                    <strong><?php echo esc_html($videoDestacado['title']); ?></strong>
+                    <?php if ($videoDestacado['source_name'] !== '') : ?>
+                        · <?php echo esc_html($videoDestacado['source_name']); ?>
+                    <?php endif; ?>
+                </p>
+            </section>
+            <?php endif; ?>
+
+            <section class="fnh-descarga">
+                <h2><?php esc_html_e('Descarga la app Android', 'flavor-news-hub'); ?></h2>
+                <?php if ($version !== '') : ?>
+                    <div class="fnh-version"><?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: número de versión publicado */
+                            __('Versión %s', 'flavor-news-hub'),
+                            $version
+                        ));
+                    ?></div>
+                <?php endif; ?>
+                <a class="fnh-boton-descarga"
+                   href="<?php echo esc_url($urlDescarga); ?>"
+                   <?php echo str_ends_with($urlDescarga, '.apk') ? 'download' : 'target="_blank" rel="noopener"'; ?>>
+                    <?php esc_html_e('Descargar APK', 'flavor-news-hub'); ?>
+                </a>
+            </section>
+
+            <section class="fnh-repo">
+                <p>
+                    <a href="https://github.com/JosuIru/flavor-news-hub" target="_blank" rel="noopener">
+                        <?php esc_html_e('Código fuente en GitHub', 'flavor-news-hub'); ?>
+                    </a>
+                    &nbsp;·&nbsp; <?php esc_html_e('Licencia AGPL 3.0', 'flavor-news-hub'); ?>
+                </p>
+            </section>
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Enlace "Ver más" a la página auto-generada indicada, si existe.
+     */
+    private static function enlaceVerMas(string $clave): string
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => 'page',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'no_found_rows'  => true,
+            'meta_key'       => '_fnh_pagina_auto',
+            'meta_value'     => $clave,
+        ]);
+        if (empty($consulta->posts)) return '';
+        $url = (string) get_permalink($consulta->posts[0]->ID);
+        return '<p class="fnh-ver-mas"><a href="' . esc_url($url) . '">' . esc_html__('Ver todo', 'flavor-news-hub') . ' →</a></p>';
+    }
+
+    /**
+     * Busca un item aleatorio proveniente de fuentes con licencia CC
+     * (incluye `mixed` porque las instancias PeerTube declaran así a
+     * pesar de que la mayoría de vídeos sí son CC). Filtra por sources
+     * activas y medium_type=video.
+     *
+     * @return array{title:string,url:string,media_url:string,source_name:string}|null
+     */
+    private static function obtenerItemVideoCCAleatorio(): ?array
+    {
+        $sources = get_posts([
+            'post_type'      => 'fnh_source',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                'relation' => 'AND',
+                ['key' => '_fnh_medium_type', 'value' => 'video'],
+                [
+                    'relation' => 'OR',
+                    ['key' => '_fnh_content_license', 'value' => 'cc-', 'compare' => 'LIKE'],
+                    ['key' => '_fnh_content_license', 'value' => 'public-domain'],
+                    ['key' => '_fnh_content_license', 'value' => 'mixed'],
+                ],
+            ],
+        ]);
+        if (empty($sources)) return null;
+
+        $item = get_posts([
+            'post_type'      => 'fnh_item',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'orderby'        => 'rand',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                [
+                    'key'     => '_fnh_source_id',
+                    'value'   => array_map('strval', $sources),
+                    'compare' => 'IN',
+                ],
+            ],
+        ]);
+        if (empty($item)) return null;
+        $post = $item[0];
+        $idPost = (int) $post->ID;
+        $idSource = (int) get_post_meta($idPost, '_fnh_source_id', true);
+        return [
+            'title'       => (string) get_the_title($post),
+            'url'         => (string) get_post_meta($idPost, '_fnh_original_url', true),
+            'media_url'   => (string) get_post_meta($idPost, '_fnh_media_url', true),
+            'source_name' => $idSource > 0 ? (string) get_the_title($idSource) : '',
+        ];
+    }
+
+    /**
+     * Convierte una URL pública de PeerTube (`/w/<id>` o
+     * `/videos/watch/<uuid>`) a la variante `/videos/embed/<id>` que
+     * PeerTube sirve sin auth y embeddable por iframe. Devuelve null
+     * si no reconoce el patrón — el llamante degrada a enlace externo.
+     */
+    private static function peertubeEmbedUrl(string $url): ?string
+    {
+        if ($url === '') return null;
+        if (preg_match('#^(https?://[^/]+)/(?:w|videos/watch)/([A-Za-z0-9_-]+)#', $url, $m)) {
+            return $m[1] . '/videos/embed/' . $m[2];
+        }
+        return null;
     }
 }
