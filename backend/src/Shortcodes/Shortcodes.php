@@ -129,7 +129,7 @@ final class Shortcodes
         #fnh-landing .fnh-feed-lista .fnh-excerpt{font-size:.92em;color:#333;line-height:1.5}
         #fnh-landing .fnh-feed-lista .fnh-excerpt p{margin:.25em 0 !important}
 
-        /* En la columna "Podcasts recientes" los items son compactos y sin imagen. */
+        /* En la columna de Podcasts recientes los items son compactos y sin imagen. */
         #fnh-landing .fnh-sonando-col .fnh-feed-lista li{display:block !important;grid-template-columns:none !important;padding:.7rem 0 !important}
         #fnh-landing .fnh-sonando-col .fnh-feed-lista .fnh-media{display:none !important}
         #fnh-landing .fnh-sonando-col .fnh-feed-lista .fnh-excerpt{display:none !important}
