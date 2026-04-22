@@ -1965,5 +1965,54 @@
   "legal_note": "Financiación estatal: Estado iraní. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
   "has_live_stream": true,
   "live_stream_permit": "none"
+ },
+ {
+  "id": 7291,
+  "name": "Carne Cruda",
+  "slug": "carne-cruda",
+  "feed_url": "https://www.carnecruda.es/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.carnecruda.es",
+  "territory": "Estado español",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "cultura",
+   "laboral",
+   "feminismos"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7292,
+  "name": "Jot Down",
+  "slug": "jot-down",
+  "feed_url": "https://www.jotdown.es/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.jotdown.es",
+  "territory": "Estado español",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "cultura",
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
  }
 ]
