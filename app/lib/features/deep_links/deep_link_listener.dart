@@ -1,16 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/providers/api_provider.dart';
+import '../../core/routing/app_router.dart';
 import '../radios/data/reproductor_radio_notifier.dart';
 
 /// Escucha deep-links `flavornews://…` emitidos por los widgets Android y
 /// ejecuta la acción correspondiente dentro de la app.
 ///
-/// Patrón soportado en v1:
+/// Patrones soportados:
 ///   flavornews://radios/play/<id>  → navega a /audio y arranca esa radio
+///   flavornews://items/<id>        → abre el detalle de ese item
 ///
 /// Se registra una sola vez al arrancar la app. El canal nativo vive en
 /// `MainActivity.kt` y expone dos caminos: `getInitial` para cold-start y
@@ -52,8 +53,12 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
   }
 
   void _procesar(String uriRaw) {
+    debugPrint('[DeepLink] recibido: $uriRaw');
     final uri = Uri.tryParse(uriRaw);
-    if (uri == null || uri.scheme != 'flavornews') return;
+    if (uri == null || uri.scheme != 'flavornews') {
+      debugPrint('[DeepLink] scheme inválido o URI mal formado');
+      return;
+    }
 
     // Ruta `radios/play/<id>`: uri.host == 'radios'; uri.path == '/play/<id>'
     if (uri.host == 'radios') {
@@ -66,13 +71,38 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
         }
       }
     }
+
+    // Ruta `items/<id>`: desde el widget de titulares del home. Envuelto
+    // en PostFrameCallback + try/catch porque en cold-start GoRouter
+    // puede no estar attached todavía cuando llega el URI inicial.
+    if (uri.host == 'items') {
+      final segmentos = uri.pathSegments;
+      if (segmentos.length == 1) {
+        final idItem = int.tryParse(segmentos[0]);
+        if (idItem != null) {
+          // Usamos el provider del router directamente porque el
+          // `DeepLinkListener` vive en el `builder` de MaterialApp.router,
+          // por encima del Navigator — `GoRouter.of(context)` no lo
+          // encuentra ahí.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            try {
+              ref.read(enrutadorProvider).push('/items/$idItem');
+            } catch (_) {}
+          });
+        }
+      }
+    }
+
+    // (`flavornews://refresh` se eliminó: el widget usa un broadcast
+    // nativo propio para refrescar sin abrir la app.)
   }
 
   Future<void> _lanzarRadio(int idRadio) async {
     // Navegamos a /audio y, cuando el directorio de radios esté cargado,
     // buscamos la radio y arrancamos su stream.
     if (!mounted) return;
-    GoRouter.of(context).go('/audio');
+    ref.read(enrutadorProvider).go('/audio');
     // Esperamos al siguiente frame antes de pedir el provider: si la app
     // arranca fría, `radiosProvider` puede tardar en resolverse.
     WidgetsBinding.instance.addPostFrameCallback((_) async {

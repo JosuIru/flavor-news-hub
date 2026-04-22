@@ -9,7 +9,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6933,
@@ -21,7 +22,8 @@
   "territory": "Internacional",
   "languages": [
    "fr"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6452,
@@ -33,7 +35,8 @@
   "territory": "Euskal Herria",
   "languages": [
    "eu"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6611,
@@ -47,7 +50,8 @@
    "es",
    "en",
    "fr"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6753,
@@ -59,7 +63,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6283,
@@ -71,7 +76,8 @@
   "territory": "Aragón",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6464,
@@ -83,7 +89,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6414,
@@ -95,7 +102,8 @@
   "territory": "Euskal Herria",
   "languages": [
    "eu"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6133,
@@ -107,7 +115,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6463,
@@ -119,7 +128,8 @@
   "territory": "Catalunya",
   "languages": [
    "ca"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6931,
@@ -131,6 +141,9 @@
   "territory": "Estado Español",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "memoria-historica"
   ]
  },
  {
@@ -143,7 +156,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6132,
@@ -155,7 +169,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6752,
@@ -167,7 +182,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6065,
@@ -177,7 +193,13 @@
   "feed_type": "rss",
   "website_url": "https://www.elsaltodiario.com",
   "territory": "Estado",
-  "languages": []
+  "languages": [],
+  "topics": [
+   "vivienda",
+   "laboral",
+   "feminismos",
+   "ecologismo"
+  ]
  },
  {
   "id": 6282,
@@ -189,7 +211,8 @@
   "territory": "Andalucía",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7100,
@@ -201,7 +224,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6919,
@@ -213,7 +237,8 @@
   "territory": "Navarra",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7101,
@@ -225,7 +250,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6608,
@@ -237,7 +263,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6715,
@@ -249,7 +276,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6416,
@@ -262,18 +290,9 @@
   "languages": [
    "eu",
    "es"
-  ]
- },
- {
-  "id": 7103,
-  "name": "Hipertextual",
-  "slug": "hipertextual",
-  "feed_url": "https://hipertextual.com/feed",
-  "feed_type": "rss",
-  "website_url": "https://hipertextual.com/",
-  "territory": "Estado Español",
-  "languages": [
-   "es"
+  ],
+  "topics": [
+   "memoria-historica"
   ]
  },
  {
@@ -286,7 +305,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6612,
@@ -300,7 +320,8 @@
    "es",
    "fr",
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6930,
@@ -312,7 +333,8 @@
   "territory": "Estado Español",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6280,
@@ -324,6 +346,10 @@
   "territory": "Internacional",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
   ]
  },
  {
@@ -336,7 +362,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6281,
@@ -348,7 +375,8 @@
   "territory": "Catalunya",
   "languages": [
    "ca"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6751,
@@ -360,7 +388,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6124,
@@ -372,6 +401,11 @@
   "territory": "Estado",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "feminismos",
+   "ecologismo",
+   "cultura"
   ]
  },
  {
@@ -384,6 +418,10 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "ecologismo",
+   "tecnologia-soberana"
   ]
  },
  {
@@ -398,7 +436,8 @@
    "en",
    "es",
    "de"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6748,
@@ -410,7 +449,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6607,
@@ -422,7 +462,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6928,
@@ -434,6 +475,11 @@
   "territory": "Internacional",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "ecologismo",
+   "internacional",
+   "rural"
   ]
  },
  {
@@ -446,6 +492,10 @@
   "territory": "Estado Español",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "cultura",
+   "tecnologia-soberana"
   ]
  },
  {
@@ -458,6 +508,10 @@
   "territory": "Estado Español",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
   ]
  },
  {
@@ -470,6 +524,10 @@
   "territory": "Galicia",
   "languages": [
    "gl"
+  ],
+  "topics": [
+   "cultura",
+   "memoria-historica"
   ]
  },
  {
@@ -482,6 +540,10 @@
   "territory": "Estado",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "feminismos",
+   "cuidados"
   ]
  },
  {
@@ -494,7 +556,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6609,
@@ -507,7 +570,8 @@
   "languages": [
    "ca",
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7105,
@@ -519,6 +583,10 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "internacional",
+   "tecnologia-soberana"
   ]
  },
  {
@@ -531,7 +599,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6269,
@@ -543,7 +612,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6465,
@@ -555,6 +625,9 @@
   "territory": "Internacional",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "cultura"
   ]
  },
  {
@@ -567,7 +640,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7106,
@@ -579,6 +653,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -591,7 +668,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6779,
@@ -603,7 +681,8 @@
   "territory": "Estado",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6610,
@@ -616,7 +695,8 @@
   "languages": [
    "es",
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 6466,
@@ -628,6 +708,10 @@
   "territory": "Estado",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
   ]
  },
  {
@@ -640,6 +724,10 @@
   "territory": "Catalunya",
   "languages": [
    "ca"
+  ],
+  "topics": [
+   "cultura",
+   "memoria-historica"
   ]
  },
  {
@@ -652,6 +740,9 @@
   "territory": "Estado Español",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -664,6 +755,9 @@
   "territory": "Euskal Herria",
   "languages": [
    "eu"
+  ],
+  "topics": [
+   "cultura"
   ]
  },
  {
@@ -677,6 +771,9 @@
   "languages": [
    "fr",
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -689,6 +786,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -701,6 +801,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -713,6 +816,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -725,6 +831,10 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana",
+   "cultura"
   ]
  },
  {
@@ -737,6 +847,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -749,6 +862,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -761,6 +877,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -773,6 +892,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -785,6 +907,9 @@
   "territory": "Internacional",
   "languages": [
    "en"
+  ],
+  "topics": [
+   "internacional"
   ]
  },
  {
@@ -797,6 +922,9 @@
   "territory": "Internacional",
   "languages": [
    "fr"
+  ],
+  "topics": [
+   "tecnologia-soberana"
   ]
  },
  {
@@ -809,6 +937,9 @@
   "territory": "España",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "cultura"
   ]
  },
  {
@@ -821,6 +952,9 @@
   "territory": "España",
   "languages": [
    "es"
+  ],
+  "topics": [
+   "economia-social"
   ]
  },
  {
@@ -833,7 +967,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7133,
@@ -845,7 +980,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7134,
@@ -857,7 +993,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7135,
@@ -869,7 +1006,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7136,
@@ -881,7 +1019,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7137,
@@ -893,7 +1032,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7138,
@@ -905,7 +1045,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7139,
@@ -917,7 +1058,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7140,
@@ -929,7 +1071,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7141,
@@ -941,7 +1084,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7142,
@@ -953,7 +1097,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7143,
@@ -965,7 +1110,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7144,
@@ -977,7 +1123,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7145,
@@ -989,7 +1136,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7146,
@@ -1001,7 +1149,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7147,
@@ -1013,7 +1162,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7148,
@@ -1025,7 +1175,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7149,
@@ -1037,7 +1188,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7150,
@@ -1049,7 +1201,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7151,
@@ -1061,7 +1214,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7152,
@@ -1074,7 +1228,8 @@
   "languages": [
    "de",
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7153,
@@ -1086,7 +1241,8 @@
   "territory": "Internacional",
   "languages": [
    "en"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7154,
@@ -1098,7 +1254,8 @@
   "territory": "Internacional",
   "languages": [
    "es"
-  ]
+  ],
+  "topics": []
  },
  {
   "id": 7155,
@@ -1110,6 +1267,299 @@
   "territory": "Internacional",
   "languages": [
    "es"
+  ],
+  "topics": []
+ },
+ {
+  "id": 7156,
+  "name": "Askapena",
+  "slug": "askapena",
+  "feed_url": "https://www.askapena.org/feed",
+  "feed_type": "rss",
+  "website_url": "https://www.askapena.org",
+  "territory": "Euskal Herria",
+  "languages": [
+   "eu",
+   "es"
+  ],
+  "topics": [
+   "internacional",
+   "memoria-historica"
+  ]
+ },
+ {
+  "id": 7157,
+  "name": "97 Irratia",
+  "slug": "97-irratia",
+  "feed_url": "https://97irratia.info/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://97irratia.info",
+  "territory": "Bortziri",
+  "languages": [
+   "eu"
+  ],
+  "topics": []
+ },
+ {
+  "id": 7158,
+  "name": "Tas Tas Irratia",
+  "slug": "tas-tas-irratia",
+  "feed_url": "https://tastasirratia.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://tastasirratia.org",
+  "territory": "Bilbo",
+  "languages": [
+   "eu"
+  ],
+  "topics": [
+   "memoria-historica"
+  ]
+ },
+ {
+  "id": 7159,
+  "name": "Aiaraldea Komunikabidea",
+  "slug": "aiaraldea-komunikabidea",
+  "feed_url": "https://aiaraldea.eus/feed",
+  "feed_type": "podcast",
+  "website_url": "https://aiaraldea.eus",
+  "territory": "Aiara",
+  "languages": [
+   "eu"
+  ],
+  "topics": [
+   "memoria-historica",
+   "cultura"
+  ]
+ },
+ {
+  "id": 7160,
+  "name": "La Tele",
+  "slug": "la-tele",
+  "feed_url": "https://latele.cat/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://latele.cat",
+  "territory": "Barcelona",
+  "languages": [
+   "ca"
+  ],
+  "topics": [
+   "cultura"
+  ]
+ },
+ {
+  "id": 7161,
+  "name": "Ràdio Pica",
+  "slug": "r-dio-pica",
+  "feed_url": "https://radiopica.cat/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radiopica.cat",
+  "territory": "Barcelona",
+  "languages": [
+   "ca"
+  ],
+  "topics": []
+ },
+ {
+  "id": 7162,
+  "name": "Ràdio Klara",
+  "slug": "r-dio-klara",
+  "feed_url": "https://radioklara.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radioklara.org",
+  "territory": "València",
+  "languages": [
+   "ca",
+   "es"
+  ],
+  "topics": []
+ },
+ {
+  "id": 7163,
+  "name": "Cuac FM",
+  "slug": "cuac-fm",
+  "feed_url": "https://cuacfm.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://cuacfm.org",
+  "territory": "A Coruña",
+  "languages": [
+   "gl"
+  ],
+  "topics": [
+   "cultura"
+  ]
+ },
+ {
+  "id": 7164,
+  "name": "Radio Kras",
+  "slug": "radio-kras",
+  "feed_url": "https://radiokras.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radiokras.org",
+  "territory": "Asturies",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "memoria-historica"
+  ]
+ },
+ {
+  "id": 7165,
+  "name": "Radio Almenara",
+  "slug": "radio-almenara",
+  "feed_url": "https://radioalmenara.net/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radioalmenara.net",
+  "territory": "Madrid",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "migraciones",
+   "laboral",
+   "cultura"
+  ]
+ },
+ {
+  "id": 7166,
+  "name": "Radio Enlace",
+  "slug": "radio-enlace",
+  "feed_url": "https://radioenlace.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radioenlace.org",
+  "territory": "Madrid",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "cultura"
+  ]
+ },
+ {
+  "id": 7167,
+  "name": "Radio Carcoma",
+  "slug": "radio-carcoma",
+  "feed_url": "https://radiocarcoma.com/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radiocarcoma.com",
+  "territory": "Madrid",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "memoria-historica"
+  ]
+ },
+ {
+  "id": 7168,
+  "name": "Radio Pimienta",
+  "slug": "radio-pimienta",
+  "feed_url": "https://radiopimienta.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radiopimienta.org",
+  "territory": "Tenerife",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "ecologismo",
+   "migraciones"
+  ]
+ },
+ {
+  "id": 7169,
+  "name": "Onda Polígono",
+  "slug": "onda-poligono",
+  "feed_url": "https://ondapoligono.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://ondapoligono.org",
+  "territory": "Toledo",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "migraciones",
+   "cultura"
+  ]
+ },
+ {
+  "id": 7170,
+  "name": "Radio Onda Rossa",
+  "slug": "radio-onda-rossa",
+  "feed_url": "https://www.ondarossa.info/rss/news.xml",
+  "feed_type": "podcast",
+  "website_url": "https://www.ondarossa.info",
+  "territory": "Roma",
+  "languages": [
+   "it"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
+  ]
+ },
+ {
+  "id": 7171,
+  "name": "Radio Blackout",
+  "slug": "radio-blackout",
+  "feed_url": "https://radioblackout.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radioblackout.org",
+  "territory": "Torino",
+  "languages": [
+   "it"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
+  ]
+ },
+ {
+  "id": 7172,
+  "name": "A-Radio Berlin",
+  "slug": "a-radio-berlin",
+  "feed_url": "https://aradio.blogsport.de/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://aradio.blogsport.de",
+  "territory": "Berlin",
+  "languages": [
+   "de"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
+  ]
+ },
+ {
+  "id": 7173,
+  "name": "Radio Libertaire",
+  "slug": "radio-libertaire",
+  "feed_url": "https://rl.federation-anarchiste.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://rl.federation-anarchiste.org",
+  "territory": "París",
+  "languages": [
+   "fr"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
+  ]
+ },
+ {
+  "id": 7174,
+  "name": "Radio Canut",
+  "slug": "radio-canut",
+  "feed_url": "https://radiocanut.org/feed/",
+  "feed_type": "podcast",
+  "website_url": "https://radiocanut.org",
+  "territory": "Lyon",
+  "languages": [
+   "fr"
+  ],
+  "topics": [
+   "memoria-historica",
+   "internacional"
   ]
  }
 ]

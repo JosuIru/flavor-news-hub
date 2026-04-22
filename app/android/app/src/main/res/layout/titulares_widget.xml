@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingBottom="6dp">
+        android:paddingBottom="4dp">
         <TextView
             android:id="@+id/widget_titulo"
             android:layout_width="0dp"
@@ -22,23 +22,35 @@
             android:textColor="@android:color/white"
             android:textStyle="bold"
             android:textSize="13sp" />
+        <!-- Zona táctil de 48dp (mínimo de Material), con el icono
+             centrado dentro. Sin esto Android fusiona el tap con el
+             resto del widget — el usuario ve "es todo un enlace". -->
         <ImageView
             android:id="@+id/widget_refrescar"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
             android:src="@android:drawable/ic_popup_sync"
             android:contentDescription="@string/widget_refrescar" />
     </LinearLayout>
 
+    <!-- Cada titular es ahora su propio "botón" táctil: padding
+         vertical generoso + background seleccionable para que Android
+         lo trate como zona independiente (≥48dp alto). -->
     <TextView
         android:id="@+id/titular_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="center_vertical"
         android:maxLines="2"
         android:ellipsize="end"
         android:textColor="@android:color/white"
         android:textSize="13sp"
-        android:paddingBottom="4dp" />
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp"
+        android:background="?android:attr/selectableItemBackground" />
     <TextView
         android:id="@+id/titular_1_fuente"
         android:layout_width="match_parent"
@@ -53,11 +65,15 @@
         android:id="@+id/titular_2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="center_vertical"
         android:maxLines="2"
         android:ellipsize="end"
         android:textColor="@android:color/white"
         android:textSize="13sp"
-        android:paddingBottom="4dp" />
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp"
+        android:background="?android:attr/selectableItemBackground" />
     <TextView
         android:id="@+id/titular_2_fuente"
         android:layout_width="match_parent"
@@ -72,11 +88,15 @@
         android:id="@+id/titular_3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="center_vertical"
         android:maxLines="2"
         android:ellipsize="end"
         android:textColor="@android:color/white"
         android:textSize="13sp"
-        android:paddingBottom="4dp" />
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp"
+        android:background="?android:attr/selectableItemBackground" />
     <TextView
         android:id="@+id/titular_3_fuente"
         android:layout_width="match_parent"

@@ -2,7 +2,9 @@
 <resources>
     <string name="widget_titulares_cabecera">Titulares</string>
     <string name="widget_titulares_descripcion">Últimos titulares de Flavor News Hub</string>
-    <string name="widget_titulares_vacio">Abre la app para cargar titulares.</string>
+    <string name="widget_titulares_vacio">Sin titulares todavía. Toca ↻ para cargar o abre la app.</string>
+    <string name="widget_titulares_actualizando">Actualizando…</string>
+    <string name="widget_titulares_error">No se pudo actualizar (%1$s)</string>
     <string name="widget_refrescar">Refrescar</string>
 
     <string name="widget_radio_descripcion">Radio libre en directo</string>

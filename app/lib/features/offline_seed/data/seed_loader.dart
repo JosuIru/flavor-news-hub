@@ -22,6 +22,7 @@ class FuenteSeed {
     required this.websiteUrl,
     required this.territory,
     required this.languages,
+    this.topics = const [],
   });
   final int id;
   final String name;
@@ -31,6 +32,13 @@ class FuenteSeed {
   final String websiteUrl;
   final String territory;
   final List<String> languages;
+  /// Slugs de las temáticas que cubre este medio (curación editorial
+  /// de la instancia). Los items descargados de su RSS heredan estos
+  /// topics — es una aproximación: las noticias de un medio generalista
+  /// ("El Salto") se etiquetan con los varios topics que cubre, no con
+  /// el topic específico de cada artículo. Es ruidoso pero permite que
+  /// el filtro por temática funcione offline.
+  final List<String> topics;
 
   /// Representación plana como `SourceSummary` para poder reutilizarla con
   /// los `Item` que ya trae el backend.
@@ -86,7 +94,25 @@ FuenteSeed _leerFuente(Map<String, dynamic> raw) {
     languages: (raw['languages'] is List)
         ? (raw['languages'] as List).map((e) => e.toString()).toList()
         : const [],
+    topics: _leerTopicsSlugs(raw['topics']),
   );
+}
+
+/// Acepta tanto lista de slugs (`["vivienda"]`) como lista de objetos
+/// (`[{"slug":"vivienda"}]`) para que el mismo seed sirva si lo exporta
+/// el script o lo edita un humano a mano.
+List<String> _leerTopicsSlugs(dynamic raw) {
+  if (raw is! List) return const [];
+  final out = <String>[];
+  for (final el in raw) {
+    if (el is String && el.isNotEmpty) {
+      out.add(el);
+    } else if (el is Map<String, dynamic>) {
+      final slug = (el['slug'] ?? '').toString();
+      if (slug.isNotEmpty) out.add(slug);
+    }
+  }
+  return out;
 }
 
 /// Radios seedadas para modo autónomo. Cargadas una vez; cada entrada se

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 
 import '../../core/models/item.dart';
@@ -13,6 +14,7 @@ class WidgetTitularesWriter {
 
   static Future<void> escribir(List<Item> items) async {
     final seleccion = items.take(_cantidad).toList();
+    debugPrint('[WidgetTitularesWriter] escribiendo ${seleccion.length} titulares');
     // Rellenamos siempre los 3 slots para que al vaciar el feed se limpie.
     for (var i = 0; i < _cantidad; i++) {
       final clave = i + 1;
@@ -32,5 +34,6 @@ class WidgetTitularesWriter {
       name: _nombreProvider,
       androidName: _nombreProvider,
     );
+    debugPrint('[WidgetTitularesWriter] updateWidget disparado');
   }
 }

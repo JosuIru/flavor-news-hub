@@ -7,6 +7,7 @@ import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../history/data/historial_provider.dart';
+import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
 
 /// Consulta activa del buscador. Vacía = no hay búsqueda en curso.
@@ -61,13 +62,24 @@ final resultadosBusquedaProvider =
       return pag.items;
     } catch (e) {
       if (!esError(e)) return const [];
+      // Fallback offline: buscamos en el cache SQLite (lo que ya se
+      // había visto) y también en el stream del seed RSS en vivo
+      // (titulares frescos del minuto, si el dispositivo tiene red
+      // aunque el backend esté caído). Los unimos deduplicando por id.
       final dao = await ref.watch(itemsLocalesDaoProvider.future);
       final cache = await dao.obtenerCache(limite: 500);
-      return cache
+      final estadoSeed = ref.watch(itemsDesdeSeedProvider);
+      final delSeed = estadoSeed.valueOrNull ?? const <Item>[];
+      final idsSeed = delSeed.map((i) => i.id).toSet();
+      final unidos = [
+        ...delSeed,
+        ...cache.where((i) => !idsSeed.contains(i.id)),
+      ];
+      return unidos
           .where((it) =>
               it.title.toLowerCase().contains(minuscula) ||
               it.excerpt.toLowerCase().contains(minuscula))
-          .take(10)
+          .take(20)
           .toList();
     }
   }

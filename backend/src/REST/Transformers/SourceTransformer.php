@@ -29,6 +29,13 @@ final class SourceTransformer
         if (!$post || $post->post_type !== Source::SLUG || $post->post_status !== 'publish') {
             return null;
         }
+        // Un medio desactivado no debe colarse embebido en items del
+        // feed: el consumidor debe ver la misma visibilidad que tiene
+        // `/sources`. Si el usuario desactivó una fuente, sus items
+        // quedan huérfanos — lo resolverá la propia capa de items.
+        if ((string) get_post_meta($post->ID, '_fnh_active', true) !== '1') {
+            return null;
+        }
         $tipoFeed = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
         return [
             'id'          => (int) $post->ID,

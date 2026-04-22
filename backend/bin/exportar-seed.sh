@@ -34,6 +34,11 @@ out_s = []
 for s in sources:
     if not s.get('feed_url'):
         continue
+    # Topics como lista de slugs — la app los consume desde el seed y
+    # los hereda a cada item parseado de su RSS para que el filtro por
+    # temática funcione offline.
+    topics_src = s.get('topics', [])
+    topics_slugs = [t.get('slug', '') for t in topics_src if t.get('slug')] if isinstance(topics_src, list) else []
     out_s.append({
         'id': s.get('id'),
         'name': s.get('name', ''),
@@ -43,6 +48,7 @@ for s in sources:
         'website_url': s.get('website_url', ''),
         'territory': s.get('territory', ''),
         'languages': s.get('languages', []),
+        'topics': topics_slugs,
     })
 with open(DEST + '/sources.json', 'w') as f:
     json.dump(out_s, f, ensure_ascii=False, indent=1)

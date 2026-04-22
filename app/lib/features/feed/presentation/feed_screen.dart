@@ -95,6 +95,39 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           ),
           data: (estado) {
             if (estado.estaVacio) {
+              // Si hay filtros activos es mucho más probable que el
+              // vacío venga de filtros que dejan fuera todo, que no de
+              // "no hay contenido": ofrecemos botón directo para
+              // limpiarlos en vez de dejar al usuario atrapado.
+              if (!filtros.estaVacio) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.filter_alt_off,
+                            size: 48,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        const SizedBox(height: 16),
+                        Text(
+                          textos.feedEmptyWithFilters,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.tonalIcon(
+                          icon: const Icon(Icons.refresh),
+                          label: Text(textos.filtersClear),
+                          onPressed: () {
+                            ref.read(filtrosFeedProvider.notifier).limpiar();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
               return _PantallaVacia(mensaje: textos.feedEmpty);
             }
             final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};

@@ -52,11 +52,13 @@
 
   "feedTitle": "Titulares",
   "feedEmpty": "Todavía no hay noticias cargadas.",
+  "feedEmptyWithFilters": "Ningún titular coincide con los filtros activos. Límpialos para ver todo.",
   "feedLoading": "Cargando titulares…",
   "feedError": "No se pudo cargar el feed.",
 
   "filtersTitle": "Filtros",
   "filterByTopic": "Por temática",
+  "filterTopicsOffline": "Sin conexión con el servidor: las temáticas no están disponibles. Vuelve a intentarlo cuando haya señal.",
   "filterByTerritory": "Por territorio",
   "filterByLanguage": "Por idioma",
   "filtersClear": "Limpiar filtros",
@@ -99,6 +101,10 @@
 
   "sourceTitle": "Medio",
   "sourceListNews": "Ver noticias de este medio",
+  "sourceListVideos": "Ver vídeos de este canal",
+  "sourceListAudio": "Ver episodios de este podcast",
+  "tabPodcasts": "Podcast",
+  "podcastsEmpty": "Aún no hay episodios de podcast. Los medios del directorio con feed_type=podcast aparecen aquí cuando publican.",
   "sourceEditorialHeader": "Ficha editorial",
   "sourceOwnership": "Propiedad y financiación",
   "sourceEditorialNote": "Línea editorial declarada",

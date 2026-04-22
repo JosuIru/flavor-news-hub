@@ -14,6 +14,7 @@ use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\CLI\IngestCommand;
 use FlavorNewsHub\REST\RestController;
 use FlavorNewsHub\Admin\AdminController;
+use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\Database\LogsCleanup;
 use FlavorNewsHub\Shortcodes\Shortcodes;
 use FlavorNewsHub\Templates\TemplateRouter;
@@ -49,6 +50,12 @@ final class Plugin
     public function arrancar(): void
     {
         add_action('init', [$this, 'cargarTraducciones'], 1);
+
+        // Migraciones idempotentes: se ejecutan una vez por marca de
+        // option. Las ejecutamos en cada carga del plugin (no sólo en
+        // activación) para que usuarios con plugin ya instalado reciban
+        // los fixes sin tener que desactivar/reactivar manualmente.
+        add_action('init', [Activator::class, 'ejecutarMigracionesPendientes'], 2);
 
         // Los CPTs deben existir antes de que la taxonomía los referencie.
         add_action('init', [Source::class, 'registrar'], 5);

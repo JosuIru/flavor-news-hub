@@ -12,17 +12,47 @@ import '../../personal_sources/data/items_personales_provider.dart';
 /// es una exploración puntual, no un consumo recurrente.
 @immutable
 class FiltrosVideos {
-  const FiltrosVideos({this.slugsTopics = const []});
+  const FiltrosVideos({
+    this.slugsTopics = const [],
+    this.codigosIdiomas = const [],
+    this.idSource,
+  });
   final List<String> slugsTopics;
+  final List<String> codigosIdiomas;
+  final int? idSource;
 
   static const vacios = FiltrosVideos();
-  bool get estaVacio => slugsTopics.isEmpty;
+  bool get estaVacio =>
+      slugsTopics.isEmpty && codigosIdiomas.isEmpty && idSource == null;
 
   FiltrosVideos alternarTopic(String slug) {
     final nueva = slugsTopics.contains(slug)
         ? slugsTopics.where((s) => s != slug).toList()
         : [...slugsTopics, slug];
-    return FiltrosVideos(slugsTopics: nueva);
+    return FiltrosVideos(
+      slugsTopics: nueva,
+      codigosIdiomas: codigosIdiomas,
+      idSource: idSource,
+    );
+  }
+
+  FiltrosVideos alternarIdioma(String codigo) {
+    final nueva = codigosIdiomas.contains(codigo)
+        ? codigosIdiomas.where((c) => c != codigo).toList()
+        : [...codigosIdiomas, codigo];
+    return FiltrosVideos(
+      slugsTopics: slugsTopics,
+      codigosIdiomas: nueva,
+      idSource: idSource,
+    );
+  }
+
+  FiltrosVideos conSource(int? id) {
+    return FiltrosVideos(
+      slugsTopics: slugsTopics,
+      codigosIdiomas: codigosIdiomas,
+      idSource: id,
+    );
   }
 }
 
@@ -40,33 +70,62 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
 
   PaginatedList<Item>? paginaBackend;
   final itemsDelSeed = <Item>[];
+  bool fallbackAlSeed = false;
   try {
+    final idiomasCsv = filtros.codigosIdiomas.isEmpty
+        ? null
+        : filtros.codigosIdiomas.join(',');
     paginaBackend = await api.fetchItems(
       page: 1,
       perPage: 50,
       sourceType: 'video,youtube',
       topic: slugCsv,
+      source: filtros.idSource,
+      language: idiomasCsv,
     );
+    // Si el backend no conoce el source pedido (p. ej. canales YouTube
+    // que sólo existen en el seed bundleado del APK), devuelve vacío —
+    // en ese caso complementamos con los items del seed.
+    if (paginaBackend.items.isEmpty && filtros.idSource != null) {
+      fallbackAlSeed = true;
+    }
   } on FlavorNewsApiException catch (e) {
     if (!e.esProblemaRed) rethrow;
-    // Backend caído: filtramos los items que llegan por RSS del seed
-    // por los marcadores de vídeo. Serán los pocos feeds RSS/Atom del
-    // directorio que apunten a vídeos (PeerTube, .mp4 embebido…); los
-    // feeds tipo YouTube no pasan por el pipeline del seed. Si el
-    // seed también falla, seguimos con las fuentes personales.
+    fallbackAlSeed = true;
+  }
+
+  if (fallbackAlSeed) {
     try {
       final todosDelSeed = await ref.watch(itemsDesdeSeedProvider.future);
       itemsDelSeed.addAll(todosDelSeed.where(_esItemDeVideo));
     } catch (_) {
-      // El propio provider del seed RSS puede lanzar (timeout global,
-      // error de red absoluta, etc.). Nos tragamos el fallo y dejamos
-      // que las fuentes personales, si las hay, tiren del carro.
+      // Seed también falla → seguimos con vacío.
     }
+  }
+
+  // Filtro offline: source + topic + idioma sobre los items del seed
+  // (el backend ya los aplicó en su query; aquí replicamos para que el
+  // comportamiento sea coherente cuando caemos al seed).
+  final idSourceFiltrada = filtros.idSource;
+  final topicsActivos = filtros.slugsTopics.toSet();
+
+  bool passaFiltrosSeed(Item i) {
+    if (idSourceFiltrada != null && i.source?.id != idSourceFiltrada) {
+      return false;
+    }
+    // Topic: estricto si el item trae topics (heredados del source);
+    // permisivo si viene sin topics — evita vaciar la lista cuando el
+    // seed aún no está curado con topics.
+    if (topicsActivos.isNotEmpty && i.topics.isNotEmpty) {
+      final slugsItem = i.topics.map((t) => t.slug).toSet();
+      if (!slugsItem.any(topicsActivos.contains)) return false;
+    }
+    return true;
   }
 
   final items = <Item>[
     if (paginaBackend != null) ...paginaBackend.items,
-    ...itemsDelSeed,
+    ...itemsDelSeed.where(passaFiltrosSeed),
   ];
   if (filtros.estaVacio) {
     final personales = await ref.watch(itemsDeFuentesPersonalesProvider.future);

@@ -180,10 +180,20 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               asyncTopics.when(
+                // Si falla o está cargando mostramos placeholder visible
+                // en vez de dejar la sección vacía — antes desaparecía
+                // todo el filtro cuando el backend no respondía.
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => Text(textos.feedError),
+                error: (_, __) => Text(
+                  textos.filterTopicsOffline,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 data: (topics) {
                   final topicsUtiles = topics.where((t) => t.count > 0).toList();
+                  if (topicsUtiles.isEmpty) {
+                    return Text(textos.filterTopicsOffline,
+                        style: Theme.of(context).textTheme.bodySmall);
+                  }
                   return Wrap(
                     spacing: 6, runSpacing: 6,
                     children: [
@@ -199,6 +209,27 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
                     ],
                   );
                 },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                textos.filterByLanguage,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6, runSpacing: 6,
+                children: [
+                  for (final codigo in const ['es', 'ca', 'eu', 'gl', 'en'])
+                    FilterChip(
+                      label: Text(codigo.toUpperCase()),
+                      selected: filtros.codigosIdiomas.contains(codigo),
+                      onSelected: (_) {
+                        final current = ref.read(filtrosVideosProvider);
+                        ref.read(filtrosVideosProvider.notifier).state =
+                            current.alternarIdioma(codigo);
+                      },
+                    ),
+                ],
               ),
               const SizedBox(height: 20),
               Align(

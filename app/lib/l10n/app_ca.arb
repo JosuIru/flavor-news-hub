@@ -48,11 +48,13 @@
   "videoCommentsHint": "Els comentaris es veuen a la plataforma original.",
 
   "feedTitle": "Titulars",
+  "feedEmptyWithFilters": "Cap titular no coincideix amb els filtres actius. Neteja'ls per veure-ho tot.",
   "feedEmpty": "Encara no hi ha notícies carregades.",
   "feedLoading": "S'estan carregant els titulars…",
   "feedError": "No s'ha pogut carregar el canal.",
 
   "filtersTitle": "Filtres",
+  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "Per temàtica",
   "filterByTerritory": "Per territori",
   "filterByLanguage": "Per idioma",
@@ -96,6 +98,10 @@
 
   "sourceTitle": "Mitjà",
   "sourceListNews": "Veure les notícies d'aquest mitjà",
+  "sourceListVideos": "Veure vídeos d'aquest canal",
+  "sourceListAudio": "Veure episodis d'aquest podcast",
+  "tabPodcasts": "Podcasts",
+  "podcastsEmpty": "Encara no hi ha episodis. Els mitjans del directori amb feed_type=podcast apareixen aquí quan publiquen.",
   "sourceEditorialHeader": "Fitxa editorial",
   "sourceOwnership": "Propietat i finançament",
   "sourceEditorialNote": "Línia editorial declarada",

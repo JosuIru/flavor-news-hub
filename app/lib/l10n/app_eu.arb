@@ -108,11 +108,13 @@
   "videoCommentsHint": "Iruzkinak jatorrizko plataforman ikus daitezke.",
 
   "feedTitle": "Titularrak",
+  "feedEmptyWithFilters": "Ez dago iragazki aktiboekin bat datorren titularrik. Garbitu denak ikusteko.",
   "feedEmpty": "Oraindik ez dago kargatutako albisterik.",
   "feedLoading": "Titularrak kargatzen…",
   "feedError": "Ezin izan da jarioa kargatu.",
 
   "filtersTitle": "Iragazkiak",
+  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "Gaiaren arabera",
   "filterByTerritory": "Lurraldearen arabera",
   "filterByLanguage": "Hizkuntzaren arabera",
@@ -156,6 +158,10 @@
 
   "sourceTitle": "Hedabidea",
   "sourceListNews": "Ikusi hedabide honen albisteak",
+  "sourceListVideos": "Ikusi kanal honen bideoak",
+  "sourceListAudio": "Ikusi podcast honen atalak",
+  "tabPodcasts": "Podcastak",
+  "podcastsEmpty": "Oraindik ez dago atalik. Direktorioko hedabideek feed_type=podcast bezala argitaratzen dutenean agertuko dira hemen.",
   "sourceEditorialHeader": "Fitxa editoriala",
   "sourceOwnership": "Jabetza eta finantzaketa",
   "sourceEditorialNote": "Adierazitako lerro editoriala",

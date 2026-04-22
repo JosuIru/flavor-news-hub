@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
+import '../../features/history/data/historial_provider.dart';
 import '../../features/offline_seed/data/seed_cache.dart';
 import '../../features/offline_seed/data/seed_loader.dart';
 import '../api/api_exception.dart';
@@ -44,10 +45,67 @@ final itemsFeedProvider = FutureProvider.autoDispose<PaginatedList<Item>>((ref) 
 
 /// Árbol de temáticas. Sólo cambian cuando el admin añade/edita una; casi
 /// estático. Cacheamos hasta que alguien invalide explícitamente.
+///
+/// Si el backend no responde, derivamos la lista de temáticas a partir
+/// de los items que ya tenemos en cache SQLite — así los chips de
+/// filtro siguen estando disponibles offline (sólo aparecen las que
+/// realmente tienen contenido visible).
 final topicsProvider = FutureProvider<List<Topic>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  return api.fetchTopics();
+  try {
+    return await api.fetchTopics();
+  } on FlavorNewsApiException catch (e) {
+    if (!e.esProblemaRed) rethrow;
+    try {
+      final dao = await ref.watch(itemsLocalesDaoProvider.future);
+      final cache = await dao.obtenerCache(limite: 500);
+      final conteo = <String, Topic>{};
+      final counts = <String, int>{};
+      for (final item in cache) {
+        for (final t in item.topics) {
+          if (t.slug.isEmpty) continue;
+          conteo[t.slug] = t;
+          counts[t.slug] = (counts[t.slug] ?? 0) + 1;
+        }
+      }
+      if (conteo.isNotEmpty) {
+        return conteo.values
+            .map((t) => Topic(id: t.id, slug: t.slug, name: t.name, count: counts[t.slug] ?? 0))
+            .toList()
+          ..sort((a, b) => (b.count).compareTo(a.count));
+      }
+      // Cache sin topics declarados (p. ej. items del seed RSS, cuyo
+      // parser no los extrae). Caemos al listado canónico bundleado
+      // para que el filtro por temática siga funcionando offline. El
+      // `count=1` es un marcador — no refleja ocurrencias reales.
+      return _temasCanonicosOffline;
+    } catch (_) {
+      return _temasCanonicosOffline;
+    }
+  }
 });
+
+/// Lista canónica de temáticas precargada: refleja el mismo conjunto
+/// que el activador del plugin backend. La duplicamos aquí para tener
+/// un fallback cuando el backend no está disponible y los items en
+/// cache no traen topic alguno.
+const List<Topic> _temasCanonicosOffline = [
+  Topic(id: 0, slug: 'vivienda', name: 'Vivienda', count: 1),
+  Topic(id: 0, slug: 'sanidad', name: 'Sanidad', count: 1),
+  Topic(id: 0, slug: 'laboral', name: 'Laboral', count: 1),
+  Topic(id: 0, slug: 'feminismos', name: 'Feminismos', count: 1),
+  Topic(id: 0, slug: 'ecologismo', name: 'Ecologismo', count: 1),
+  Topic(id: 0, slug: 'antirracismo', name: 'Antirracismo', count: 1),
+  Topic(id: 0, slug: 'educacion', name: 'Educación', count: 1),
+  Topic(id: 0, slug: 'memoria-historica', name: 'Memoria histórica', count: 1),
+  Topic(id: 0, slug: 'rural', name: 'Rural', count: 1),
+  Topic(id: 0, slug: 'cultura', name: 'Cultura', count: 1),
+  Topic(id: 0, slug: 'internacional', name: 'Internacional', count: 1),
+  Topic(id: 0, slug: 'tecnologia-soberana', name: 'Tecnología soberana', count: 1),
+  Topic(id: 0, slug: 'economia-social', name: 'Economía social', count: 1),
+  Topic(id: 0, slug: 'migraciones', name: 'Migraciones', count: 1),
+  Topic(id: 0, slug: 'cuidados', name: 'Cuidados', count: 1),
+];
 
 /// Fuentes activas (para filtrar por medio y mostrar directorio).
 ///

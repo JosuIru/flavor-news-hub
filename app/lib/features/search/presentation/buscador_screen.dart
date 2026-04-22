@@ -216,11 +216,26 @@ class _TileSource extends StatelessWidget {
       if (src.languages.isNotEmpty) src.languages.join(', '),
     ].join(' · ');
     return ListTile(
-      leading: const Icon(Icons.rss_feed),
+      leading: Icon(_iconoDeFeedType(src.feedType)),
       title: Text(src.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: subt.isNotEmpty ? Text(subt) : null,
       onTap: () => GoRouter.of(context).push('/sources/${src.id}'),
     );
+  }
+
+  static IconData _iconoDeFeedType(String tipo) {
+    switch (tipo) {
+      case 'youtube':
+        return Icons.play_circle_outline;
+      case 'video':
+        return Icons.videocam_outlined;
+      case 'podcast':
+        return Icons.mic_outlined;
+      case 'mastodon':
+        return Icons.forum_outlined;
+      default:
+        return Icons.rss_feed;
+    }
   }
 }
 

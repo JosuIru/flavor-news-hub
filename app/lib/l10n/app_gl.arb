@@ -108,11 +108,13 @@
   "videoCommentsHint": "Os comentarios vense na plataforma orixinal.",
 
   "feedTitle": "Titulares",
+  "feedEmptyWithFilters": "Ningún titular coincide cos filtros activos. Límpaos para ver todo.",
   "feedEmpty": "Aínda non hai novas cargadas.",
   "feedLoading": "Cargando titulares…",
   "feedError": "Non se puido cargar a canle.",
 
   "filtersTitle": "Filtros",
+  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "Por temática",
   "filterByTerritory": "Por territorio",
   "filterByLanguage": "Por idioma",
@@ -156,6 +158,10 @@
 
   "sourceTitle": "Medio",
   "sourceListNews": "Ver novas deste medio",
+  "sourceListVideos": "Ver vídeos desta canle",
+  "sourceListAudio": "Ver episodios deste podcast",
+  "tabPodcasts": "Podcasts",
+  "podcastsEmpty": "Aínda non hai episodios. Os medios do directorio con feed_type=podcast aparecerán aquí cando publiquen.",
   "sourceEditorialHeader": "Ficha editorial",
   "sourceOwnership": "Propiedade e financiamento",
   "sourceEditorialNote": "Liña editorial declarada",

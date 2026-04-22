@@ -121,7 +121,14 @@ final class SourcesEndpoint
     {
         $idSource = (int) $request['id'];
         $post = get_post($idSource);
-        if (!$post || $post->post_type !== Source::SLUG || $post->post_status !== 'publish') {
+        $esValido = $post
+            && $post->post_type === Source::SLUG
+            && $post->post_status === 'publish'
+            // Coherencia con el listado: un medio desactivado NO debe
+            // seguir accesible por `/sources/{id}` aunque el post siga
+            // "publish". El admin puede reactivarlo desde el metabox.
+            && (string) get_post_meta($post->ID, '_fnh_active', true) === '1';
+        if (!$esValido) {
             return new \WP_REST_Response([
                 'error'   => 'not_found',
                 'message' => __('Medio no encontrado.', 'flavor-news-hub'),

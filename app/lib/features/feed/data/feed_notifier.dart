@@ -193,8 +193,13 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       if (!_noEsVideo(it)) return false;
       if (_estaFuenteBloqueada(it, fuentesBloqueadas)) return false;
 
-      // Topic (OR entre los seleccionados — igual que backend)
-      if (topicsActivos.isNotEmpty) {
+      // Topic: el backend filtra por taxonomía asignada a cada post.
+      // Los items del seed RSS no traen topics (el parser no los
+      // extrae), así que aplicar el filtro estricto offline dejaría
+      // el feed vacío. Política: si el item NO declara topics, lo
+      // dejamos pasar — es menos estricto pero mucho más útil que
+      // "nada que leer". Si sí los declara, exigimos coincidencia.
+      if (topicsActivos.isNotEmpty && it.topics.isNotEmpty) {
         final slugsItem = it.topics.map((t) => t.slug).toSet();
         if (!slugsItem.any(topicsActivos.contains)) return false;
       }
@@ -228,15 +233,24 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       return true;
     }
 
-    final combinados = [...desdeSeed, ...cacheNoSolapado, ...itemsPersonales]
-        .where(pasaTodosLosFiltros)
-        .toList();
+    final todos = [...desdeSeed, ...cacheNoSolapado, ...itemsPersonales];
+    final combinados = todos.where(pasaTodosLosFiltros).toList();
+    debugPrint(
+      '[FeedNotifier] _combinar total=${todos.length} tras_filtros=${combinados.length} '
+      'filtros{topics:${topicsActivos.length} territorio:$filtroTerritorioActivo '
+      'idioma:$filtroIdiomaActivo source:$idSourceFiltrada '
+      'bloqueadas:${fuentesBloqueadas.length}}',
+    );
     combinados.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
     return combinados;
   }
 
   /// Recarga la primera página manteniendo los filtros actuales.
+  /// Invalidamos también el stream del seed RSS: si el build anterior
+  /// ya consumió la lista completa, un simple invalidateSelf del feed
+  /// no haría re-fetch de los RSS — veríamos los mismos titulares.
   Future<void> refrescar() async {
+    ref.invalidate(itemsDesdeSeedProvider);
     ref.invalidateSelf();
     await future;
   }

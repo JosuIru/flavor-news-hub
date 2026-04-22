@@ -73,8 +73,10 @@ final class ItemsEndpoint
             'post_status'    => 'publish',
             'paged'          => $pagina,
             'posts_per_page' => $porPagina,
-            'orderby'        => 'meta_value',
-            'meta_key'       => '_fnh_published_at',
+            // Usamos el `post_date_gmt` que ya guardamos normalizado a
+            // UTC en el ingester (ver FeedIngester). Es columna nativa
+            // de WP → no hace falta JOIN a postmeta ni un meta aparte.
+            'orderby'        => 'date',
             'order'          => 'DESC',
         ];
 
@@ -98,7 +100,14 @@ final class ItemsEndpoint
 
         $metaQueryExtra = [];
         $idSourceDirecto = (int) $request->get_param('source');
+        $idsActivos = self::idsDeSourcesActivos();
         if ($idSourceDirecto > 0) {
+            // Si el consumidor pide un source concreto pero está
+            // desactivado, devolvemos lista vacía — evita que un id
+            // recordado de un medio retirado siga devolviendo items.
+            if (!in_array($idSourceDirecto, $idsActivos, true)) {
+                return self::respuestaListaVacia();
+            }
             $metaQueryExtra[] = [
                 'key'   => '_fnh_source_id',
                 'value' => (string) $idSourceDirecto,
@@ -109,12 +118,14 @@ final class ItemsEndpoint
         if ($fechaDesde !== '') {
             $timestampDesde = strtotime($fechaDesde);
             if ($timestampDesde !== false) {
-                $metaQueryExtra[] = [
-                    'key'     => '_fnh_published_at',
-                    'value'   => gmdate('c', $timestampDesde),
-                    'compare' => '>=',
-                    'type'    => 'CHAR',
-                ];
+                // `date_query` contra `post_date_gmt` — comparación
+                // nativa por fecha en UTC, sin las ambigüedades del
+                // ISO con offsets variables que tenía el ISO string.
+                $argumentosQuery['date_query'] = [[
+                    'after'     => gmdate('c', $timestampDesde),
+                    'column'    => 'post_date_gmt',
+                    'inclusive' => true,
+                ]];
             }
         }
 
@@ -135,6 +146,19 @@ final class ItemsEndpoint
             $metaQueryExtra[] = [
                 'key'     => '_fnh_source_id',
                 'value'   => array_map('strval', $idsSourceFiltrados),
+                'compare' => 'IN',
+            ];
+        } elseif ($idSourceDirecto === 0) {
+            // Sin filtros de metadatos NI source directo: limitamos los
+            // items a sources actualmente activos. Evita que items
+            // huérfanos de medios desactivados sigan saliendo por
+            // `/items` simple.
+            if (empty($idsActivos)) {
+                return self::respuestaListaVacia();
+            }
+            $metaQueryExtra[] = [
+                'key'     => '_fnh_source_id',
+                'value'   => array_map('strval', $idsActivos),
                 'compare' => 'IN',
             ];
         }
@@ -255,6 +279,14 @@ final class ItemsEndpoint
                 ];
             }
         }
+        // Restringimos SIEMPRE a sources activos: un medio desactivado no
+        // debe seguir reapareciendo por `/items?territory=…`, etc. Antes
+        // se filtraba en `/sources` pero no en `/items` — inconsistencia
+        // que rompía la expectativa del consumidor.
+        $metaQuery[] = [
+            'key'   => '_fnh_active',
+            'value' => '1',
+        ];
         $consulta = new \WP_Query([
             'post_type'      => Source::SLUG,
             'post_status'    => 'publish',
@@ -264,6 +296,33 @@ final class ItemsEndpoint
             'meta_query'     => $metaQuery,
         ]);
         return array_map('intval', $consulta->posts);
+    }
+
+    /**
+     * Lista completa de IDs de sources activos. Cacheada en memoria por
+     * request para no repetir la query desde los distintos callers.
+     *
+     * @return list<int>
+     */
+    private static function idsDeSourcesActivos(): array
+    {
+        static $cache = null;
+        if ($cache !== null) {
+            return $cache;
+        }
+        $consulta = new \WP_Query([
+            'post_type'      => Source::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_query'     => [[
+                'key'   => '_fnh_active',
+                'value' => '1',
+            ]],
+        ]);
+        $cache = array_map('intval', $consulta->posts);
+        return $cache;
     }
 
     private static function respuestaListaVacia(): \WP_REST_Response

@@ -5,14 +5,30 @@ import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/api/api_exception.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../feed/data/filtros_feed.dart';
+import '../../offline_seed/data/seed_loader.dart';
+import '../../videos/data/videos_provider.dart';
 
+/// Detalle de un medio. Intenta el backend primero; si falla por red o
+/// el medio no existe ahí (p. ej. canales de YouTube que sólo vienen
+/// en el seed bundleado), buscamos en el seed local — así abrir una
+/// fuente desde el buscador no explota cuando la instancia está caída
+/// o aún no ha ingestado ese medio.
 final sourceDetalleProvider =
     FutureProvider.autoDispose.family<Source, int>((ref, idSource) async {
   final api = ref.watch(flavorNewsApiProvider);
-  return api.fetchSource(idSource);
+  try {
+    return await api.fetchSource(idSource);
+  } on FlavorNewsApiException catch (e) {
+    if (!e.esProblemaRed && !e.esNoEncontrado) rethrow;
+    final seed = await ref.watch(sourcesSeedProvider.future);
+    final match = seed.where((s) => s.id == idSource).toList();
+    if (match.isNotEmpty) return match.first;
+    rethrow;
+  }
 });
 
 class SourceDetailScreen extends ConsumerWidget {
@@ -137,16 +153,60 @@ class _CuerpoSource extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: () async {
-              await ref.read(filtrosFeedProvider.notifier).establecerSource(source.id);
-              if (context.mounted) context.go('/');
-            },
-            icon: const Icon(Icons.filter_list),
-            label: Text(textos.sourceListNews),
-          ),
+          _BotonVerContenido(source: source, textos: textos, ref: ref),
         ],
       ),
+    );
+  }
+}
+
+/// El botón "ver contenido de este medio" cambia según el tipo de feed:
+/// un canal de YouTube/PeerTube no tiene "noticias", tiene vídeos; un
+/// podcast → audio; los RSS/Atom/Mastodon → feed de titulares.
+class _BotonVerContenido extends StatelessWidget {
+  const _BotonVerContenido({
+    required this.source,
+    required this.textos,
+    required this.ref,
+  });
+
+  final Source source;
+  final AppLocalizations textos;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final tipo = source.feedType;
+    final esVideo = tipo == 'youtube' || tipo == 'video';
+    final esPodcast = tipo == 'podcast';
+
+    if (esVideo) {
+      return FilledButton.icon(
+        onPressed: () {
+          // Ajustamos el filtro de la pestaña Videos a este canal
+          // concreto antes de navegar, si no veríamos todos mezclados.
+          ref.read(filtrosVideosProvider.notifier).state =
+              FiltrosVideos.vacios.conSource(source.id);
+          context.go('/videos');
+        },
+        icon: const Icon(Icons.play_circle_outline),
+        label: Text(textos.sourceListVideos),
+      );
+    }
+    if (esPodcast) {
+      return FilledButton.icon(
+        onPressed: () => context.go('/audio'),
+        icon: const Icon(Icons.podcasts),
+        label: Text(textos.sourceListAudio),
+      );
+    }
+    return FilledButton.icon(
+      onPressed: () async {
+        await ref.read(filtrosFeedProvider.notifier).establecerSource(source.id);
+        if (context.mounted) context.go('/');
+      },
+      icon: const Icon(Icons.filter_list),
+      label: Text(textos.sourceListNews),
     );
   }
 }

@@ -35,6 +35,9 @@ final class Activator
         IngestLogTable::crearOActualizar();
         OptionsRepository::asegurarDefaults();
 
+        // Migraciones idempotentes.
+        self::ejecutarMigracionesPendientes();
+
         // `wp_schedule_event()` valida la recurrence contra el filtro
         // `cron_schedules`, y en la request de activación `plugins_loaded`
         // puede no haber corrido aún. Enganchamos el filtro a mano aquí
@@ -55,6 +58,52 @@ final class Activator
      * cuando el wrapper transaccional de `WP_UnitTestCase` los haya
      * revertido entre casos.
      */
+    /**
+     * Punto único para lanzar todas las migraciones pendientes — se
+     * llama tanto desde `activate()` como desde `init` del Plugin, así
+     * que usuarios que actualizan el plugin sin reactivar reciben los
+     * fixes automáticamente. Cada migración se auto-gestiona con un
+     * flag de option y no vuelve a ejecutarse tras finalizar.
+     */
+    public static function ejecutarMigracionesPendientes(): void
+    {
+        self::migrarTimestampsPublicacion();
+    }
+
+    /**
+     * Rellena `_fnh_published_at_ts` (Unix int) a partir del ISO
+     * `_fnh_published_at` en items ya ingestados. Idempotente via
+     * option flag — no vuelve a correr una vez terminada.
+     */
+    private static function migrarTimestampsPublicacion(): void
+    {
+        $claveFlag = 'fnh_mig_published_at_ts_v1';
+        if (get_option($claveFlag) === 'done') {
+            return;
+        }
+        global $wpdb;
+        // Slug del CPT Item en runtime. Evitamos import para no acoplar.
+        $tabla = $wpdb->postmeta;
+        // Buscamos items sin el nuevo meta y con el antiguo presente.
+        $filas = $wpdb->get_results(
+            "SELECT pm1.post_id AS id, pm1.meta_value AS iso
+             FROM {$tabla} pm1
+             LEFT JOIN {$tabla} pm2
+               ON pm2.post_id = pm1.post_id
+              AND pm2.meta_key = '_fnh_published_at_ts'
+             WHERE pm1.meta_key = '_fnh_published_at'
+               AND pm2.meta_id IS NULL
+             LIMIT 5000"
+        );
+        foreach ($filas as $fila) {
+            $ts = (int) strtotime((string) $fila->iso);
+            if ($ts > 0) {
+                update_post_meta((int) $fila->id, '_fnh_published_at_ts', $ts);
+            }
+        }
+        update_option($claveFlag, 'done', false);
+    }
+
     public static function precargarTematicasCanonicas(): void
     {
         foreach (Topic::TEMATICAS_PRECARGADAS as $slugTematica => $etiquetaTematica) {

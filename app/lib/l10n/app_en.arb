@@ -48,11 +48,13 @@
   "videoCommentsHint": "Comments are available on the original platform.",
 
   "feedTitle": "Headlines",
+  "feedEmptyWithFilters": "No headline matches the active filters. Clear them to see everything.",
   "feedEmpty": "No news yet.",
   "feedLoading": "Loading headlines…",
   "feedError": "Could not load the feed.",
 
   "filtersTitle": "Filters",
+  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
   "filterByTopic": "By topic",
   "filterByTerritory": "By territory",
   "filterByLanguage": "By language",
@@ -96,6 +98,10 @@
 
   "sourceTitle": "Source",
   "sourceListNews": "See this medium's news",
+  "sourceListVideos": "See videos from this channel",
+  "sourceListAudio": "See episodes of this podcast",
+  "tabPodcasts": "Podcasts",
+  "podcastsEmpty": "No podcast episodes yet. Directory sources with feed_type=podcast will appear here when they publish.",
   "sourceEditorialHeader": "Editorial info",
   "sourceOwnership": "Ownership and funding",
   "sourceEditorialNote": "Declared editorial stance",

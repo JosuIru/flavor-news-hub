@@ -266,6 +266,12 @@ final class FeedIngester
         update_post_meta($idItemNuevo, '_fnh_source_id', $idFuente);
         update_post_meta($idItemNuevo, '_fnh_original_url', $datosNormalizados['permalink']);
         update_post_meta($idItemNuevo, '_fnh_published_at', $datosNormalizados['published_at']);
+        // Timestamp Unix como índice numérico. La ISO string puede venir
+        // con offsets distintos (Z, +00:00, +02:00…) y ordenar
+        // lexicográficamente da resultados incorrectos. El orden por
+        // timestamp numérico es siempre correcto y el `since` compara
+        // con `NUMERIC` sin ambigüedades de huso.
+        update_post_meta($idItemNuevo, '_fnh_published_at_ts', $timestampPublicacion);
         update_post_meta($idItemNuevo, '_fnh_guid', $datosNormalizados['guid']);
         update_post_meta($idItemNuevo, '_fnh_media_url', $datosNormalizados['media_url']);
 
@@ -358,17 +364,40 @@ final class FeedIngester
         );
     }
 
+    /**
+     * Lock atómico vía `add_option()` con autoload='no'. `add_option()`
+     * hace INSERT en `wp_options` con UNIQUE KEY sobre `option_name` —
+     * MySQL garantiza que sólo uno de N procesos concurrentes tiene
+     * éxito. El transient antes (`get_transient` + `set_transient`) era
+     * un patrón de read-then-write que permitía races: dos procesos
+     * podían leer "no existe" antes de escribir.
+     *
+     * Expiración: guardamos la hora de adquisición y, si al intentar
+     * adquirir ya existe pero el timestamp es más viejo que el TTL, lo
+     * consideramos stale y lo sobreescribimos (el proceso original
+     * murió sin limpiar).
+     */
     private static function adquirirLock(): bool
     {
-        if (get_transient(self::NOMBRE_LOCK_TRANSIENT)) {
+        $ahora = time();
+        $ok = add_option(self::NOMBRE_LOCK_TRANSIENT, (string) $ahora, '', 'no');
+        if ($ok) {
+            return true;
+        }
+        // Ya existe. Comprobamos si está stale.
+        $previo = (int) get_option(self::NOMBRE_LOCK_TRANSIENT, '0');
+        if ($previo > 0 && ($ahora - $previo) < self::DURACION_LOCK_SEGUNDOS) {
             return false;
         }
-        set_transient(self::NOMBRE_LOCK_TRANSIENT, '1', self::DURACION_LOCK_SEGUNDOS);
+        // Stale: lo robamos. Es un race residual mínimo (dos procesos
+        // leyendo stale a la vez), pero para ingesta periódica de feeds
+        // es aceptable y cubre el 99% del problema.
+        update_option(self::NOMBRE_LOCK_TRANSIENT, (string) $ahora, 'no');
         return true;
     }
 
     private static function liberarLock(): void
     {
-        delete_transient(self::NOMBRE_LOCK_TRANSIENT);
+        delete_option(self::NOMBRE_LOCK_TRANSIENT);
     }
 }

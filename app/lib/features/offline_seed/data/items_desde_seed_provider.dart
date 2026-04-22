@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../core/models/item.dart';
 import '../../../core/models/source_summary.dart';
+import '../../../core/models/topic.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../personal_sources/data/fuente_personal.dart';
 import '../../personal_sources/data/parser_feed_xml.dart';
@@ -38,10 +39,12 @@ final itemsDesdeSeedProvider = StreamProvider.autoDispose<List<Item>>((ref) asyn
   final fuentes = await ref.watch(fuentesSeedProvider.future);
   debugPrint('[itemsDesdeSeed] fuentes totales=${fuentes.length}');
   final rsss = fuentes.where((f) {
-    // Todos los tipos XML-like que ParserFeedXml parsea. `youtube` y
-    // `video` (PeerTube) usan Atom/RSS estándar detrás; `mastodon`
-    // expone RSS nativo en `/@usuario.rss`.
-    const tiposSoportados = {'rss', 'atom', 'podcast', 'youtube', 'video', 'mastodon'};
+    // YouTube deprecó en 2026 su endpoint `/feeds/videos.xml?channel_id`:
+    // ahora devuelve 404 para todos los canales. Excluimos `youtube` en
+    // modo offline para no gastar timeouts — los canales siguen en el
+    // seed porque el backend sí los ingesta vía su propio pipeline.
+    // `video` (PeerTube) y `mastodon` exponen RSS nativo y funcionan.
+    const tiposSoportados = {'rss', 'atom', 'podcast', 'video', 'mastodon'};
     return tiposSoportados.contains(f.feedType);
   }).toList();
   debugPrint('[itemsDesdeSeed] fuentes XML soportadas=${rsss.length}');
@@ -91,11 +94,12 @@ Future<List<Item>> _traerUna(http.Client cliente, FuenteSeed fuente) async {
       'Accept':
           'application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, text/html;q=0.8, */*;q=0.5',
       // Cabeceras HTTP sólo aceptan ASCII: cualquier acento rompe el
-      // cliente con FormatException antes de abrir el socket. Además
-      // imitamos un UA reconocible para evitar bloqueos anti-bot
-      // agresivos (WAFs que ven FlavorNewsHub/1.0 como bot sospechoso).
+      // cliente con FormatException antes de abrir el socket. Usamos
+      // un UA canónico de Chrome Mobile: YouTube devuelve 404 a UAs
+      // con sintaxis inventada, y varios WP con WAF también bloquean
+      // cualquier cosa que no parezca un navegador real.
       'User-Agent':
-          'Mozilla/5.0 (Android 11; FlavorNewsHub offline mode) AppleWebKit/537.36 like Gecko',
+          'Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
     }).timeout(_timeoutPorFeed);
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
       debugPrint('[itemsDesdeSeed] ${fuente.name} HTTP ${resp.statusCode} (${fuente.feedUrl})');
@@ -110,6 +114,13 @@ Future<List<Item>> _traerUna(http.Client cliente, FuenteSeed fuente) async {
     final crudos = ParserFeedXml.parsear(resp.body, sintetica);
     // `ParserFeedXml` pone `source.id` a un hash del feedUrl (negativo).
     // Lo reemplazamos por el id del seed para poder enlazar con filtros.
+    // Topics del item: heredados del source (curación editorial en el
+    // seed). El parser RSS no los extrae por su cuenta, así que si el
+    // usuario filtra por temática vía UI, esta heredancia es lo único
+    // que hace que los items del seed respondan al filtro.
+    final topicsHeredados = fuente.topics
+        .map((slug) => Topic(id: 0, slug: slug, name: slug))
+        .toList(growable: false);
     return crudos.map((it) {
       final source = it.source;
       if (source == null) return it;
@@ -122,6 +133,7 @@ Future<List<Item>> _traerUna(http.Client cliente, FuenteSeed fuente) async {
           url: fuente.websiteUrl,
           feedType: fuente.feedType,
         ),
+        topics: topicsHeredados,
       );
     }).toList(growable: false);
   } on TimeoutException {
