@@ -17,6 +17,7 @@ use FlavorNewsHub\REST\RestController;
 use FlavorNewsHub\Admin\AdminController;
 use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\Database\LogsCleanup;
+use FlavorNewsHub\Integration\FlavorPlatformAddon;
 use FlavorNewsHub\Shortcodes\Shortcodes;
 use FlavorNewsHub\Templates\TemplateRouter;
 
@@ -88,6 +89,11 @@ final class Plugin
 
         // Shortcodes para incrustar feeds/radios/vídeos en páginas de WP.
         Shortcodes::registrar();
+
+        // Integración opcional con Flavor Platform: si está activo, nos
+        // registramos como addon para aparecer en su dashboard
+        // unificado. Si no, este arranque es inerte.
+        FlavorPlatformAddon::arrancar();
 
         // Registro de comandos WP-CLI sólo si estamos en CLI.
         if (defined('WP_CLI') && WP_CLI) {
