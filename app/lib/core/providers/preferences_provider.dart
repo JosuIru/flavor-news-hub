@@ -55,11 +55,14 @@ class _Claves {
 
 /// Valor por defecto de la URL de la instancia.
 ///
-/// En desarrollo apunta al WordPress local servido por Local by Flywheel
-/// en `localhost:10028`. Desde un dispositivo físico el puerto se mapea
-/// con `adb reverse tcp:10028 tcp:10028`. Para producción se sustituirá
-/// por el dominio oficial del proyecto cuando exista.
-const String urlInstanciaOficialDefault = 'http://localhost:10028/wp-json/flavor-news/v1';
+/// Producción: dominio oficial del proyecto (`flavor.gailu.it`). El
+/// usuario puede apuntar a cualquier otro WordPress con este plugin
+/// instalado desde Ajustes → URL del backend.
+///
+/// Para desarrollo en local con Local by Flywheel, editar este valor
+/// a `http://localhost:10028/wp-json/flavor-news/v1` y mapear el
+/// puerto con `adb reverse tcp:10028 tcp:10028` desde el dispositivo.
+const String urlInstanciaOficialDefault = 'https://flavor.gailu.it/wp-json/flavor-news/v1';
 
 /// Provider de SharedPreferences. Se sobreescribe en `main.dart` con la
 /// instancia resuelta tras `await SharedPreferences.getInstance()`.
