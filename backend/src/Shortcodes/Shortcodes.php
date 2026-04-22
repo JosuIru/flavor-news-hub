@@ -36,6 +36,27 @@ final class Shortcodes
         add_shortcode('flavor_news_source', [self::class, 'renderSource']);
         add_shortcode('flavor_news_landing', [self::class, 'renderLanding']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
+        // Prio 12: después de do_shortcode (11). Cuando la landing vive
+        // en una página con bloques alrededor (VBP u otros), WordPress
+        // envuelve el shortcode en `<p>...</p>` y shortcode_unautop no
+        // lo limpia porque no está solo. Desenvolvemos a posteriori.
+        add_filter('the_content', [self::class, 'desenvolverLanding'], 12);
+    }
+
+    /**
+     * Elimina `<p>` / `</p>` rodeando nuestra landing cuando quedan
+     * colgando tras wpautop. La landing es un bloque de nivel block;
+     * meterla dentro de un `<p>` produce HTML inválido y rompe
+     * layouts.
+     */
+    public static function desenvolverLanding(string $contenido): string
+    {
+        $resultado = preg_replace(
+            '#<p>(\s*<div class="fnh-landing[^"]*">.*?</div>\s*)</p>#s',
+            '$1',
+            $contenido
+        );
+        return $resultado === null ? $contenido : $resultado;
     }
 
     /**
