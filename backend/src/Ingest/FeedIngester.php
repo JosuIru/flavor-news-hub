@@ -112,7 +112,18 @@ final class FeedIngester
         }
 
         require_once ABSPATH . WPINC . '/feed.php';
+
+        // SimplePie por defecto envía un UA genérico que servicios como EFF
+        // bloquean con HTTP 400. Ponemos uno identificable mientras corre
+        // fetch_feed y lo retiramos justo después para no afectar a otros
+        // plugins que también usen `fetch_feed` durante la misma request.
+        $filtroAjustesFeed = static function (\SimplePie $feed): void {
+            $feed->set_useragent('FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)');
+            $feed->set_timeout(15);
+        };
+        add_action('wp_feed_options', $filtroAjustesFeed);
         $feedDescargado = fetch_feed($urlFeed);
+        remove_action('wp_feed_options', $filtroAjustesFeed);
         if (is_wp_error($feedDescargado)) {
             $mensajeError = $feedDescargado->get_error_message();
             self::cerrarLog($idLog, 'error', $contadorNuevos, $contadorDescartados, $mensajeError);
