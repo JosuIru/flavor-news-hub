@@ -95,9 +95,12 @@ final class AppUpdateEndpoint
             return $cache;
         }
 
-        $url = $incluyePrereleases
-            ? 'https://api.github.com/repos/' . self::REPO_GITHUB . '/releases?per_page=5'
-            : 'https://api.github.com/repos/' . self::REPO_GITHUB . '/releases/latest';
+        // Pedimos un listado en vez de `/releases/latest` porque podemos
+        // publicar releases solo-plugin (sin APK adjunta), y `/latest`
+        // colapsaría a una que no sirve para la app móvil. Iteramos hasta
+        // encontrar la primera con un asset `.apk`. En el canal `beta`
+        // aceptamos prereleases; en `stable` sólo las definitivas.
+        $url = 'https://api.github.com/repos/' . self::REPO_GITHUB . '/releases?per_page=15';
 
         $headers = ['Accept' => 'application/vnd.github+json'];
         if (defined('FLAVOR_GH_TOKEN') && FLAVOR_GH_TOKEN !== '') {
@@ -119,35 +122,35 @@ final class AppUpdateEndpoint
             return null;
         }
 
-        $release = $incluyePrereleases ? ($cuerpo[0] ?? null) : $cuerpo;
-        if (!is_array($release)) {
-            return null;
-        }
+        foreach ($cuerpo as $release) {
+            if (!is_array($release)) continue;
+            if (($release['draft'] ?? false) === true) continue;
+            if (!$incluyePrereleases && ($release['prerelease'] ?? false) === true) continue;
 
-        $apkAsset = null;
-        foreach (($release['assets'] ?? []) as $asset) {
-            if (!is_array($asset)) continue;
-            $nombre = (string) ($asset['name'] ?? '');
-            if (str_ends_with(strtolower($nombre), '.apk')) {
-                $apkAsset = $asset;
-                break;
+            $apkAsset = null;
+            foreach (($release['assets'] ?? []) as $asset) {
+                if (!is_array($asset)) continue;
+                $nombre = (string) ($asset['name'] ?? '');
+                if (str_ends_with(strtolower($nombre), '.apk')) {
+                    $apkAsset = $asset;
+                    break;
+                }
             }
-        }
-        if ($apkAsset === null) {
-            // Sin APK adjunto en la release → no publicamos update.
-            return null;
+            if ($apkAsset === null) continue;
+
+            $datos = [
+                'version'      => (string) ($release['tag_name'] ?? ''),
+                'download_url' => (string) ($apkAsset['browser_download_url'] ?? ''),
+                'release_url'  => (string) ($release['html_url'] ?? ''),
+                'changelog'    => (string) ($release['body'] ?? ''),
+                'published_at' => (string) ($release['published_at'] ?? ''),
+            ];
+            set_transient($claveCache, $datos, self::TTL_CACHE_SEGUNDOS);
+            return $datos;
         }
 
-        $datos = [
-            'version'      => (string) ($release['tag_name'] ?? ''),
-            'download_url' => (string) ($apkAsset['browser_download_url'] ?? ''),
-            'release_url'  => (string) ($release['html_url'] ?? ''),
-            'changelog'    => (string) ($release['body'] ?? ''),
-            'published_at' => (string) ($release['published_at'] ?? ''),
-        ];
-
-        set_transient($claveCache, $datos, self::TTL_CACHE_SEGUNDOS);
-        return $datos;
+        // Ninguna release reciente lleva APK — no hay update anunciable.
+        return null;
     }
 
     /**
