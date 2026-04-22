@@ -83,6 +83,13 @@ class _CuerpoSource extends ConsumerWidget {
                   ),
             ),
           ],
+          // Badge compacto con la licencia cuando sea declarada y no
+          // sea "all-rights-reserved" (que es el default implícito y
+          // no aporta información). Verde distintivo para las CC.
+          if (_etiquetaLicencia(source.contentLicense) != null) ...[
+            const SizedBox(height: 8),
+            _BadgeLicencia(codigo: source.contentLicense),
+          ],
           if (source.topics.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
@@ -137,6 +144,12 @@ class _CuerpoSource extends ConsumerWidget {
                   _CampoEditorial(
                     etiqueta: textos.sourceEditorialNote,
                     valor: source.editorialNote,
+                    esHtml: true,
+                  ),
+                if (source.legalNote.isNotEmpty)
+                  _CampoEditorial(
+                    etiqueta: textos.sourceLegalNote,
+                    valor: source.legalNote,
                     esHtml: true,
                   ),
                 if (source.territory.isNotEmpty)
@@ -257,6 +270,86 @@ class _CampoEditorial extends StatelessWidget {
             )
           else
             Text(valor),
+        ],
+      ),
+    );
+  }
+}
+
+/// Formatea el slug de licencia a etiqueta humana, o devuelve null si
+/// no hay licencia declarada o es "all-rights-reserved" (que es el
+/// default implícito de derechos de autor y no aporta como badge).
+String? _etiquetaLicencia(String codigo) {
+  if (codigo.isEmpty || codigo == 'all-rights-reserved') return null;
+  switch (codigo) {
+    case 'public-domain':
+    case 'cc0-1.0':
+      return 'Dominio público';
+    case 'mixed':
+      return 'Licencia mixta';
+  }
+  if (!codigo.startsWith('cc-')) return null;
+  // "cc-by-nc-nd-3.0-us" -> "CC BY-NC-ND 3.0 US"
+  final resto = codigo.substring(3);
+  final partes = resto.split('-');
+  // Las partes puramente alfabéticas van en mayúscula (by, nc, nd, sa);
+  // las versiones numéricas y países se mantienen como están, pero el
+  // código ISO de país (us, eu...) también se mayuscula.
+  final procesadas = <String>[];
+  for (var i = 0; i < partes.length; i++) {
+    final p = partes[i];
+    final esLetrasSolo = RegExp(r'^[a-z]+$').hasMatch(p);
+    procesadas.add(esLetrasSolo ? p.toUpperCase() : p);
+  }
+  // Intentamos insertar un espacio antes de la primera parte que tenga
+  // dígitos (la versión): "BY NC ND 3.0 US" -> "BY-NC-ND 3.0 US".
+  final buffer = StringBuffer('CC ');
+  for (var i = 0; i < procesadas.length; i++) {
+    final p = procesadas[i];
+    final tieneNumero = RegExp(r'\d').hasMatch(p);
+    if (i == 0) {
+      buffer.write(p);
+    } else if (tieneNumero || RegExp(r'\d').hasMatch(procesadas[i - 1])) {
+      buffer.write(' $p');
+    } else {
+      buffer.write('-$p');
+    }
+  }
+  return buffer.toString();
+}
+
+class _BadgeLicencia extends StatelessWidget {
+  const _BadgeLicencia({required this.codigo});
+  final String codigo;
+
+  @override
+  Widget build(BuildContext context) {
+    final etiqueta = _etiquetaLicencia(codigo);
+    if (etiqueta == null) return const SizedBox.shrink();
+    final esquema = Theme.of(context).colorScheme;
+    final esCC = codigo.startsWith('cc-') || codigo == 'cc0-1.0';
+    final fondo = esCC
+        ? Colors.green.withValues(alpha: 0.18)
+        : esquema.secondaryContainer;
+    final color = esCC ? Colors.green.shade800 : esquema.onSecondaryContainer;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: fondo,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(esCC ? Icons.copyright_outlined : Icons.shield_outlined, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            etiqueta,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall
+                ?.copyWith(color: color, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
