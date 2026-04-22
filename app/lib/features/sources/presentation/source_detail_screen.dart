@@ -198,9 +198,12 @@ class _BotonVerContenido extends StatelessWidget {
         onPressed: () {
           // Ajustamos el filtro de la pestaña Videos a este canal
           // concreto antes de navegar, si no veríamos todos mezclados.
+          // `push` preserva el back stack — así desde la lista de
+          // vídeos filtrada del canal puedes volver al detalle del
+          // canal con el botón atrás del sistema.
           ref.read(filtrosVideosProvider.notifier).state =
               FiltrosVideos.vacios.conSource(source.id);
-          context.go('/videos');
+          context.push('/videos');
         },
         icon: const Icon(Icons.play_circle_outline),
         label: Text(textos.sourceListVideos),
@@ -208,7 +211,7 @@ class _BotonVerContenido extends StatelessWidget {
     }
     if (esPodcast) {
       return FilledButton.icon(
-        onPressed: () => context.go('/audio'),
+        onPressed: () => context.push('/audio'),
         icon: const Icon(Icons.podcasts),
         label: Text(textos.sourceListAudio),
       );
@@ -216,7 +219,7 @@ class _BotonVerContenido extends StatelessWidget {
     return FilledButton.icon(
       onPressed: () async {
         await ref.read(filtrosFeedProvider.notifier).establecerSource(source.id);
-        if (context.mounted) context.go('/');
+        if (context.mounted) context.push('/');
       },
       icon: const Icon(Icons.filter_list),
       label: Text(textos.sourceListNews),

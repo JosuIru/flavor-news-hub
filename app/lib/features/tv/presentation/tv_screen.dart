@@ -191,7 +191,18 @@ class _ItemTile extends StatelessWidget {
       title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitulo, maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push('/items/${item.id}'),
+      onTap: () {
+        // Si el item viene de un canal audiovisual, abrimos el
+        // reproductor in-app directamente en vez del detalle de
+        // item — que para vídeos suele abrir el enlace externo.
+        final feedType = item.source?.feedType ?? '';
+        const tiposVideo = {'youtube', 'video', 'peertube'};
+        if (tiposVideo.contains(feedType)) {
+          context.push('/videos/play/${item.id}');
+        } else {
+          context.push('/items/${item.id}');
+        }
+      },
     );
   }
 }
