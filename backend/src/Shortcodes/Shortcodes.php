@@ -96,7 +96,7 @@ final class Shortcodes
 
         /* HERO con gradiente oscuro. */
         #fnh-landing .fnh-hero{background:linear-gradient(135deg,#1a2332 0%,#2d1b4e 60%,#4a1d3e 100%) !important;color:#fff !important;padding:5rem 2rem !important;border-radius:20px !important;border:0 !important;text-align:center !important;margin:0 !important;position:relative;overflow:hidden}
-        #fnh-landing .fnh-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(61,220,132,.15),transparent 60%),radial-gradient(circle at 75% 60%,rgba(147,80,220,.2),transparent 55%);pointer-events:none}
+        #fnh-landing .fnh-hero::before{content:\"\";position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(61,220,132,.15),transparent 60%),radial-gradient(circle at 75% 60%,rgba(147,80,220,.2),transparent 55%);pointer-events:none}
         #fnh-landing .fnh-hero-inner{position:relative;max-width:780px;margin:0 auto}
         #fnh-landing .fnh-hero h1{color:#fff !important;font-size:clamp(2.2em,5vw,3.4em) !important;margin:0 0 .3em !important;border:0;padding:0 !important;line-height:1.1 !important;letter-spacing:-.01em}
         #fnh-landing .fnh-hero .fnh-lema{font-size:clamp(1.05em,2vw,1.3em) !important;color:rgba(255,255,255,.85) !important;max-width:52ch;margin:0 auto 1.8em !important;line-height:1.45}
@@ -148,7 +148,7 @@ final class Shortcodes
         #fnh-landing .fnh-destacado .fnh-destacado-meta{margin-top:.6rem;font-size:.95em;color:#444}
         /* CTA descarga con carácter: fondo oscuro, ilustración tipográfica. */
         #fnh-landing .fnh-descarga{background:radial-gradient(ellipse at top,#1a1a1a 0%,#0a0a0a 100%) !important;color:#fff !important;padding:3.5rem 2rem !important;border-radius:20px !important;text-align:center !important;border:0 !important;position:relative;overflow:hidden}
-        #fnh-landing .fnh-descarga::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(61,220,132,.18),transparent 50%);pointer-events:none}
+        #fnh-landing .fnh-descarga::after{content:\"\";position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(61,220,132,.18),transparent 50%);pointer-events:none}
         #fnh-landing .fnh-descarga-inner{position:relative;max-width:560px;margin:0 auto}
         #fnh-landing .fnh-descarga .fnh-descarga-titulo{margin:0 0 .5em !important;font-size:clamp(1.7em,3.5vw,2.4em) !important;color:#fff !important;border:0 !important;padding:0 !important;font-weight:800;letter-spacing:-.01em}
         #fnh-landing .fnh-descarga-copy{color:rgba(255,255,255,.78) !important;font-size:1.05em;margin:0 0 1.6em !important;line-height:1.55}
