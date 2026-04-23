@@ -364,6 +364,54 @@ final class Shortcodes
     }
 
     /**
+     * @param list<\WP_Post> $posts
+     * @return list<array{slug:string,nombre:string,cantidad:int,url:string}>
+     */
+    private static function obtenerTemasDestacadosNoticias(array $posts, int $limite = 4): array
+    {
+        $conteo = [];
+        foreach ($posts as $post) {
+            if (!$post instanceof \WP_Post) {
+                continue;
+            }
+            $terms = get_the_terms($post, Topic::SLUG);
+            if (empty($terms) || is_wp_error($terms)) {
+                continue;
+            }
+            foreach ($terms as $term) {
+                if (!$term instanceof \WP_Term) {
+                    continue;
+                }
+                if (!isset($conteo[$term->slug])) {
+                    $conteo[$term->slug] = [
+                        'slug' => $term->slug,
+                        'nombre' => $term->name,
+                        'cantidad' => 0,
+                    ];
+                }
+                $conteo[$term->slug]['cantidad']++;
+            }
+        }
+
+        if ($conteo === []) {
+            return [];
+        }
+
+        usort($conteo, static function (array $a, array $b): int {
+            return $b['cantidad'] <=> $a['cantidad'] ?: strcasecmp($a['nombre'], $b['nombre']);
+        });
+
+        $conteo = array_slice($conteo, 0, $limite);
+        $urlBase = self::urlActual();
+        foreach ($conteo as &$tema) {
+            $tema['url'] = (string) add_query_arg(['fnh_topic' => $tema['slug']], $urlBase);
+        }
+        unset($tema);
+
+        return $conteo;
+    }
+
+    /**
      * @return array<string, string>
      */
     private static function obtenerOpcionesMetaTexto(string $postType, string $metaKey): array
@@ -644,6 +692,55 @@ final class Shortcodes
         .fnh-shortcode-wrap .fnh-feed-lista h3{margin:0 0 4px;font-size:1.05em;line-height:1.3}
         .fnh-shortcode-wrap .fnh-feed-lista .fnh-meta{font-size:.85em;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap .fnh-feed-lista .fnh-excerpt{margin-top:.45rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero{display:grid;grid-template-columns:1.3fr .7fr;gap:1rem;align-items:end;padding:1.25rem 1.25rem 1.4rem;margin-bottom:.25rem;border:1px solid var(--fnh-color-border);border-radius:22px;background:linear-gradient(135deg,var(--fnh-color-surface) 0%,var(--fnh-color-surface-alt) 100%);box-shadow:0 12px 30px rgba(0,0,0,.05);position:relative;overflow:hidden}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero::before{content:\"\";position:absolute;inset:0;background:radial-gradient(circle at 14% 18%,rgba(255,255,255,.7),transparent 32%),radial-gradient(circle at 86% 10%,rgba(255,255,255,.4),transparent 22%);pointer-events:none}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero > *{position:relative;z-index:1}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-titular{display:grid;gap:.55rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-kicker{display:inline-flex;align-items:center;gap:.45rem;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-kicker::before{content:\"\";width:.55rem;height:.55rem;border-radius:999px;background:var(--fnh-color-accent);opacity:.9;flex:0 0 auto}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero h2{margin:0;font-size:1.95rem;line-height:1.02;letter-spacing:-.04em;color:var(--fnh-color-text);max-width:18ch}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero p{margin:0;color:var(--fnh-color-text-soft);max-width:62ch}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-estadistica{justify-self:end;align-self:stretch;display:grid;gap:.5rem;min-width:220px;padding:1rem 1.05rem;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.45);backdrop-filter:blur(8px)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-numero{font-size:2rem;font-weight:800;line-height:1;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-etiqueta{font-size:.82rem;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-pistas{display:flex;flex-wrap:wrap;gap:.45rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-pista{display:inline-flex;align-items:center;min-height:30px;padding:.25rem .65rem;border-radius:999px;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);font-size:.8rem;color:var(--fnh-color-text-soft);box-shadow:0 1px 1px rgba(0,0,0,.02)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal{display:grid;grid-template-columns:minmax(220px,.95fr) minmax(0,1.05fr);gap:1rem;align-items:stretch;padding:1rem;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.4);box-shadow:0 10px 26px rgba(0,0,0,.05)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal--sin-media{grid-template-columns:1fr}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media{border-radius:14px;overflow:hidden;min-height:220px;background:var(--fnh-color-surface-alt)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-contenido{display:grid;gap:.65rem;align-content:start;padding:.15rem .15rem .1rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-badge{display:inline-flex;align-items:center;justify-content:center;min-height:30px;width:max-content;padding:.2rem .65rem;border-radius:999px;background:rgba(0,0,0,.08);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-meta{font-size:.82rem;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal h3{margin:0;font-size:1.34rem;line-height:1.13;letter-spacing:-.03em;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-excerpt{color:var(--fnh-color-text-soft);line-height:1.55;font-size:.95rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-cta{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:.45rem .85rem;border-radius:999px;background:var(--fnh-color-accent);color:var(--fnh-color-accent-contrast);text-decoration:none;font-size:.82rem;font-weight:700;justify-self:start}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-cta:hover{filter:brightness(.95)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-mosaico{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(220px,.9fr);gap:1rem;margin-top:1rem;align-items:start}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundarias{display:grid;gap:.9rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria{display:grid;grid-template-columns:92px minmax(0,1fr);gap:.7rem;padding:.7rem;border-radius:14px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.03)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria--sin-media{grid-template-columns:1fr}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-media{border-radius:12px;overflow:hidden;min-height:88px;background:var(--fnh-color-surface-alt)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-media img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-contenido{display:grid;gap:.28rem;align-content:start}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-meta{font-size:.7rem;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria h4{margin:0;font-size:.92rem;line-height:1.22;letter-spacing:-.01em;color:var(--fnh-color-text)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-excerpt{font-size:.8rem;line-height:1.35;color:var(--fnh-color-text-soft)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-cta{font-size:.72rem;font-weight:700;text-decoration:none;color:var(--fnh-color-accent);justify-self:start}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-cta:hover{text-decoration:underline}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-temas{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.25rem}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-tema{display:inline-flex;align-items:center;gap:.35rem;min-height:32px;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.4);text-decoration:none;font-size:.82rem;font-weight:600;color:var(--fnh-color-text);transition:transform .15s,background .15s,box-shadow .15s}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-tema span{opacity:.68;font-weight:700}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-tema:hover{background:rgba(255,255,255,.95);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+        @media (max-width:760px){
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero{grid-template-columns:1fr;align-items:start}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-estadistica{justify-self:start;min-width:0;width:100%}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero h2{font-size:1.55rem}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal{grid-template-columns:1fr}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media{min-height:180px}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-mosaico{grid-template-columns:1fr}
+          .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria{grid-template-columns:84px minmax(0,1fr)}
+        }
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-lista{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;align-items:stretch}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item{display:flex;flex-direction:column;gap:.75rem;padding:0;border:1px solid var(--fnh-color-border);border-radius:18px;overflow:hidden;background:var(--fnh-color-surface);box-shadow:0 1px 2px rgba(0,0,0,.03)}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-item .fnh-media{order:-1;margin:0}
@@ -887,53 +984,168 @@ JS;
         }
 
         $esPaginaNoticias = self::paginaAutoActual() === 'noticias';
-        ob_start();
-        printf(
-            '<ul class="fnh-feed-lista%s">',
-            $esPaginaNoticias ? ' fnh-feed-lista--noticias' : ''
-        );
-        foreach ($consulta->posts as $indice => $post) {
-            $datos = ItemTransformer::transformar($post);
-            $fuenteNombre = $datos['source']['name'] ?? '';
-            $urlOriginal = $datos['original_url'] ?: $datos['url'];
-            $clasesItem = 'fnh-feed-item';
-            if ($esPaginaNoticias && $indice === 0) {
-                $clasesItem .= ' fnh-feed-item--destacado';
-            }
-            printf(
-                '<li class="%s">',
-                esc_attr($clasesItem)
-            );
-            if ($esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
-                printf(
-                    '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
-                    esc_url($datos['media_url'])
-                );
-            }
-            printf(
-                '<h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>',
-                esc_url($urlOriginal),
-                esc_html($datos['title'])
-            );
-            echo '<div class="fnh-meta">' . esc_html($fuenteNombre);
-            if (!empty($datos['published_at'])) {
-                $fecha = date_i18n(get_option('date_format', 'F j, Y'), strtotime($datos['published_at']));
-                echo ' · ' . esc_html($fecha);
-            }
-            echo '</div>';
-            if (!$esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
-                printf(
-                    '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
-                    esc_url($datos['media_url'])
-                );
-            }
-            if ((int) $a['show_excerpt'] === 1 && !empty($datos['excerpt'])) {
-                echo '<div class="fnh-excerpt">' . wp_kses_post($datos['excerpt']) . '</div>';
-            }
-            echo self::renderBotonesCompartir((string) $urlOriginal, (string) $datos['title']);
-            echo '</li>';
+        $temasDestacados = $esPaginaNoticias ? self::obtenerTemasDestacadosNoticias($consulta->posts, 4) : [];
+        $postPrincipal = null;
+        $postsSecundarios = [];
+        $postsListado = $consulta->posts;
+        if ($esPaginaNoticias && !empty($postsListado)) {
+            $postPrincipal = array_shift($postsListado);
+            $postsSecundarios = array_slice($postsListado, 0, 2);
+            $postsListado = array_slice($consulta->posts, 3);
         }
-        echo '</ul>';
+        ob_start();
+        if ($esPaginaNoticias) :
+            $numeroDestacado = count($consulta->posts);
+            $datosPrincipal = $postPrincipal instanceof \WP_Post ? ItemTransformer::transformar($postPrincipal) : [];
+            $metaPrincipal = '';
+            if ($datosPrincipal !== []) {
+                $metaPrincipal = $datosPrincipal['source']['name'] ?? '';
+                if (!empty($datosPrincipal['published_at'])) {
+                    $fechaPrincipal = date_i18n(get_option('date_format', 'F j, Y'), strtotime($datosPrincipal['published_at']));
+                    $metaPrincipal = trim($metaPrincipal . ($metaPrincipal !== '' ? ' · ' : '') . $fechaPrincipal);
+                }
+            }
+            ?>
+            <section class="fnh-feed-hero" aria-label="<?php esc_attr_e('Resumen de noticias', 'flavor-news-hub'); ?>">
+                <div class="fnh-feed-hero-titular">
+                    <span class="fnh-feed-hero-kicker"><?php esc_html_e('Noticias', 'flavor-news-hub'); ?></span>
+                    <h2><?php esc_html_e('La actualidad del ecosistema alternativo, sin ruido y por orden cronológico.', 'flavor-news-hub'); ?></h2>
+                    <p><?php esc_html_e('Filtra por temática, territorio o idioma para acotar el feed a lo que te interesa ahora mismo.', 'flavor-news-hub'); ?></p>
+                    <?php if ($datosPrincipal !== []) : ?>
+                        <div class="fnh-feed-hero-mosaico">
+                            <article class="fnh-feed-hero-principal<?php echo empty($datosPrincipal['media_url']) ? ' fnh-feed-hero-principal--sin-media' : ''; ?>">
+                                <?php if (!empty($datosPrincipal['media_url'])) : ?>
+                                    <a class="fnh-feed-hero-principal-media" href="<?php echo esc_url((string) ($datosPrincipal['original_url'] ?: $datosPrincipal['url'])); ?>" target="_blank" rel="noopener">
+                                        <img src="<?php echo esc_url((string) $datosPrincipal['media_url']); ?>" alt="" loading="lazy" />
+                                    </a>
+                                <?php endif; ?>
+                                <div class="fnh-feed-hero-principal-contenido">
+                                    <div class="fnh-feed-hero-principal-badge"><?php esc_html_e('Portada', 'flavor-news-hub'); ?></div>
+                                    <?php if ($metaPrincipal !== '') : ?>
+                                        <div class="fnh-feed-hero-principal-meta"><?php echo esc_html($metaPrincipal); ?></div>
+                                    <?php endif; ?>
+                                    <h3>
+                                        <a href="<?php echo esc_url((string) ($datosPrincipal['original_url'] ?: $datosPrincipal['url'])); ?>" target="_blank" rel="noopener">
+                                            <?php echo esc_html((string) $datosPrincipal['title']); ?>
+                                        </a>
+                                    </h3>
+                                    <?php if ((int) $a['show_excerpt'] === 1 && !empty($datosPrincipal['excerpt'])) : ?>
+                                        <div class="fnh-feed-hero-principal-excerpt"><?php echo wp_kses_post((string) $datosPrincipal['excerpt']); ?></div>
+                                    <?php endif; ?>
+                                    <a class="fnh-feed-hero-principal-cta" href="<?php echo esc_url((string) ($datosPrincipal['original_url'] ?: $datosPrincipal['url'])); ?>" target="_blank" rel="noopener">
+                                        <?php esc_html_e('Leer noticia', 'flavor-news-hub'); ?>
+                                    </a>
+                                </div>
+                            </article>
+                            <?php if ($postsSecundarios !== []) : ?>
+                                <div class="fnh-feed-hero-secundarias">
+                                    <?php foreach ($postsSecundarios as $postSecundario) : ?>
+                                        <?php
+                                        $datosSecundario = ItemTransformer::transformar($postSecundario);
+                                        $urlSecundario = $datosSecundario['original_url'] ?: $datosSecundario['url'];
+                                        $metaSecundario = $datosSecundario['source']['name'] ?? '';
+                                        if (!empty($datosSecundario['published_at'])) {
+                                            $fechaSecundaria = date_i18n(get_option('date_format', 'F j, Y'), strtotime($datosSecundario['published_at']));
+                                            $metaSecundario = trim($metaSecundario . ($metaSecundario !== '' ? ' · ' : '') . $fechaSecundaria);
+                                        }
+                                        ?>
+                                        <article class="fnh-feed-hero-secundaria<?php echo empty($datosSecundario['media_url']) ? ' fnh-feed-hero-secundaria--sin-media' : ''; ?>">
+                                            <?php if (!empty($datosSecundario['media_url'])) : ?>
+                                                <a class="fnh-feed-hero-secundaria-media" href="<?php echo esc_url((string) $urlSecundario); ?>" target="_blank" rel="noopener">
+                                                    <img src="<?php echo esc_url((string) $datosSecundario['media_url']); ?>" alt="" loading="lazy" />
+                                                </a>
+                                            <?php endif; ?>
+                                            <div class="fnh-feed-hero-secundaria-contenido">
+                                                <?php if ($metaSecundario !== '') : ?>
+                                                    <div class="fnh-feed-hero-secundaria-meta"><?php echo esc_html($metaSecundario); ?></div>
+                                                <?php endif; ?>
+                                                <h4><a href="<?php echo esc_url((string) $urlSecundario); ?>" target="_blank" rel="noopener"><?php echo esc_html((string) $datosSecundario['title']); ?></a></h4>
+                                                <?php if ((int) $a['show_excerpt'] === 1 && !empty($datosSecundario['excerpt'])) : ?>
+                                                    <div class="fnh-feed-hero-secundaria-excerpt"><?php echo wp_kses_post((string) $datosSecundario['excerpt']); ?></div>
+                                                <?php endif; ?>
+                                                <a class="fnh-feed-hero-secundaria-cta" href="<?php echo esc_url((string) $urlSecundario); ?>" target="_blank" rel="noopener">
+                                                    <?php esc_html_e('Abrir', 'flavor-news-hub'); ?>
+                                                </a>
+                                            </div>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($temasDestacados !== []) : ?>
+                        <div class="fnh-feed-hero-temas" aria-label="<?php esc_attr_e('Temáticas destacadas', 'flavor-news-hub'); ?>">
+                            <?php foreach ($temasDestacados as $tema) : ?>
+                                <a class="fnh-feed-hero-tema" href="<?php echo esc_url((string) $tema['url']); ?>">
+                                    <?php echo esc_html((string) $tema['nombre']); ?>
+                                    <span><?php echo esc_html((string) $tema['cantidad']); ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="fnh-feed-hero-estadistica">
+                    <div>
+                        <div class="fnh-feed-hero-numero"><?php echo esc_html((string) $numeroDestacado); ?></div>
+                        <div class="fnh-feed-hero-etiqueta"><?php esc_html_e('Entradas recientes cargadas', 'flavor-news-hub'); ?></div>
+                    </div>
+                    <div class="fnh-feed-hero-pistas">
+                        <span class="fnh-feed-hero-pista"><?php esc_html_e('Temáticas', 'flavor-news-hub'); ?></span>
+                        <span class="fnh-feed-hero-pista"><?php esc_html_e('Territorios', 'flavor-news-hub'); ?></span>
+                        <span class="fnh-feed-hero-pista"><?php esc_html_e('Idiomas', 'flavor-news-hub'); ?></span>
+                    </div>
+                </div>
+            </section>
+        <?php
+        endif;
+        if ($postsListado !== []) {
+            printf(
+                '<ul class="fnh-feed-lista%s">',
+                $esPaginaNoticias ? ' fnh-feed-lista--noticias' : ''
+            );
+            foreach ($postsListado as $indice => $post) {
+                $datos = ItemTransformer::transformar($post);
+                $fuenteNombre = $datos['source']['name'] ?? '';
+                $urlOriginal = $datos['original_url'] ?: $datos['url'];
+                $clasesItem = 'fnh-feed-item';
+                if ($esPaginaNoticias && $indice === 0) {
+                    $clasesItem .= ' fnh-feed-item--destacado';
+                }
+                printf(
+                    '<li class="%s">',
+                    esc_attr($clasesItem)
+                );
+                if ($esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
+                    printf(
+                        '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
+                        esc_url($datos['media_url'])
+                    );
+                }
+                printf(
+                    '<h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>',
+                    esc_url($urlOriginal),
+                    esc_html($datos['title'])
+                );
+                echo '<div class="fnh-meta">' . esc_html($fuenteNombre);
+                if (!empty($datos['published_at'])) {
+                    $fecha = date_i18n(get_option('date_format', 'F j, Y'), strtotime($datos['published_at']));
+                    echo ' · ' . esc_html($fecha);
+                }
+                echo '</div>';
+                if (!$esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
+                    printf(
+                        '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
+                        esc_url($datos['media_url'])
+                    );
+                }
+                if ((int) $a['show_excerpt'] === 1 && !empty($datos['excerpt'])) {
+                    echo '<div class="fnh-excerpt">' . wp_kses_post($datos['excerpt']) . '</div>';
+                }
+                echo self::renderBotonesCompartir((string) $urlOriginal, (string) $datos['title']);
+                echo '</li>';
+            }
+            echo '</ul>';
+        }
         return self::envolverShortcode('feed', (string) ob_get_clean(), $filtros);
     }
 
