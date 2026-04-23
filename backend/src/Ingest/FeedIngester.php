@@ -121,8 +121,19 @@ final class FeedIngester
             $feed->set_useragent('FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)');
             $feed->set_timeout(15);
         };
+        // WordPress cachea los feeds 12h por defecto (vía
+        // wp_feed_cache_transient_lifetime), lo que para un agregador de
+        // noticias en vivo es inaceptable: aunque el cron dispare cada
+        // 30 min, fetch_feed devuelve el mismo contenido cacheado 12h,
+        // y no vemos publicaciones nuevas hasta que expira. Reducimos
+        // a 10 min — suficientemente fresco para captar novedades del
+        // día, suficientemente largo para no machacar los servidores
+        // de los medios si dos ingestas se solapan por cualquier razón.
+        $filtroTtlCache = static fn(int $segundos): int => 10 * MINUTE_IN_SECONDS;
         add_action('wp_feed_options', $filtroAjustesFeed);
+        add_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         $feedDescargado = fetch_feed($urlFeed);
+        remove_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         remove_action('wp_feed_options', $filtroAjustesFeed);
         if (is_wp_error($feedDescargado)) {
             $mensajeError = $feedDescargado->get_error_message();

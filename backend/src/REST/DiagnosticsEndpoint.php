@@ -38,8 +38,11 @@ final class DiagnosticsEndpoint
         $ultimaEjecucion = $wpdb->get_var(
             "SELECT MAX(started_at) FROM {$nombreTabla}"
         );
+        // status guardado por el ingester es 'success' (no 'ok') —
+        // corregido tras ver `ultimo_finalizado_utc: null` en el endpoint
+        // a pesar de haber ejecuciones exitosas.
         $ultimoFinalizado = $wpdb->get_var(
-            "SELECT MAX(finished_at) FROM {$nombreTabla} WHERE status = 'ok'"
+            "SELECT MAX(finished_at) FROM {$nombreTabla} WHERE status = 'success'"
         );
 
         // Últimos 10 logs: status + items + error si hubo.
@@ -59,6 +62,10 @@ final class DiagnosticsEndpoint
                 ? (string) (get_the_title($idSource) ?: '')
                 : '';
             $log['source_id'] = $idSource;
+            // Castear a int los contadores — $wpdb los devuelve como
+            // string por defecto y en JSON quedaban como "0" vs 0, feo.
+            $log['items_new'] = (int) ($log['items_new'] ?? 0);
+            $log['items_skipped'] = (int) ($log['items_skipped'] ?? 0);
             // Truncamos mensajes de error muy largos.
             if (!empty($log['error_message']) && strlen((string) $log['error_message']) > 400) {
                 $log['error_message'] = substr((string) $log['error_message'], 0, 400) . '…';
