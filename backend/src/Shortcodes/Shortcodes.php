@@ -914,12 +914,11 @@ final class Shortcodes
         .fnh-shortcode-wrap h3{font-size:1.1em !important;font-weight:700 !important;margin:0 0 .4em !important;line-height:1.3 !important;color:var(--fnh-color-text) !important}
         .fnh-shortcode-wrap h4{font-size:1em !important;font-weight:600 !important;margin:0 0 .35em !important;color:var(--fnh-color-text) !important}
         .fnh-shortcode-wrap ul,.fnh-shortcode-wrap ol{padding-left:0 !important;margin:0 !important;list-style:none !important}
-        /* ELIMINADO: regla `.fnh-feed-lista li { display: grid; ... 200px 1fr }`
-           porque pisaba (por mayor especificidad) a `.fnh-feed-item` que
-           es la que define la card real. Dejaba el item como grid de
-           2 columnas metiendo h3/meta/media/excerpt/share en celdas
-           descuadradas (el "Ipar/eus/birg"). Los estilos de card ya
-           viven en `.fnh-shortcode-wrap--feed .fnh-feed-item`. */
+        /* ELIMINADO: regla .fnh-feed-lista li con grid 200px 1fr — pisaba
+           a .fnh-feed-item (que define la card real) por mayor
+           especificidad, dejando h3/meta/media/excerpt/share en 2
+           columnas descuadradas. Los estilos de card ya viven en
+           .fnh-shortcode-wrap--feed .fnh-feed-item. */
         .fnh-shortcode-wrap .fnh-feed-lista h3 a{color:var(--fnh-color-text) !important;text-decoration:none}
         .fnh-shortcode-wrap .fnh-feed-lista h3 a:hover{text-decoration:underline}
         .fnh-shortcode-wrap .fnh-feed-lista .fnh-excerpt p{margin:.25em 0 !important;font-size:.93em;color:var(--fnh-color-text-soft)}
@@ -1160,7 +1159,6 @@ JS;
                 <div class="fnh-feed-hero-titular">
                     <span class="fnh-feed-hero-kicker"><?php esc_html_e('Noticias', 'flavor-news-hub'); ?></span>
                     <h2><?php esc_html_e('La actualidad del ecosistema alternativo, sin ruido y por orden cronológico.', 'flavor-news-hub'); ?></h2>
-                    <p><?php esc_html_e('Filtra por temática, territorio o idioma para acotar el feed a lo que te interesa ahora mismo.', 'flavor-news-hub'); ?></p>
                     <?php if ($datosPrincipal !== []) : ?>
                         <div class="fnh-feed-hero-mosaico">
                             <article class="fnh-feed-hero-principal<?php echo empty($datosPrincipal['media_url']) ? ' fnh-feed-hero-principal--sin-media' : ''; ?>">
