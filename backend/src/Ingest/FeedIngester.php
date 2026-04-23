@@ -132,6 +132,14 @@ final class FeedIngester
         $filtroTtlCache = static fn(int $segundos): int => 10 * MINUTE_IN_SECONDS;
         add_action('wp_feed_options', $filtroAjustesFeed);
         add_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
+        // Invalida el transient específico de este feed antes de
+        // descargarlo. Crítico en sitios con object-cache externo
+        // (Redis, Memcached) donde el transient vive fuera de wp_options
+        // y nuestro DELETE global no lo toca. `delete_transient` usa la
+        // API correcta que maneja DB + object cache.
+        $nombreCache = 'feed_' . md5($urlFeed);
+        delete_transient($nombreCache);
+        delete_transient($nombreCache . '_mod');
         $feedDescargado = fetch_feed($urlFeed);
         remove_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         remove_action('wp_feed_options', $filtroAjustesFeed);

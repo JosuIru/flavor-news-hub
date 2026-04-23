@@ -8,6 +8,7 @@ use FlavorNewsHub\Admin\Pages\SettingsPage;
 use FlavorNewsHub\Admin\Pages\IngestLogPage;
 use FlavorNewsHub\Admin\Pages\DashboardPage;
 use FlavorNewsHub\Admin\Pages\CatalogoPage;
+use FlavorNewsHub\Admin\Pages\EstadoFuentesPage;
 
 /**
  * Menú principal del plugin en el admin de WordPress.
@@ -59,6 +60,15 @@ final class Menu
             'manage_options',
             CatalogoPage::SLUG,
             [CatalogoPage::class, 'render']
+        );
+
+        add_submenu_page(
+            self::SLUG_MENU,
+            __('Estado de fuentes', 'flavor-news-hub'),
+            __('Estado de fuentes', 'flavor-news-hub'),
+            'edit_posts',
+            EstadoFuentesPage::SLUG,
+            [EstadoFuentesPage::class, 'render']
         );
 
         add_submenu_page(
