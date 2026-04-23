@@ -40,6 +40,10 @@ final class Shortcodes
         add_shortcode('flavor_news_sources', [self::class, 'renderSources']);
         add_shortcode('flavor_news_sobre', [self::class, 'renderSobre']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
+        // Marca las páginas auto con clases específicas en el <body>
+        // para poder aplicar reglas CSS por página (p.ej. ocultar
+        // el entry-header del tema en la landing, donde sobra).
+        add_filter('body_class', [self::class, 'bodyClassPaginaAuto']);
         // Prio 9 (antes de wpautop en prio 10): anteponemos un menú
         // de navegación entre las 5 páginas auto-generadas del plugin.
         // Antes de wpautop evita que WP envuelva el nav en un <p>.
@@ -138,6 +142,27 @@ final class Shortcodes
             $contenido
         );
         return $resultado === null ? $contenido : $resultado;
+    }
+
+    /**
+     * Añade clases al <body> identificando nuestras páginas auto:
+     * `fnh-pagina-auto` (cualquier página auto) y
+     * `fnh-pagina-<clave>` (específica). Así el CSS puede aplicar
+     * reglas por página sin depender del page-id numérico.
+     *
+     * @param list<string> $classes
+     * @return list<string>
+     */
+    public static function bodyClassPaginaAuto(array $classes): array
+    {
+        if (!is_singular('page')) return $classes;
+        $idPost = (int) get_the_ID();
+        if ($idPost <= 0) return $classes;
+        $clave = (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
+        if ($clave === '') return $classes;
+        $classes[] = 'fnh-pagina-auto';
+        $classes[] = 'fnh-pagina-' . sanitize_html_class($clave);
+        return $classes;
     }
 
     private static function paginaAutoActual(): string
@@ -641,6 +666,14 @@ final class Shortcodes
         .fnh-shortcode-wrap .fnh-share-link{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:.35rem .7rem;border:1px solid var(--fnh-color-border);border-radius:999px;background:var(--fnh-color-surface);font-size:.78rem;line-height:1.2;text-decoration:none;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap .fnh-share-link:hover{background:var(--fnh-color-surface-alt);color:var(--fnh-color-text)}
         @media (max-width:640px){.fnh-filtros{padding:.9rem}.fnh-filtros-grid{grid-template-columns:1fr}}
+
+        /* En la landing (Inicio) ocultamos el entry-header del tema:
+           el hero ya tiene su propio título grande y el tema añade un
+           <h1>Inicio</h1> redundante encima. Sólo aplica a /inicio —
+           las otras páginas auto mantienen el título del tema. */
+        body.fnh-pagina-inicio .entry-header,
+        body.fnh-pagina-inicio article > div > header:first-child,
+        body.fnh-pagina-inicio article > header:first-child{display:none !important}
 
         /* Menú de navegación entre las páginas auto (Inicio/Noticias/...). */
         .fnh-nav-auto{max-width:1200px;margin:1rem auto 1.5rem;padding:0 1.25rem}
