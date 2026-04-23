@@ -804,7 +804,7 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed .fnh-feed-hero-etiqueta{font-size:.82rem;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-pistas{display:flex;flex-wrap:wrap;gap:.45rem;margin-left:auto}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-pista{display:inline-flex;align-items:center;min-height:30px;padding:.25rem .65rem;border-radius:999px;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);font-size:.8rem;color:var(--fnh-color-text-soft);box-shadow:0 1px 1px rgba(0,0,0,.02)}
-        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal{display:grid;grid-template-columns:minmax(220px,.95fr) minmax(0,1.05fr);gap:1rem;align-items:stretch;padding:1rem;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.4);box-shadow:0 10px 26px rgba(0,0,0,.05)}
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal{display:grid;grid-template-columns:1fr;gap:1rem;align-items:stretch;padding:1rem;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.4);box-shadow:0 10px 26px rgba(0,0,0,.05)}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal--sin-media{grid-template-columns:1fr}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-media{display:block;border-radius:14px;overflow:hidden;min-height:220px;max-height:360px;aspect-ratio:16/10;align-self:start;background:var(--fnh-color-surface-alt);text-decoration:none}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-media img{width:100% !important;height:100% !important;object-fit:cover;display:block}
