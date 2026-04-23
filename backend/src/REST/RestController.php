@@ -29,5 +29,6 @@ final class RestController
         AppUpdateEndpoint::registrarRutas();
         FeedHtmlEndpoint::registrarRutas();
         IngestTriggerEndpoint::registrarRutas();
+        PublicSettingsEndpoint::registrarRutas();
     }
 }

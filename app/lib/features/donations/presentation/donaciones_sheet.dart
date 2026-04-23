@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/settings_sync.dart';
 
 /// Sheet modal con las opciones de donación / apoyo. Replica las URLs
 /// del proyecto "Colección Nuevo Ser" para unificar la caja común entre
@@ -23,18 +27,24 @@ Future<void> mostrarSheetDonaciones(BuildContext context) async {
   );
 }
 
-class _ContenidoSheet extends StatelessWidget {
+class _ContenidoSheet extends ConsumerWidget {
   const _ContenidoSheet();
 
   static const String _kofiUrl = 'https://ko-fi.com/codigodespierto';
-  static const String _paypalUrl = 'https://www.paypal.com/paypalme/codigodespierto';
+  static const String _paypalUrlFallback =
+      'https://www.paypal.com/paypalme/codigodespierto';
   static const String _btcSegwit = 'bc1qjnva46wy92ldhsv4w0j26jmu8c5wm5cxvgdfd7';
   static const String _btcTaproot =
       'bc1p29l9vjelerljlwhg6dhr0uldldus4zgn8vjaecer0spj7273d7rss4gnyk';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
+    // La URL de donaciones viene ahora del backend (editable desde el
+    // admin del plugin). La sincronizamos al arrancar la app y caemos
+    // al default hardcoded si nunca hubo respuesta.
+    final sp = ref.watch(sharedPreferencesProvider);
+    final paypalUrl = sp.getString(kPrefDonationUrl) ?? _paypalUrlFallback;
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.5,
@@ -72,7 +82,7 @@ class _ContenidoSheet extends StatelessWidget {
             icono: Icons.credit_card,
             titulo: 'PayPal',
             subtitulo: textos.donationsPaypal,
-            url: _paypalUrl,
+            url: paypalUrl,
             colorFondo: const Color(0xFF2E5CB8),
           ),
           const SizedBox(height: 10),

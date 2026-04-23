@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Shortcodes;
 
+use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\CPT\Source;
@@ -39,6 +40,7 @@ final class Shortcodes
         add_shortcode('flavor_news_tv', [self::class, 'renderTv']);
         add_shortcode('flavor_news_podcasts', [self::class, 'renderPodcasts']);
         add_shortcode('flavor_news_sources', [self::class, 'renderSources']);
+        add_shortcode('flavor_news_collectives', [self::class, 'renderCollectives']);
         add_shortcode('flavor_news_sobre', [self::class, 'renderSobre']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
         // Marca las páginas auto con clases específicas en el <body>
@@ -981,6 +983,17 @@ final class Shortcodes
         .fnh-source-item a:hover{background:#f0f0f2}
         .fnh-shortcode-wrap .fnh-source-nombre{flex:1;font-weight:600;color:var(--fnh-color-text)}
         .fnh-shortcode-wrap .fnh-source-idiomas,.fnh-shortcode-wrap .fnh-source-tipo{font-size:.75em;color:var(--fnh-color-text-soft);background:var(--fnh-color-surface);padding:.1em .5em;border-radius:4px}
+
+        /* Directorio de colectivos — mismo patrón visual que el de fuentes. */
+        .fnh-shortcode-wrap .fnh-collectives-directorio{padding:0}
+        .fnh-shortcode-wrap .fnh-collectives-territorio{margin:1.5rem 0 .5rem;font-size:1.1em;color:var(--fnh-color-text);font-weight:700;border-bottom:2px solid var(--fnh-color-text);padding-bottom:.2em;display:inline-block}
+        .fnh-shortcode-wrap .fnh-collectives-total{color:var(--fnh-color-text-soft);font-weight:400;font-size:.88em}
+        .fnh-shortcode-wrap .fnh-collectives-lista{list-style:none;padding:0;margin:0 0 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.4rem}
+        .fnh-shortcode-wrap .fnh-collective-item a{display:flex;flex-direction:column;gap:.2rem;padding:.7rem .9rem;border:1px solid var(--fnh-color-border);border-radius:10px;text-decoration:none;color:inherit;background:var(--fnh-color-surface-alt);transition:background .15s,transform .1s}
+        .fnh-collective-item a:hover{background:#f0f0f2;transform:translateY(-1px)}
+        .fnh-shortcode-wrap .fnh-collective-nombre{font-weight:600;color:var(--fnh-color-text);line-height:1.3}
+        .fnh-shortcode-wrap .fnh-collective-topics{font-size:.78em;color:var(--fnh-color-text-soft);line-height:1.3}
+        .fnh-shortcode-wrap .fnh-collective-web{font-size:.72em;color:var(--fnh-color-accent);font-weight:500;word-break:break-all}
 
         /* Página Sobre */
         .fnh-shortcode-wrap .fnh-sobre{max-width:760px;margin:0 auto;line-height:1.6}
@@ -2382,6 +2395,101 @@ JS;
         }
         ?></div><?php
         return self::envolverShortcode('sources', (string) ob_get_clean(), $filtros);
+    }
+
+    /**
+     * Página Colectivos: directorio de colectivos organizados (`fnh_collective`)
+     * agrupados por territorio. Sólo se muestran los publicados (status
+     * `publish`) — los pending de la cola de envíos públicos quedan fuera
+     * hasta que admin los verifique.
+     *
+     * [flavor_news_collectives territory="" topic=""]
+     */
+    public static function renderCollectives($atribs = [], $contenido = null): string
+    {
+        $a = shortcode_atts([
+            'territory' => '',
+            'topic'     => '',
+        ], $atribs);
+        $a = self::aplicarFiltrosRequest($a, ['topic', 'territory'], ['colectivos']);
+
+        $metaQuery = [];
+        if ($a['territory'] !== '') {
+            $metaQuery[] = [
+                'key'     => '_fnh_territory',
+                'value'   => sanitize_text_field((string) $a['territory']),
+                'compare' => 'LIKE',
+            ];
+        }
+
+        $query = [
+            'post_type'      => Collective::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => 200,
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+            'no_found_rows'  => true,
+        ];
+        if ($metaQuery !== []) {
+            $query['meta_query'] = $metaQuery;
+        }
+        if ($a['topic'] !== '') {
+            $query['tax_query'] = [[
+                'taxonomy' => Topic::SLUG,
+                'field'    => 'slug',
+                'terms'    => array_map('sanitize_title', explode(',', (string) $a['topic'])),
+            ]];
+        }
+        $consulta = new \WP_Query($query);
+        $filtros = self::renderFiltrosPaginaAuto('colectivos', ['topic', 'territory']);
+        if (empty($consulta->posts)) {
+            return self::envolverShortcode('collectives', '<p class="fnh-vacio">' . esc_html__('Todavía no hay colectivos publicados en el directorio.', 'flavor-news-hub') . '</p>', $filtros);
+        }
+
+        $porTerritorio = [];
+        foreach ($consulta->posts as $post) {
+            $terr = (string) get_post_meta($post->ID, '_fnh_territory', true);
+            $terr = $terr === '' ? __('Sin territorio', 'flavor-news-hub') : $terr;
+            $porTerritorio[$terr] ??= [];
+            $porTerritorio[$terr][] = $post;
+        }
+        ksort($porTerritorio);
+
+        ob_start();
+        ?><div class="fnh-collectives-directorio"><?php
+        foreach ($porTerritorio as $terr => $posts) {
+            printf(
+                '<h3 class="fnh-collectives-territorio">%s <span class="fnh-collectives-total">(%d)</span></h3>',
+                esc_html($terr),
+                count($posts)
+            );
+            echo '<ul class="fnh-collectives-lista">';
+            foreach ($posts as $post) {
+                $idPost = (int) $post->ID;
+                $web = (string) get_post_meta($idPost, '_fnh_website_url', true);
+                $flavorUrl = (string) get_post_meta($idPost, '_fnh_flavor_url', true);
+                $enlacePrincipal = $flavorUrl !== '' ? $flavorUrl : ($web !== '' ? $web : (string) get_permalink(self::traducirPostId($idPost)));
+                $topics = wp_get_post_terms($idPost, Topic::SLUG, ['fields' => 'names']);
+                if (is_wp_error($topics)) $topics = [];
+                $topicsLimitados = array_slice(is_array($topics) ? $topics : [], 0, 4);
+                $esExterno = $enlacePrincipal !== '' && $enlacePrincipal !== (string) get_permalink(self::traducirPostId($idPost));
+                printf(
+                    '<li class="fnh-collective-item"><a href="%s"%s><span class="fnh-collective-nombre">%s</span>%s%s</a></li>',
+                    esc_url($enlacePrincipal),
+                    $esExterno ? ' target="_blank" rel="noopener"' : '',
+                    esc_html((string) get_the_title($post)),
+                    $topicsLimitados !== []
+                        ? '<span class="fnh-collective-topics">' . esc_html(implode(' · ', $topicsLimitados)) . '</span>'
+                        : '',
+                    $web !== '' && $flavorUrl === ''
+                        ? '<span class="fnh-collective-web">' . esc_html(preg_replace('#^https?://(www\.)?#', '', $web) ?? $web) . '</span>'
+                        : ''
+                );
+            }
+            echo '</ul>';
+        }
+        ?></div><?php
+        return self::envolverShortcode('collectives', (string) ob_get_clean(), $filtros);
     }
 
     /**

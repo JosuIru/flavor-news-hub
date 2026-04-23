@@ -1,7 +1,7 @@
 name: flavor_news_hub
 description: "Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados)."
 publish_to: 'none'
-version: 0.4.8+13
+version: 0.4.9+14
 
 environment:
   sdk: ^3.5.0

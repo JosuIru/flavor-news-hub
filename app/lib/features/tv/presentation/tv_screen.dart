@@ -12,6 +12,7 @@ import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../audio/presentation/audio_filters_header.dart';
 import '../../videos/data/videos_provider.dart';
 import '../data/tv_provider.dart';
 
@@ -23,12 +24,13 @@ import '../data/tv_provider.dart';
 /// Nota legal: no embebemos streams en directo aquí. La política del
 /// proyecto sólo permite embed de contenido CC; cuando haya streams
 /// verificados como CC, entrarán en una tercera subtab "En directo".
-class TvScreen extends StatelessWidget {
+class TvScreen extends ConsumerWidget {
   const TvScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
+    final filtros = ref.watch(filtrosTvProvider);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -39,6 +41,14 @@ class TvScreen extends StatelessWidget {
               icon: const Icon(Icons.search),
               tooltip: textos.searchTooltip,
               onPressed: () => context.push('/search'),
+            ),
+            IconButton(
+              icon: Badge(
+                isLabelVisible: !filtros.estaVacio,
+                child: const Icon(Icons.tune),
+              ),
+              tooltip: textos.filtersTitle,
+              onPressed: () => mostrarFiltrosTv(context),
             ),
           ],
           bottom: TabBar(
@@ -64,6 +74,153 @@ class TvScreen extends StatelessWidget {
   }
 }
 
+void mostrarFiltrosTv(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => const _BottomSheetFiltrosTv(),
+  );
+}
+
+class _BottomSheetFiltrosTv extends ConsumerWidget {
+  const _BottomSheetFiltrosTv();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textos = AppLocalizations.of(context);
+    final filtros = ref.watch(filtrosTvProvider);
+    final asyncTopics = ref.watch(topicsProvider);
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      textos.filtersTitle,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  if (!filtros.estaVacio)
+                    TextButton(
+                      onPressed: () => ref.read(filtrosTvProvider.notifier).state =
+                          FiltrosTv.vacios,
+                      child: Text(textos.filtersClear),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                textos.filterByTopic,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              asyncTopics.when(
+                loading: () => const LinearProgressIndicator(),
+                error: (_, __) => Text(
+                  textos.feedError,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                data: (topics) {
+                  final topicsUtiles = topics.where((t) => t.count > 0).toList();
+                  if (topicsUtiles.isEmpty) {
+                    return Text(
+                      textos.filterTopicsOffline,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    );
+                  }
+                  return Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final topic in topicsUtiles)
+                        FilterChip(
+                          label: Text(topic.name),
+                          selected: filtros.slugsTopics.contains(topic.slug),
+                          onSelected: (_) {
+                            final current = ref.read(filtrosTvProvider);
+                            ref.read(filtrosTvProvider.notifier).state =
+                                current.alternarTopic(topic.slug);
+                          },
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                textos.filterByLanguage,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final opcion in _opcionesIdioma)
+                    FilterChip(
+                      label: Text(opcion.etiqueta),
+                      selected: filtros.codigosIdiomas.contains(opcion.codigo),
+                      onSelected: (_) {
+                        final current = ref.read(filtrosTvProvider);
+                        ref.read(filtrosTvProvider.notifier).state =
+                            current.alternarIdioma(opcion.codigo);
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(textos.filtersApply),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OpcionIdiomaTv {
+  const _OpcionIdiomaTv({required this.codigo, required this.etiqueta});
+
+  final String codigo;
+  final String etiqueta;
+}
+
+const List<_OpcionIdiomaTv> _opcionesIdioma = [
+  _OpcionIdiomaTv(codigo: 'es', etiqueta: 'Castellano'),
+  _OpcionIdiomaTv(codigo: 'ca', etiqueta: 'Català'),
+  _OpcionIdiomaTv(codigo: 'eu', etiqueta: 'Euskara'),
+  _OpcionIdiomaTv(codigo: 'gl', etiqueta: 'Galego'),
+  _OpcionIdiomaTv(codigo: 'en', etiqueta: 'English'),
+];
+
 class _MediosTvBody extends ConsumerWidget {
   const _MediosTvBody();
 
@@ -71,30 +228,49 @@ class _MediosTvBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncSources = ref.watch(tvSourcesProvider);
     final textos = AppLocalizations.of(context);
+    final filtros = ref.watch(filtrosTvProvider);
 
-    return asyncSources.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => _VacioOError(
-        mensaje: err.toString(),
-        onReintentar: () => ref.invalidate(tvSourcesProvider),
-      ),
-      data: (sources) {
-        if (sources.isEmpty) {
-          return _VacioOError(mensaje: textos.tvEmptyMedios);
-        }
-        return RefreshIndicator(
-          onRefresh: () async {
-            unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
-            ref.invalidate(tvSourcesProvider);
+    return Column(
+      children: [
+        AudioFiltersHeader(
+          title: textos.filtersTitle,
+          topicLabel: textos.filterByTopic,
+          languageLabel: textos.filterByLanguage,
+          clearLabel: textos.filtersClear,
+          activeTopicsCount: filtros.slugsTopics.length,
+          activeLanguagesCount: filtros.codigosIdiomas.length,
+          onOpenFilters: () => mostrarFiltrosTv(context),
+          onClearFilters: () {
+            ref.read(filtrosTvProvider.notifier).state = FiltrosTv.vacios;
           },
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: sources.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) => _TileTv(source: sources[i]),
+        ),
+        Expanded(
+          child: asyncSources.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => _VacioOError(
+              mensaje: err.toString(),
+              onReintentar: () => ref.invalidate(tvSourcesProvider),
+            ),
+            data: (sources) {
+              if (sources.isEmpty) {
+                return _VacioOError(mensaje: textos.tvEmptyMedios);
+              }
+              return RefreshIndicator(
+                onRefresh: () async {
+                  unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
+                  ref.invalidate(tvSourcesProvider);
+                },
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: sources.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) => _TileTv(source: sources[i]),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
@@ -169,30 +345,49 @@ class _UltimasEmisionesBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncItems = ref.watch(tvItemsRecientesProvider);
     final textos = AppLocalizations.of(context);
+    final filtros = ref.watch(filtrosTvProvider);
 
-    return asyncItems.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => _VacioOError(
-        mensaje: err.toString(),
-        onReintentar: () => ref.invalidate(tvItemsRecientesProvider),
-      ),
-      data: (items) {
-        if (items.isEmpty) {
-          return _VacioOError(mensaje: textos.tvEmptyUltimas);
-        }
-        return RefreshIndicator(
-          onRefresh: () async {
-            unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
-            ref.invalidate(tvItemsRecientesProvider);
+    return Column(
+      children: [
+        AudioFiltersHeader(
+          title: textos.filtersTitle,
+          topicLabel: textos.filterByTopic,
+          languageLabel: textos.filterByLanguage,
+          clearLabel: textos.filtersClear,
+          activeTopicsCount: filtros.slugsTopics.length,
+          activeLanguagesCount: filtros.codigosIdiomas.length,
+          onOpenFilters: () => mostrarFiltrosTv(context),
+          onClearFilters: () {
+            ref.read(filtrosTvProvider.notifier).state = FiltrosTv.vacios;
           },
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) => _ItemTile(item: items[i]),
+        ),
+        Expanded(
+          child: asyncItems.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => _VacioOError(
+              mensaje: err.toString(),
+              onReintentar: () => ref.invalidate(tvItemsRecientesProvider),
+            ),
+            data: (items) {
+              if (items.isEmpty) {
+                return _VacioOError(mensaje: textos.tvEmptyUltimas);
+              }
+              return RefreshIndicator(
+                onRefresh: () async {
+                  unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
+                  ref.invalidate(tvItemsRecientesProvider);
+                },
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) => _ItemTile(item: items[i]),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }

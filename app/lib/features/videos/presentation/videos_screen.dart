@@ -10,6 +10,7 @@ import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../history/data/historial_provider.dart';
 import '../data/canales_favoritos_notifier.dart';
 import '../data/videos_provider.dart';
 
@@ -312,8 +313,13 @@ class _TarjetaVideo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final esquema = Theme.of(context).colorScheme;
     final idCanal = item.source?.id ?? 0;
-    final favoritos = ref.watch(canalesFavoritosProvider);
-    final esFavorito = idCanal > 0 && favoritos.contains(idCanal);
+    final canalesFav = ref.watch(canalesFavoritosProvider);
+    final esCanalFavorito = idCanal > 0 && canalesFav.contains(idCanal);
+    // Guardados vive en SQLite (DAO): al guardar, se cachea el payload
+    // completo para que aparezca en "Guardados" aunque el item desaparezca
+    // del feed del backend. Mismo provider que usa el feed de noticias.
+    final idsGuardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
+    final estaGuardado = idsGuardados.contains(item.id);
     return InkWell(
       onTap: () => _abrir(context),
       borderRadius: BorderRadius.circular(12),
@@ -360,28 +366,33 @@ class _TarjetaVideo extends ConsumerWidget {
                       shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
                     ),
                   ),
-                  if (idCanal > 0)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Material(
-                        color: Colors.black54,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () =>
-                              ref.read(canalesFavoritosProvider.notifier).alternar(idCanal),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              esFavorito ? Icons.favorite : Icons.favorite_border,
-                              size: 16,
-                              color: Colors.white,
-                            ),
+                  // Icono tipo bookmark: guarda el VÍDEO individual
+                  // (no el canal). Antes había aquí un corazón que
+                  // alteraba el canal-favorito — confundía, porque al
+                  // marcarlo parecía que "se marcaban todos los vídeos
+                  // del mismo canal". El favorito de canal vive ahora
+                  // junto al nombre del medio abajo.
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Material(
+                      color: Colors.black54,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () =>
+                            ref.read(guardadosProvider.notifier).alternar(item),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            estaGuardado ? Icons.bookmark : Icons.bookmark_border,
+                            size: 16,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ),
+                  ),
                   if (item.durationSeconds > 0)
                     Positioned(
                       right: 6,
@@ -418,13 +429,35 @@ class _TarjetaVideo extends ConsumerWidget {
           ),
           const SizedBox(height: 2),
           if (item.source != null)
-            Text(
-              item.source!.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: esquema.onSurfaceVariant,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    item.source!.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: esquema.onSurfaceVariant,
+                        ),
                   ),
+                ),
+                if (idCanal > 0)
+                  InkWell(
+                    onTap: () =>
+                        ref.read(canalesFavoritosProvider.notifier).alternar(idCanal),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        esCanalFavorito ? Icons.favorite : Icons.favorite_border,
+                        size: 14,
+                        color: esCanalFavorito
+                            ? esquema.primary
+                            : esquema.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
             ),
         ],
       ),

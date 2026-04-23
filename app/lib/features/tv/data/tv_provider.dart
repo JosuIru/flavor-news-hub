@@ -1,9 +1,47 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
+
+@immutable
+class FiltrosTv {
+  const FiltrosTv({
+    this.slugsTopics = const [],
+    this.codigosIdiomas = const [],
+  });
+
+  final List<String> slugsTopics;
+  final List<String> codigosIdiomas;
+
+  static const vacios = FiltrosTv();
+
+  bool get estaVacio => slugsTopics.isEmpty && codigosIdiomas.isEmpty;
+
+  FiltrosTv alternarTopic(String slug) {
+    final nueva = slugsTopics.contains(slug)
+        ? slugsTopics.where((s) => s != slug).toList()
+        : [...slugsTopics, slug];
+    return FiltrosTv(
+      slugsTopics: nueva,
+      codigosIdiomas: codigosIdiomas,
+    );
+  }
+
+  FiltrosTv alternarIdioma(String codigo) {
+    final nueva = codigosIdiomas.contains(codigo)
+        ? codigosIdiomas.where((c) => c != codigo).toList()
+        : [...codigosIdiomas, codigo];
+    return FiltrosTv(
+      slugsTopics: slugsTopics,
+      codigosIdiomas: nueva,
+    );
+  }
+}
+
+final filtrosTvProvider = StateProvider<FiltrosTv>((_) => FiltrosTv.vacios);
 
 /// Fuentes audiovisuales activas: TVs (tv_station) e instancias /
 /// canales de vídeo (video). Conceptualmente la pestaña "TV" de la
@@ -18,13 +56,29 @@ import '../../../core/providers/api_provider.dart';
 /// versión previa al campo medium_type se crean con default 'news').
 final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
+  final filtros = ref.watch(filtrosTvProvider);
   final pagina = await api.fetchSources(perPage: 100);
   const mediosAudiovisuales = {'tv_station', 'video'};
   const feedTypesAudiovisuales = {'youtube', 'video', 'peertube'};
-  return pagina.items.where((s) {
+  final fuentes = pagina.items.where((s) {
     if (!s.active) return false;
     return mediosAudiovisuales.contains(s.mediumType) ||
         feedTypesAudiovisuales.contains(s.feedType);
+  }).toList();
+  return fuentes.where((s) {
+    if (filtros.slugsTopics.isNotEmpty) {
+      final topics = s.topics.map((t) => t.slug).toSet();
+      if (!topics.any(filtros.slugsTopics.contains)) {
+        return false;
+      }
+    }
+    if (filtros.codigosIdiomas.isNotEmpty) {
+      final idiomas = s.languages.map((e) => e.toLowerCase()).toSet();
+      if (!idiomas.any(filtros.codigosIdiomas.contains)) {
+        return false;
+      }
+    }
+    return true;
   }).toList();
 });
 

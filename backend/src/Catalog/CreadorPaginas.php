@@ -64,7 +64,7 @@ final class CreadorPaginas
             'clave'        => 'colectivos',
             'titulo'       => 'Colectivos',
             'slug'         => 'colectivos',
-            'shortcode'    => '[flavor_news_feed per_page="20"]', // placeholder; hay shortcode de colectivos?
+            'shortcode'    => '[flavor_news_collectives]',
             'preset_vbp'   => 'community',
             'secciones_vbp'=> ['hero'],
         ],
@@ -156,6 +156,7 @@ final class CreadorPaginas
             $config = self::normalizarConfigPagina($config);
             if (self::yaExiste($config['clave'])) {
                 self::reconciliarSlug($config);
+                self::asegurarShortcodeContenido($config);
                 continue;
             }
             $idPagina = self::vbpDisponible()
@@ -166,6 +167,7 @@ final class CreadorPaginas
             }
             if ($idPagina > 0) {
                 update_post_meta($idPagina, '_fnh_pagina_auto', $config['clave']);
+                self::asegurarShortcodeContenido($config, $idPagina);
             }
         }
     }
@@ -500,6 +502,54 @@ final class CreadorPaginas
             'ID'        => $post->ID,
             'post_name' => $config['slug'],
         ]);
+    }
+
+    /**
+     * Garantiza que la página auto-generada contiene el shortcode
+     * correcto. Esto corrige instalaciones antiguas que quedaron con
+     * un placeholder distinto, como la página de colectivos.
+     *
+     * @param array{clave:string,slug:string,shortcode:string} $config
+     */
+    private static function asegurarShortcodeContenido(array $config, ?int $postId = null): void
+    {
+        if ($postId === null) {
+            $consulta = new \WP_Query([
+                'post_type'      => 'page',
+                'post_status'    => ['publish', 'draft', 'pending'],
+                'posts_per_page' => 1,
+                'no_found_rows'  => true,
+                'meta_key'       => '_fnh_pagina_auto',
+                'meta_value'     => $config['clave'],
+            ]);
+            if (empty($consulta->posts)) {
+                return;
+            }
+            $postId = (int) $consulta->posts[0]->ID;
+        }
+
+        $post = get_post($postId);
+        if (!$post instanceof \WP_Post) {
+            return;
+        }
+
+        $contenido = (string) $post->post_content;
+        if (str_contains($contenido, $config['shortcode'])) {
+            return;
+        }
+
+        if ($config['clave'] === 'colectivos' && str_contains($contenido, '[flavor_news_feed per_page="20"]')) {
+            $contenidoNuevo = str_replace('[flavor_news_feed per_page="20"]', $config['shortcode'], $contenido);
+        } else {
+            $contenidoNuevo = trim($contenido . "\n\n" . $config['shortcode']);
+        }
+
+        if ($contenidoNuevo !== $contenido) {
+            wp_update_post([
+                'ID'           => $postId,
+                'post_content' => $contenidoNuevo,
+            ]);
+        }
     }
 
     private static function buscarPaginaPorClaveEIdioma(string $clave, string $idioma): int

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'core/providers/preferences_provider.dart';
 import 'core/services/ingest_trigger.dart';
+import 'core/services/settings_sync.dart';
 import 'features/notifications/data/preferencias_notif.dart';
 import 'features/notifications/data/servicio_notificaciones.dart';
 
@@ -47,6 +48,10 @@ Future<void> main() async {
   // el backend acaba de pasar por los feeds. Fire-and-forget: no
   // bloqueamos el arranque esperando la respuesta.
   unawaited(dispararIngestaBackend(sharedPrefs));
+
+  // Sincronizar ajustes públicos (URL de donaciones actual del backend,
+  // etc.) para que admin pueda cambiarlos sin release nueva de APK.
+  unawaited(sincronizarAjustesPublicos(sharedPrefs));
 
   runApp(
     ProviderScope(
