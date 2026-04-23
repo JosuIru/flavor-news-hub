@@ -44,6 +44,9 @@ final class Shortcodes
         // para poder aplicar reglas CSS por página (p.ej. ocultar
         // el entry-header del tema en la landing, donde sobra).
         add_filter('body_class', [self::class, 'bodyClassPaginaAuto']);
+        // Botón flotante de donaciones + modal, inyectado en wp_footer
+        // sólo en páginas auto del plugin.
+        add_action('wp_footer', [self::class, 'renderPopupDonaciones']);
         // Prio 9 (antes de wpautop en prio 10): anteponemos un menú
         // de navegación entre las 5 páginas auto-generadas del plugin.
         // Antes de wpautop evita que WP envuelva el nav en un <p>.
@@ -126,6 +129,51 @@ final class Shortcodes
     private static function urlDonaciones(): string
     {
         return 'https://www.paypal.com/paypalme/codigodespierto';
+    }
+
+    /**
+     * FAB flotante + modal de donaciones en el footer de páginas auto.
+     * Réplica del bottom sheet de donaciones de la app móvil. Se abre
+     * con click en el botón rosa fijo abajo-derecha, se cierra con
+     * click fuera, botón × o Escape.
+     */
+    public static function renderPopupDonaciones(): void
+    {
+        if (!is_singular('page')) return;
+        $idPost = (int) get_the_ID();
+        if ($idPost <= 0) return;
+        $clave = (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
+        if ($clave === '') return;
+
+        $url = self::urlDonaciones();
+        ?>
+<div class="fnh-dona-fab" id="fnh-dona-fab" role="button" tabindex="0" aria-label="<?php esc_attr_e('Apoyar el proyecto', 'flavor-news-hub'); ?>" title="<?php esc_attr_e('Apoyar', 'flavor-news-hub'); ?>"><span aria-hidden="true">♥</span></div>
+<div class="fnh-dona-modal" id="fnh-dona-modal" role="dialog" aria-hidden="true" aria-labelledby="fnh-dona-modal-titulo">
+    <div class="fnh-dona-backdrop" data-fnh-close-dona></div>
+    <div class="fnh-dona-dialog">
+        <button class="fnh-dona-cerrar" type="button" aria-label="<?php esc_attr_e('Cerrar', 'flavor-news-hub'); ?>" data-fnh-close-dona>×</button>
+        <h2 id="fnh-dona-modal-titulo">♥ <?php esc_html_e('Apoya el proyecto', 'flavor-news-hub'); ?></h2>
+        <p><?php esc_html_e('Sin publicidad, sin tracking, sin fondos opacos. Si lo que hacemos te sirve y puedes, una donación ayuda a mantenerlo y crecer.', 'flavor-news-hub'); ?></p>
+        <a class="fnh-dona-modal-boton" href="<?php echo esc_url($url); ?>" target="_blank" rel="noopener">
+            <?php esc_html_e('Donar vía PayPal', 'flavor-news-hub'); ?>
+        </a>
+        <p class="fnh-dona-modal-nota"><?php esc_html_e('Abre PayPal en una pestaña nueva. Nosotros no vemos tu tarjeta.', 'flavor-news-hub'); ?></p>
+    </div>
+</div>
+<script>
+(function(){
+    var fab=document.getElementById('fnh-dona-fab');
+    var modal=document.getElementById('fnh-dona-modal');
+    if(!fab||!modal)return;
+    function abrir(){modal.classList.add('fnh-dona-modal--abierto');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+    function cerrar(){modal.classList.remove('fnh-dona-modal--abierto');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    fab.addEventListener('click',abrir);
+    fab.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();abrir();}});
+    modal.addEventListener('click',function(e){if(e.target&&e.target.hasAttribute('data-fnh-close-dona')){cerrar();}});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('fnh-dona-modal--abierto')){cerrar();}});
+})();
+</script>
+        <?php
     }
 
     /**
@@ -666,6 +714,23 @@ final class Shortcodes
         .fnh-shortcode-wrap .fnh-share-link{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:.35rem .7rem;border:1px solid var(--fnh-color-border);border-radius:999px;background:var(--fnh-color-surface);font-size:.78rem;line-height:1.2;text-decoration:none;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap .fnh-share-link:hover{background:var(--fnh-color-surface-alt);color:var(--fnh-color-text)}
         @media (max-width:640px){.fnh-filtros{padding:.9rem}.fnh-filtros-grid{grid-template-columns:1fr}}
+
+        /* FAB y modal de donaciones (como el bottom sheet de la app). */
+        .fnh-dona-fab{position:fixed;bottom:1.5rem;right:1.5rem;width:56px;height:56px;border-radius:50%;background:#ff4d6d;color:#fff;font-size:1.6em;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(255,77,109,.4);z-index:9998;user-select:none;transition:transform .15s,box-shadow .15s;line-height:1}
+        .fnh-dona-fab:hover,.fnh-dona-fab:focus{transform:scale(1.08);box-shadow:0 10px 30px rgba(255,77,109,.5);outline:none}
+        @media (max-width:640px){.fnh-dona-fab{bottom:1rem;right:1rem;width:52px;height:52px}}
+        .fnh-dona-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:1rem}
+        .fnh-dona-modal--abierto{display:flex !important}
+        .fnh-dona-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);cursor:pointer}
+        .fnh-dona-dialog{position:relative;background:#fff;padding:2.5rem 2rem 2rem;border-radius:20px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;animation:fnh-dona-in .2s ease-out}
+        @keyframes fnh-dona-in{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+        .fnh-dona-cerrar{position:absolute;top:.5rem;right:.6rem;background:transparent;border:0;font-size:1.8em;line-height:1;cursor:pointer;color:#888;width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
+        .fnh-dona-cerrar:hover{background:#f0f0f0;color:#000}
+        .fnh-dona-dialog h2{margin:0 0 .6em !important;color:#b5193a !important;font-size:1.4em !important;border:0 !important;padding:0 !important;font-weight:800}
+        .fnh-dona-dialog p{margin:0 0 1.2em !important;color:#444 !important;line-height:1.55;font-size:1em}
+        .fnh-dona-modal-boton{display:inline-block;padding:.9rem 2rem;background:#ff4d6d;color:#fff !important;border-radius:999px;font-weight:700;text-decoration:none !important;font-size:1.05em;transition:background .15s,transform .15s}
+        .fnh-dona-modal-boton:hover{background:#e0334e;color:#fff !important;transform:translateY(-1px)}
+        .fnh-dona-modal-nota{margin-top:1em !important;font-size:.8em;color:#888 !important;line-height:1.4}
 
         /* En la landing (Inicio) ocultamos el entry-header del tema:
            el hero ya tiene su propio título grande y el tema añade un
