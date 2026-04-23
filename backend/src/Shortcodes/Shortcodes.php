@@ -123,13 +123,13 @@ final class Shortcodes
     }
 
     /**
-     * URL de donación del proyecto. Misma que la app móvil, para que
-     * cualquier donante aterrice al mismo sitio sin importar el canal.
-     * Idealmente vendría de una option de WP; por ahora es constante.
+     * URL de donación del proyecto. Editable desde Ajustes →
+     * Flavor News Hub. Fallback al PayPal del proyecto si quedó vacío.
      */
     private static function urlDonaciones(): string
     {
-        return 'https://www.paypal.com/paypalme/codigodespierto';
+        $url = (string) (\FlavorNewsHub\Options\OptionsRepository::todas()['donation_url'] ?? '');
+        return $url !== '' ? $url : \FlavorNewsHub\Options\OptionsRepository::DONATION_URL_DEFAULT;
     }
 
     /**

@@ -24,6 +24,9 @@ final class OptionsRepository
     /** Retención mínima de logs: ver al menos los de las últimas 24h. */
     public const RETENCION_MINIMA_DIAS = 1;
 
+    /** URL de donación por defecto del proyecto. */
+    public const DONATION_URL_DEFAULT = 'https://www.paypal.com/paypalme/codigodespierto';
+
     /** @return array<string,mixed> */
     public static function defaults(): array
     {
@@ -31,6 +34,7 @@ final class OptionsRepository
             'cron_interval_minutes'     => 30,
             'ingest_log_retention_days' => 30,
             'delete_on_uninstall'       => false,
+            'donation_url'              => self::DONATION_URL_DEFAULT,
         ];
     }
 
@@ -66,6 +70,8 @@ final class OptionsRepository
             (int) $fusion['ingest_log_retention_days']
         );
         $fusion['delete_on_uninstall'] = (bool) $fusion['delete_on_uninstall'];
+        $urlSaneada = esc_url_raw((string) ($fusion['donation_url'] ?? ''));
+        $fusion['donation_url'] = $urlSaneada !== '' ? $urlSaneada : self::DONATION_URL_DEFAULT;
 
         update_option(self::NOMBRE_OPCION, $fusion);
     }

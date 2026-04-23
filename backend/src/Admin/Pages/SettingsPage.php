@@ -55,6 +55,14 @@ final class SettingsPage
             self::SECCION_GENERAL
         );
 
+        add_settings_field(
+            'donation_url',
+            __('URL de donaciones', 'flavor-news-hub'),
+            [self::class, 'campoUrlDonaciones'],
+            'fnh-settings',
+            self::SECCION_GENERAL
+        );
+
         add_settings_section(
             self::SECCION_PRIVACIDAD,
             __('Privacidad y desinstalación', 'flavor-news-hub'),
@@ -164,6 +172,18 @@ final class SettingsPage
         );
     }
 
+    public static function campoUrlDonaciones(): void
+    {
+        $valor = (string) OptionsRepository::todas()['donation_url'];
+        printf(
+            '<input type="url" name="%1$s[donation_url]" value="%2$s" class="regular-text" placeholder="%3$s" /> <p class="description">%4$s</p>',
+            esc_attr(OptionsRepository::NOMBRE_OPCION),
+            esc_attr($valor),
+            esc_attr(OptionsRepository::DONATION_URL_DEFAULT),
+            esc_html__('URL del botón ♥ Apoyar del menú y del popup de donaciones. PayPal, Liberapay, Open Collective… cualquier destino público.', 'flavor-news-hub')
+        );
+    }
+
     public static function campoBorrarAlDesinstalar(): void
     {
         $activo = (bool) OptionsRepository::todas()['delete_on_uninstall'];
@@ -188,6 +208,11 @@ final class SettingsPage
             return $actuales;
         }
 
+        $urlDonacionesBruta = isset($valorBruto['donation_url'])
+            ? trim((string) $valorBruto['donation_url'])
+            : (string) $actuales['donation_url'];
+        $urlDonacionesSaneada = esc_url_raw($urlDonacionesBruta);
+
         $nuevos = [
             'cron_interval_minutes'     => isset($valorBruto['cron_interval_minutes'])
                 ? (int) $valorBruto['cron_interval_minutes']
@@ -196,6 +221,9 @@ final class SettingsPage
                 ? (int) $valorBruto['ingest_log_retention_days']
                 : $actuales['ingest_log_retention_days'],
             'delete_on_uninstall'       => !empty($valorBruto['delete_on_uninstall']),
+            'donation_url'              => $urlDonacionesSaneada !== ''
+                ? $urlDonacionesSaneada
+                : OptionsRepository::DONATION_URL_DEFAULT,
         ];
 
         if ($nuevos['cron_interval_minutes'] < OptionsRepository::INTERVALO_MINIMO_MINUTOS) {
