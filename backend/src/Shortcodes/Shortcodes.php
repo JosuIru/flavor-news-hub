@@ -1137,6 +1137,15 @@ final class Shortcodes
         .fnh-sobre-lista-plana li::before{content:\"·\";position:absolute;left:0;color:#3ddc84;font-size:1.4em;top:-.15em}
         .fnh-sobre-cta{display:inline-block;padding:.6rem 1.25rem;background:#111;color:#fff !important;border-radius:999px;text-decoration:none;font-weight:600;margin-top:.4em}
         .fnh-sobre-cta:hover{background:#000}
+        .fnh-shortcode-wrap .fnh-sobre-autohost{background:#f7f9fc;border:1px solid #e0e6ef;border-radius:14px;padding:1.4rem 1.6rem;margin-top:2.2rem}
+        .fnh-shortcode-wrap .fnh-sobre-autohost > h3{margin-top:0 !important;border-left:4px solid #3d7adc !important}
+        .fnh-shortcode-wrap .fnh-sobre-autohost-pasos{list-style:none;padding:0;margin:1em 0 0;counter-reset:paso}
+        .fnh-shortcode-wrap .fnh-sobre-autohost-pasos li{position:relative;padding:.8em 0 .8em 2.3em;border-top:1px solid #e0e6ef;counter-increment:paso;color:#333;font-size:.98em}
+        .fnh-sobre-autohost-pasos li:first-child{border-top:0}
+        .fnh-sobre-autohost-pasos li::before{content:counter(paso);position:absolute;left:0;top:.9em;width:1.6em;height:1.6em;background:#3d7adc;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85em;line-height:1}
+        .fnh-sobre-autohost-pasos li strong{color:#111}
+        .fnh-sobre-autohost-pasos li a{color:#3d7adc}
+        .fnh-shortcode-wrap .fnh-sobre-autohost-nota{margin-top:1.2em !important;font-size:.85em;color:#666;font-style:italic}
 
         .fnh-shortcode-wrap .fnh-feed-lista,.fnh-shortcode-wrap .fnh-radios-lista,.fnh-shortcode-wrap .fnh-videos-grid{list-style:none;padding:0;margin:0}
         .fnh-shortcode-wrap .fnh-feed-lista li{padding:12px 0;border-bottom:1px solid var(--fnh-color-border)}
@@ -2672,6 +2681,33 @@ JS;
                 <h3><?php esc_html_e('Cómo colaborar', 'flavor-news-hub'); ?></h3>
                 <p><?php esc_html_e('El código es libre y está en GitHub. Cualquier aportación —proponer nuevas fuentes, reportar bugs, traducir, documentar— se hace desde allí.', 'flavor-news-hub'); ?></p>
                 <p><a class="fnh-sobre-cta" href="https://github.com/JosuIru/flavor-news-hub" target="_blank" rel="noopener"><?php esc_html_e('Repositorio en GitHub', 'flavor-news-hub'); ?> →</a></p>
+            </section>
+
+            <section class="fnh-sobre-bloque fnh-sobre-autohost">
+                <h3><?php esc_html_e('Monta tu propia instancia', 'flavor-news-hub'); ?></h3>
+                <p><?php esc_html_e('El principio de apropiabilidad se puede ejercer. Si tu colectivo quiere su propio hub de medios y directorio (con tu propia curaduría editorial, tu propio territorio, tu propia lengua), puedes levantar una instancia sin pedir permiso y sin perder actualizaciones.', 'flavor-news-hub'); ?></p>
+                <ol class="fnh-sobre-autohost-pasos">
+                    <li>
+                        <strong><?php esc_html_e('Instala el plugin en cualquier WordPress (≥ 6.4, PHP ≥ 8.1).', 'flavor-news-hub'); ?></strong><br>
+                        <?php esc_html_e('Descarga el ZIP de la última release y súbelo desde Plugins → Añadir nuevo → Subir plugin.', 'flavor-news-hub'); ?><br>
+                        <a href="https://github.com/JosuIru/flavor-news-hub/releases/latest" target="_blank" rel="noopener">github.com/JosuIru/flavor-news-hub/releases</a>
+                    </li>
+                    <li>
+                        <strong><?php esc_html_e('Revisa el catálogo bundleado.', 'flavor-news-hub'); ?></strong><br>
+                        <?php esc_html_e('Viene con medios y colectivos curados para el contexto hispano/euskaldun/catalán. Desde Flavor News Hub → Catálogo puedes desactivar lo que no te sirva y añadir lo tuyo desde Medios → Añadir.', 'flavor-news-hub'); ?>
+                    </li>
+                    <li>
+                        <strong><?php esc_html_e('Apunta tu app a la instancia nueva.', 'flavor-news-hub'); ?></strong><br>
+                        <?php esc_html_e('La app Flutter (F-Droid / APK directo) tiene un ajuste de URL de instancia. Cambia la oficial por la tuya y ya consume tu backend.', 'flavor-news-hub'); ?>
+                    </li>
+                    <li>
+                        <strong><?php esc_html_e('Mantente al día.', 'flavor-news-hub'); ?></strong><br>
+                        <?php esc_html_e('El plugin se auto-actualiza desde GitHub Releases (mismo botón "Actualizar" que cualquier otro plugin de WordPress). Sin registro, sin marketplace.', 'flavor-news-hub'); ?>
+                    </li>
+                </ol>
+                <p class="fnh-sobre-autohost-nota">
+                    <?php esc_html_e('Licencia AGPL-3.0: si modificas el código y lo haces accesible por red, tienes que publicar tus cambios bajo la misma licencia. Es la única condición.', 'flavor-news-hub'); ?>
+                </p>
             </section>
         </div><?php
         return self::envolverShortcode('sobre', (string) ob_get_clean());
