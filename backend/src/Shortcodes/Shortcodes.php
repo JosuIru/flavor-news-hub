@@ -815,7 +815,7 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt{color:var(--fnh-color-text-soft);line-height:1.55;font-size:.95rem}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-cta{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:.45rem .85rem;border-radius:999px;background:var(--fnh-color-accent);color:var(--fnh-color-accent-contrast);text-decoration:none;font-size:.82rem;font-weight:700;justify-self:start}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-cta:hover{filter:brightness(.95)}
-        .fnh-shortcode-wrap--feed .fnh-feed-hero-mosaico{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(220px,.9fr);gap:1rem;margin-top:1rem;align-items:start}
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-mosaico{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-top:1rem;align-items:start}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundarias{display:grid;gap:.9rem}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria{display:grid;grid-template-columns:92px minmax(0,1fr);gap:.7rem;padding:.7rem;border-radius:14px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.03);align-items:start;align-content:start}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria--sin-media{grid-template-columns:1fr}
