@@ -9,6 +9,8 @@ use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Meta\MetaRegistrar;
+use FlavorNewsHub\Catalog\CatalogoPorDefecto;
+use FlavorNewsHub\Catalog\ImportadorCatalogo;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\CLI\IngestCommand;
@@ -76,6 +78,11 @@ final class Plugin
         // Taxonomía y meta fields justo después.
         add_action('init', [Topic::class, 'registrar'], 6);
         add_action('init', [MetaRegistrar::class, 'registrar'], 7);
+
+        // Catálogo bundleado: en una actualización, añadimos al
+        // directorio cualquier fuente/radio/colectivo nuevo y
+        // reponemos temáticas canónicas faltantes.
+        add_action('init', [self::class, 'sincronizarCatalogoTrasUpgrade'], 8);
 
         // Ingesta: declaración de intervalo y enganche del job.
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
@@ -152,6 +159,43 @@ final class Plugin
         // la respuesta cacheada de la release anterior durante 6h más.
         delete_transient('fnh_app_update_cache');
         delete_transient('fnh_app_update_cache_beta');
+        // Limpia los transients de SimplePie (`feed_<hash>` /
+        // `feed_mod_<hash>`) que WordPress crea con TTL 12h por
+        // defecto. Desde v0.9.10 usamos TTL 10min, pero los transients
+        // escritos con el TTL anterior siguen válidos hasta caducar
+        // y hacen que fetch_feed devuelva contenido viejo durante
+        // horas. Tras una actualización de plugin los borramos una
+        // vez para que la próxima ingesta descargue fresco.
+        global $wpdb;
+        $wpdb->query(
+            "DELETE FROM {$wpdb->options}
+             WHERE option_name LIKE '\\_transient\\_feed\\_%'
+                OR option_name LIKE '\\_transient\\_timeout\\_feed\\_%'
+                OR option_name LIKE '\\_transient\\_feed\\_mod\\_%'
+                OR option_name LIKE '\\_transient\\_timeout\\_feed\\_mod\\_%'"
+        );
         update_option('fnh_paginas_sincronizadas_version', FNH_VERSION);
+    }
+
+    /**
+     * Sincroniza el catálogo bundleado con la instancia WP cuando el
+     * plugin cambia de versión. Importa fuentes, radios y colectivos
+     * nuevos sin pisar los ya existentes, y repone las temáticas
+     * canónicas nuevas.
+     */
+    public static function sincronizarCatalogoTrasUpgrade(): void
+    {
+        $versionSincronizada = (string) get_option('fnh_catalogo_sincronizado_version', '');
+        if ($versionSincronizada === FNH_VERSION) {
+            return;
+        }
+
+        Activator::precargarTematicasCanonicas();
+
+        ImportadorCatalogo::importarSources(CatalogoPorDefecto::sources(), false, null);
+        ImportadorCatalogo::importarRadios(CatalogoPorDefecto::radios(), false, null);
+        ImportadorCatalogo::importarCollectives(CatalogoPorDefecto::collectives(), false, null);
+
+        update_option('fnh_catalogo_sincronizado_version', FNH_VERSION);
     }
 }

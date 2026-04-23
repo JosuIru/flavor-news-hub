@@ -21,6 +21,8 @@ final class CollectiveTransformer
     {
         $idColectivo = (int) $post->ID;
         $emailInterno = (string) get_post_meta($idColectivo, '_fnh_contact_email', true);
+        $websiteUrl = (string) get_post_meta($idColectivo, '_fnh_website_url', true);
+        $flavorUrl = (string) get_post_meta($idColectivo, '_fnh_flavor_url', true);
 
         return [
             'id'          => $idColectivo,
@@ -28,10 +30,10 @@ final class CollectiveTransformer
             'name'        => get_the_title($post),
             'description' => (string) apply_filters('the_content', $post->post_content),
             'url'         => (string) get_permalink($post),
-            'website_url' => (string) get_post_meta($idColectivo, '_fnh_website_url', true),
-            'flavor_url'  => (string) get_post_meta($idColectivo, '_fnh_flavor_url', true),
+            'website_url' => $websiteUrl,
+            'flavor_url'  => $flavorUrl,
             'territory'   => (string) get_post_meta($idColectivo, '_fnh_territory', true),
-            'has_contact' => $emailInterno !== '',
+            'has_contact' => $emailInterno !== '' || $websiteUrl !== '' || $flavorUrl !== '',
             'verified'    => (bool) get_post_meta($idColectivo, '_fnh_verified', true),
             'topics'      => TopicsHelper::obtenerTopicsDelPost($idColectivo),
         ];

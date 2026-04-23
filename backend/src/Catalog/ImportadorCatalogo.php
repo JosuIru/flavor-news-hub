@@ -211,9 +211,97 @@ final class ImportadorCatalogo
     }
 
     /**
+     * @param list<array<string,mixed>> $datos
+     * @param list<string>|null $slugsSeleccionados
+     * @return array{creados:int,actualizados:int,saltados:int,errores:list<string>}
+     */
+    public static function importarCollectives(
+        array $datos,
+        bool $actualizar = false,
+        ?array $slugsSeleccionados = null
+    ): array {
+        $creados = 0;
+        $actualizados = 0;
+        $saltados = 0;
+        $errores = [];
+
+        $filtroSlug = $slugsSeleccionados === null
+            ? null
+            : array_flip($slugsSeleccionados);
+
+        foreach ($datos as $raw) {
+            $slug = (string) ($raw['slug'] ?? '');
+            $nombre = (string) ($raw['name'] ?? '');
+            if ($slug === '' || $nombre === '') continue;
+            if ($filtroSlug !== null && !isset($filtroSlug[$slug])) continue;
+
+            $existente = get_page_by_path($slug, OBJECT, Collective::SLUG);
+            if ($existente && !$actualizar) {
+                $saltados++;
+                continue;
+            }
+
+            $descripcion = (string) ($raw['description'] ?? '');
+            $verificado = $raw['verified'] !== false;
+            $estado = $verificado ? 'publish' : 'pending';
+
+            $idPost = $existente
+                ? (int) $existente->ID
+                : (int) wp_insert_post([
+                    'post_type'    => Collective::SLUG,
+                    'post_status'  => $estado,
+                    'post_title'   => $nombre,
+                    'post_name'    => $slug,
+                    'post_content' => $descripcion,
+                ], true);
+
+            if (!$idPost) {
+                $errores[] = "No se pudo crear '$slug'.";
+                continue;
+            }
+
+            if ($existente) {
+                wp_update_post([
+                    'ID'           => $idPost,
+                    'post_status'  => $estado,
+                    'post_title'   => $nombre,
+                    'post_content' => $descripcion,
+                ]);
+            }
+
+            update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
+            update_post_meta($idPost, '_fnh_flavor_url', (string) ($raw['flavor_url'] ?? ''));
+            update_post_meta($idPost, '_fnh_territory', (string) ($raw['territory'] ?? ''));
+            update_post_meta($idPost, '_fnh_verified', $verificado);
+
+            // No inventamos emails: los seed bundleados suelen no traer
+            // un contacto canónico. La API pública expondrá `has_contact`
+            // como false hasta que el admin añada un email interno.
+            if (!get_post_meta($idPost, '_fnh_contact_email', true)) {
+                update_post_meta($idPost, '_fnh_contact_email', '');
+            }
+
+            self::asignarTopics($idPost, $raw['topics'] ?? []);
+
+            if ($existente) {
+                $actualizados++;
+            } else {
+                $creados++;
+            }
+        }
+
+        return [
+            'creados' => $creados,
+            'actualizados' => $actualizados,
+            'saltados' => $saltados,
+            'errores' => $errores,
+        ];
+    }
+
+    /**
      * Marca un post_id con los términos de topic correspondientes a la
      * lista de slugs. Slugs no existentes en `fnh_topic` se ignoran —
-     * la taxonomía la pobla el activador del plugin con las 15
+     * la taxonomía la pobla el activador del plugin con las
      * canónicas; añadir nuevas es decisión editorial del admin.
      */
     private static function asignarTopics(int $idPost, mixed $slugsRaw): void

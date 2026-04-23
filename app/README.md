@@ -12,6 +12,8 @@ App Flutter que consume la API `flavor-news/v1` del backend. Enfocada a Android 
 - Búsqueda global, mapa, guardados, historial, intereses y gestión de mis medios.
 - Ajustes, notificaciones, actualizaciones, widget de Android y compartición de contenido.
 
+El comportamiento offline usa seeds locales como fallback. `collectives.json` se mantiene alineado con el catálogo bundleado del backend para que la app conserve coherencia incluso sin red; al publicar una nueva build, ese seed viaja dentro del binario.
+
 ## Modelos y cliente API
 
 Modelos inmutables con `freezed` + `json_serializable` (`field_rename: snake` global en `build.yaml`):
@@ -35,6 +37,8 @@ Providers principales (`lib/core/providers/api_provider.dart`):
 - `httpClientProvider` — cliente HTTP compartido, se cierra al disponerse el provider.
 - `flavorNewsApiProvider` — reactivo a la URL de instancia configurada.
 - `itemsFeedProvider`, `topicsProvider`, `sourcesProvider`, `collectivesProvider` — FutureProviders listos para pantallas.
+
+Cuando el backend se actualiza y sincroniza el catálogo, la app online ve esos cambios al instante. Sólo el fallback offline depende de la siguiente build móvil.
 
 ### Regenerar código
 

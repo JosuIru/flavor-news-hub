@@ -19,6 +19,7 @@ use FlavorNewsHub\Catalog\ImportadorCatalogo;
  *   wp flavor-news import sources --actualizar # sobreescribe metas existentes
  *   wp flavor-news import radios
  *   wp flavor-news import radios --file=/ruta/radios.json
+ *   wp flavor-news import collectives
  *
  * Idempotente: compara por slug. Sin `--actualizar` respeta los que
  * ya estén; con esa flag sobreescribe los metas.
@@ -68,6 +69,26 @@ final class ImportSourcesCommand
 
         $r = ImportadorCatalogo::importarRadios($datos, $actualizar, null);
         self::reportar('radios', $r);
+    }
+
+    /**
+     * Importa colectivos desde el catálogo bundleado o un JSON externo.
+     *
+     * ## OPTIONS
+     *
+     * [--file=<ruta>]
+     * : Ruta a un JSON con la lista. Si se omite, usa el seed bundleado.
+     *
+     * [--actualizar]
+     * : Sobreescribe metadatos de colectivos existentes (match por slug).
+     */
+    public function collectives(array $args, array $flags): void
+    {
+        $datos = self::cargarDatos((string) ($flags['file'] ?? ''), CatalogoPorDefecto::collectives(...));
+        $actualizar = isset($flags['actualizar']);
+
+        $r = ImportadorCatalogo::importarCollectives($datos, $actualizar, null);
+        self::reportar('colectivos', $r);
     }
 
     /**

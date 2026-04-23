@@ -49,10 +49,11 @@ Incluye:
 
 - CPTs `source`, `item`, `collective`, `radio` y taxonomía compartida `topic`.
 - Ingesta automática de feeds RSS/Atom cada 30 minutos vía `wp_cron` (SimplePie). Dedupe por `guid`.
+- Sincronización automática del catálogo bundleado al actualizar el plugin: fuentes, radios y colectivos nuevos se añaden por slug y las temáticas canónicas se repueblan si falta alguna.
 - API REST pública (namespace `flavor-news/v1`) para items, sources, collectives, radios y topics; formularios públicos de alta de medios/colectivos; ajustes públicos; comprobación de actualizaciones de la app; disparo manual de ingesta y endpoint HTML para scroll infinito.
 - Admin WordPress con acciones específicas (ingesta manual por fuente, verificación masiva de colectivos pendientes, log de ingesta).
 - Plantillas web públicas mínimas `/n/{slug}`, `/c/{slug}`, `/f/{slug}` como fallback para enlaces compartidos desde la app, más shortcodes para feed, radios, podcasts, vídeos, TV, fuentes, colectivos y páginas de aterrizaje.
-- WP-CLI: `wp flavor-news ingest [--source=<id>]`.
+- WP-CLI: `wp flavor-news ingest [--source=<id>]`, `wp flavor-news import sources`, `wp flavor-news import radios` y `wp flavor-news import collectives`.
 
 Requisitos: WordPress 6.4+, PHP 8.1+, PSR-4, composer. Licencia AGPL-3.0.
 
@@ -98,6 +99,7 @@ Uno de los principios del proyecto es la **apropiabilidad**: cualquier colectivo
 
 - **Backend:** instalar el plugin en una instalación WP estándar (via symlink desde este monorepo, zip manual, o Composer cuando esté publicado).
 - **App:** la pantalla de ajustes permite cambiar la URL de la instancia backend. Por defecto apunta a la instancia oficial, pero nada impide apuntar a la tuya.
+- **Offline:** la app mantiene seeds locales para el fallback sin red. Los colectivos se espejan desde el seed del backend; si el catálogo cambia, la siguiente build móvil llevará ese seed actualizado.
 
 Instrucciones detalladas en `backend/README.md` y `app/README.md` (pendientes, a medida que esas piezas vayan existiendo).
 

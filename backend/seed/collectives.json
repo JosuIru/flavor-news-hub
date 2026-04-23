@@ -29,7 +29,13 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   }
+  ]
  },
  {
   "id": 6202,
@@ -42,7 +48,18 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 71,
+    "name": "Ecologismo",
+    "slug": "ecologismo"
+   },
+   {
+    "id": 84,
+    "name": "Alimentación",
+    "slug": "alimentacion"
+   }
+  ]
  },
  {
   "id": 6203,
@@ -55,7 +72,23 @@
   "territory": "Internacional",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   }
+  ]
  },
  {
   "id": 6204,
@@ -94,7 +127,13 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   }
+  ]
  },
  {
   "id": 6207,
@@ -172,7 +211,23 @@
   "territory": "Madrid",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 80,
+    "name": "Cuidados",
+    "slug": "cuidados"
+   },
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   }
+  ]
  },
  {
   "id": 6213,
@@ -211,7 +266,18 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 76,
+    "name": "Cultura",
+    "slug": "cultura"
+   },
+   {
+    "id": 74,
+    "name": "Memoria histórica",
+    "slug": "memoria-historica"
+   }
+  ]
  },
  {
   "id": 6216,
@@ -224,7 +290,28 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 72,
+    "name": "Antirracismo",
+    "slug": "antirracismo"
+   },
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   }
+  ]
  },
  {
   "id": 6217,
@@ -237,7 +324,23 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 72,
+    "name": "Antirracismo",
+    "slug": "antirracismo"
+   }
+  ]
  },
  {
   "id": 6218,
@@ -250,7 +353,18 @@
   "territory": "Internacional",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   }
+  ]
  },
  {
   "id": 6219,
@@ -263,7 +377,18 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 71,
+    "name": "Ecologismo",
+    "slug": "ecologismo"
+   },
+   {
+    "id": 84,
+    "name": "Alimentación",
+    "slug": "alimentacion"
+   }
+  ]
  },
  {
   "id": 6220,
@@ -281,6 +406,11 @@
     "id": 71,
     "name": "Ecologismo",
     "slug": "ecologismo"
+   },
+   {
+    "id": 84,
+    "name": "Alimentación",
+    "slug": "alimentacion"
    }
   ]
  },
@@ -305,6 +435,11 @@
     "id": 79,
     "name": "Migraciones",
     "slug": "migraciones"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },
@@ -379,6 +514,11 @@
     "slug": "migraciones"
    },
    {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
     "id": 82,
     "name": "Internacional",
     "slug": "internacional"
@@ -409,7 +549,13 @@
   "territory": "Madrid",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 80,
+    "name": "Cuidados",
+    "slug": "cuidados"
+   }
+  ]
  },
  {
   "id": 6227,
@@ -422,7 +568,23 @@
   "territory": "Madrid",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 80,
+    "name": "Cuidados",
+    "slug": "cuidados"
+   }
+  ]
  },
  {
   "id": 6228,
@@ -435,7 +597,18 @@
   "territory": "Cataluña",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 76,
+    "name": "Cultura",
+    "slug": "cultura"
+   }
+  ]
  },
  {
   "id": 6229,
@@ -448,7 +621,13 @@
   "territory": "Málaga",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 76,
+    "name": "Cultura",
+    "slug": "cultura"
+   }
+  ]
  },
  {
   "id": 6230,
@@ -461,7 +640,18 @@
   "territory": "Madrid",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 76,
+    "name": "Cultura",
+    "slug": "cultura"
+   },
+   {
+    "id": 73,
+    "name": "Educación",
+    "slug": "educacion"
+   }
+  ]
  },
  {
   "id": 6231,
@@ -474,7 +664,18 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 76,
+    "name": "Cultura",
+    "slug": "cultura"
+   },
+   {
+    "id": 73,
+    "name": "Educación",
+    "slug": "educacion"
+   }
+  ]
  },
  {
   "id": 6232,
@@ -487,7 +688,23 @@
   "territory": "Castilla-La Mancha",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 75,
+    "name": "Rural",
+    "slug": "rural"
+   },
+   {
+    "id": 84,
+    "name": "Alimentación",
+    "slug": "alimentacion"
+   }
+  ]
  },
  {
   "id": 6233,
@@ -500,7 +717,13 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   }
+  ]
  },
  {
   "id": 6234,

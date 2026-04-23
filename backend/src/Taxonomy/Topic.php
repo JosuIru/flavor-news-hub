@@ -15,7 +15,7 @@ use FlavorNewsHub\CPT\Radio;
  * "vivienda" con hijas "okupación", "alquiler", "hipotecas") sin migraciones
  * de datos. En la v1 solo existe el primer nivel.
  *
- * El listado precargado contiene 15 temáticas canónicas y no pretende ser
+ * El listado precargado contiene 18 temáticas canónicas y no pretende ser
  * cerrado: los editores pueden añadir más desde el admin.
  */
 final class Topic
@@ -42,6 +42,9 @@ final class Topic
         'memoria-historica'   => 'Memoria histórica',
         'rural'               => 'Rural',
         'cultura'             => 'Cultura',
+        'alimentacion'        => 'Alimentación',
+        'soberania-alimentaria' => 'Soberanía alimentaria',
+        'derechos-civiles'    => 'Derechos civiles',
         'internacional'       => 'Internacional',
         'tecnologia-soberana' => 'Tecnología soberana',
         'economia-social'     => 'Economía social',

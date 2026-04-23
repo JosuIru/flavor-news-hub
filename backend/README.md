@@ -233,7 +233,17 @@ Desde la raíz del monorepo, enlaza `backend/` a tu WordPress local:
 ln -s "$(pwd)/backend" /ruta/a/wp-content/plugins/flavor-news-hub
 ```
 
-Después activa el plugin desde el admin. La activación precarga las 15 temáticas canónicas (vivienda, sanidad, laboral, feminismos, ecologismo, antirracismo, educación, memoria histórica, rural, cultura, internacional, tecnología soberana, economía social, migraciones, cuidados).
+Después activa el plugin desde el admin. La activación precarga las 18 temáticas canónicas (vivienda, sanidad, laboral, feminismos, ecologismo, antirracismo, educación, memoria histórica, rural, cultura, alimentación, soberanía alimentaria, derechos civiles, internacional, tecnología soberana, economía social, migraciones, cuidados).
+
+En actualizaciones posteriores, el plugin sincroniza automáticamente el catálogo bundleado: añade fuentes, radios y colectivos nuevos por slug, y repone temáticas canónicas si falta alguna.
+
+Para forzar una importación manual del catálogo bundleado, usa WP-CLI:
+
+```bash
+wp flavor-news import sources
+wp flavor-news import radios
+wp flavor-news import collectives
+```
 
 ### Producción
 

@@ -22,11 +22,12 @@ Manifiesto completo: https://github.com/JosuIru/flavor-news-hub/blob/main/MANIFE
 
 1. Sube la carpeta `flavor-news-hub` a `/wp-content/plugins/` (o instala vía el admin).
 2. Actívalo desde el menú Plugins.
-3. En el menú lateral aparecerán **Medios**, **Noticias** y **Colectivos**. La primera activación precarga las 15 temáticas canónicas.
+3. En el menú lateral aparecerán **Medios**, **Noticias** y **Colectivos**. La primera activación precarga las 18 temáticas canónicas.
+4. Las actualizaciones posteriores sincronizan automáticamente el catálogo bundleado y añaden las fuentes, radios y colectivos nuevos sin duplicar los que ya tengas.
 
 Para desarrollo desde el monorepo, enlaza con `ln -s` desde `backend/` al directorio de plugins de tu WordPress local.
 
 == Changelog ==
 
 = 0.1.0 =
-* Versión inicial. Registro de CPTs `fnh_source`, `fnh_item`, `fnh_collective`; taxonomía compartida `fnh_topic` (jerárquica) con 15 temáticas precargadas; meta fields con sanitización y exposición controlada en REST.
+* Versión inicial. Registro de CPTs `fnh_source`, `fnh_item`, `fnh_collective`; taxonomía compartida `fnh_topic` (jerárquica) con 18 temáticas precargadas; meta fields con sanitización y exposición controlada en REST.

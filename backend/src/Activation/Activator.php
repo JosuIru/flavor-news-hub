@@ -63,7 +63,7 @@ final class Activator
     }
 
     /**
-     * Inserta las 15 temáticas canónicas si aún no existen.
+     * Inserta las 18 temáticas canónicas si aún no existen.
      * Idempotente: reactivar el plugin no duplica términos ni machaca los
      * que el usuario haya añadido manualmente.
      *
