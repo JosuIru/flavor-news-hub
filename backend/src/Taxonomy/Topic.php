@@ -46,6 +46,7 @@ final class Topic
         'soberania-alimentaria' => 'Soberanía alimentaria',
         'derechos-civiles'    => 'Derechos civiles',
         'internacional'       => 'Internacional',
+        'politica'            => 'Política',
         'tecnologia-soberana' => 'Tecnología soberana',
         'economia-social'     => 'Economía social',
         'migraciones'         => 'Migraciones',

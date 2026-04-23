@@ -196,6 +196,59 @@ final class Plugin
         ImportadorCatalogo::importarRadios(CatalogoPorDefecto::radios(), false, null);
         ImportadorCatalogo::importarCollectives(CatalogoPorDefecto::collectives(), false, null);
 
+        // Asignar topics del seed a sources existentes que no los tengan.
+        // El importador con actualizar=false respeta las ya existentes y
+        // no les asigna topics — pero muchas sources (sobre todo vídeos)
+        // quedaron sin topics en versiones anteriores porque el seed
+        // tampoco los tenía. Ahora el seed está al día, así que
+        // backfilleamos sources sin pisar las que el admin haya editado
+        // manualmente.
+        self::asignarTopicsFaltantesDesdeSeed();
+
         update_option('fnh_catalogo_sincronizado_version', FNH_VERSION);
+    }
+
+    /**
+     * Para cada source del seed con topics, si el source en BD existe y
+     * no tiene ningún topic asignado, le copia los del seed. Idempotente
+     * y no destructivo.
+     */
+    private static function asignarTopicsFaltantesDesdeSeed(): void
+    {
+        $seed = CatalogoPorDefecto::sources();
+        $actualizados = 0;
+        foreach ($seed as $raw) {
+            $slug = (string) ($raw['slug'] ?? '');
+            $topicsSlugs = $raw['topics'] ?? [];
+            if ($slug === '' || !is_array($topicsSlugs) || $topicsSlugs === []) {
+                continue;
+            }
+            $post = get_page_by_path($slug, OBJECT, \FlavorNewsHub\CPT\Source::SLUG);
+            if (!$post) {
+                continue;
+            }
+            $idPost = (int) $post->ID;
+            $topicsExistentes = wp_get_object_terms($idPost, \FlavorNewsHub\Taxonomy\Topic::SLUG, ['fields' => 'ids']);
+            if (is_wp_error($topicsExistentes)) {
+                continue;
+            }
+            if (!empty($topicsExistentes)) {
+                continue; // El admin ya curó topics — no pisamos.
+            }
+            $idsTerminos = [];
+            foreach ($topicsSlugs as $slugTopic) {
+                $term = get_term_by('slug', (string) $slugTopic, \FlavorNewsHub\Taxonomy\Topic::SLUG);
+                if ($term && !is_wp_error($term)) {
+                    $idsTerminos[] = (int) $term->term_id;
+                }
+            }
+            if ($idsTerminos !== []) {
+                wp_set_object_terms($idPost, $idsTerminos, \FlavorNewsHub\Taxonomy\Topic::SLUG, false);
+                $actualizados++;
+            }
+        }
+        if ($actualizados > 0) {
+            error_log('[FlavorNewsHub] Topics asignados a ' . $actualizados . ' sources sin topics.');
+        }
     }
 }

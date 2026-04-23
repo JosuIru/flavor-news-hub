@@ -5,6 +5,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../personal_sources/data/items_personales_provider.dart';
 
@@ -56,7 +57,25 @@ class FiltrosVideos {
   }
 }
 
-final filtrosVideosProvider = StateProvider<FiltrosVideos>((ref) => FiltrosVideos.vacios);
+/// Inicializa el filtro de vídeos con el idioma UI del usuario como
+/// default: sin filtro muchas fuentes son en inglés/francés y el usuario
+/// hispanohablante ve un feed mayoritariamente no-hispano. Leemos el
+/// idioma una vez al crear el provider — los cambios posteriores de
+/// preferencia no reinicializan (sería reseteo inesperado de filtros).
+/// Si el usuario limpia el filtro de idioma, queda limpio.
+final filtrosVideosProvider = StateProvider<FiltrosVideos>((ref) {
+  String codigoIdiomaUi = ref.read(preferenciasProvider).codigoIdioma ?? '';
+  if (codigoIdiomaUi.isEmpty) {
+    // Preferencia en "seguir sistema" → leer locale del sistema.
+    final sistemaLocale = PlatformDispatcher.instance.locale.languageCode;
+    codigoIdiomaUi = sistemaLocale;
+  }
+  const idiomasApp = {'es', 'ca', 'eu', 'gl', 'en'};
+  if (idiomasApp.contains(codigoIdiomaUi)) {
+    return FiltrosVideos(codigosIdiomas: [codigoIdiomaUi]);
+  }
+  return FiltrosVideos.vacios;
+});
 
 /// Items tipo "vídeo" filtrados por `filtrosVideosProvider`.
 ///
