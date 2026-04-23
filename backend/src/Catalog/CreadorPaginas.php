@@ -155,6 +155,7 @@ final class CreadorPaginas
         foreach (self::PAGINAS as $config) {
             $config = self::normalizarConfigPagina($config);
             if (self::yaExiste($config['clave'])) {
+                self::reconciliarSlug($config);
                 continue;
             }
             $idPagina = self::vbpDisponible()
@@ -462,6 +463,43 @@ final class CreadorPaginas
             'meta_value'     => $clave,
         ]);
         return !empty($consulta->posts);
+    }
+
+    /**
+     * Si la página auto de esta `clave` tiene un slug distinto al
+     * esperado (ej. "flavor-news" o "inicio-2" cuando lo deseable
+     * es "inicio"), lo migra al canónico siempre y cuando el slug
+     * canónico esté libre. Evitamos pisar algo editado por el
+     * admin deliberadamente.
+     *
+     * @param array{clave:string,slug:string} $config
+     */
+    private static function reconciliarSlug(array $config): void
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => 'page',
+            'post_status'    => ['publish', 'draft', 'pending'],
+            'posts_per_page' => 1,
+            'no_found_rows'  => true,
+            'meta_key'       => '_fnh_pagina_auto',
+            'meta_value'     => $config['clave'],
+        ]);
+        if (empty($consulta->posts)) {
+            return;
+        }
+        $post = $consulta->posts[0];
+        if ($post->post_name === $config['slug']) {
+            return;
+        }
+        // Sólo migramos si el slug canónico está libre.
+        $ocupante = get_page_by_path($config['slug'], OBJECT, 'page');
+        if ($ocupante instanceof \WP_Post && (int) $ocupante->ID !== (int) $post->ID) {
+            return;
+        }
+        wp_update_post([
+            'ID'        => $post->ID,
+            'post_name' => $config['slug'],
+        ]);
     }
 
     private static function buscarPaginaPorClaveEIdioma(string $clave, string $idioma): int

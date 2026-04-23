@@ -59,6 +59,13 @@ final class Plugin
         // los fixes sin tener que desactivar/reactivar manualmente.
         add_action('init', [Activator::class, 'ejecutarMigracionesPendientes'], 2);
 
+        // Sincronizar páginas frontend auto-generadas tras una
+        // actualización: si la versión guardada no coincide con
+        // FNH_VERSION, crea páginas que falten y reconcilia slugs
+        // raros. Prioridad 3 para que corra después de las
+        // migraciones y del registro de CPTs.
+        add_action('init', [self::class, 'sincronizarPaginasTrasUpgrade'], 3);
+
         // Los CPTs deben existir antes de que la taxonomía los referencie.
         add_action('init', [Source::class, 'registrar'], 5);
         add_action('init', [Item::class, 'registrar'], 5);
@@ -113,5 +120,28 @@ final class Plugin
             false,
             dirname(plugin_basename(FNH_PLUGIN_FILE)) . '/languages'
         );
+    }
+
+    /**
+     * Sincroniza las páginas auto-generadas cuando detecta un salto
+     * de versión del plugin: tras una actualización via PUC (o
+     * reemplazar zip manualmente), las páginas nuevas introducidas
+     * por la nueva versión (ej. TV, Podcasts, Fuentes, Sobre en
+     * v0.7.0) no aparecían porque `CreadorPaginas::crearSiNoExisten`
+     * sólo se invocaba en `register_activation_hook` — y una
+     * actualización no dispara ese hook.
+     *
+     * La option `fnh_paginas_sincronizadas_version` guarda la última
+     * versión con la que se sincronizó. Si no coincide con
+     * `FNH_VERSION`, ejecuta el sync y actualiza la marca.
+     */
+    public static function sincronizarPaginasTrasUpgrade(): void
+    {
+        $versionSincronizada = (string) get_option('fnh_paginas_sincronizadas_version', '');
+        if ($versionSincronizada === FNH_VERSION) {
+            return;
+        }
+        \FlavorNewsHub\Catalog\CreadorPaginas::crearSiNoExisten();
+        update_option('fnh_paginas_sincronizadas_version', FNH_VERSION);
     }
 }
