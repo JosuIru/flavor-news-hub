@@ -914,16 +914,16 @@ final class Shortcodes
         .fnh-shortcode-wrap h3{font-size:1.1em !important;font-weight:700 !important;margin:0 0 .4em !important;line-height:1.3 !important;color:var(--fnh-color-text) !important}
         .fnh-shortcode-wrap h4{font-size:1em !important;font-weight:600 !important;margin:0 0 .35em !important;color:var(--fnh-color-text) !important}
         .fnh-shortcode-wrap ul,.fnh-shortcode-wrap ol{padding-left:0 !important;margin:0 !important;list-style:none !important}
-        .fnh-shortcode-wrap .fnh-feed-lista li{padding:1rem 0 !important;border-bottom:1px solid var(--fnh-color-border);display:grid;grid-template-columns:200px 1fr;gap:1rem;align-items:start}
-        .fnh-shortcode-wrap .fnh-feed-lista li:last-child{border-bottom:0}
-        .fnh-shortcode-wrap .fnh-feed-lista .fnh-media{order:-1;margin:0}
-        .fnh-shortcode-wrap .fnh-feed-lista .fnh-media img{width:100% !important;height:130px !important;object-fit:cover;border-radius:8px;display:block}
+        /* ELIMINADO: regla `.fnh-feed-lista li { display: grid; ... 200px 1fr }`
+           porque pisaba (por mayor especificidad) a `.fnh-feed-item` que
+           es la que define la card real. Dejaba el item como grid de
+           2 columnas metiendo h3/meta/media/excerpt/share en celdas
+           descuadradas (el "Ipar/eus/birg"). Los estilos de card ya
+           viven en `.fnh-shortcode-wrap--feed .fnh-feed-item`. */
         .fnh-shortcode-wrap .fnh-feed-lista h3 a{color:var(--fnh-color-text) !important;text-decoration:none}
         .fnh-shortcode-wrap .fnh-feed-lista h3 a:hover{text-decoration:underline}
         .fnh-shortcode-wrap .fnh-feed-lista .fnh-excerpt p{margin:.25em 0 !important;font-size:.93em;color:var(--fnh-color-text-soft)}
         @media (max-width:640px){
-          .fnh-shortcode-wrap .fnh-feed-lista li{grid-template-columns:1fr;gap:.6rem}
-          .fnh-shortcode-wrap .fnh-feed-lista .fnh-media img{height:180px !important}
           .fnh-shortcode-wrap .fnh-radios-lista{grid-template-columns:1fr}
         }
         #fnh-landing{display:flex !important;flex-direction:column;gap:2.5rem;padding:0 !important;max-width:1200px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111 !important;background:transparent !important}
