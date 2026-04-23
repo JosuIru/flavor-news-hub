@@ -39,6 +39,17 @@ final class FeedItemParser
 
         $extractoRespetuoso = self::extraerExtracto($itemFeed);
 
+        // Fallback de título: Mastodon, microblogs y algunos feeds Atom de
+        // redes federadas no rellenan `<title>` en cada item (es texto
+        // corto, no un artículo). Si SimplePie nos lo deja vacío,
+        // derivamos un título sintético a partir de los primeros caracteres
+        // del excerpt. Sin esto el ingester descartaba silenciosamente
+        // cualquier post de Mastodon y las 13 fuentes fediversal marcadas
+        // en el directorio estaban en `total=0` sin error visible.
+        if ($titularLimpio === '' && $extractoRespetuoso !== '') {
+            $titularLimpio = self::derivarTituloDesdeExcerpt($extractoRespetuoso);
+        }
+
         // SimplePie devuelve el timestamp en UTC cuando pides 'U'.
         $timestampPublicacion = (int) $itemFeed->get_date('U');
         $fechaPublicacionIso = $timestampPublicacion > 0
@@ -104,6 +115,34 @@ final class FeedItemParser
      * Si viene vacío, trunca el `content` a un número razonable de palabras.
      * Nunca devuelve HTML completo de un artículo entero.
      */
+    /**
+     * Genera un título legible para items sin `<title>` — típicamente
+     * posts de Mastodon u otros microblogs federados. Coge el texto
+     * plano del excerpt, lo colapsa a una sola línea y lo trunca a ~80
+     * caracteres sin partir palabras.
+     */
+    private static function derivarTituloDesdeExcerpt(string $excerptHtml): string
+    {
+        $texto = wp_strip_all_tags($excerptHtml);
+        $texto = html_entity_decode($texto, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $texto = preg_replace('/\s+/u', ' ', $texto) ?? $texto;
+        $texto = trim((string) $texto);
+        if ($texto === '') return '';
+        $limite = 80;
+        if (function_exists('mb_strlen') && mb_strlen($texto, 'UTF-8') <= $limite) {
+            return self::sanearCadenaLegible($texto);
+        }
+        $truncado = function_exists('mb_substr')
+            ? mb_substr($texto, 0, $limite, 'UTF-8')
+            : substr($texto, 0, $limite);
+        // Cortar en el último espacio para no partir palabras.
+        $ultimoEspacio = strrpos($truncado, ' ');
+        if ($ultimoEspacio !== false && $ultimoEspacio > $limite * 0.6) {
+            $truncado = substr($truncado, 0, $ultimoEspacio);
+        }
+        return self::sanearCadenaLegible(rtrim($truncado, " .,;:") . '…');
+    }
+
     private static function extraerExtracto(\SimplePie_Item $itemFeed): string
     {
         $descripcionFeed = (string) $itemFeed->get_description();
