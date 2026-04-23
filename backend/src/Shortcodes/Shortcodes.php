@@ -802,8 +802,6 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed .fnh-feed-hero-estadistica > div:first-child{display:flex;align-items:baseline;gap:.5rem;min-width:0}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-numero{font-size:1.5rem;font-weight:800;line-height:1;color:var(--fnh-color-text)}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-etiqueta{font-size:.82rem;color:var(--fnh-color-text-soft)}
-        .fnh-shortcode-wrap--feed .fnh-feed-hero-pistas{display:flex;flex-wrap:wrap;gap:.45rem;margin-left:auto}
-        .fnh-shortcode-wrap--feed .fnh-feed-hero-pista{display:inline-flex;align-items:center;min-height:30px;padding:.25rem .65rem;border-radius:999px;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);font-size:.8rem;color:var(--fnh-color-text-soft);box-shadow:0 1px 1px rgba(0,0,0,.02)}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal{display:grid;grid-template-columns:1fr;gap:1rem;align-items:stretch;padding:1rem;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.4);box-shadow:0 10px 26px rgba(0,0,0,.05)}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal--sin-media{grid-template-columns:1fr}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-media{display:block;border-radius:14px;overflow:hidden;min-height:220px;max-height:360px;aspect-ratio:16/10;align-self:start;background:var(--fnh-color-surface-alt);text-decoration:none}
@@ -1159,6 +1157,16 @@ JS;
                 <div class="fnh-feed-hero-titular">
                     <span class="fnh-feed-hero-kicker"><?php esc_html_e('Noticias', 'flavor-news-hub'); ?></span>
                     <h2><?php esc_html_e('La actualidad del ecosistema alternativo, sin ruido y por orden cronológico.', 'flavor-news-hub'); ?></h2>
+                    <?php if ($temasDestacados !== []) : ?>
+                        <div class="fnh-feed-hero-temas" aria-label="<?php esc_attr_e('Temáticas destacadas', 'flavor-news-hub'); ?>">
+                            <?php foreach ($temasDestacados as $tema) : ?>
+                                <a class="fnh-feed-hero-tema" href="<?php echo esc_url((string) $tema['url']); ?>">
+                                    <?php echo esc_html((string) $tema['nombre']); ?>
+                                    <span><?php echo esc_html((string) $tema['cantidad']); ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                     <?php if ($datosPrincipal !== []) : ?>
                         <div class="fnh-feed-hero-mosaico">
                             <article class="fnh-feed-hero-principal<?php echo empty($datosPrincipal['media_url']) ? ' fnh-feed-hero-principal--sin-media' : ''; ?>">
@@ -1221,26 +1229,11 @@ JS;
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
-                    <?php if ($temasDestacados !== []) : ?>
-                        <div class="fnh-feed-hero-temas" aria-label="<?php esc_attr_e('Temáticas destacadas', 'flavor-news-hub'); ?>">
-                            <?php foreach ($temasDestacados as $tema) : ?>
-                                <a class="fnh-feed-hero-tema" href="<?php echo esc_url((string) $tema['url']); ?>">
-                                    <?php echo esc_html((string) $tema['nombre']); ?>
-                                    <span><?php echo esc_html((string) $tema['cantidad']); ?></span>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
                 </div>
                 <div class="fnh-feed-hero-estadistica">
                     <div>
                         <div class="fnh-feed-hero-numero"><?php echo esc_html((string) $numeroDestacado); ?></div>
                         <div class="fnh-feed-hero-etiqueta"><?php esc_html_e('Entradas recientes cargadas', 'flavor-news-hub'); ?></div>
-                    </div>
-                    <div class="fnh-feed-hero-pistas">
-                        <span class="fnh-feed-hero-pista"><?php esc_html_e('Temáticas', 'flavor-news-hub'); ?></span>
-                        <span class="fnh-feed-hero-pista"><?php esc_html_e('Territorios', 'flavor-news-hub'); ?></span>
-                        <span class="fnh-feed-hero-pista"><?php esc_html_e('Idiomas', 'flavor-news-hub'); ?></span>
                     </div>
                 </div>
             </section>
