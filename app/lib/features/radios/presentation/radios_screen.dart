@@ -82,47 +82,27 @@ class RadiosBody extends ConsumerWidget {
           });
         return Column(
           children: [
-            if (favoritas.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-                child: Row(
-                  children: [
-                    FilterChip(
-                      avatar: Icon(
-                        soloFavoritas ? Icons.favorite : Icons.favorite_border,
-                        size: 16,
-                      ),
-                      label: Text(textos.radiosOnlyFavorites),
-                      selected: soloFavoritas,
-                      onSelected: (valor) =>
-                          ref.read(soloRadiosFavoritasProvider.notifier).state = valor,
-                    ),
-                  ],
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+              child: _RadiosFavoritesHeader(
+                hasFavorites: favoritas.isNotEmpty,
+                onlyFavorites: soloFavoritas,
+                onToggle: (valor) =>
+                    ref.read(soloRadiosFavoritasProvider.notifier).state = valor,
+                onClear: soloFavoritas
+                    ? () => ref.read(soloRadiosFavoritasProvider.notifier).state = false
+                    : null,
               ),
+            ),
             Expanded(
-              child: radiosVisibles.isEmpty
+                child: radiosVisibles.isEmpty
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         const SizedBox(height: 120),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.favorite_border,
-                                size: 48,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                textos.radiosOnlyFavoritesEmpty,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                            ],
-                          ),
+                        _EstadoVacioRadios(
+                          icono: soloFavoritas ? Icons.favorite_border : Icons.radio_outlined,
+                          texto: soloFavoritas ? textos.radiosOnlyFavoritesEmpty : textos.radiosEmpty,
                         ),
                       ],
                     )
@@ -150,18 +130,140 @@ class RadiosBody extends ConsumerWidget {
   }
 }
 
-/// Versión full-screen: usada para el deep link `/radios` (legacy) o
-/// cualquier lugar donde queramos abrir la lista sin el tab de música.
-class RadiosScreen extends StatelessWidget {
-  const RadiosScreen({super.key});
+class _RadiosFavoritesHeader extends StatelessWidget {
+  const _RadiosFavoritesHeader({
+    required this.hasFavorites,
+    required this.onlyFavorites,
+    required this.onToggle,
+    required this.onClear,
+  });
+
+  final bool hasFavorites;
+  final bool onlyFavorites;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
+    final esquema = Theme.of(context).colorScheme;
+    return Material(
+      color: esquema.surfaceContainerHighest,
+      elevation: 0,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.favorite, size: 18, color: esquema.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    textos.radiosOnlyFavorites,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                FilterChip(
+                  avatar: Icon(
+                    onlyFavorites ? Icons.favorite : Icons.favorite_border,
+                    size: 16,
+                  ),
+                  label: Text(textos.radiosOnlyFavorites),
+                  selected: onlyFavorites,
+                  onSelected: onToggle,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              onlyFavorites
+                  ? textos.radiosOnlyFavoritesActive
+                  : hasFavorites
+                      ? textos.radiosOnlyFavoritesHint
+                      : textos.radiosOnlyFavoritesEmpty,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: esquema.onSurfaceVariant,
+                  ),
+            ),
+            if (onlyFavorites && onClear != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: onClear,
+                  child: Text(textos.filtersClear),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EstadoVacioRadios extends StatelessWidget {
+  const _EstadoVacioRadios({
+    required this.icono,
+    required this.texto,
+  });
+
+  final IconData icono;
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          Icon(
+            icono,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            texto,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Versión full-screen: usada para el deep link `/radios` (legacy) o
+/// cualquier lugar donde queramos abrir la lista sin el tab de música.
+class RadiosScreen extends ConsumerWidget {
+  const RadiosScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textos = AppLocalizations.of(context);
+    final soloFavoritas = ref.watch(soloRadiosFavoritasProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(textos.radiosTitle),
         actions: [
+          IconButton(
+            icon: Badge(
+              isLabelVisible: soloFavoritas,
+              child: Icon(
+                soloFavoritas ? Icons.favorite : Icons.favorite_border,
+              ),
+            ),
+            tooltip: textos.radiosOnlyFavorites,
+            onPressed: () {
+              ref.read(soloRadiosFavoritasProvider.notifier).state = !soloFavoritas;
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: textos.searchTooltip,

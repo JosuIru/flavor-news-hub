@@ -25,4 +25,21 @@
 
     <string name="widget_buscador_descripcion">Buscar en Flavor News</string>
     <string name="widget_buscador_hint">Buscar medios y publicaciones</string>
+
+    <!-- Textos de demostración usados únicamente en los previewLayouts
+         del widget picker. No se ven nunca en el widget real en uso. -->
+    <string name="widget_preview_titular_1">El pueblo saharaui cumple 50 años de lucha por la autodeterminación</string>
+    <string name="widget_preview_fuente_1">Berria · hace 2 h</string>
+    <string name="widget_preview_titular_2">Cooperativas energéticas crecen un 40% en el Estado</string>
+    <string name="widget_preview_fuente_2">Kaos en la Red · hace 4 h</string>
+    <string name="widget_preview_titular_3">El sindicato de inquilinas convoca huelga general de alquileres</string>
+    <string name="widget_preview_fuente_3">VilaWeb · hace 6 h</string>
+    <string name="widget_preview_radio_nombre">Radio Bronka</string>
+    <string name="widget_preview_radio_meta">Barcelona · en directo</string>
+    <string name="widget_preview_musica_titulo">Zirkulus</string>
+    <string name="widget_preview_musica_artista">Zea Mays · Uzta</string>
+    <string name="widget_preview_favorito_1">Radio Almaina</string>
+    <string name="widget_preview_favorito_2">Radio Vallekas</string>
+    <string name="widget_preview_favorito_3">Cuac FM</string>
+    <string name="widget_preview_favorito_4">Radio Bronka</string>
 </resources>

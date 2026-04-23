@@ -8,5 +8,6 @@
     android:initialLayout="@layout/reproductor_radio_widget"
     android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
+    android:previewLayout="@layout/reproductor_radio_widget_preview"
     android:previewImage="@mipmap/ic_launcher"
     android:description="@string/widget_radio_descripcion" />

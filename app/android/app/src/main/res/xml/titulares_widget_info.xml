@@ -8,5 +8,6 @@
     android:initialLayout="@layout/titulares_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
+    android:previewLayout="@layout/titulares_widget_preview"
     android:previewImage="@mipmap/ic_launcher"
     android:description="@string/widget_titulares_descripcion" />

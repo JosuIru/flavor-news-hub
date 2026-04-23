@@ -17,6 +17,8 @@
   "radiosEmpty": "No hi ha ràdios en aquesta instància.",
   "radiosOnlyFavorites": "Només les meves ràdios",
   "radiosOnlyFavoritesEmpty": "Encara no tens ràdios favorites.",
+  "radiosOnlyFavoritesHint": "Marca les ràdios com a favorites per tenir-les a dalt.",
+  "radiosOnlyFavoritesActive": "Es mostren només les teves ràdios favorites.",
   "radiosStreamError": "No s'ha pogut connectar amb el canal. Toca per tornar-ho a provar.",
   "videosTitle": "Vídeos",
   "videosEmpty": "Ara mateix no hi ha vídeos. Afegeix canals de YouTube a Ajustaments → Els meus mitjans.",

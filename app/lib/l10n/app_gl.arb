@@ -17,6 +17,8 @@
   "radiosEmpty": "Non hai radios nesta instancia.",
   "radiosOnlyFavorites": "Só as miñas radios",
   "radiosOnlyFavoritesEmpty": "Aínda non tes radios favoritas.",
+  "radiosOnlyFavoritesHint": "Marca radios como favoritas para telos arriba.",
+  "radiosOnlyFavoritesActive": "Amósanse só as túas radios favoritas.",
   "radiosStreamError": "Non se puido conectar co stream. Toca para reintentar.",
   "settingsShareApp": "Compartir a app",
   "settingsShareAppSubtitle": "Pásaa a quen poida serlle útil.",

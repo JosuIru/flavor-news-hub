@@ -1,16 +1,16 @@
 # flavor-news-hub · app
 
-App Flutter que consume la API `flavor-news/v1` del backend. Enfocada a Android (luego iOS); con la estética sobria y las mismas cinco funciones visibles que el brief del proyecto.
+App Flutter que consume la API `flavor-news/v1` del backend. Enfocada a Android primero, con la misma estética sobria del proyecto, pero ya no limitada al feed y al directorio: también integra audio, TV, vídeos, música, utilidades personales, widgets y accesos web.
 
-## Estado por capas
+## Estado funcional
 
-- [x] **Capa 9** — Andamiaje, navegación, i18n
-- [x] **Capa 10** — Modelos freezed + cliente HTTP
-- [x] **Capa 11** — Pantallas de lectura (Feed, Filtros, Detalle, Ficha editorial)
-- [x] **Capa 12** — Directorio y alta de colectivos
-- [x] **Capa 13** — Ajustes completos y Acerca de
-
-**Estado global de la app: 5/5 capas completas.** Las 9 pantallas del brief existen; sólo falta la tarea transversal de CI (tarea #14, pendiente).
+- Feed cronológico de noticias con filtros por temática, territorio e idioma.
+- Fichas editoriales de medios con información de propiedad, financiación e idiomas.
+- Hub de audio unificado: radios, podcasts y búsqueda de música federada.
+- TV y vídeos con listados dedicados, filtros y reproductores.
+- Directorio de colectivos con ficha pública y alta manual.
+- Búsqueda global, mapa, guardados, historial, intereses y gestión de mis medios.
+- Ajustes, notificaciones, actualizaciones, widget de Android y compartición de contenido.
 
 ## Modelos y cliente API
 
@@ -44,6 +44,27 @@ Tras tocar cualquier modelo:
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+## Rutas y superficies
+
+Rutas principales del router:
+
+- `/` feed
+- `/audio` radios + podcasts + música
+- `/tv` TV
+- `/videos` vídeos
+- `/collectives` directorio de colectivos
+- `/settings` ajustes
+- `/search` buscador global
+- `/map` mapa de territorio
+- `/music` buscador de música
+- `/filters` filtros de noticias
+- `/items/:id` detalle de noticia
+- `/sources/:id` ficha editorial de medio
+- `/sources/submit` alta de medio
+- `/collectives/:id` ficha de colectivo
+- `/collectives/submit` alta de colectivo
+- `/notificaciones`, `/guardados`, `/historial`, `/tus-intereses`, `/mis-medios`, `/fuentes-preferencias`, `/about`
+
 ## Requisitos
 
 - Flutter estable (probado con 3.24 / Dart 3.5)
@@ -57,6 +78,7 @@ dart run build_runner build --delete-conflicting-outputs
 - **Persistencia ligera:** `shared_preferences` para tema, idioma UI, URL de la instancia backend y escala de texto.
 - **i18n:** ARB files + `flutter gen-l10n` generando `AppLocalizations`. Castellano, catalán, euskera, gallego e inglés como idiomas de primera clase.
 - **Tema:** Material 3 sobrio a partir de `ColorScheme.fromSeed` con el mismo azul (`#0B63CE`) del CSS de las plantillas web del backend.
+- **Widgets y accesos directos:** escritores nativos de widgets para titulares, favoritos, radio y música; el código Android vive junto a la app para mantener la sincronía con la UI principal.
 
 ## Estructura
 
@@ -77,8 +99,20 @@ lib/
 └── features/
     ├── shell/                          NavigationBar inferior
     ├── feed/                           lista + detalle de noticia
+    ├── audio/                          podcasts + reproductor compartido
+    ├── tv/                             canales de TV y emisiones
+    ├── videos/                         grid de vídeos y reproductor
+    ├── music/                          buscador federado de música
+    ├── radios/                         directorio y reproductor de radios
     ├── sources/                        ficha editorial
     ├── collectives/                    directorio + detalle + alta
+    ├── personal_sources/               mis medios y descubrimiento de feeds
+    ├── sources_filter/                  fuentes bloqueadas / preferencias
+    ├── history/                        guardados, historial e intereses
+    ├── notifications/                  preferencias y estado de notificaciones
+    ├── widgets/                        escritores de widgets Android
+    ├── search/                         buscador global
+    ├── map/                            mapa de territorio
     ├── settings/                       ajustes
     └── about/                          manifiesto en la app
 ```

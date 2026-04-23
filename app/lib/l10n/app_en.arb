@@ -17,6 +17,8 @@
   "radiosEmpty": "No radios in this instance.",
   "radiosOnlyFavorites": "Only my radios",
   "radiosOnlyFavoritesEmpty": "You have no favorite radios yet.",
+  "radiosOnlyFavoritesHint": "Mark radios as favorites to keep them at the top.",
+  "radiosOnlyFavoritesActive": "Showing only your favorite radios.",
   "radiosStreamError": "Couldn't connect to the stream. Tap to retry.",
   "videosTitle": "Videos",
   "videosEmpty": "No videos right now. Add YouTube channels from Settings → My sources.",

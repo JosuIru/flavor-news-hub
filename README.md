@@ -14,15 +14,19 @@ No es una red social. No es una plataforma de organización interna. No es un su
 
 ## Qué hace, visto desde el usuario
 
-Cinco cosas. Solo cinco.
+El producto ya cubre varias superficies, no solo el feed inicial:
 
-1. **Leer noticias de medios alternativos.** Feed cronológico agregado de decenas de medios no corporativos, filtrable por temática, territorio e idioma. La app nunca reproduce el artículo completo: cada titular enlaza al medio original.
-2. **Ver la ficha editorial de cada medio.** Quién lo posee, cómo se financia, qué línea editorial declara. Educación estructural aunque no leas ninguna noticia entera.
-3. **Descubrir qué colectivos trabajan sobre una temática.** Junto a cada noticia, un botón claro: *"¿Quién se organiza sobre esto?"*. Lleva a un directorio filtrable de colectivos activos.
-4. **Darse de alta como colectivo.** Formulario público sencillo; verificación manual por un equipo o núcleo de verificadores antes de aparecer.
-5. **Compartir una noticia o colectivo.** Con el mecanismo nativo del sistema. El enlace compartido abre una versión web pública, no requiere app instalada.
+1. **Leer titulares de medios alternativos.** Feed cronológico agregado de medios no corporativos, filtrable por temática, territorio e idioma. Cada tarjeta enlaza al artículo original.
+2. **Ver la ficha editorial de cada medio.** Quién lo posee, cómo se financia y qué línea editorial declara.
+3. **Explorar el hub de audio y vídeo.** Radios en directo, podcasts, vídeos y TV dentro de una misma app, con filtros, reproducción y acceso rápido al contenido.
+4. **Escuchar música federada.** Búsqueda de pistas en Audius, Jamendo, Funkwhale y Archive.org, con cola, reproductor y gestor de instancias.
+5. **Descubrir qué colectivos trabajan sobre una temática.** Un botón contextual lleva al directorio de colectivos, con ficha pública y alta manual/publica.
+6. **Proponer medios y colectivos.** Formularios públicos para sugerir fuentes y colectivos, con verificación humana antes de publicar.
+7. **Gestionar tu relación con el catálogo.** Guardados, historial, intereses, mis medios, fuentes preferidas y filtros personales.
+8. **Buscar y orientarte territorialmente.** Buscador global y mapa para localizar radios y colectivos por territorio.
+9. **Compartir o consumir web pública.** Enlaces compartidos que abren páginas web públicas, shortcodes reutilizables en WordPress y widgets Android para acceso rápido.
 
-Y nada más. Ni cuentas de usuario, ni notificaciones push, ni algoritmo de recomendación, ni IA, ni analítica, ni publicidad.
+No hay cuentas de usuario, ni algoritmo de recomendación, ni IA, ni analítica, ni publicidad. Las notificaciones y actualizaciones existen como utilidades, no como mecanismos de enganche.
 
 ## Relación con Flavor Platform
 
@@ -39,15 +43,15 @@ Dos piezas acopladas pero desplegables por separado:
 
 ### `backend/` — Plugin WordPress headless
 
-Plugin `flavor-news-hub` que convierte una instalación WP normal en backend del sistema. WP porque la parte editorial (alta manual de medios, verificación de colectivos, taxonomías) es exactamente lo que WP hace bien, y porque cualquier colectivo con hosting básico puede autohospedarlo.
+Plugin `flavor-news-hub` que convierte una instalación WP normal en backend del sistema. WP porque la parte editorial (alta manual de medios, verificación de colectivos, directorio de radios, taxonomías y páginas públicas) es exactamente lo que WP hace bien, y porque cualquier colectivo con hosting básico puede autohospedarlo.
 
 Incluye:
 
-- CPTs `source`, `item`, `collective` y taxonomía compartida `topic`.
+- CPTs `source`, `item`, `collective`, `radio` y taxonomía compartida `topic`.
 - Ingesta automática de feeds RSS/Atom cada 30 minutos vía `wp_cron` (SimplePie). Dedupe por `guid`.
-- API REST pública (namespace `flavor-news/v1`) de solo lectura para items, sources, collectives y topics; más un endpoint `POST /collectives/submit` con rate limit y honeypot.
+- API REST pública (namespace `flavor-news/v1`) para items, sources, collectives, radios y topics; formularios públicos de alta de medios/colectivos; ajustes públicos; comprobación de actualizaciones de la app; disparo manual de ingesta y endpoint HTML para scroll infinito.
 - Admin WordPress con acciones específicas (ingesta manual por fuente, verificación masiva de colectivos pendientes, log de ingesta).
-- Plantillas web públicas mínimas `/n/{slug}`, `/c/{slug}`, `/f/{slug}` como fallback para enlaces compartidos desde la app.
+- Plantillas web públicas mínimas `/n/{slug}`, `/c/{slug}`, `/f/{slug}` como fallback para enlaces compartidos desde la app, más shortcodes para feed, radios, podcasts, vídeos, TV, fuentes, colectivos y páginas de aterrizaje.
 - WP-CLI: `wp flavor-news ingest [--source=<id>]`.
 
 Requisitos: WordPress 6.4+, PHP 8.1+, PSR-4, composer. Licencia AGPL-3.0.
@@ -56,7 +60,14 @@ Requisitos: WordPress 6.4+, PHP 8.1+, PSR-4, composer. Licencia AGPL-3.0.
 
 App Flutter multiplataforma que consume la API del backend. Enfocada a Android primero (por público objetivo y por viabilidad de distribución fuera de Play Store: F-Droid y APK directa).
 
-Nueve pantallas: Feed, Filtros, Detalle de noticia, Ficha editorial de medio, Directorio de colectivos, Ficha de colectivo, Alta de colectivo, Ajustes, Acerca de.
+Rutas y superficies principales:
+
+- Feed de noticias con filtros, detalle y fichas editoriales.
+- Audio unificado: radios, podcasts y búsqueda de música federada.
+- TV y vídeos con listas dedicadas y filtros.
+- Directorio de colectivos, ficha pública y alta de colectivos.
+- Búsqueda global, mapa, historial, guardados, intereses y gestión de mis medios.
+- Ajustes, notificaciones, actualizaciones, widgets Android y compartición de contenido.
 
 Requisitos: Flutter estable actual, Dart 3.x, i18n con ARB (es, ca, eu, gl, en), Material 3, cacheo offline básico, **cero** analítica/telemetría/Firebase/publicidad/IA. Licencia AGPL-3.0.
 

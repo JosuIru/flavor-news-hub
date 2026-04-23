@@ -1,6 +1,6 @@
 # flavor-news-hub · backend
 
-Plugin de WordPress que actúa como backend headless para [Flavor News Hub](../README.md). Expone CPTs, taxonomía, ingesta de feeds, API REST pública y admin de verificación.
+Plugin de WordPress que actúa como backend headless para [Flavor News Hub](../README.md). Expone CPTs, taxonomía, ingesta de feeds, directorio de radios, API REST pública, shortcodes y admin de verificación.
 
 Este documento es la guía técnica del plugin; la visión del proyecto está en [`../README.md`](../README.md) y los principios irrenunciables en [`../MANIFESTO.md`](../MANIFESTO.md).
 
@@ -24,6 +24,25 @@ Fallback web para enlaces compartidos desde la app. **No** dependen del tema act
 | `/c/{slug}`    | `fnh_collective` | Nombre, territorio, temáticas, descripción, botones "Visitar web" y "Comunidad en Flavor" (si aplica).         |
 
 Colectivos no verificados responden **404** aunque tengan slug activo: la comprobación se hace en `template_redirect` (antes de enviar cabeceras) para que el status real sea `404`, no un `200` con cuerpo de 404.
+
+El plugin también genera páginas auto para `inicio`, `noticias`, `tv`, `videos`, `radios`, `podcasts`, `colectivos`, `fuentes` y `sobre`, con navegación propia y botón de apoyo al proyecto.
+
+## Shortcodes
+
+Los shortcodes permiten reutilizar el contenido del backend en páginas y posts de WordPress sin depender de bloques complejos:
+
+- `[flavor_news_feed]`
+- `[flavor_news_radios]`
+- `[flavor_news_videos]`
+- `[flavor_news_podcasts]`
+- `[flavor_news_tv]`
+- `[flavor_news_sources]`
+- `[flavor_news_collectives]`
+- `[flavor_news_source]`
+- `[flavor_news_landing]`
+- `[flavor_news_sobre]`
+
+Los shortcodes de listado respetan filtros de tema, territorio e idioma cuando la página auto los expone. El render HTML de la primera página y del scroll infinito reutiliza la misma lógica para no duplicar marcado.
 
 Accesibilidad:
 
@@ -101,7 +120,13 @@ Namespace: `flavor-news/v1`. Sin autenticación en lectura. Respuestas JSON en s
 | GET    | `/sources/{id}`            | Ficha editorial de un medio.                                                 |
 | GET    | `/collectives`             | Colectivos publicados y verificados.                                         |
 | GET    | `/collectives/{id}`        | Ficha pública de un colectivo verificado.                                    |
+| GET    | `/radios`                  | Radios libres curadas por la instancia, filtrables por temática, territorio e idioma. |
+| GET    | `/radios/{id}`             | Ficha pública de una radio.                                                  |
 | GET    | `/topics`                  | Árbol plano de temáticas (cada una con `parent` y `count`).                  |
+| GET    | `/settings`                | Ajustes públicos que los clientes sincronizan sin login.                     |
+| GET    | `/apps/check-update`       | Comprobación pública de versiones nuevas de la app Android.                  |
+| GET    | `/feed-html`               | HTML pre-renderizado para scroll infinito de feeds, podcasts y vídeos.       |
+| GET    | `/ingest-trigger`          | Estado público del último disparo de ingesta.                                |
 
 #### Filtros de `/items`
 
@@ -119,6 +144,19 @@ Cabeceras de paginado estándar WP: `X-WP-Total`, `X-WP-TotalPages`.
 | Método | Ruta                       | Descripción                                                                  |
 |--------|----------------------------|------------------------------------------------------------------------------|
 | POST   | `/collectives/submit`      | Alta pública en `pending`. Requiere verificación manual desde el admin.      |
+
+### Alta pública de medios
+
+| Método | Ruta                       | Descripción                                                                  |
+|--------|----------------------------|------------------------------------------------------------------------------|
+| POST   | `/sources/submit`          | Alta pública de medios en `pending`, con honeypot y rate limit.              |
+
+### Utilidades públicas
+
+| Método | Ruta                       | Descripción                                                                  |
+|--------|----------------------------|------------------------------------------------------------------------------|
+| POST   | `/ingest-trigger`          | Dispara una ingesta inmediata si el cooldown lo permite.                     |
+| GET    | `/ingest-trigger`          | Consulta cuándo fue la última ingesta disparada manualmente.                 |
 
 Cuerpo JSON:
 
@@ -215,9 +253,11 @@ backend/
 │   ├── CPT/
 │   │   ├── Source.php           Medio agregado (fnh_source)
 │   │   ├── Item.php             Noticia (fnh_item)
-│   │   └── Collective.php       Colectivo (fnh_collective)
+│   │   ├── Collective.php       Colectivo (fnh_collective)
+│   │   └── Radio.php            Radio libre (fnh_radio)
 │   ├── Taxonomy/
 │   │   └── Topic.php            Temática compartida (fnh_topic)
+│   ├── REST/                    API pública, shortcodes y utilidades web
 │   ├── Meta/
 │   │   └── MetaRegistrar.php    Registro de meta fields con sanitización
 │   └── Activation/
@@ -247,6 +287,11 @@ backend/
 | `_fnh_ownership`      | string  | sí   | Quién posee/financia (HTML permitido)                                  |
 | `_fnh_editorial_note` | string  | sí   | Línea editorial declarada (HTML permitido)                             |
 | `_fnh_active`         | boolean | sí   | Si se ingesta o no                                                     |
+| `_fnh_medium_type`    | string  | sí   | Tipo editorial principal (`news`, `podcast`, `video`, `tv`, etc.)      |
+| `_fnh_broadcast_format` | array | sí   | Formatos de emisión admitidos                                           |
+| `_fnh_content_license` | string | sí   | Licencia o régimen de reutilización del contenido                       |
+| `_fnh_legal_note`     | string  | sí   | Nota legal / aviso editorial                                            |
+| `_fnh_live_stream_permit` | string | sí | Permiso para stream en directo (`none`, `cc`, etc.)                    |
 
 ### `fnh_item`
 
@@ -257,6 +302,18 @@ backend/
 | `_fnh_published_at` | string  | sí   | ISO 8601 UTC                                    |
 | `_fnh_guid`         | string  | sí   | Para deduplicar ingestas                        |
 | `_fnh_media_url`    | string  | sí   | Imagen destacada si el feed la provee           |
+
+### `fnh_radio`
+
+| Meta                | Tipo    | REST | Notas                                           |
+|---------------------|---------|------|-------------------------------------------------|
+| `_fnh_stream_url`   | string  | sí   | Stream Icecast/HLS reproducido por la app       |
+| `_fnh_rss_url`     | string  | sí   | RSS opcional de programas / podcast             |
+| `_fnh_website_url` | string  | sí   | Web pública de la emisora                       |
+| `_fnh_languages`   | array   | sí   | Lista de códigos ISO 639-1                      |
+| `_fnh_territory`   | string  | sí   | Texto libre                                     |
+| `_fnh_ownership`   | string  | sí   | Quién posee/financia                             |
+| `_fnh_active`      | boolean | sí   | Si la radio aparece en el directorio            |
 
 ### `fnh_collective`
 

@@ -8,5 +8,6 @@
     android:initialLayout="@layout/reproductor_musica_widget"
     android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
+    android:previewLayout="@layout/reproductor_musica_widget_preview"
     android:previewImage="@mipmap/ic_launcher"
     android:description="@string/widget_musica_descripcion" />

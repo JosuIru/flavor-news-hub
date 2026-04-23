@@ -64,7 +64,7 @@ Si algo se complica, probablemente pertenece a [Flavor Platform](https://github.
 - **Preferir un feature menos** a **un feature más que no sea claramente necesario**.
 - **Preferir enlazar a una herramienta especializada** a **replicarla peor aquí**.
 
-La v1 hace cinco cosas. Si aparece una sexta, el listón para aceptarla es alto.
+La v1 se mantiene deliberadamente acotada. Si una nueva área no es claramente necesaria, el listón para aceptarla es alto.
 
 ## 9. Plural en lo social-transformador, no alineado con siglas
 

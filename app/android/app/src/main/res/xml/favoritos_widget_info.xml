@@ -8,5 +8,6 @@
     android:initialLayout="@layout/favoritos_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
+    android:previewLayout="@layout/favoritos_widget_preview"
     android:previewImage="@mipmap/ic_launcher"
     android:description="@string/widget_favoritos_descripcion" />

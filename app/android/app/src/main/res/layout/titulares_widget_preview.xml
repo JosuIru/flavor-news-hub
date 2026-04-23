@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Preview del widget de titulares para el selector de widgets. Contenido
+  hardcoded con 3 titulares de ejemplo para que el usuario vea qué va a
+  añadir antes de arrastrarlo al home. No se ve nunca en el widget real
+  (allí los datos vienen del backend vía `HomeWidget.saveWidgetData`).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_fondo"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_titulares_cabecera"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="6dp"
+            android:src="@android:drawable/ic_popup_sync"
+            android:contentDescription="@null" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_titular_1"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_fuente_1"
+        android:maxLines="1"
+        android:textColor="#CCE0E0E0"
+        android:textSize="10sp"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_titular_2"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_fuente_2"
+        android:maxLines="1"
+        android:textColor="#CCE0E0E0"
+        android:textSize="10sp"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_titular_3"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_preview_fuente_3"
+        android:maxLines="1"
+        android:textColor="#CCE0E0E0"
+        android:textSize="10sp" />
+</LinearLayout>
