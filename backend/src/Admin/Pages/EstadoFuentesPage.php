@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Admin\Pages;
 
+use FlavorNewsHub\Admin\Actions\EstadoFuentesActions;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
@@ -110,6 +111,20 @@ final class EstadoFuentesPage
                 ); ?>
             </p>
 
+            <div style="display:flex; gap:12px; margin:16px 0 24px; flex-wrap:wrap">
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0">
+                    <input type="hidden" name="action" value="fnh_aplicar_urls_conocidas" />
+                    <?php wp_nonce_field('fnh_aplicar_urls_conocidas'); ?>
+                    <?php submit_button(__('Aplicar URLs corregidas (CTXT, Cuarto Poder)', 'flavor-news-hub'), 'secondary', 'submit', false); ?>
+                </form>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0"
+                      onsubmit="return confirm('<?php echo esc_js(__('Se desactivarán todas las fuentes con error y sin items históricos. ¿Continuar?', 'flavor-news-hub')); ?>');">
+                    <input type="hidden" name="action" value="fnh_desactivar_caidas" />
+                    <?php wp_nonce_field('fnh_desactivar_caidas'); ?>
+                    <?php submit_button(__('Desactivar todas las caídas', 'flavor-news-hub'), 'delete', 'submit', false); ?>
+                </form>
+            </div>
+
             <?php if ($conErrores !== []) : ?>
                 <h2 style="color:#dc3232; margin-top:2em"><?php esc_html_e('Con errores en la última ingesta', 'flavor-news-hub'); ?></h2>
                 <?php self::renderTabla($conErrores, true); ?>
@@ -182,6 +197,13 @@ final class EstadoFuentesPage
                         <?php if ($editUrl) : ?>
                             <a href="<?php echo esc_url($editUrl); ?>"><?php esc_html_e('Editar', 'flavor-news-hub'); ?></a>
                         <?php endif; ?>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline; margin-left:6px"
+                              onsubmit="return confirm('<?php echo esc_js(__('¿Desactivar esta fuente?', 'flavor-news-hub')); ?>');">
+                            <input type="hidden" name="action" value="fnh_desactivar_fuente" />
+                            <input type="hidden" name="source_id" value="<?php echo esc_attr((string) $idSource); ?>" />
+                            <?php wp_nonce_field('fnh_desactivar_fuente_' . $idSource); ?>
+                            <button type="submit" class="button-link" style="color:#c33; padding:0"><?php esc_html_e('Desactivar', 'flavor-news-hub'); ?></button>
+                        </form>
                     </td>
                 </tr>
                 <?php endforeach; ?>

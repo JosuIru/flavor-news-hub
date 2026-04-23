@@ -13,6 +13,7 @@ use FlavorNewsHub\Admin\Actions\IngestNowHandler;
 use FlavorNewsHub\Admin\Actions\CrearPaginasHandler;
 use FlavorNewsHub\Admin\Actions\VerifyCollectivesBulk;
 use FlavorNewsHub\Admin\Actions\ActivateSourcesBulk;
+use FlavorNewsHub\Admin\Actions\EstadoFuentesActions;
 use FlavorNewsHub\Admin\Hooks\SourceDefaults;
 use FlavorNewsHub\Admin\Pages\SettingsPage;
 
@@ -60,5 +61,12 @@ final class AdminController
         add_filter('bulk_actions-edit-' . Source::SLUG, [ActivateSourcesBulk::class, 'registrarAccion']);
         add_filter('handle_bulk_actions-edit-' . Source::SLUG, [ActivateSourcesBulk::class, 'manejar'], 10, 3);
         add_action('admin_notices', [ActivateSourcesBulk::class, 'mostrarAviso']);
+
+        // Acciones desde la pantalla "Estado de fuentes": desactivar una,
+        // desactivar todas las caídas, aplicar URLs corregidas conocidas.
+        add_action(EstadoFuentesActions::HOOK_DESACTIVAR_UNA, [EstadoFuentesActions::class, 'manejarDesactivarUna']);
+        add_action(EstadoFuentesActions::HOOK_DESACTIVAR_CAIDAS, [EstadoFuentesActions::class, 'manejarDesactivarCaidas']);
+        add_action(EstadoFuentesActions::HOOK_APLICAR_URLS, [EstadoFuentesActions::class, 'manejarAplicarUrls']);
+        add_action('admin_notices', [EstadoFuentesActions::class, 'mostrarAviso']);
     }
 }
