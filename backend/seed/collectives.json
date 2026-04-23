@@ -17,5 +17,508 @@
     "slug": "vivienda"
    }
   ]
+ },
+ {
+  "id": 6201,
+  "name": "REAS - Red de Redes de Economía Alternativa y Solidaria",
+  "slug": "reas-red-de-redes",
+  "description": "<p>Red estatal de economía alternativa y solidaria, con redes territoriales y sectoriales en todo el Estado.</p>\n",
+  "url": "http://localhost:10028/c/reas-red-de-redes/",
+  "website_url": "https://www.reasred.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6202,
+  "name": "Ecologistas en Acción",
+  "slug": "ecologistas-en-accion",
+  "description": "<p>Confederación de grupos ecologistas distribuidos por pueblos y ciudades, referente del ecologismo social en el Estado español.</p>\n",
+  "url": "http://localhost:10028/c/ecologistas-en-accion/",
+  "website_url": "https://www.ecologistasenaccion.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6203,
+  "name": "Marea Granate",
+  "slug": "marea-granate",
+  "description": "<p>Red trasnacional de emigrantes del Estado español organizada en nodos locales y campañas de voto exterior, derechos y retorno.</p>\n",
+  "url": "http://localhost:10028/c/marea-granate/",
+  "website_url": "https://mareagranate.org/",
+  "flavor_url": "",
+  "territory": "Internacional",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6204,
+  "name": "PAH Barcelona",
+  "slug": "pah-barcelona",
+  "description": "<p>Asamblea de vivienda y apoyo mutuo contra desahucios, hipotecas abusivas y exclusión residencial en Barcelona.</p>\n",
+  "url": "http://localhost:10028/c/pah-barcelona/",
+  "website_url": "https://pahbarcelona.org/",
+  "flavor_url": "",
+  "territory": "Catalunya",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6205,
+  "name": "Sindicat de Llogateres",
+  "slug": "sindicat-de-llogateres",
+  "description": "<p>Organización de inquilinas e inquilinos en Cataluña para defender el derecho a una vivienda digna, estable y segura.</p>\n",
+  "url": "http://localhost:10028/c/sindicat-de-llogateres/",
+  "website_url": "https://sindicatdellogateres.org/es/",
+  "flavor_url": "",
+  "territory": "Catalunya",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6206,
+  "name": "No Somos Delito",
+  "slug": "no-somos-delito",
+  "description": "<p>Plataforma ciudadana contra la Ley Mordaza y las reformas penales que recortan derechos y libertades civiles.</p>\n",
+  "url": "http://localhost:10028/c/no-somos-delito/",
+  "website_url": "https://nosomosdelito.net/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6207,
+  "name": "Ongi Etorri Errefuxiatuak",
+  "slug": "ongi-etorri-errefuxiatuak",
+  "description": "<p>Plataforma social en defensa del derecho a migrar y de los derechos de las personas refugiadas y desplazadas forzadamente.</p>\n",
+  "url": "http://localhost:10028/c/ongi-etorri-errefuxiatuak/",
+  "website_url": "https://ongietorrierrefuxiatuak.info/es/",
+  "flavor_url": "",
+  "territory": "Euskal Herria",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6208,
+  "name": "Askabide",
+  "slug": "askabide",
+  "description": "<p>Asociación independiente que impulsa la inclusión social de personas que ejercen la prostitución en Euskadi y de mujeres en exclusión social.</p>\n",
+  "url": "http://localhost:10028/c/askabide/",
+  "website_url": "https://www.askabide.org/es/",
+  "flavor_url": "",
+  "territory": "Euskadi",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6209,
+  "name": "Som Energia",
+  "slug": "som-energia",
+  "description": "<p>Cooperativa sin ánimo de lucro que democratiza las energías renovables y promueve una transición energética justa.</p>\n",
+  "url": "http://localhost:10028/c/som-energia/",
+  "website_url": "https://www.somenergia.coop/es/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6210,
+  "name": "Sindicato Kellys Andalucía",
+  "slug": "sindicato-kellys-andalucia",
+  "description": "<p>Sindicato de camareras de piso que organiza, forma y acompaña a trabajadoras del sector hotelero en Andalucía.</p>\n",
+  "url": "http://localhost:10028/c/sindicato-kellys-andalucia/",
+  "website_url": "https://www.kellysandalucia.com/",
+  "flavor_url": "",
+  "territory": "Andalucía",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6211,
+  "name": "Plataforma de Afectadas por la Hipoteca",
+  "slug": "plataforma-de-afectadas-por-la-hipoteca",
+  "description": "<p>Movimiento ciudadano asambleario y de apoyo mutuo contra los desahucios y por el derecho a la vivienda.</p>\n",
+  "url": "http://localhost:10028/c/plataforma-de-afectadas-por-la-hipoteca/",
+  "website_url": "https://afectadosporlahipoteca.com/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6212,
+  "name": "Territorio Doméstico",
+  "slug": "territorio-domestico",
+  "description": "<p>Colectivo feminista de mujeres trabajadoras del hogar y de cuidados en la Comunidad de Madrid, con organización autónoma y transfronteriza.</p>\n",
+  "url": "http://localhost:10028/c/territorio-domestico/",
+  "website_url": "",
+  "flavor_url": "",
+  "territory": "Madrid",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6213,
+  "name": "RESCOP",
+  "slug": "rescop",
+  "description": "<p>Red Solidaria contra la Ocupación de Palestina, articulada por organizaciones y activistas en defensa de los derechos del pueblo palestino.</p>\n",
+  "url": "http://localhost:10028/c/rescop/",
+  "website_url": "http://www.nodo50.org/causapalestina/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6214,
+  "name": "SODePAZ",
+  "slug": "sodepaz",
+  "description": "<p>Organización laica e independiente dedicada a cooperación, comercio justo, sensibilización y trabajo en red con movimientos sociales.</p>\n",
+  "url": "http://localhost:10028/c/sodepaz/",
+  "website_url": "https://sodepaz.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6215,
+  "name": "LoQueSomos",
+  "slug": "loquesomos",
+  "description": "<p>Espacio de comunicación y memoria crítica de izquierda radical, republicana y de movimientos sociales.</p>\n",
+  "url": "http://localhost:10028/c/loquesomos/",
+  "website_url": "https://loquesomos.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6216,
+  "name": "CEAR",
+  "slug": "cear",
+  "description": "<p>Comisión Española de Ayuda al Refugiado, ONG independiente que defiende el derecho de asilo y acompaña a personas refugiadas, apátridas y migrantes con necesidad de protección internacional.</p>\n",
+  "url": "http://localhost:10028/c/cear/",
+  "website_url": "https://www.cear.es/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6217,
+  "name": "Red Acoge",
+  "slug": "red-acoge",
+  "description": "<p>Federación de organizaciones que promueve los derechos e inclusión plena de las personas migrantes y refugiadas en España.</p>\n",
+  "url": "http://localhost:10028/c/red-acoge/",
+  "website_url": "https://redacoge.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6218,
+  "name": "Migreurop",
+  "slug": "migreurop",
+  "description": "<p>Red euroafricana de asociaciones, militantes e investigadoras que documenta y denuncia las políticas migratorias europeas y la externalización de fronteras.</p>\n",
+  "url": "http://localhost:10028/c/migreurop/",
+  "website_url": "https://migreurop.org/",
+  "flavor_url": "",
+  "territory": "Internacional",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6219,
+  "name": "Greenpeace España",
+  "slug": "greenpeace-espana",
+  "description": "<p>Organización ecologista y pacifista independiente que actúa contra el cambio climático, la contaminación y la pérdida de biodiversidad.</p>\n",
+  "url": "http://localhost:10028/c/greenpeace-espana/",
+  "website_url": "https://es.greenpeace.org/es/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6220,
+  "name": "Amigas de la Tierra",
+  "slug": "amigas-de-la-tierra",
+  "description": "<p>Organización ecologista de base que impulsa justicia climática, soberanía alimentaria y alternativas comunitarias desde el activismo local.</p>\n",
+  "url": "http://localhost:10028/c/amigas-de-la-tierra/",
+  "website_url": "https://www.tierra.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 71,
+    "name": "Ecologismo",
+    "slug": "ecologismo"
+   }
+  ]
+ },
+ {
+  "id": 6221,
+  "name": "SOS Racismo",
+  "slug": "sos-racismo",
+  "description": "<p>Federación de asociaciones antirracistas que denuncia discriminaciones, acompaña a víctimas y hace incidencia política contra el racismo.</p>\n",
+  "url": "http://localhost:10028/c/sos-racismo/",
+  "website_url": "https://sosracismo.eu/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 68,
+    "name": "Antirracismo",
+    "slug": "antirracismo"
+   },
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   }
+  ]
+ },
+ {
+  "id": 6222,
+  "name": "Juventud Por El Clima",
+  "slug": "juventud-por-el-clima",
+  "description": "<p>Movimiento juvenil ecologista y antidiscriminatorio que hace presión y movilización por la justicia climática.</p>\n",
+  "url": "http://localhost:10028/c/juventud-por-el-clima/",
+  "website_url": "https://juventudxclima.es/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 71,
+    "name": "Ecologismo",
+    "slug": "ecologismo"
+   },
+   {
+    "id": 77,
+    "name": "Juventud",
+    "slug": "juventud"
+   }
+  ]
+ },
+ {
+  "id": 6223,
+  "name": "Alianza contra la Pobreza Energética",
+  "slug": "alianza-contra-la-pobreza-energetica",
+  "description": "<p>Movimiento social que defiende el acceso universal al agua y la energía y acompaña a hogares afectados por la pobreza energética.</p>\n",
+  "url": "http://localhost:10028/c/alianza-contra-la-pobreza-energetica/",
+  "website_url": "https://pobresaenergetica.es/es/",
+  "flavor_url": "",
+  "territory": "Cataluña",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 59,
+    "name": "Vivienda",
+    "slug": "vivienda"
+   },
+   {
+    "id": 71,
+    "name": "Ecologismo",
+    "slug": "ecologismo"
+   },
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   }
+  ]
+ },
+ {
+  "id": 6224,
+  "name": "Stop Mare Mortum",
+  "slug": "stop-mare-mortum",
+  "description": "<p>Plataforma ciudadana que denuncia las muertes en el Mediterráneo y reclama vías legales y seguras para la movilidad humana.</p>\n",
+  "url": "http://localhost:10028/c/stop-mare-mortum/",
+  "website_url": "https://stopmaremortum.org/",
+  "flavor_url": "",
+  "territory": "Cataluña",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   }
+  ]
+ },
+ {
+  "id": 6225,
+  "name": "Colectiva de Mujeres Refugiadas, Exiliadas y Migradas",
+  "slug": "colectiva-de-mujeres-refugiadas-exiliadas-y-migradas",
+  "description": "<p>Colectiva de mujeres refugiadas, exiliadas y migradas que articula memoria, paz, derechos humanos y trabajo comunitario desde una mirada feminista y decolonial.</p>\n",
+  "url": "http://localhost:10028/c/colectiva-de-mujeres-refugiadas-exiliadas-y-migradas/",
+  "website_url": "https://colectivaexiliorefugio.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6226,
+  "name": "Senda de Cuidados",
+  "slug": "senda-de-cuidados",
+  "description": "<p>Asociación sin ánimo de lucro centrada en cuidados dignos, apoyo a trabajadoras del hogar y organización colectiva alrededor de la interdependencia.</p>\n",
+  "url": "http://localhost:10028/c/senda-de-cuidados/",
+  "website_url": "https://www.sendadecuidados.org/",
+  "flavor_url": "",
+  "territory": "Madrid",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6227,
+  "name": "Mujer y Sociedad",
+  "slug": "mujer-y-sociedad",
+  "description": "<p>Asociación feminista creada para defender los derechos de las mujeres, con especial atención a mujeres migrantes y refugiadas en situación de vulnerabilidad.</p>\n",
+  "url": "http://localhost:10028/c/mujer-y-sociedad/",
+  "website_url": "https://mujerysociedad.org/",
+  "flavor_url": "",
+  "territory": "Madrid",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6228,
+  "name": "Ca la Dona",
+  "slug": "ca-la-dona",
+  "description": "<p>Espacio feminista de encuentro y organización entre mujeres y grupos de mujeres, con comisiones y trabajo de base en derechos sociales, salud, artes y pensamiento crítico.</p>\n",
+  "url": "http://localhost:10028/c/ca-la-dona/",
+  "website_url": "https://caladona.org/",
+  "flavor_url": "",
+  "territory": "Cataluña",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6229,
+  "name": "La Casa Invisible",
+  "slug": "la-casa-invisible",
+  "description": "<p>Centro social y cultural de gestión ciudadana en Málaga que impulsa redes de apoyo mutuo, cultura libre, participación y acción colectiva.</p>\n",
+  "url": "http://localhost:10028/c/la-casa-invisible/",
+  "website_url": "https://lainvisible.net/es/",
+  "flavor_url": "",
+  "territory": "Málaga",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6230,
+  "name": "Traficantes de Sueños",
+  "slug": "traficantes-de-suenos",
+  "description": "<p>Editorial, librería y espacio de formación vinculado al pensamiento crítico, los movimientos sociales y la cultura política de base.</p>\n",
+  "url": "http://localhost:10028/c/traficantes-de-suenos/",
+  "website_url": "https://traficantes.net/",
+  "flavor_url": "",
+  "territory": "Madrid",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6231,
+  "name": "Fundación de los Comunes",
+  "slug": "fundacion-de-los-comunes",
+  "description": "<p>Red estatal de colectivos y espacios culturales y políticos que impulsa autoorganización, investigación crítica y recursos comunes.</p>\n",
+  "url": "http://localhost:10028/c/fundacion-de-los-comunes/",
+  "website_url": "https://fundaciondeloscomunes.net/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6232,
+  "name": "Feministas de Pueblo",
+  "slug": "feministas-de-pueblo",
+  "description": "<p>Asociación ecofeminista de Castilla-La Mancha que organiza red, encuentros y actividades desde los pueblos con voz propia y trabajo colectivo.</p>\n",
+  "url": "http://localhost:10028/c/feministas-de-pueblo/",
+  "website_url": "https://feministasdepueblo.org/",
+  "flavor_url": "",
+  "territory": "Castilla-La Mancha",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6233,
+  "name": "Coordinadora Feminista",
+  "slug": "coordinadora-feminista",
+  "description": "<p>Federación estatal de organizaciones feministas que coordina redes, debates, documentos y movilizaciones del movimiento feminista.</p>\n",
+  "url": "http://localhost:10028/c/coordinadora-feminista/",
+  "website_url": "https://feministas.org/",
+  "flavor_url": "",
+  "territory": "Estado español",
+  "has_contact": true,
+  "verified": true,
+  "topics": []
+ },
+ {
+  "id": 6234,
+  "name": "Sindicat de Barri de Sants",
+  "slug": "sindicat-de-barri-de-sants",
+  "description": "<p>Sindicato barrial de vivienda y apoyo mutuo en Sants que organiza inquilinas, vecinos y grupos de barrio frente al rentismo.</p>\n",
+  "url": "http://localhost:10028/c/sindicat-de-barri-de-sants/",
+  "website_url": "https://sindicatdebarri.org/",
+  "flavor_url": "",
+  "territory": "Barcelona",
+  "has_contact": true,
+  "verified": true,
+  "topics": [
+   {
+    "id": 59,
+    "name": "Vivienda",
+    "slug": "vivienda"
+   }
+  ]
  }
 ]

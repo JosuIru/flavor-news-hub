@@ -24,6 +24,10 @@ final class OptionsRepository
     /** Retención mínima de logs: ver al menos los de las últimas 24h. */
     public const RETENCION_MINIMA_DIAS = 1;
 
+    /** Retención mínima de items: no tiene sentido borrar noticias de menos
+     *  de una semana — muchas apps móviles revisitan items recientes. */
+    public const RETENCION_MINIMA_ITEMS_DIAS = 7;
+
     /** URL de donación por defecto del proyecto. */
     public const DONATION_URL_DEFAULT = 'https://www.paypal.com/paypalme/codigodespierto';
 
@@ -33,6 +37,10 @@ final class OptionsRepository
         return [
             'cron_interval_minutes'     => 30,
             'ingest_log_retention_days' => 30,
+            // 90 días cubre cualquier revisita útil de titulares; pasado
+            // ese tiempo el valor editorial es prácticamente cero y la
+            // tabla wp_posts se ahorra crecimiento ilimitado.
+            'item_retention_days'       => 90,
             'delete_on_uninstall'       => false,
             'donation_url'              => self::DONATION_URL_DEFAULT,
         ];
@@ -69,6 +77,10 @@ final class OptionsRepository
             self::RETENCION_MINIMA_DIAS,
             (int) $fusion['ingest_log_retention_days']
         );
+        $retencionItemsBruta = (int) ($fusion['item_retention_days'] ?? 90);
+        $fusion['item_retention_days'] = $retencionItemsBruta === 0
+            ? 0
+            : max(self::RETENCION_MINIMA_ITEMS_DIAS, $retencionItemsBruta);
         $fusion['delete_on_uninstall'] = (bool) $fusion['delete_on_uninstall'];
         $urlSaneada = esc_url_raw((string) ($fusion['donation_url'] ?? ''));
         $fusion['donation_url'] = $urlSaneada !== '' ? $urlSaneada : self::DONATION_URL_DEFAULT;

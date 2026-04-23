@@ -160,6 +160,24 @@
   "topics": []
  },
  {
+  "id": 7103,
+  "name": "CTXT",
+  "slug": "ctxt",
+  "feed_url": "https://ctxt.es/es/?tpl=87",
+  "feed_type": "rss",
+  "website_url": "https://ctxt.es/",
+  "territory": "Estado español",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "feminismos",
+   "ecologismo",
+   "internacional",
+   "cultura"
+  ]
+ },
+ {
   "id": 6132,
   "name": "Ecologistas en Acción",
   "slug": "ecologistas-en-accion-2",

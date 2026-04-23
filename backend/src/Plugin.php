@@ -17,6 +17,7 @@ use FlavorNewsHub\REST\RestController;
 use FlavorNewsHub\Admin\AdminController;
 use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\Database\LogsCleanup;
+use FlavorNewsHub\Database\ItemsCleanup;
 use FlavorNewsHub\Integration\FlavorPlatformAddon;
 use FlavorNewsHub\Shortcodes\Shortcodes;
 use FlavorNewsHub\Templates\TemplateRouter;
@@ -83,8 +84,11 @@ final class Plugin
         // REST pública `flavor-news/v1`.
         add_action('rest_api_init', [RestController::class, 'registrar']);
 
-        // Job diario de limpieza de logs antiguos.
+        // Job diario: limpieza de logs antiguos + purga de noticias que
+        // excedan la retención (default 90 días). Ambos comparten el
+        // mismo hook diario para no duplicar eventos de wp-cron.
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [LogsCleanup::class, 'ejecutar']);
+        add_action(Scheduler::HOOK_CLEANUP_LOGS, [ItemsCleanup::class, 'ejecutar']);
 
         // Admin (menú, metaboxes, acciones, settings). Los hooks admin_*
         // sólo disparan en backend; registrar siempre es inofensivo.

@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\REST;
 
+use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\Scheduler;
+use FlavorNewsHub\Options\OptionsRepository;
 
 /**
  * Endpoint de diagnóstico público para saber el estado real de la
@@ -92,11 +94,22 @@ final class DiagnosticsEndpoint
         // Próxima ejecución programada de wp-cron para la ingesta.
         $proximoCron = wp_next_scheduled(Scheduler::HOOK_CRON);
 
+        // Salud de la tabla de items: total acumulado + retención actual.
+        // Sirve para que admin vea si la purga está conteniendo el
+        // crecimiento o si hace falta bajar el retention.
+        $itemsTotales = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s AND post_status = 'publish'",
+            Item::SLUG
+        ));
+        $retencionItems = (int) (OptionsRepository::todas()['item_retention_days'] ?? 90);
+
         return new \WP_REST_Response([
             'sources_activas'         => $sourcesActivas,
             'ultima_ejecucion_utc'    => self::normalizarIso($ultimaEjecucion),
             'ultimo_finalizado_utc'   => self::normalizarIso($ultimoFinalizado),
             'items_nuevos_ultimas_24h'=> $itemsUltimas24h,
+            'items_totales'           => $itemsTotales,
+            'item_retention_days'     => $retencionItems,
             'proximo_cron_utc'        => is_int($proximoCron) && $proximoCron > 0
                 ? gmdate('c', $proximoCron)
                 : null,

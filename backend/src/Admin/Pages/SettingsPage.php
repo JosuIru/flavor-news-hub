@@ -56,6 +56,14 @@ final class SettingsPage
         );
 
         add_settings_field(
+            'item_retention_days',
+            __('Retención de noticias (días)', 'flavor-news-hub'),
+            [self::class, 'campoRetencionItems'],
+            'fnh-settings',
+            self::SECCION_GENERAL
+        );
+
+        add_settings_field(
             'donation_url',
             __('URL de donaciones', 'flavor-news-hub'),
             [self::class, 'campoUrlDonaciones'],
@@ -172,6 +180,21 @@ final class SettingsPage
         );
     }
 
+    public static function campoRetencionItems(): void
+    {
+        $valor = (int) (OptionsRepository::todas()['item_retention_days'] ?? 90);
+        printf(
+            '<input type="number" name="%1$s[item_retention_days]" value="%2$d" min="0" step="1" class="small-text" /> <p class="description">%3$s</p>',
+            esc_attr(OptionsRepository::NOMBRE_OPCION),
+            esc_attr((string) $valor),
+            esc_html(sprintf(
+                /* translators: %1$d es la retención mínima en días */
+                __('Purga diaria de noticias más antiguas que N días. Mínimo %1$d. Poner 0 desactiva la purga (crecimiento ilimitado, no recomendado).', 'flavor-news-hub'),
+                OptionsRepository::RETENCION_MINIMA_ITEMS_DIAS
+            ))
+        );
+    }
+
     public static function campoUrlDonaciones(): void
     {
         $valor = (string) OptionsRepository::todas()['donation_url'];
@@ -213,6 +236,10 @@ final class SettingsPage
             : (string) $actuales['donation_url'];
         $urlDonacionesSaneada = esc_url_raw($urlDonacionesBruta);
 
+        $retencionItemsBruta = isset($valorBruto['item_retention_days'])
+            ? (int) $valorBruto['item_retention_days']
+            : (int) ($actuales['item_retention_days'] ?? 90);
+
         $nuevos = [
             'cron_interval_minutes'     => isset($valorBruto['cron_interval_minutes'])
                 ? (int) $valorBruto['cron_interval_minutes']
@@ -220,6 +247,9 @@ final class SettingsPage
             'ingest_log_retention_days' => isset($valorBruto['ingest_log_retention_days'])
                 ? (int) $valorBruto['ingest_log_retention_days']
                 : $actuales['ingest_log_retention_days'],
+            'item_retention_days'       => $retencionItemsBruta === 0
+                ? 0
+                : max(OptionsRepository::RETENCION_MINIMA_ITEMS_DIAS, $retencionItemsBruta),
             'delete_on_uninstall'       => !empty($valorBruto['delete_on_uninstall']),
             'donation_url'              => $urlDonacionesSaneada !== ''
                 ? $urlDonacionesSaneada
