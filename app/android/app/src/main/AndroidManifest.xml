@@ -150,6 +150,22 @@
                 android:resource="@xml/buscador_widget_info" />
         </receiver>
 
+        <!-- Widget sintonizador: radio antigua de madera con ◄ ■ ▶ ►
+             para cambiar entre emisoras sin abrir la app. -->
+        <receiver
+            android:name=".SintonizadorWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_sintonizador_cabecera">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="org.flavornewshub.flavor_news_hub.SINTONIZADOR_ANTERIOR" />
+                <action android:name="org.flavornewshub.flavor_news_hub.SINTONIZADOR_SIGUIENTE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/sintonizador_widget_info" />
+        </receiver>
+
         <!-- Deep link handler desde el widget (pulsar titular → detalle).
              El Receiver delega en un Service; ambos tienen que estar
              declarados o Android revienta con:

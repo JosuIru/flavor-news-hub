@@ -26,6 +26,14 @@
     <string name="widget_buscador_descripcion">Buscar en Flavor News</string>
     <string name="widget_buscador_hint">Buscar medios y publicaciones</string>
 
+    <string name="widget_sintonizador_cabecera">FLAVOR RADIO</string>
+    <string name="widget_sintonizador_descripcion">Sintonizador estilo radio antigua para cambiar entre emisoras.</string>
+    <string name="widget_sintonizador_anterior">Emisora anterior</string>
+    <string name="widget_sintonizador_siguiente">Emisora siguiente</string>
+    <string name="widget_sintonizador_play">Encender</string>
+    <string name="widget_sintonizador_stop">Apagar</string>
+    <string name="widget_sintonizador_sin_radios">— sin emisoras —</string>
+
     <!-- Textos de demostración usados únicamente en los previewLayouts
          del widget picker. No se ven nunca en el widget real en uso. -->
     <string name="widget_preview_titular_1">El pueblo saharaui cumple 50 años de lucha por la autodeterminación</string>

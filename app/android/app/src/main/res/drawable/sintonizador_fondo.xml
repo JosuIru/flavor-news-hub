@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo del widget: radio antigua de madera. Gradient diagonal entre
+     dos tonos marrones + esquinas muy redondeadas. Borde oscuro para
+     aire de "mueble antiguo". -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="18dp" />
+    <gradient
+        android:type="linear"
+        android:angle="135"
+        android:startColor="#5a3a1a"
+        android:centerColor="#7a4f25"
+        android:endColor="#3e2711" />
+    <stroke android:width="2dp" android:color="#2a1a08" />
+</shape>

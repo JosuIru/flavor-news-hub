@@ -15,6 +15,7 @@ import 'features/share_intake/share_intake_listener.dart';
 import 'features/widgets/widget_favoritos_writer.dart';
 import 'features/widgets/widget_musica_writer.dart';
 import 'features/widgets/widget_radio_writer.dart';
+import 'features/widgets/widget_sintonizador_writer.dart';
 
 /// Widget raíz de la app. Escucha preferencias del usuario (tema e idioma
 /// de UI) y se regenera cuando cambian.
@@ -48,6 +49,9 @@ class FlavorNewsHubApp extends ConsumerWidget {
       final radios = nueva.valueOrNull ?? const [];
       final ids = ref.read(radiosFavoritasProvider);
       WidgetFavoritosWriter.escribir(ids, radios);
+      // Widget sintonizador (radio madera) necesita la lista entera
+      // para navegar con ◄ / ► sin volver a llamar a Flutter.
+      WidgetSintonizadorWriter.escribir(radios);
     });
 
     return MaterialApp.router(

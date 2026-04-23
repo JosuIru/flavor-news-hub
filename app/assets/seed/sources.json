@@ -1821,11 +1821,11 @@
   "has_live_stream": false,
   "live_stream_permit": "none"
  },
- {
-  "id": 7303,
-  "name": "The News Minute",
-  "slug": "the-news-minute",
-  "feed_url": "https://www.thenewsminute.com/topic/rss",
+  {
+   "id": 7303,
+   "name": "The News Minute",
+   "slug": "the-news-minute",
+   "feed_url": "https://www.thenewsminute.com/topic/rss",
   "feed_type": "rss",
   "website_url": "https://www.thenewsminute.com/videos",
   "territory": "India",
@@ -1844,12 +1844,552 @@
   ],
   "content_license": "all-rights-reserved",
   "legal_note": "",
-  "has_live_stream": false,
-  "live_stream_permit": "none"
- },
- {
-  "id": 7300,
-  "name": "Desinformémonos",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7304,
+   "name": "Radio Sudaca",
+   "slug": "radio-sudaca",
+   "feed_url": "https://www.radiosudaca.org/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://www.radiosudaca.org/",
+   "territory": "Trelew",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "feminismos",
+    "laboral",
+    "ecologismo"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7305,
+   "name": "Radio Vos",
+   "slug": "radio-vos",
+   "feed_url": "https://radiovos.org/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://radiovos.org/",
+   "territory": "Matagalpa",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "feminismos",
+    "cuidados",
+    "derechos-civiles"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7306,
+   "name": "FM Chalet",
+   "slug": "fm-chalet",
+   "feed_url": "https://fmchalet.org/feed/",
+   "feed_type": "rss",
+   "website_url": "https://fmchalet.org/",
+   "territory": "Santa Fe",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "cultura",
+    "memoria-historica"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7307,
+   "name": "Radio Kurruf",
+   "slug": "radio-kurruf",
+   "feed_url": "https://radiokurruf.org/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://radiokurruf.org/",
+   "territory": "Wallmapu",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "migraciones",
+    "antirracismo",
+    "internacional",
+    "memoria-historica"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7308,
+   "name": "RadioActiva Comunitaria",
+   "slug": "radioactiva-comunitaria",
+   "feed_url": "https://radioactiva.ar/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://radioactiva.ar/",
+   "territory": "Buenos Aires",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "cultura",
+    "derechos-civiles",
+    "juventud",
+    "ecologismo"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7309,
+   "name": "Radio Cuyum",
+   "slug": "radio-cuyum",
+   "feed_url": "https://comecuco.org/radio-cuyum/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://comecuco.org/radio-cuyum/",
+   "territory": "Mendoza",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "feminismos",
+    "cuidados",
+    "derechos-civiles",
+    "ecologismo"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7310,
+   "name": "Radio La Leñera",
+   "slug": "radio-la-lenera",
+   "feed_url": "https://comecuco.org/la-lenera/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://comecuco.org/la-lenera/",
+   "territory": "Mendoza",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "rural",
+    "ecologismo",
+    "alimentacion",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7311,
+   "name": "La Pujante",
+   "slug": "la-pujante",
+   "feed_url": "https://comecuco.org/la-pujante/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://comecuco.org/la-pujante/",
+   "territory": "Mendoza",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "educacion",
+    "cultura",
+    "feminismos",
+    "cuidados"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7312,
+   "name": "Radio Indígena",
+   "slug": "radio-indigena",
+   "feed_url": "https://mixteco.org/radio/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://mixteco.org/radio-indigena/",
+   "territory": "Oxnard",
+   "languages": [
+    "es",
+    "en"
+   ],
+   "topics": [
+    "memoria-historica",
+    "rural",
+    "educacion",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7313,
+   "name": "La Voz Indígena",
+   "slug": "la-voz-indigena",
+   "feed_url": "https://radiolavozindigena.org/feed/",
+   "feed_type": "podcast",
+   "website_url": "https://radiolavozindigena.org/",
+   "territory": "México",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "memoria-historica",
+    "rural",
+    "educacion",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7314,
+   "name": "La Voz de la Mixteca",
+   "slug": "la-voz-de-la-mixteca",
+   "feed_url": "http://ecos.inpi.gob.mx/xetla.php",
+   "feed_type": "rss",
+   "website_url": "http://www.cdi.gob.mx/ecosgobmx/xetla.php",
+   "territory": "Oaxaca",
+   "languages": [
+    "es",
+    "mixteco"
+   ],
+   "topics": [
+    "memoria-historica",
+    "rural",
+    "educacion",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7315,
+   "name": "La Voz de la Montaña",
+   "slug": "la-voz-de-la-montana",
+   "feed_url": "http://ecos.inpi.gob.mx/xezv.php",
+   "feed_type": "rss",
+   "website_url": "http://ecos.inpi.gob.mx/xezv/",
+   "territory": "Guerrero",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "memoria-historica",
+    "rural",
+    "educacion",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7316,
+   "name": "Radio Deseo",
+   "slug": "radio-deseo",
+   "feed_url": "https://radiodeseo.com/feed/",
+   "feed_type": "rss",
+   "website_url": "https://radiodeseo.com/",
+   "territory": "La Paz",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "feminismos",
+    "cuidados",
+    "derechos-civiles",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7317,
+   "name": "FM La Tribu",
+   "slug": "fm-la-tribu",
+   "feed_url": "https://www.fmlatribu.com/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.fmlatribu.com/",
+   "territory": "Buenos Aires",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "feminismos",
+    "cultura",
+    "educacion",
+    "derechos-civiles"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7318,
+   "name": "Radio Victoria",
+   "slug": "radio-victoria",
+   "feed_url": "https://radiovictoriagt.com/feed/",
+   "feed_type": "rss",
+   "website_url": "https://radiovictoriagt.com/",
+   "territory": "Guatemala",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "ecologismo",
+    "migraciones",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7319,
+   "name": "Radio Caminante",
+   "slug": "radio-caminante",
+   "feed_url": "https://www.radioscomunitarias.info/radio-caminante/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-caminante/",
+   "territory": "Guatemala",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "migraciones",
+    "derechos-civiles",
+    "rural",
+    "educacion"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7320,
+   "name": "Radio Kamolbé",
+   "slug": "radio-kamolbe",
+   "feed_url": "https://www.radioscomunitarias.info/radio-kamolbe/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-kamolbe/",
+   "territory": "Guatemala",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "rural",
+    "educacion",
+    "cultura",
+    "memoria-historica"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7321,
+   "name": "Radio Guarajambala",
+   "slug": "radio-guarajambala",
+   "feed_url": "https://www.radioscomunitarias.info/radio-guarajambala/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-guarajambala/",
+   "territory": "La Esperanza, Intibucá",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "ecologismo",
+    "rural",
+    "internacional"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7322,
+   "name": "Radio Red Meso",
+   "slug": "radio-red-meso",
+   "feed_url": "https://www.radioscomunitarias.info/radio-red-meso/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-red-meso/",
+   "territory": "Mesoamerica",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "feminismos",
+    "educacion",
+    "internacional"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7323,
+   "name": "Radio Popular del Aguan",
+   "slug": "radio-popular-del-aguan",
+   "feed_url": "https://www.radioscomunitarias.info/radio-popular-del-aguan/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-popular-del-aguan/",
+   "territory": "Tocoa, Colón",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "ecologismo",
+    "laboral",
+    "rural"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7300,
+   "name": "Desinformémonos",
   "slug": "desinformemonos",
   "feed_url": "https://desinformemonos.org/feed/",
   "feed_type": "rss",
@@ -1872,5 +2412,310 @@
   "legal_note": "",
   "has_live_stream": false,
   "live_stream_permit": "none"
- }
+  },
+  {
+   "id": 7324,
+   "name": "La Voz del Gualcarque",
+   "slug": "la-voz-del-gualcarque",
+   "feed_url": "https://www.radioscomunitarias.info/la-voz-del-gualcarque/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/la-voz-del-gualcarque/",
+   "territory": "Intibucá",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "ecologismo",
+    "rural",
+    "memoria-historica"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7325,
+   "name": "Faluma Bimetu",
+   "slug": "faluma-bimetu",
+   "feed_url": "https://www.radioscomunitarias.info/radio-faluma-bimetu/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-faluma-bimetu/",
+   "territory": "Tela, Atlántida",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "memoria-historica",
+    "cultura",
+    "internacional"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7326,
+   "name": "Radio La Voz Lenca",
+   "slug": "radio-la-voz-lenca",
+   "feed_url": "https://www.radioscomunitarias.info/radio-la-voz-lenca-cosechando-la-voz-de-los-pueblos/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-la-voz-lenca-cosechando-la-voz-de-los-pueblos/",
+   "territory": "San Francisco Lempira",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "rural",
+    "educacion",
+    "cultura"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7327,
+   "name": "La Voz de Zacate Grande",
+   "slug": "la-voz-de-zacate-grande",
+   "feed_url": "https://www.radioscomunitarias.info/la-voz-de-zacate-grande/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/la-voz-de-zacate-grande/",
+   "territory": "Península de Zacate Grande",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "rural",
+    "ecologismo",
+    "feminismos"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7329,
+   "name": "Radio comunitaria Sugua 100.9fm",
+   "slug": "radio-comunitaria-sugua-100-9fm",
+   "feed_url": "https://www.radioscomunitarias.info/radio-comunitaria-sugua-100-9fm/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-comunitaria-sugua-100-9fm/",
+   "territory": "Sambo Creek",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "memoria-historica",
+    "cultura",
+    "rural"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7330,
+   "name": "Radio Dugurubuti Bei Bei",
+   "slug": "radio-dugurubuti-bei-bei",
+   "feed_url": "https://www.radioscomunitarias.info/radio-dugurubuti-bei-bei/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/radio-dugurubuti-bei-bei/",
+   "territory": "San Juan, Atlántida",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "cultura",
+    "memoria-historica",
+    "juventud"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7328,
+   "name": "Radio Puca Opalaca",
+   "slug": "radio-puca-opalaca",
+   "feed_url": "https://www.radioscomunitarias.info/category/radios/puca-opalaca/feed/",
+   "feed_type": "rss",
+   "website_url": "https://www.radioscomunitarias.info/category/radios/puca-opalaca/",
+   "territory": "San Francisco de Opalaca",
+   "languages": [
+    "es"
+   ],
+   "topics": [
+    "derechos-civiles",
+    "rural",
+    "ecologismo",
+    "memoria-historica"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7331,
+   "name": "XEANT. La Voz de las Huastecas",
+   "slug": "xeant-la-voz-de-las-huastecas",
+   "feed_url": "https://ecos.inpi.gob.mx/xeant/feed/",
+   "feed_type": "rss",
+   "website_url": "https://ecos.inpi.gob.mx/xeant/",
+   "territory": "Tancanhuitz, S.L.P.",
+   "languages": [
+    "tenek",
+    "nahuatl",
+    "pame"
+   ],
+   "topics": [
+    "cultura",
+    "educacion",
+    "memoria-historica",
+    "rural"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7332,
+   "name": "XEPET / XHPET. La Voz de los Mayas",
+   "slug": "xepet-xhpet-la-voz-de-los-mayas",
+   "feed_url": "https://ecos.inpi.gob.mx/xepet/feed/",
+   "feed_type": "rss",
+   "website_url": "https://ecos.inpi.gob.mx/xepet/",
+   "territory": "Peto, Yucatán",
+   "languages": [
+    "maya",
+    "es"
+   ],
+   "topics": [
+    "cultura",
+    "educacion",
+    "memoria-historica",
+    "rural"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7333,
+   "name": "XEQIN / XHSQB. La Voz del Valle",
+   "slug": "xeqin-xhsqb-la-voz-del-valle",
+   "feed_url": "https://ecos.inpi.gob.mx/xeqin/feed/",
+   "feed_type": "rss",
+   "website_url": "https://ecos.inpi.gob.mx/xeqin/",
+   "territory": "San Quintín, Baja California",
+   "languages": [
+    "mixteco",
+    "triqui",
+    "zapoteco",
+    "purépecha",
+    "es"
+   ],
+   "topics": [
+    "migraciones",
+    "educacion",
+    "cultura",
+    "derechos-civiles"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  },
+  {
+   "id": 7334,
+   "name": "XECOPA. La Voz de los Vientos",
+   "slug": "xecopa-la-voz-de-los-vientos",
+   "feed_url": "https://ecos.inpi.gob.mx/xecopa/feed/",
+   "feed_type": "rss",
+   "website_url": "https://ecos.inpi.gob.mx/xecopa/",
+   "territory": "Copainalá, Chiapas",
+   "languages": [
+    "zoque",
+    "es"
+   ],
+   "topics": [
+    "cultura",
+    "educacion",
+    "memoria-historica",
+    "rural"
+   ],
+   "medium_type": "news",
+   "broadcast_format": [
+    "web",
+    "streaming"
+   ],
+   "content_license": "all-rights-reserved",
+   "legal_note": "",
+   "has_live_stream": false,
+   "live_stream_permit": "none"
+  }
 ]
