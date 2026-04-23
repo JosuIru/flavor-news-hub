@@ -772,10 +772,35 @@ final class Shortcodes
         .fnh-shortcode-wrap .fnh-videos-grid .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
         .fnh-shortcode-wrap .fnh-videos-grid .fnh-video .fnh-video-title{position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:.9em}
         .fnh-shortcode-wrap .fnh-video-card{display:grid;gap:.55rem}
-        .fnh-shortcode-wrap .fnh-radios-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio{border:1px solid var(--fnh-color-border);border-radius:8px;padding:10px;background:var(--fnh-color-surface)}
-        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio h4{margin:0 0 4px;font-size:.95em}
-        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:4px}
+        .fnh-shortcode-wrap .fnh-radios-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.8rem;padding:0;list-style:none}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio{border:1px solid var(--fnh-color-border);border-radius:12px;padding:1rem;background:var(--fnh-color-surface);display:flex;flex-direction:column;gap:.4rem;min-width:0;box-shadow:0 1px 2px rgba(0,0,0,.03);list-style:none}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio h4{margin:0 !important;font-size:1em;font-weight:600;color:var(--fnh-color-text) !important}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio .fnh-meta{font-size:.82em;color:var(--fnh-color-text-soft) !important}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio a.fnh-listen{display:inline-block;margin-top:.2em;font-size:.88em;color:var(--fnh-color-accent) !important;text-decoration:none}
+        .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio a.fnh-listen:hover{text-decoration:underline}
+        /* Audio player: width:100% evita que el control nativo (~300px)
+           se salga del contenedor y rompa el grid en móvil. */
+        .fnh-shortcode-wrap audio{width:100% !important;max-width:100% !important;min-width:0;display:block;margin:.3em 0}
+        /* Blindaje tipográfico y de listas contra Tailwind prose / temas
+           que aplican reglas genéricas a `.prose h2`, `.prose ul`, etc.
+           y pisan nuestros shortcodes. Especificidad subida y !important
+           en propiedades de layout clave. */
+        .fnh-shortcode-wrap h2{font-size:1.45em !important;font-weight:700 !important;margin:0 0 1rem !important;line-height:1.25 !important;color:var(--fnh-color-text) !important}
+        .fnh-shortcode-wrap h3{font-size:1.1em !important;font-weight:700 !important;margin:0 0 .4em !important;line-height:1.3 !important;color:var(--fnh-color-text) !important}
+        .fnh-shortcode-wrap h4{font-size:1em !important;font-weight:600 !important;margin:0 0 .35em !important;color:var(--fnh-color-text) !important}
+        .fnh-shortcode-wrap ul,.fnh-shortcode-wrap ol{padding-left:0 !important;margin:0 !important;list-style:none !important}
+        .fnh-shortcode-wrap .fnh-feed-lista li{padding:1rem 0 !important;border-bottom:1px solid var(--fnh-color-border);display:grid;grid-template-columns:200px 1fr;gap:1rem;align-items:start}
+        .fnh-shortcode-wrap .fnh-feed-lista li:last-child{border-bottom:0}
+        .fnh-shortcode-wrap .fnh-feed-lista .fnh-media{order:-1;margin:0}
+        .fnh-shortcode-wrap .fnh-feed-lista .fnh-media img{width:100% !important;height:130px !important;object-fit:cover;border-radius:8px;display:block}
+        .fnh-shortcode-wrap .fnh-feed-lista h3 a{color:var(--fnh-color-text) !important;text-decoration:none}
+        .fnh-shortcode-wrap .fnh-feed-lista h3 a:hover{text-decoration:underline}
+        .fnh-shortcode-wrap .fnh-feed-lista .fnh-excerpt p{margin:.25em 0 !important;font-size:.93em;color:var(--fnh-color-text-soft)}
+        @media (max-width:640px){
+          .fnh-shortcode-wrap .fnh-feed-lista li{grid-template-columns:1fr;gap:.6rem}
+          .fnh-shortcode-wrap .fnh-feed-lista .fnh-media img{height:180px !important}
+          .fnh-shortcode-wrap .fnh-radios-lista{grid-template-columns:1fr}
+        }
         #fnh-landing{display:flex !important;flex-direction:column;gap:2.5rem;padding:0 !important;max-width:1200px;margin-inline:auto;font-family:inherit;line-height:1.5;color:#111 !important;background:transparent !important}
         #fnh-landing *{box-sizing:border-box}
         #fnh-landing h1,#fnh-landing h2,#fnh-landing h3,#fnh-landing h4{font-family:inherit;color:#111 !important;font-weight:700}
