@@ -1569,6 +1569,11 @@ JS;
             'exclude_source_type' => 'video,youtube,peertube,podcast',
             'show_excerpt'   => 1,
             'show_media'     => 1,
+            // `show_load_more=0` inhibe el sentinel de scroll infinito.
+            // La landing lo usa así porque sus secciones son muestras
+            // editoriales de 4-6 items, no paginables: cargar más ahí
+            // revienta el layout de mosaico editorial.
+            'show_load_more' => 1,
         ], $atribs);
         $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language'], ['noticias', 'colectivos', 'podcasts']);
 
@@ -1748,20 +1753,22 @@ JS;
             }
             echo '</ul>';
         }
-        echo self::renderSentinelScrollInfinito(
-            $esPaginaNoticias ? 'noticias' : (self::paginaAutoActual() === 'podcasts' ? 'podcasts' : 'feed'),
-            (int) $a['limit'],
-            $consulta->max_num_pages,
-            [
-                'topic'               => (string) $a['topic'],
-                'territory'           => (string) $a['territory'],
-                'language'            => (string) $a['language'],
-                'source_type'         => (string) $a['source_type'],
-                'exclude_source_type' => (string) $a['exclude_source_type'],
-                'show_excerpt'        => (int) $a['show_excerpt'],
-                'show_media'          => (int) $a['show_media'],
-            ]
-        );
+        if ((int) $a['show_load_more'] === 1) {
+            echo self::renderSentinelScrollInfinito(
+                $esPaginaNoticias ? 'noticias' : (self::paginaAutoActual() === 'podcasts' ? 'podcasts' : 'feed'),
+                (int) $a['limit'],
+                $consulta->max_num_pages,
+                [
+                    'topic'               => (string) $a['topic'],
+                    'territory'           => (string) $a['territory'],
+                    'language'            => (string) $a['language'],
+                    'source_type'         => (string) $a['source_type'],
+                    'exclude_source_type' => (string) $a['exclude_source_type'],
+                    'show_excerpt'        => (int) $a['show_excerpt'],
+                    'show_media'          => (int) $a['show_media'],
+                ]
+            );
+        }
         return self::envolverShortcode('feed', (string) ob_get_clean(), $filtros);
     }
 
@@ -1860,6 +1867,7 @@ JS;
             'topic' => '',
             'territory' => '',
             'language' => '',
+            'show_load_more' => 1,
         ], $atribs);
         $a = self::aplicarFiltrosRequest($a, ['topic', 'territory', 'language'], ['videos']);
 
@@ -1901,16 +1909,18 @@ JS;
             echo self::renderVideoCardHtml($post);
         }
         echo '</div>';
-        echo self::renderSentinelScrollInfinito(
-            'videos',
-            (int) $a['limit'],
-            $consulta->max_num_pages,
-            [
-                'topic'     => (string) $a['topic'],
-                'territory' => (string) $a['territory'],
-                'language'  => (string) $a['language'],
-            ]
-        );
+        if ((int) $a['show_load_more'] === 1) {
+            echo self::renderSentinelScrollInfinito(
+                'videos',
+                (int) $a['limit'],
+                $consulta->max_num_pages,
+                [
+                    'topic'     => (string) $a['topic'],
+                    'territory' => (string) $a['territory'],
+                    'language'  => (string) $a['language'],
+                ]
+            );
+        }
         return self::envolverShortcode('videos', (string) ob_get_clean(), $filtros);
     }
 
@@ -2103,7 +2113,7 @@ JS;
             <!-- VÍDEOS (fondo alternado) -->
             <section class="fnh-bloque fnh-bloque-alt">
                 <h2 class="fnh-seccion-titulo"><span class="fnh-seccion-ico" aria-hidden="true">🎬</span><?php esc_html_e('Últimos vídeos', 'flavor-news-hub'); ?></h2>
-                <?php echo self::renderVideos(['limit' => 4]); ?>
+                <?php echo self::renderVideos(['limit' => 4, 'show_load_more' => 0]); ?>
                 <?php if ($urlVideos !== '') : ?>
                     <p class="fnh-ver-mas"><a href="<?php echo esc_url($urlVideos); ?>"><?php esc_html_e('Ver todos', 'flavor-news-hub'); ?> →</a></p>
                 <?php endif; ?>
@@ -2125,6 +2135,7 @@ JS;
                             'show_media'          => 0,
                             'source_type'         => 'podcast',
                             'exclude_source_type' => '',
+                            'show_load_more'      => 0,
                         ]); ?>
                     </div>
                 </div>
