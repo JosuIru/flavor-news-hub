@@ -7,6 +7,7 @@ use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\REST\Transformers\ItemTransformer;
+use FlavorNewsHub\Support\InterleaveSources;
 
 /**
  * Endpoints de noticias:
@@ -169,8 +170,12 @@ final class ItemsEndpoint
 
         $consulta = new \WP_Query($argumentosQuery);
 
+        // Si el consumidor pide un source concreto no tocamos el orden:
+        // todos los items son del mismo medio y el interleave no aplica.
+        $posts = $idSourceDirecto > 0 ? $consulta->posts : InterleaveSources::aplicar($consulta->posts);
+
         $coleccion = [];
-        foreach ($consulta->posts as $post) {
+        foreach ($posts as $post) {
             $coleccion[] = ItemTransformer::transformar($post);
         }
 

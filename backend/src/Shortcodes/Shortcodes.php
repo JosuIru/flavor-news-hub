@@ -8,6 +8,7 @@ use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\REST\Transformers\ItemTransformer;
+use FlavorNewsHub\Support\InterleaveSources;
 
 /**
  * Shortcodes del plugin: permiten incrustar feeds, radios y vídeos en
@@ -1350,15 +1351,21 @@ JS;
             return self::envolverShortcode('feed', '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
         }
 
+        // Des-apelmazar medios: si un source acaba de publicar varias
+        // piezas seguidas no queremos mostrarlas apiñadas. El hero
+        // elige los 3 primeros tras el reorden, así que los destacados
+        // tampoco salen siempre del mismo medio.
+        $postsReordenados = InterleaveSources::aplicar($consulta->posts);
+
         $esPaginaNoticias = self::paginaAutoActual() === 'noticias';
-        $temasDestacados = $esPaginaNoticias ? self::obtenerTemasDestacadosNoticias($consulta->posts, 4) : [];
+        $temasDestacados = $esPaginaNoticias ? self::obtenerTemasDestacadosNoticias($postsReordenados, 4) : [];
         $postPrincipal = null;
         $postsSecundarios = [];
-        $postsListado = $consulta->posts;
+        $postsListado = $postsReordenados;
         if ($esPaginaNoticias && !empty($postsListado)) {
             $postPrincipal = array_shift($postsListado);
             $postsSecundarios = array_slice($postsListado, 0, 2);
-            $postsListado = array_slice($consulta->posts, 3);
+            $postsListado = array_slice($postsReordenados, 3);
         }
         ob_start();
         if ($esPaginaNoticias) :
@@ -1621,9 +1628,10 @@ JS;
         if (empty($consulta->posts)) {
             return self::envolverShortcode('videos', '<p class="fnh-empty">' . esc_html__('Sin vídeos que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
         }
+        $postsReordenados = InterleaveSources::aplicar($consulta->posts);
         ob_start();
         echo '<div class="fnh-videos-grid">';
-        foreach ($consulta->posts as $post) {
+        foreach ($postsReordenados as $post) {
             echo self::renderVideoCardHtml($post);
         }
         echo '</div>';

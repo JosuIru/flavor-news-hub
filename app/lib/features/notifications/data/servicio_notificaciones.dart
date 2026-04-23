@@ -33,8 +33,8 @@ void ejecutorWorker() {
   });
 }
 
-/// Comprueba si hay titulares nuevos consultando el backend con `since=`.
-/// Si hay alguno, dispara una notificación con el total.
+/// Comprueba si hay contenido nuevo (titulares, vídeos, podcasts) desde la
+/// última comprobación y dispara una notificación combinada.
 Future<void> _comprobarYNotificar(SharedPreferences sp) async {
   final urlBackend = sp.getString('fnh.pref.backendUrl');
   if (urlBackend == null || urlBackend.isEmpty) return;
@@ -45,10 +45,13 @@ Future<void> _comprobarYNotificar(SharedPreferences sp) async {
       ? (DateTime.tryParse(ultimaRaw) ?? DateTime.now().toUtc().subtract(const Duration(hours: 24)))
       : DateTime.now().toUtc().subtract(const Duration(hours: 24));
 
+  // Pedimos TODO lo publicado desde `desde` (sin excluir video/podcast)
+  // y luego lo clasificamos localmente por `source.feed_type`. Así con
+  // una sola llamada cubrimos las 3 categorías y evitamos tres
+  // peticiones seriales por cada ejecución del worker.
   final uri = Uri.parse(urlBackend).replace(queryParameters: {
-    'per_page': '20',
+    'per_page': '30',
     'since': desde.toIso8601String(),
-    'exclude_source_type': 'video,youtube,podcast',
   });
   final uriItems = uri.replace(path: '${uri.path}/items'.replaceAll('//', '/'));
 
@@ -69,27 +72,38 @@ Future<void> _comprobarYNotificar(SharedPreferences sp) async {
     return true;
   }).toList();
 
-  // Actualizamos el widget de titulares con los 3 primeros, tenga o no
-  // notificaciones activas el usuario: si colocó el widget quiere verlo
-  // fresco. Si no hay items, limpiamos los slots para no dejar algo
-  // viejo en pantalla.
-  await _actualizarWidgetTitulares(utilizables);
+  // Separamos en titulares (texto), vídeos y podcasts según el feed_type
+  // de la fuente para poder construir un subtexto tipo "2 titulares · 1
+  // vídeo · 1 podcast".
+  final titulares = <Map<String, dynamic>>[];
+  final videos = <Map<String, dynamic>>[];
+  final podcasts = <Map<String, dynamic>>[];
+  for (final raw in utilizables) {
+    final feedType = (raw['source']?['feed_type'] ?? '').toString().toLowerCase();
+    if (feedType == 'podcast') {
+      podcasts.add(raw);
+    } else if (feedType == 'youtube' || feedType == 'video' || feedType == 'peertube') {
+      videos.add(raw);
+    } else {
+      titulares.add(raw);
+    }
+  }
+
+  // El widget de titulares muestra sólo noticias de texto — los vídeos y
+  // podcasts se notifican pero no ocupan slot del widget, que está
+  // pensado como titulares rápidos.
+  await _actualizarWidgetTitulares(titulares);
 
   if (utilizables.isEmpty) return;
 
-  // Sólo notificamos si el usuario tiene la alerta activa. Cuando las
-  // notificaciones están off el worker sigue corriendo (para alimentar
-  // el widget) pero no dispara popups.
   final notifActiva = sp.getBool('fnh.pref.notifActiva') ?? false;
   if (!notifActiva) return;
 
-  final primero = utilizables.first;
-  final tituloPrimero = (primero['title'] ?? '').toString();
-
   await _asegurarInicializado();
-  await _mostrarNotificacionTitulares(
-    cantidad: utilizables.length,
-    tituloDestacado: tituloPrimero,
+  await _mostrarNotificacionContenidoNuevo(
+    titulares: titulares,
+    videos: videos,
+    podcasts: podcasts,
   );
 
   await sp.setString(
@@ -146,24 +160,47 @@ Future<void> _asegurarInicializado() async {
   _inicializado = true;
 }
 
-Future<void> _mostrarNotificacionTitulares({
-  required int cantidad,
-  required String tituloDestacado,
+Future<void> _mostrarNotificacionContenidoNuevo({
+  required List<Map<String, dynamic>> titulares,
+  required List<Map<String, dynamic>> videos,
+  required List<Map<String, dynamic>> podcasts,
 }) async {
-  final titulo = cantidad == 1
-      ? '1 nuevo titular'
-      : '$cantidad nuevos titulares';
+  final partes = <String>[];
+  if (titulares.isNotEmpty) {
+    partes.add(titulares.length == 1 ? '1 titular' : '${titulares.length} titulares');
+  }
+  if (videos.isNotEmpty) {
+    partes.add(videos.length == 1 ? '1 vídeo' : '${videos.length} vídeos');
+  }
+  if (podcasts.isNotEmpty) {
+    partes.add(podcasts.length == 1 ? '1 podcast' : '${podcasts.length} podcasts');
+  }
+  if (partes.isEmpty) return;
+  final titulo = 'Nuevo contenido: ${partes.join(' · ')}';
+
+  // Elegimos un subtítulo destacado con preferencia: titular > vídeo >
+  // podcast. Si el usuario sólo recibe novedad de un tipo el subtítulo
+  // será de ese tipo; si son mezcla priorizamos lectura de texto.
+  String destacado = '';
+  if (titulares.isNotEmpty) {
+    destacado = (titulares.first['title'] ?? '').toString();
+  } else if (videos.isNotEmpty) {
+    destacado = (videos.first['title'] ?? '').toString();
+  } else if (podcasts.isNotEmpty) {
+    destacado = (podcasts.first['title'] ?? '').toString();
+  }
+
   const androidDetalle = AndroidNotificationDetails(
     _canalAndroidId,
     _canalAndroidNombre,
-    channelDescription: 'Avisos de nuevos titulares en Flavor News Hub',
+    channelDescription: 'Avisos de nuevo contenido en Flavor News Hub',
     importance: Importance.defaultImportance,
     priority: Priority.defaultPriority,
   );
   await _plugin.show(
     100,
     titulo,
-    tituloDestacado,
+    destacado,
     const NotificationDetails(android: androidDetalle),
   );
 }

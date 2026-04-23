@@ -6,6 +6,7 @@ namespace FlavorNewsHub\REST;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Shortcodes\Shortcodes;
+use FlavorNewsHub\Support\InterleaveSources;
 
 /**
  * Endpoint que devuelve HTML pre-renderizado de la siguiente página de
@@ -123,13 +124,15 @@ final class FeedHtmlEndpoint
             return new \WP_REST_Response(['html' => '', 'has_more' => false, 'next_page' => null], 200);
         }
 
+        $posts = InterleaveSources::aplicar($consulta->posts);
+
         $html = '';
         if ($esVideos) {
-            foreach ($consulta->posts as $post) {
+            foreach ($posts as $post) {
                 $html .= Shortcodes::renderVideoCardHtml($post);
             }
         } else {
-            foreach ($consulta->posts as $post) {
+            foreach ($posts as $post) {
                 $html .= Shortcodes::renderFeedItemHtml(
                     $post,
                     $esNoticias,
