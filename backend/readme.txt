@@ -37,6 +37,10 @@ Manifiesto completo: https://github.com/JosuIru/flavor-news-hub/blob/main/MANIFE
 3. En el menú lateral aparecerán **Medios**, **Noticias**, **Radios** y **Colectivos**. La primera activación precarga 18 temáticas canónicas y el catálogo bundleado de fuentes/radios/colectivos.
 4. Las actualizaciones posteriores sincronizan automáticamente el catálogo y añaden fuentes nuevas sin duplicar las que ya tengas.
 
+El plugin trabaja con metadatos públicos y enlaces canónicos. No está pensado para copiar artículos completos, imágenes, logos o contenido tras login/paywall, ni para usar feeds con términos que lo prohíban.
+
+Antes de dar de alta una fuente o colectivo: comprueba que la URL es pública, que no vas a copiar contenido completo, que el logo o miniatura pueden usarse y que la temática encaja con la taxonomía del proyecto.
+
 Para desarrollo desde el monorepo, enlaza con `ln -s` desde `backend/` al directorio de plugins de tu WordPress local.
 
 == Frequently Asked Questions ==

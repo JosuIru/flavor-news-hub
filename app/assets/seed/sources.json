@@ -60,7 +60,7 @@
   "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCe81jZxbCPX8PilT3IQKxFw",
   "feed_type": "youtube",
   "website_url": "https://www.youtube.com/channel/UCe81jZxbCPX8PilT3IQKxFw",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -86,7 +86,7 @@
   "feed_url": "https://www.ballenablanca.es/feed/",
   "feed_type": "rss",
   "website_url": "https://www.ballenablanca.es",
-  "territory": "Estado",
+  "territory": "Estado español",
   "languages": [
    "es"
   ],
@@ -1561,5 +1561,316 @@
    "memoria-historica",
    "internacional"
   ]
+ },
+ {
+  "id": 7293,
+  "name": "Canal Red",
+  "slug": "canal-red",
+  "feed_url": "https://www.canalred.tv/rss/video/",
+  "feed_type": "rss",
+  "website_url": "https://www.canalred.tv/video/",
+  "territory": "Estado español",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional",
+   "cultura",
+   "derechos-civiles"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7294,
+  "name": "Furor TV",
+  "slug": "furor-tv",
+  "feed_url": "https://www.furor.tv/feed/",
+  "feed_type": "rss",
+  "website_url": "https://www.furor.tv/",
+  "territory": "Estado español",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional",
+   "feminismos",
+   "cultura",
+   "derechos-civiles"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "web",
+   "streaming"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7295,
+  "name": "Prensa Comunitaria",
+  "slug": "prensa-comunitaria",
+  "feed_url": "https://prensacomunitaria.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://prensacomunitaria.org/",
+  "territory": "Guatemala",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "derechos-civiles",
+   "memoria-historica",
+   "rural",
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7296,
+  "name": "La Izquierda Diario",
+  "slug": "la-izquierda-diario",
+  "feed_url": "https://www.laizquierdadiario.com/RSS",
+  "feed_type": "rss",
+  "website_url": "https://www.laizquierdadiario.com/Videos",
+  "territory": "Latinoamérica",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "laboral",
+   "feminismos",
+   "internacional",
+   "educacion"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "web",
+   "youtube"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7297,
+  "name": "Scroll.in",
+  "slug": "scroll-in",
+  "feed_url": "https://scroll.in/feed/7165",
+  "feed_type": "rss",
+  "website_url": "https://scroll.in/video",
+  "territory": "India",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional",
+   "cultura",
+   "educacion"
+  ],
+  "medium_type": "video",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7286,
+  "name": "Telesur",
+  "slug": "telesur",
+  "feed_url": "https://www.telesurtv.net/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.telesurtv.net",
+  "territory": "Latinoamérica",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "internacional"
+  ],
+  "medium_type": "tv_station",
+  "broadcast_format": [
+   "web",
+   "cable",
+   "satelite"
+  ],
+  "content_license": "all-rights-reserved",
+  "ownership": "Financiación: Estado de Venezuela (con participación histórica de Cuba, Nicaragua, Bolivia y Uruguay).",
+  "legal_note": "Financiación estatal: Estado de Venezuela. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+  "has_live_stream": true,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7298,
+  "name": "Maktoob",
+  "slug": "maktoob",
+  "feed_url": "https://maktoobmedia.com/category/more/feed/",
+  "feed_type": "rss",
+  "website_url": "https://maktoobmedia.com/",
+  "territory": "India",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "derechos-civiles",
+   "antirracismo",
+   "migraciones",
+   "internacional"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7299,
+  "name": "Periodismo de Barrio",
+  "slug": "periodismo-de-barrio",
+  "feed_url": "https://periodismodebarrio.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://periodismodebarrio.org/",
+  "territory": "Cuba",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "migraciones",
+   "rural",
+   "ecologismo",
+   "cuidados"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "cc-by-nc-sa-4.0",
+  "legal_note": "Publica bajo CC BY-NC-SA 4.0 en su web; el uso del feed debe respetar esa licencia y la atribución exigida.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7301,
+  "name": "The Wire",
+  "slug": "the-wire",
+  "feed_url": "https://thewire.in/feed/",
+  "feed_type": "rss",
+  "website_url": "https://thewire.in/",
+  "territory": "India",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "derechos-civiles",
+   "internacional",
+   "cultura",
+   "educacion"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7302,
+  "name": "NDTV",
+  "slug": "ndtv",
+  "feed_url": "https://www.ndtv.com/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.ndtv.com/videos",
+  "territory": "India",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "internacional",
+   "educacion",
+   "cultura"
+  ],
+  "medium_type": "tv_station",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "NDTV RSS feeds are provided for personal, non-commercial use and require attribution to NDTV.com.",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7303,
+  "name": "The News Minute",
+  "slug": "the-news-minute",
+  "feed_url": "https://www.thenewsminute.com/topic/rss",
+  "feed_type": "rss",
+  "website_url": "https://www.thenewsminute.com/videos",
+  "territory": "India",
+  "languages": [
+   "en"
+  ],
+  "topics": [
+   "derechos-civiles",
+   "feminismos",
+   "laboral",
+   "educacion"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
+ },
+ {
+  "id": 7300,
+  "name": "Desinformémonos",
+  "slug": "desinformemonos",
+  "feed_url": "https://desinformemonos.org/feed/",
+  "feed_type": "rss",
+  "website_url": "https://desinformemonos.org/",
+  "territory": "México",
+  "languages": [
+   "es"
+  ],
+  "topics": [
+   "antirracismo",
+   "migraciones",
+   "rural",
+   "ecologismo"
+  ],
+  "medium_type": "news",
+  "broadcast_format": [
+   "web"
+  ],
+  "content_license": "all-rights-reserved",
+  "legal_note": "",
+  "has_live_stream": false,
+  "live_stream_permit": "none"
  }
 ]

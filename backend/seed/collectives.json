@@ -101,7 +101,28 @@
   "territory": "Catalunya",
   "has_contact": true,
   "verified": true,
-  "topics": []
+    "topics": [
+      {
+        "id": 62,
+        "name": "Feminismos",
+        "slug": "feminismos"
+      },
+      {
+        "id": 79,
+        "name": "Migraciones",
+        "slug": "migraciones"
+      },
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      },
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      }
+    ]
  },
  {
   "id": 6205,
@@ -114,7 +135,28 @@
   "territory": "Catalunya",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 74,
+    "name": "Memoria histórica",
+    "slug": "memoria-historica"
+   }
+  ]
  },
  {
   "id": 6206,
@@ -146,7 +188,28 @@
   "territory": "Euskal Herria",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 72,
+    "name": "Antirracismo",
+    "slug": "antirracismo"
+   },
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   }
+  ]
  },
  {
   "id": 6208,
@@ -159,7 +222,23 @@
   "territory": "Euskadi",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 80,
+    "name": "Cuidados",
+    "slug": "cuidados"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   }
+  ]
  },
  {
   "id": 6209,
@@ -172,7 +251,18 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 71,
+    "name": "Ecologismo",
+    "slug": "ecologismo"
+   },
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   }
+  ]
  },
  {
   "id": 6210,
@@ -185,7 +275,23 @@
   "territory": "Andalucía",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 61,
+    "name": "Laboral",
+    "slug": "laboral"
+   },
+   {
+    "id": 80,
+    "name": "Cuidados",
+    "slug": "cuidados"
+   }
+  ]
  },
  {
   "id": 6211,
@@ -198,7 +304,23 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 59,
+    "name": "Vivienda",
+    "slug": "vivienda"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   }
+  ]
  },
  {
   "id": 6212,
@@ -240,7 +362,18 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   }
+  ]
  },
  {
   "id": 6214,
@@ -253,7 +386,23 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 82,
+    "name": "Internacional",
+    "slug": "internacional"
+   },
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   }
+  ]
  },
  {
   "id": 6215,
@@ -536,7 +685,28 @@
   "territory": "Estado español",
   "has_contact": true,
   "verified": true,
-  "topics": []
+  "topics": [
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 79,
+    "name": "Migraciones",
+    "slug": "migraciones"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
+   },
+   {
+    "id": 74,
+    "name": "Memoria histórica",
+    "slug": "memoria-historica"
+   }
+  ]
  },
  {
   "id": 6226,
@@ -554,6 +724,16 @@
     "id": 80,
     "name": "Cuidados",
     "slug": "cuidados"
+   },
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },
@@ -626,6 +806,16 @@
     "id": 76,
     "name": "Cultura",
     "slug": "cultura"
+   },
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },
@@ -722,6 +912,11 @@
     "id": 62,
     "name": "Feminismos",
     "slug": "feminismos"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },

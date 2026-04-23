@@ -245,6 +245,36 @@ wp flavor-news import radios
 wp flavor-news import collectives
 ```
 
+### Criterio de ingestión y reutilización
+
+El catálogo y la ingesta se diseñan para reutilizar **metadatos públicos** y enlaces canónicos, no para copiar contenido ajeno.
+
+Se puede importar:
+
+* nombre público de la fuente o colectivo
+* URL pública del sitio o perfil
+* feed RSS/Atom o feed de vídeo público
+* territorio, idiomas, tema y tipo de medio
+* descripciones breves que la propia fuente publique de forma abierta, cuando sean parte del metadato y no sustituyan el contenido original
+
+No se debe importar sin revisar derechos o términos de uso:
+
+* artículos completos, transcripciones o resúmenes extensos
+* imágenes, logos o miniaturas salvo que la fuente lo permita explícitamente
+* contenido detrás de paywall, login o APIs privadas
+* feeds o canales con términos que prohíban redistribución, archivado o uso en móvil
+
+Regla práctica: si el importador sólo añade una ficha enlazada al original, estamos dentro del objetivo del proyecto. Si empieza a sustituir al medio o a almacenar su contenido completo, no.
+
+### Checklist rápida antes de dar de alta una fuente o colectivo
+
+* La URL es pública y accesible sin login.
+* El feed, canal o web tiene permiso razonable para ser enlazado y monitorizado.
+* No se va a copiar contenido completo, sólo metadatos y enlace canónico.
+* Si hay logo, imagen o miniatura, se ha comprobado que puede usarse o se deja sin importar.
+* El territorio, idiomas y temas encajan con la taxonomía del proyecto.
+* Si el feed tiene términos de uso explícitos, se han revisado antes de importarlo.
+
 ### Producción
 
 Copia el contenido de `backend/` a `wp-content/plugins/flavor-news-hub/` y actívalo desde el admin. No hace falta `composer install` — el plugin trae su propio autoloader.

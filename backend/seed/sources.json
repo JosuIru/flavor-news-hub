@@ -2134,5 +2134,730 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none"
+  },
+  {
+    "id": 7293,
+    "name": "Canal Red",
+    "slug": "canal-red",
+    "feed_url": "https://www.canalred.tv/rss/video/",
+    "feed_type": "rss",
+    "website_url": "https://www.canalred.tv/video/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "internacional",
+      "cultura",
+      "derechos-civiles"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7294,
+    "name": "Furor TV",
+    "slug": "furor-tv",
+    "feed_url": "https://www.furor.tv/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.furor.tv/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "internacional",
+      "feminismos",
+      "cultura",
+      "derechos-civiles"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7295,
+    "name": "Prensa Comunitaria",
+    "slug": "prensa-comunitaria",
+    "feed_url": "https://prensacomunitaria.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://prensacomunitaria.org/",
+    "territory": "Guatemala",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "memoria-historica",
+      "rural",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7296,
+    "name": "La Izquierda Diario",
+    "slug": "la-izquierda-diario",
+    "feed_url": "https://www.laizquierdadiario.com/RSS",
+    "feed_type": "rss",
+    "website_url": "https://www.laizquierdadiario.com/Videos",
+    "territory": "Latinoamérica",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "laboral",
+      "feminismos",
+      "internacional",
+      "educacion"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "web",
+      "youtube"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7297,
+    "name": "Scroll.in",
+    "slug": "scroll-in",
+    "feed_url": "https://scroll.in/feed/7165",
+    "feed_type": "rss",
+    "website_url": "https://scroll.in/video",
+    "territory": "India",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional",
+      "cultura",
+      "educacion"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7298,
+    "name": "Maktoob",
+    "slug": "maktoob",
+    "feed_url": "https://maktoobmedia.com/category/more/feed/",
+    "feed_type": "rss",
+    "website_url": "https://maktoobmedia.com/",
+    "territory": "India",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "antirracismo",
+      "migraciones",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7299,
+    "name": "Periodismo de Barrio",
+    "slug": "periodismo-de-barrio",
+    "feed_url": "https://periodismodebarrio.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://periodismodebarrio.org/",
+    "territory": "Cuba",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "rural",
+      "ecologismo",
+      "cuidados"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "cc-by-nc-sa-4.0",
+    "legal_note": "Publica bajo CC BY-NC-SA 4.0 en su web; el uso del feed debe respetar esa licencia y la atribución exigida.",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7300,
+    "name": "Desinformémonos",
+    "slug": "desinformemonos",
+    "feed_url": "https://desinformemonos.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://desinformemonos.org/",
+    "territory": "México",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "antirracismo",
+      "migraciones",
+      "rural",
+      "ecologismo"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7301,
+    "name": "The Wire",
+    "slug": "the-wire",
+    "feed_url": "https://thewire.in/feed/",
+    "feed_type": "rss",
+    "website_url": "https://thewire.in/",
+    "territory": "India",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "internacional",
+      "cultura",
+      "educacion"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7302,
+    "name": "NDTV",
+    "slug": "ndtv",
+    "feed_url": "https://www.ndtv.com/rss",
+    "feed_type": "rss",
+    "website_url": "https://www.ndtv.com/videos",
+    "territory": "India",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional",
+      "educacion",
+      "cultura"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "NDTV RSS feeds are provided for personal, non-commercial use and require attribution to NDTV.com.",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7303,
+    "name": "The News Minute",
+    "slug": "the-news-minute",
+    "feed_url": "https://www.thenewsminute.com/topic/rss",
+    "feed_type": "rss",
+    "website_url": "https://www.thenewsminute.com/videos",
+    "territory": "India",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "feminismos",
+      "laboral",
+      "educacion"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "slug": "col-ecologistas-en-accion",
+    "name": "Ecologistas en Acción",
+    "feed_url": "https://www.ecologistasenaccion.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.ecologistasenaccion.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-pah-barcelona",
+    "name": "PAH Barcelona",
+    "feed_url": "https://pahbarcelona.org/ca/feed/",
+    "feed_type": "rss",
+    "website_url": "https://pahbarcelona.org/",
+    "territory": "Catalunya",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sindicat-de-llogateres",
+    "name": "Sindicat de Llogateres",
+    "feed_url": "https://sindicatdellogateres.org/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sindicatdellogateres.org/es/",
+    "territory": "Catalunya",
+    "languages": [
+      "ca"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-no-somos-delito",
+    "name": "No Somos Delito",
+    "feed_url": "https://nosomosdelito.net/feed/",
+    "feed_type": "rss",
+    "website_url": "https://nosomosdelito.net/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "derechos-civiles"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-ongi-etorri-errefuxiatuak",
+    "name": "Ongi Etorri Errefuxiatuak",
+    "feed_url": "https://ongietorrierrefuxiatuak.info/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://ongietorrierrefuxiatuak.info/es/",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-askabide",
+    "name": "Askabide",
+    "feed_url": "https://www.askabide.org/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.askabide.org/es/",
+    "territory": "Euskadi",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sindicato-kellys-andalucia",
+    "name": "Sindicato Kellys Andalucía",
+    "feed_url": "https://www.kellysandalucia.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.kellysandalucia.com/",
+    "territory": "Andalucía",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-plataforma-de-afectadas-por-la-hipoteca",
+    "name": "Plataforma de Afectadas por la Hipoteca",
+    "feed_url": "https://afectadosporlahipoteca.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://afectadosporlahipoteca.com/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-rescop",
+    "name": "RESCOP",
+    "feed_url": "http://www.nodo50.org/causapalestina/feed/",
+    "feed_type": "rss",
+    "website_url": "http://www.nodo50.org/causapalestina/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sodepaz",
+    "name": "SODePAZ",
+    "feed_url": "https://sodepaz.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sodepaz.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-loquesomos",
+    "name": "LoQueSomos",
+    "feed_url": "https://loquesomos.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://loquesomos.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "memoria-historica"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-cear",
+    "name": "CEAR",
+    "feed_url": "https://www.cear.es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.cear.es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "derechos-civiles",
+      "antirracismo",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-red-acoge",
+    "name": "Red Acoge",
+    "feed_url": "https://redacoge.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://redacoge.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "derechos-civiles",
+      "antirracismo"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-greenpeace-espana",
+    "name": "Greenpeace España",
+    "feed_url": "https://es.greenpeace.org/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://es.greenpeace.org/es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-amigas-de-la-tierra",
+    "name": "Amigas de la Tierra",
+    "feed_url": "https://www.tierra.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.tierra.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sos-racismo",
+    "name": "SOS Racismo",
+    "feed_url": "https://sosracismo.eu/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sosracismo.eu/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "antirracismo",
+      "migraciones",
+      "derechos-civiles"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-juventud-por-el-clima",
+    "name": "Juventud Por El Clima",
+    "feed_url": "https://juventudxclima.es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://juventudxclima.es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-alianza-contra-la-pobreza-energetica",
+    "name": "Alianza contra la Pobreza Energética",
+    "feed_url": "https://pobresaenergetica.es/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://pobresaenergetica.es/es/",
+    "territory": "Cataluña",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "vivienda",
+      "ecologismo",
+      "economia-social"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-stop-mare-mortum",
+    "name": "Stop Mare Mortum",
+    "feed_url": "https://stopmaremortum.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://stopmaremortum.org/",
+    "territory": "Cataluña",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "derechos-civiles",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-senda-de-cuidados",
+    "name": "Senda de Cuidados",
+    "feed_url": "https://www.sendadecuidados.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.sendadecuidados.org/",
+    "territory": "Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cuidados"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-mujer-y-sociedad",
+    "name": "Mujer y Sociedad",
+    "feed_url": "https://mujerysociedad.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://mujerysociedad.org/",
+    "territory": "Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "migraciones",
+      "cuidados"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-ca-la-dona",
+    "name": "Ca la Dona",
+    "feed_url": "https://caladona.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://caladona.org/",
+    "territory": "Cataluña",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-la-casa-invisible",
+    "name": "La Casa Invisible",
+    "feed_url": "https://lainvisible.net/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://lainvisible.net/es/",
+    "territory": "Málaga",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-fundacion-de-los-comunes",
+    "name": "Fundación de los Comunes",
+    "feed_url": "https://fundaciondeloscomunes.net/feed/",
+    "feed_type": "rss",
+    "website_url": "https://fundaciondeloscomunes.net/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "educacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-feministas-de-pueblo",
+    "name": "Feministas de Pueblo",
+    "feed_url": "https://feministasdepueblo.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://feministasdepueblo.org/",
+    "territory": "Castilla-La Mancha",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "rural",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-coordinadora-feminista",
+    "name": "Coordinadora Feminista",
+    "feed_url": "https://feministas.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://feministas.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sindicat-de-barri-de-sants",
+    "name": "Sindicat de Barri de Sants",
+    "feed_url": "https://sindicatdebarri.org/index.php/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sindicatdebarri.org/",
+    "territory": "Barcelona",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "vivienda"
+    ],
+    "medium_type": "news",
+    "content_license": ""
   }
 ]
