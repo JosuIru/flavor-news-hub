@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -8,6 +10,8 @@ import 'package:intl/intl.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/ingest_trigger.dart';
 import '../../videos/data/videos_provider.dart';
 import '../data/tv_provider.dart';
 
@@ -79,7 +83,10 @@ class _MediosTvBody extends ConsumerWidget {
           return _VacioOError(mensaje: textos.tvEmptyMedios);
         }
         return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(tvSourcesProvider),
+          onRefresh: () async {
+            unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
+            ref.invalidate(tvSourcesProvider);
+          },
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: sources.length,
@@ -174,7 +181,10 @@ class _UltimasEmisionesBody extends ConsumerWidget {
           return _VacioOError(mensaje: textos.tvEmptyUltimas);
         }
         return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(tvItemsRecientesProvider),
+          onRefresh: () async {
+            unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
+            ref.invalidate(tvItemsRecientesProvider);
+          },
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: items.length,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -6,6 +8,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/ingest_trigger.dart';
 import '../data/canales_favoritos_notifier.dart';
 import '../data/videos_provider.dart';
 
@@ -92,7 +96,10 @@ class VideosScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(videosProvider),
+        onRefresh: () async {
+          unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
+          ref.invalidate(videosProvider);
+        },
         child: asyncVideos.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(

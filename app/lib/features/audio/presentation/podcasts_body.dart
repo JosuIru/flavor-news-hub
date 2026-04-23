@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/ingest_trigger.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 
@@ -67,7 +71,10 @@ class PodcastsBody extends ConsumerWidget {
           );
         }
         return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(_itemsPodcastProvider),
+          onRefresh: () async {
+            unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
+            ref.invalidate(_itemsPodcastProvider);
+          },
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: items.length,

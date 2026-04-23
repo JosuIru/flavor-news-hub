@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/ingest_trigger.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
@@ -250,6 +254,11 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
   /// ya consumió la lista completa, un simple invalidateSelf del feed
   /// no haría re-fetch de los RSS — veríamos los mismos titulares.
   Future<void> refrescar() async {
+    // Pull-to-refresh: aprovechamos para despertar la ingesta del
+    // backend. Así si el usuario tira porque "no veo nada nuevo",
+    // el backend pasa por los feeds antes del siguiente request.
+    // Fire-and-forget; el rate-limit del endpoint evita encadenar.
+    unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
     ref.invalidate(itemsDesdeSeedProvider);
     ref.invalidateSelf();
     await future;
