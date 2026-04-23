@@ -805,8 +805,8 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-pista{display:inline-flex;align-items:center;min-height:30px;padding:.25rem .65rem;border-radius:999px;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);font-size:.8rem;color:var(--fnh-color-text-soft);box-shadow:0 1px 1px rgba(0,0,0,.02)}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal{display:grid;grid-template-columns:minmax(220px,.95fr) minmax(0,1.05fr);gap:1rem;align-items:stretch;padding:1rem;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.4);box-shadow:0 10px 26px rgba(0,0,0,.05)}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal--sin-media{grid-template-columns:1fr}
-        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media{border-radius:14px;overflow:hidden;min-height:220px;background:var(--fnh-color-surface-alt)}
-        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media{border-radius:14px;overflow:hidden;min-height:220px;max-height:360px;aspect-ratio:16/10;align-self:start;background:var(--fnh-color-surface-alt)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-media img{width:100% !important;height:100% !important;object-fit:cover;display:block}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-contenido{display:grid;gap:.65rem;align-content:start;padding:.15rem .15rem .1rem}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-badge{display:inline-flex;align-items:center;justify-content:center;min-height:30px;width:max-content;padding:.2rem .65rem;border-radius:999px;background:rgba(0,0,0,.08);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--fnh-color-text)}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-meta{font-size:.82rem;color:var(--fnh-color-text-soft)}
@@ -816,10 +816,10 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-principal-cta:hover{filter:brightness(.95)}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-mosaico{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(220px,.9fr);gap:1rem;margin-top:1rem;align-items:start}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundarias{display:grid;gap:.9rem}
-        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria{display:grid;grid-template-columns:92px minmax(0,1fr);gap:.7rem;padding:.7rem;border-radius:14px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.03)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria{display:grid;grid-template-columns:92px minmax(0,1fr);gap:.7rem;padding:.7rem;border-radius:14px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.03);align-items:start;align-content:start}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria--sin-media{grid-template-columns:1fr}
-        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-media{border-radius:12px;overflow:hidden;min-height:88px;background:var(--fnh-color-surface-alt)}
-        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-media img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-media{border-radius:12px;overflow:hidden;width:92px;height:92px;flex:0 0 92px;aspect-ratio:1;align-self:start;background:var(--fnh-color-surface-alt)}
+        .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-media img{width:100% !important;height:100% !important;object-fit:cover;display:block;max-height:100%}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-contenido{display:grid;gap:.28rem;align-content:start}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria-meta{font-size:.7rem;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap--feed.fnh-page-auto--noticias .fnh-feed-hero-secundaria h4{margin:0;font-size:.92rem;line-height:1.22;letter-spacing:-.01em;color:var(--fnh-color-text)}
