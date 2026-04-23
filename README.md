@@ -37,6 +37,18 @@ Este proyecto es **complementario** pero **independiente** de [Flavor Platform](
 
 Cuando un colectivo listado aquí tiene instancia Flavor, enlazamos a ella. El camino natural de quien quiere pasar de informarse a organizarse es esa transición.
 
+## Ciclo de actualización
+
+El catálogo y las superficies cliente no se actualizan exactamente igual:
+
+| Cambio | WordPress backend | App online | App offline |
+|--------|-------------------|------------|-------------|
+| Fuentes, radios y colectivos bundleados | Se sincronizan al actualizar el plugin por slug | Se ven en cuanto el backend se actualiza | Requiere nueva build de la app |
+| Temáticas canónicas | Se repueblan si falta alguna al actualizar el plugin | Se reflejan en la API pública | Requiere nueva build de la app |
+| Altas manuales en WP-CLI | Se importan con `wp flavor-news import ...` | Se reflejan al instante | No cambian hasta nueva build |
+
+Regla práctica: `backend/seed/*.json` es la referencia editorial; `app/assets/seed/*.json` es el fallback offline. Si cambias uno, revisa el otro.
+
 ## Arquitectura
 
 Dos piezas acopladas pero desplegables por separado:
@@ -100,6 +112,7 @@ Uno de los principios del proyecto es la **apropiabilidad**: cualquier colectivo
 - **Backend:** instalar el plugin en una instalación WP estándar (via symlink desde este monorepo, zip manual, o Composer cuando esté publicado).
 - **App:** la pantalla de ajustes permite cambiar la URL de la instancia backend. Por defecto apunta a la instancia oficial, pero nada impide apuntar a la tuya.
 - **Offline:** la app mantiene seeds locales para el fallback sin red. Los colectivos se espejan desde el seed del backend; si el catálogo cambia, la siguiente build móvil llevará ese seed actualizado.
+- **Mantenimiento del catálogo:** cuando se tocan feeds, colectivos o temáticas, revisa también el seed offline de la app para que no haya divergencias entre online y offline.
 
 Instrucciones detalladas en `backend/README.md` y `app/README.md` (pendientes, a medida que esas piezas vayan existiendo).
 

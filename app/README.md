@@ -13,6 +13,7 @@ App Flutter que consume la API `flavor-news/v1` del backend. Enfocada a Android 
 - Ajustes, notificaciones, actualizaciones, widget de Android y compartición de contenido.
 
 El comportamiento offline usa seeds locales como fallback. `collectives.json` se mantiene alineado con el catálogo bundleado del backend para que la app conserve coherencia incluso sin red; al publicar una nueva build, ese seed viaja dentro del binario.
+Si cambias `backend/seed/*.json`, revisa también `app/assets/seed/*.json`: el backend online puede sincronizarse al actualizar el plugin, pero el fallback offline sólo cambia cuando se publica una nueva build de la app.
 
 ## Modelos y cliente API
 
@@ -39,6 +40,12 @@ Providers principales (`lib/core/providers/api_provider.dart`):
 - `itemsFeedProvider`, `topicsProvider`, `sourcesProvider`, `collectivesProvider` — FutureProviders listos para pantallas.
 
 Cuando el backend se actualiza y sincroniza el catálogo, la app online ve esos cambios al instante. Sólo el fallback offline depende de la siguiente build móvil.
+
+### Mantenimiento de seeds
+
+- `backend/seed/*.json` es la referencia del catálogo bundleado del plugin.
+- `app/assets/seed/*.json` es la copia offline para la app móvil.
+- Si añades fuentes, radios, colectivos o temáticas canónicas, revisa ambos lados para evitar divergencias entre online y offline.
 
 ### Regenerar código
 

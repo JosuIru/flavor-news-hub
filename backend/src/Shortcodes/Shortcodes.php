@@ -112,12 +112,11 @@ final class Shortcodes
                 esc_html($p['titulo'])
             );
         }
-        // Entrada especial al final: botón de apoyo al proyecto, link
-        // externo a PayPal. Se destaca con estilo distinto (verde)
-        // para que no se confunda con navegación interna.
+        // Entrada especial al final: botón de apoyo al proyecto que
+        // abre el modal unificado de donaciones (mismo contenido que
+        // el sheet de la app móvil: Ko-fi, PayPal, Bitcoin, compartir).
         printf(
-            '<li class="fnh-nav-auto-item fnh-nav-auto-item--cta"><a href="%s" target="_blank" rel="noopener">♥ %s</a></li>',
-            esc_url(self::urlDonaciones()),
+            '<li class="fnh-nav-auto-item fnh-nav-auto-item--cta"><a href="#" role="button" data-fnh-open-dona>♥ %s</a></li>',
             esc_html__('Apoyar', 'flavor-news-hub')
         );
         ?></ul></nav><?php
@@ -134,11 +133,27 @@ final class Shortcodes
         return $url !== '' ? $url : \FlavorNewsHub\Options\OptionsRepository::DONATION_URL_DEFAULT;
     }
 
+    /** URLs y direcciones del proyecto compartidas con la app Flutter.
+     *  Mantener sincronizado con `app/lib/features/donations/presentation/donaciones_sheet.dart`.
+     *  El PayPal es editable desde Ajustes; el resto son constantes. */
+    private const KOFI_URL = 'https://ko-fi.com/codigodespierto';
+    private const BTC_SEGWIT  = 'bc1qjnva46wy92ldhsv4w0j26jmu8c5wm5cxvgdfd7';
+    private const BTC_TAPROOT = 'bc1p29l9vjelerljlwhg6dhr0uldldus4zgn8vjaecer0spj7273d7rss4gnyk';
+    private const REPO_URL    = 'https://github.com/JosuIru/flavor-news-hub';
+    private const ECOSISTEMA_URL = 'https://coleccion-nuevo-ser.gailu.net/';
+
     /**
-     * FAB flotante + modal de donaciones en el footer de páginas auto.
-     * Réplica del bottom sheet de donaciones de la app móvil. Se abre
-     * con click en el botón rosa fijo abajo-derecha, se cierra con
-     * click fuera, botón × o Escape.
+     * FAB + modal de donaciones unificado para toda la web. Cubre las
+     * mismas opciones que el bottom sheet de la app móvil: Ko-fi,
+     * PayPal, dos direcciones Bitcoin con copiar al portapapeles,
+     * compartir, otras formas de ayudar (estrella GitHub, bugs,
+     * traducción, código) y ecosistema Colección Nuevo Ser.
+     *
+     * Antes de este cambio cada punto de donación de la web (FAB,
+     * menú, hero landing, sección apoyo de la landing) apuntaba
+     * directamente a PayPal con interfaces distintas. Ahora todos
+     * esos puntos abren este mismo modal — mensaje unificado
+     * app+web.
      */
     public static function renderPopupDonaciones(): void
     {
@@ -148,32 +163,114 @@ final class Shortcodes
         $clave = (string) get_post_meta($idPost, '_fnh_pagina_auto', true);
         if ($clave === '') return;
 
-        $url = self::urlDonaciones();
+        $urlPaypal = self::urlDonaciones();
         ?>
-<div class="fnh-dona-fab" id="fnh-dona-fab" role="button" tabindex="0" aria-label="<?php esc_attr_e('Apoyar el proyecto', 'flavor-news-hub'); ?>" title="<?php esc_attr_e('Apoyar', 'flavor-news-hub'); ?>"><span aria-hidden="true">♥</span></div>
+<div class="fnh-dona-fab" id="fnh-dona-fab" role="button" tabindex="0" data-fnh-open-dona aria-label="<?php esc_attr_e('Apoyar el proyecto', 'flavor-news-hub'); ?>" title="<?php esc_attr_e('Apoyar', 'flavor-news-hub'); ?>"><span aria-hidden="true">♥</span></div>
 <div class="fnh-dona-modal" id="fnh-dona-modal" role="dialog" aria-hidden="true" aria-labelledby="fnh-dona-modal-titulo">
     <div class="fnh-dona-backdrop" data-fnh-close-dona></div>
-    <div class="fnh-dona-dialog">
+    <div class="fnh-dona-dialog" role="document">
         <button class="fnh-dona-cerrar" type="button" aria-label="<?php esc_attr_e('Cerrar', 'flavor-news-hub'); ?>" data-fnh-close-dona>×</button>
         <h2 id="fnh-dona-modal-titulo">♥ <?php esc_html_e('Apoya el proyecto', 'flavor-news-hub'); ?></h2>
-        <p><?php esc_html_e('Sin publicidad, sin tracking, sin fondos opacos. Si lo que hacemos te sirve y puedes, una donación ayuda a mantenerlo y crecer.', 'flavor-news-hub'); ?></p>
-        <a class="fnh-dona-modal-boton" href="<?php echo esc_url($url); ?>" target="_blank" rel="noopener">
-            <?php esc_html_e('Donar vía PayPal', 'flavor-news-hub'); ?>
+        <p class="fnh-dona-intro"><?php esc_html_e('Flavor News Hub es libre y sin publicidad. Si te resulta útil, así puedes sostenerlo.', 'flavor-news-hub'); ?></p>
+
+        <a class="fnh-dona-tarjeta fnh-dona-tarjeta--kofi" href="<?php echo esc_url(self::KOFI_URL); ?>" target="_blank" rel="noopener">
+            <span class="fnh-dona-tarjeta-icono" aria-hidden="true">☕</span>
+            <span class="fnh-dona-tarjeta-txt">
+                <strong>Ko-fi</strong>
+                <span><?php esc_html_e('Invita a un café puntual', 'flavor-news-hub'); ?></span>
+            </span>
+            <span class="fnh-dona-tarjeta-chevron" aria-hidden="true">›</span>
         </a>
-        <p class="fnh-dona-modal-nota"><?php esc_html_e('Abre PayPal en una pestaña nueva. Nosotros no vemos tu tarjeta.', 'flavor-news-hub'); ?></p>
+
+        <a class="fnh-dona-tarjeta fnh-dona-tarjeta--paypal" href="<?php echo esc_url($urlPaypal); ?>" target="_blank" rel="noopener">
+            <span class="fnh-dona-tarjeta-icono" aria-hidden="true">💳</span>
+            <span class="fnh-dona-tarjeta-txt">
+                <strong>PayPal</strong>
+                <span><?php esc_html_e('Donación directa', 'flavor-news-hub'); ?></span>
+            </span>
+            <span class="fnh-dona-tarjeta-chevron" aria-hidden="true">›</span>
+        </a>
+
+        <div class="fnh-dona-btc">
+            <div class="fnh-dona-btc-titulo">
+                <span aria-hidden="true">₿</span> Bitcoin <small>(Native SegWit)</small>
+            </div>
+            <code class="fnh-dona-btc-direccion"><?php echo esc_html(self::BTC_SEGWIT); ?></code>
+            <button type="button" class="fnh-dona-btc-copiar" data-fnh-copy-dona="<?php echo esc_attr(self::BTC_SEGWIT); ?>">
+                <?php esc_html_e('Copiar dirección', 'flavor-news-hub'); ?>
+            </button>
+        </div>
+
+        <div class="fnh-dona-btc">
+            <div class="fnh-dona-btc-titulo">
+                <span aria-hidden="true">₿</span> Bitcoin <small>(Taproot)</small>
+            </div>
+            <code class="fnh-dona-btc-direccion"><?php echo esc_html(self::BTC_TAPROOT); ?></code>
+            <button type="button" class="fnh-dona-btc-copiar" data-fnh-copy-dona="<?php echo esc_attr(self::BTC_TAPROOT); ?>">
+                <?php esc_html_e('Copiar dirección', 'flavor-news-hub'); ?>
+            </button>
+        </div>
+
+        <div class="fnh-dona-compartir">
+            <h3><?php esc_html_e('Comparte el proyecto', 'flavor-news-hub'); ?></h3>
+            <p><?php esc_html_e('Recomendárselo a alguien también es ayudar — crecemos por humanos, no por algoritmo.', 'flavor-news-hub'); ?></p>
+            <div class="fnh-dona-compartir-acciones">
+                <a href="<?php echo esc_url('https://t.me/share/url?url=' . rawurlencode(self::REPO_URL) . '&text=' . rawurlencode(__('Flavor News Hub: app de noticias federada, sin algoritmo ni publicidad.', 'flavor-news-hub'))); ?>" target="_blank" rel="noopener">Telegram</a>
+                <a href="<?php echo esc_url('https://wa.me/?text=' . rawurlencode(__('Flavor News Hub: app de noticias federada, sin algoritmo ni publicidad.', 'flavor-news-hub') . ' ' . self::REPO_URL)); ?>" target="_blank" rel="noopener">WhatsApp</a>
+                <a href="<?php echo esc_url('https://mastodonshare.com/?text=' . rawurlencode(__('Flavor News Hub: app de noticias federada, sin algoritmo ni publicidad.', 'flavor-news-hub')) . '&url=' . rawurlencode(self::REPO_URL)); ?>" target="_blank" rel="noopener">Mastodon</a>
+            </div>
+        </div>
+
+        <div class="fnh-dona-otras">
+            <h3><?php esc_html_e('Otras formas de ayudar', 'flavor-news-hub'); ?></h3>
+            <ul>
+                <li><span aria-hidden="true">⭐</span> <a href="<?php echo esc_url(self::REPO_URL); ?>" target="_blank" rel="noopener"><?php esc_html_e('Dale una estrella en GitHub', 'flavor-news-hub'); ?></a></li>
+                <li><span aria-hidden="true">🐛</span> <a href="<?php echo esc_url(self::REPO_URL . '/issues'); ?>" target="_blank" rel="noopener"><?php esc_html_e('Reporta bugs o sugiere mejoras', 'flavor-news-hub'); ?></a></li>
+                <li><span aria-hidden="true">🌐</span> <?php esc_html_e('Ayuda con las traducciones', 'flavor-news-hub'); ?></li>
+                <li><span aria-hidden="true">💻</span> <?php esc_html_e('Contribuye con código o documentación', 'flavor-news-hub'); ?></li>
+            </ul>
+        </div>
+
+        <a class="fnh-dona-ecosistema" href="<?php echo esc_url(self::ECOSISTEMA_URL); ?>" target="_blank" rel="noopener">
+            <span class="fnh-dona-eco-icono" aria-hidden="true">✨</span>
+            <span class="fnh-dona-eco-txt">
+                <strong><?php esc_html_e('Parte de Colección del Nuevo Ser', 'flavor-news-hub'); ?></strong>
+                <span>coleccion-nuevo-ser.gailu.net</span>
+            </span>
+        </a>
     </div>
 </div>
 <script>
 (function(){
-    var fab=document.getElementById('fnh-dona-fab');
     var modal=document.getElementById('fnh-dona-modal');
-    if(!fab||!modal)return;
+    if(!modal)return;
     function abrir(){modal.classList.add('fnh-dona-modal--abierto');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
     function cerrar(){modal.classList.remove('fnh-dona-modal--abierto');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';}
-    fab.addEventListener('click',abrir);
-    fab.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();abrir();}});
-    modal.addEventListener('click',function(e){if(e.target&&e.target.hasAttribute('data-fnh-close-dona')){cerrar();}});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('fnh-dona-modal--abierto')){cerrar();}});
+    // Cualquier elemento con data-fnh-open-dona (FAB, botones del menú,
+    // botones de landing…) abre el mismo modal. Delegación global para
+    // cubrir elementos inyectados dinámicamente.
+    document.addEventListener('click',function(e){
+        var t=e.target.closest('[data-fnh-open-dona]');
+        if(t){e.preventDefault();abrir();return;}
+        if(e.target.hasAttribute('data-fnh-close-dona')){cerrar();return;}
+        var copiar=e.target.closest('[data-fnh-copy-dona]');
+        if(copiar){
+            e.preventDefault();
+            var addr=copiar.getAttribute('data-fnh-copy-dona');
+            if(navigator.clipboard&&addr){
+                navigator.clipboard.writeText(addr).then(function(){
+                    var txt=copiar.textContent;
+                    copiar.textContent=<?php echo wp_json_encode(__('Copiada', 'flavor-news-hub')); ?>;
+                    setTimeout(function(){copiar.textContent=txt;},1400);
+                });
+            }
+        }
+    });
+    document.addEventListener('keydown',function(e){
+        var fab=e.target.closest&&e.target.closest('[data-fnh-open-dona]');
+        if(fab&&(e.key==='Enter'||e.key===' ')){e.preventDefault();abrir();return;}
+        if(e.key==='Escape'&&modal.classList.contains('fnh-dona-modal--abierto')){cerrar();}
+    });
 })();
 </script>
         <?php
@@ -936,15 +1033,46 @@ final class Shortcodes
         .fnh-dona-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:1rem}
         .fnh-dona-modal--abierto{display:flex !important}
         .fnh-dona-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);cursor:pointer}
-        .fnh-dona-dialog{position:relative;background:#fff;padding:2.5rem 2rem 2rem;border-radius:20px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;animation:fnh-dona-in .2s ease-out}
+        .fnh-dona-dialog{position:relative;background:#fff;padding:2rem 1.6rem 1.6rem;border-radius:20px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:left;animation:fnh-dona-in .2s ease-out}
         @keyframes fnh-dona-in{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
-        .fnh-dona-cerrar{position:absolute;top:.5rem;right:.6rem;background:transparent;border:0;font-size:1.8em;line-height:1;cursor:pointer;color:#888;width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
+        .fnh-dona-cerrar{position:absolute;top:.5rem;right:.6rem;background:transparent;border:0;font-size:1.8em;line-height:1;cursor:pointer;color:#888;width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;z-index:2}
         .fnh-dona-cerrar:hover{background:#f0f0f0;color:#000}
-        .fnh-dona-dialog h2{margin:0 0 .6em !important;color:#b5193a !important;font-size:1.4em !important;border:0 !important;padding:0 !important;font-weight:800}
-        .fnh-dona-dialog p{margin:0 0 1.2em !important;color:#444 !important;line-height:1.55;font-size:1em}
-        .fnh-dona-modal-boton{display:inline-block;padding:.9rem 2rem;background:#ff4d6d;color:#fff !important;border-radius:999px;font-weight:700;text-decoration:none !important;font-size:1.05em;transition:background .15s,transform .15s}
-        .fnh-dona-modal-boton:hover{background:#e0334e;color:#fff !important;transform:translateY(-1px)}
-        .fnh-dona-modal-nota{margin-top:1em !important;font-size:.8em;color:#888 !important;line-height:1.4}
+        .fnh-dona-dialog h2{margin:0 0 .4em !important;color:#b5193a !important;font-size:1.4em !important;border:0 !important;padding:0 !important;font-weight:800;text-align:center}
+        .fnh-dona-intro{margin:0 0 1.2em !important;color:#555 !important;line-height:1.45;font-size:.95em;text-align:center}
+        .fnh-dona-tarjeta{display:flex !important;align-items:center;gap:.9rem;padding:.9rem 1rem;border-radius:12px;text-decoration:none !important;color:#fff !important;margin:0 0 .6rem !important;transition:transform .12s,box-shadow .12s}
+        .fnh-dona-tarjeta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.15)}
+        .fnh-dona-tarjeta--kofi{background:#c06a34 !important}
+        .fnh-dona-tarjeta--paypal{background:#2e5cb8 !important}
+        .fnh-dona-tarjeta-icono{font-size:1.7em;flex:0 0 auto}
+        .fnh-dona-tarjeta-txt{flex:1;display:flex;flex-direction:column;min-width:0;color:#fff !important}
+        .fnh-dona-tarjeta-txt strong{font-size:1.05em;font-weight:700;color:#fff !important}
+        .fnh-dona-tarjeta-txt span{font-size:.82em;color:rgba(255,255,255,.88) !important}
+        .fnh-dona-tarjeta-chevron{font-size:1.6em;opacity:.8;color:#fff}
+        .fnh-dona-btc{background:linear-gradient(135deg,#b26b19,#a07818);color:#fff;padding:.85rem 1rem;border-radius:12px;margin:0 0 .6rem}
+        .fnh-dona-btc-titulo{color:#fff;font-weight:700;margin-bottom:.45em;font-size:.95em}
+        .fnh-dona-btc-titulo small{opacity:.85;font-weight:500;font-size:.82em}
+        .fnh-dona-btc-direccion{display:block;font-family:monospace;font-size:.7rem;line-height:1.35;word-break:break-all;color:#fff;background:rgba(0,0,0,.18);padding:.4em .55em;border-radius:6px;margin-bottom:.55em}
+        .fnh-dona-btc-copiar{background:rgba(255,255,255,.22);color:#fff;border:0;padding:.45rem .9rem;border-radius:999px;font-weight:600;cursor:pointer;font-size:.85em;transition:background .15s}
+        .fnh-dona-btc-copiar:hover{background:rgba(255,255,255,.35)}
+        .fnh-dona-compartir{margin-top:1.3rem;padding-top:1rem;border-top:1px solid #eee}
+        .fnh-dona-compartir h3{margin:0 0 .3em !important;font-size:.95em;font-weight:700;color:#333}
+        .fnh-dona-compartir p{margin:0 0 .7em !important;font-size:.85em;color:#666 !important;line-height:1.45}
+        .fnh-dona-compartir-acciones{display:flex;gap:.45rem;flex-wrap:wrap}
+        .fnh-dona-compartir-acciones a{padding:.35rem .85rem;border-radius:999px;background:#f3f4f6;color:#333 !important;font-size:.82em;text-decoration:none !important;font-weight:600}
+        .fnh-dona-compartir-acciones a:hover{background:#e5e7eb}
+        .fnh-dona-otras{margin-top:1.2rem;padding:.9rem 1rem;background:#f7f7f9;border-radius:12px}
+        .fnh-dona-otras h3{margin:0 0 .45em !important;font-size:.9em;font-weight:700;color:#333}
+        .fnh-dona-otras ul{list-style:none !important;padding:0 !important;margin:0 !important}
+        .fnh-dona-otras li{padding:.25em 0;font-size:.86em;color:#555;line-height:1.5}
+        .fnh-dona-otras li span{margin-right:.45em}
+        .fnh-dona-otras a{color:#333 !important;text-decoration:none !important;font-weight:500}
+        .fnh-dona-otras a:hover{text-decoration:underline !important}
+        .fnh-dona-ecosistema{display:flex !important;align-items:center;gap:.8rem;margin-top:1rem;padding:.85rem 1rem;background:#fff7e6;border:1px solid #ffe4b3;border-radius:12px;text-decoration:none !important;color:#5c3e00 !important}
+        .fnh-dona-ecosistema:hover{background:#ffefd1}
+        .fnh-dona-eco-icono{font-size:1.5em}
+        .fnh-dona-eco-txt{display:flex;flex-direction:column;color:#5c3e00 !important}
+        .fnh-dona-eco-txt strong{font-weight:700;font-size:.95em}
+        .fnh-dona-eco-txt span{font-size:.8em;opacity:.8}
 
         /* En la landing (Inicio) ocultamos el entry-header del tema:
            el hero ya tiene su propio título grande y el tema añade un
@@ -1232,7 +1360,7 @@ final class Shortcodes
         #fnh-landing .fnh-apoyo-inner{max-width:560px;margin:0 auto}
         #fnh-landing .fnh-apoyo-titulo{margin:0 0 .5em !important;font-size:1.6em !important;color:#b5193a !important;border:0 !important;padding:0 !important;font-weight:800}
         #fnh-landing .fnh-apoyo-copy{color:#4a1020 !important;font-size:1em;margin:0 0 1.2em !important;line-height:1.55}
-        #fnh-landing .fnh-boton-apoyo{display:inline-block !important;padding:.85rem 2rem !important;background:#ff4d6d !important;color:#fff !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.05em !important;transition:transform .15s,box-shadow .2s}
+        #fnh-landing .fnh-boton-apoyo{display:inline-block !important;padding:.85rem 2rem !important;background:#ff4d6d !important;color:#fff !important;border:0 !important;border-radius:999px !important;font-weight:700 !important;text-decoration:none !important;font-size:1.05em !important;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .2s}
         #fnh-landing .fnh-boton-apoyo:hover{background:#e0334e !important;transform:translateY(-1px);box-shadow:0 8px 20px rgba(255,77,109,.4)}
 
         /* Noticias dentro de la landing: tarjeta horizontal (imagen izquierda, texto derecha). */
@@ -2056,14 +2184,16 @@ JS;
                 </div>
             </section>
 
-            <!-- APOYO AL PROYECTO -->
+            <!-- APOYO AL PROYECTO: botón abre el modal unificado
+                 de donaciones (Ko-fi, PayPal, Bitcoin, compartir),
+                 mismo contenido que el sheet de la app móvil. -->
             <section class="fnh-apoyo">
                 <div class="fnh-apoyo-inner">
                     <h2 class="fnh-apoyo-titulo">♥ <?php esc_html_e('Apoya el proyecto', 'flavor-news-hub'); ?></h2>
                     <p class="fnh-apoyo-copy"><?php esc_html_e('Sin publicidad, sin tracking, sin fondos opacos. Si lo que hacemos te sirve y puedes, una donación ayuda a mantenerlo y crecer.', 'flavor-news-hub'); ?></p>
-                    <a class="fnh-boton-apoyo" href="<?php echo esc_url(self::urlDonaciones()); ?>" target="_blank" rel="noopener">
-                        <?php esc_html_e('Donar vía PayPal', 'flavor-news-hub'); ?>
-                    </a>
+                    <button type="button" class="fnh-boton-apoyo" data-fnh-open-dona>
+                        ♥ <?php esc_html_e('Apoyar el proyecto', 'flavor-news-hub'); ?>
+                    </button>
                 </div>
             </section>
 

@@ -724,6 +724,16 @@
     "id": 80,
     "name": "Cuidados",
     "slug": "cuidados"
+   },
+   {
+    "id": 62,
+    "name": "Feminismos",
+    "slug": "feminismos"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },
@@ -796,6 +806,16 @@
     "id": 76,
     "name": "Cultura",
     "slug": "cultura"
+   },
+   {
+    "id": 83,
+    "name": "Economía social",
+    "slug": "economia-social"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },
@@ -892,6 +912,11 @@
     "id": 62,
     "name": "Feminismos",
     "slug": "feminismos"
+   },
+   {
+    "id": 85,
+    "name": "Derechos civiles",
+    "slug": "derechos-civiles"
    }
   ]
  },

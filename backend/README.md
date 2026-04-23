@@ -275,6 +275,17 @@ Regla práctica: si el importador sólo añade una ficha enlazada al original, e
 * El territorio, idiomas y temas encajan con la taxonomía del proyecto.
 * Si el feed tiene términos de uso explícitos, se han revisado antes de importarlo.
 
+## Mantenimiento del catálogo
+
+`backend/seed/*.json` es la fuente de verdad del catálogo bundleado del plugin.
+`app/assets/seed/*.json` es el fallback offline de la app Flutter.
+
+Cuando cambies una fuente, radio, colectivo o temática canónica:
+
+* revisa si el cambio debe sincronizarse también en el seed offline de la app;
+* si el plugin ya está instalado en una instancia activa, recuerda que la sincronización automática de bundleados depende de una actualización real del plugin;
+* si el cambio se hace por WP-CLI o por altas manuales, la app online lo verá al instante, pero la app offline sólo lo verá en la siguiente build.
+
 ### Producción
 
 Copia el contenido de `backend/` a `wp-content/plugins/flavor-news-hub/` y actívalo desde el admin. No hace falta `composer install` — el plugin trae su propio autoloader.
