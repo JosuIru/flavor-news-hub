@@ -142,6 +142,12 @@ final class Plugin
             return;
         }
         \FlavorNewsHub\Catalog\CreadorPaginas::crearSiNoExisten();
+        // Invalida el cache de la release de GitHub: si el usuario acaba
+        // de instalar un plugin nuevo es MUY probable que también haya
+        // un APK nuevo anunciable — no tiene sentido seguir sirviendo
+        // la respuesta cacheada de la release anterior durante 6h más.
+        delete_transient('fnh_app_update_cache');
+        delete_transient('fnh_app_update_cache_beta');
         update_option('fnh_paginas_sincronizadas_version', FNH_VERSION);
     }
 }

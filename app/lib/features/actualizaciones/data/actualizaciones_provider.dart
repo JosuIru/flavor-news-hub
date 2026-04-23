@@ -135,4 +135,4 @@ class _ClavesPref {
   static const versionDescartada = 'fnh.pref.actualizacion.descartada';
 }
 
-const _ttlMs = 6 * 60 * 60 * 1000; // 6 horas en ms
+const _ttlMs = 30 * 60 * 1000; // 30 min en ms

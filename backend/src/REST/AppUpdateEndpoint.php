@@ -22,7 +22,10 @@ final class AppUpdateEndpoint
 {
     private const REPO_GITHUB = 'JosuIru/flavor-news-hub';
     private const TRANSIENT_CACHE = 'fnh_app_update_cache';
-    private const TTL_CACHE_SEGUNDOS = 6 * HOUR_IN_SECONDS;
+    // TTL corto: 1 hora. GitHub permite 60 req/h por IP sin token, y
+    // sólo el endpoint /apps/check-update dispara estas peticiones —
+    // muy por debajo del límite aun con tráfico agregado.
+    private const TTL_CACHE_SEGUNDOS = 1 * HOUR_IN_SECONDS;
 
     public static function registrarRutas(): void
     {

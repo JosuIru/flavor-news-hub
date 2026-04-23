@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -5,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/providers/preferences_provider.dart';
+import 'core/services/ingest_trigger.dart';
 import 'features/notifications/data/preferencias_notif.dart';
 import 'features/notifications/data/servicio_notificaciones.dart';
 
@@ -38,6 +41,12 @@ Future<void> main() async {
         )
       : FrecuenciaNotif.nunca;
   await aplicarFrecuenciaNotif(frecuenciaGuardada);
+
+  // Despertamos la ingesta del backend. En sitios con poco tráfico
+  // web wp-cron tarda en disparar — esto asegura que al abrir la app
+  // el backend acaba de pasar por los feeds. Fire-and-forget: no
+  // bloqueamos el arranque esperando la respuesta.
+  unawaited(dispararIngestaBackend(sharedPrefs));
 
   runApp(
     ProviderScope(
