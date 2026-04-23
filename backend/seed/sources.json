@@ -2859,5 +2859,140 @@
     ],
     "medium_type": "news",
     "content_license": ""
+  },
+  {
+    "slug": "yt-liusivaya",
+    "name": "liusivaya",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCdH8XwL73jzCu5UET8nv24g",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@liusivaya",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-lord-draugr",
+    "name": "Lord Draugr",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCtIdb7KRqOTcOogKsos_QRw",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@LordDraugr",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "politica"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-almayadeen-espanol",
+    "name": "Al Mayadeen Español",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC9YbjpvsFZytS0DnO1FnTKw",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@AlmayadeenEspanol",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-sorprendente-films",
+    "name": "Sorprendente Films",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAPib_VVMKhfUERJEbXuUhg",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@SorprendenteFilms",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-pol-bertran",
+    "name": "Pol Bertran",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCY29i-dTLePyVxS5Fd4TdBA",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@PolBertran",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "educacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-diego-en-la-lucha",
+    "name": "Diego en la Lucha",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCWSHe7OUrIs2ZSPOKOOV8ZQ",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@diegoenlalucha",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-urolakoen-nafarzuztarrak",
+    "name": "Urolakoen Nafar Zuztarrak",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCnI1-3uQTnk4uXE9LSGWB5Q",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@urolakoennafarzuztarrak7545",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura",
+      "memoria-historica"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-ahotsa-info",
+    "name": "Ahotsa.info (YouTube)",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCo1TrbaH7XsXzKdK9U_v5GA",
+    "feed_type": "youtube",
+    "website_url": "https://www.ahotsa.info",
+    "territory": "Nafarroa",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": ""
   }
 ]
