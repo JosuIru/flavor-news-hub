@@ -823,10 +823,27 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-media img{width:100% !important;height:100% !important;object-fit:cover;display:block;max-height:100%}
         /* Algunos feeds (Zuzeu y similares) vienen con <img> embebidas
            dentro del excerpt. Las escondemos para no duplicar la
-           portada y evitar desbordes del float:left inline. */
+           portada y evitar desbordes del float:left inline. Además
+           neutralizamos float: por si el excerpt usa otro selector. */
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt img,
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-excerpt img,
-        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt img{display:none !important}
+        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt img,
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt [style*="float"],
+        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt [style*="float"]{display:none !important;float:none !important}
+        /* Truncar excerpts largos (algunos feeds meten el artículo
+           entero) a 3 líneas para que las cards no se estiren en
+           vertical y rompan el grid. */
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt,
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-excerpt,
+        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:5em}
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt{-webkit-line-clamp:4;max-height:6.5em}
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt p,
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-excerpt p,
+        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt p{display:inline;margin:0}
+        /* Títulos largos a 3 líneas máximo. */
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal h3,
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria h4,
+        .fnh-shortcode-wrap--feed .fnh-feed-item h3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-contenido{display:grid;gap:.28rem;align-content:start}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-meta{font-size:.7rem;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria h4{margin:0;font-size:.92rem;line-height:1.22;letter-spacing:-.01em;color:var(--fnh-color-text)}
