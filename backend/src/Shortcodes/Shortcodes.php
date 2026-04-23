@@ -828,8 +828,8 @@ final class Shortcodes
         .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt img,
         .fnh-shortcode-wrap--feed .fnh-feed-hero-secundaria-excerpt img,
         .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt img,
-        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt [style*="float"],
-        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt [style*="float"]{display:none !important;float:none !important}
+        .fnh-shortcode-wrap--feed .fnh-feed-hero-principal-excerpt [style*=float],
+        .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-excerpt [style*=float]{display:none !important;float:none !important}
         /* Truncar excerpts largos (algunos feeds meten el artículo
            entero) a 3 líneas para que las cards no se estiren en
            vertical y rompan el grid. */
