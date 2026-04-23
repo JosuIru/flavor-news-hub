@@ -592,6 +592,123 @@ final class Shortcodes
         return $orQuery;
     }
 
+    /**
+     * Sentinel para el scroll infinito: un `<div>` oculto al final de la
+     * lista con data-atributos que el JS lee para pedir la siguiente
+     * página al endpoint REST. Si sólo hay una página, no se renderiza.
+     *
+     * @param array<string,mixed> $filtros
+     */
+    private static function renderSentinelScrollInfinito(
+        string $contexto,
+        int $perPage,
+        int $totalPaginas,
+        array $filtros
+    ): string {
+        if ($totalPaginas <= 1 || $perPage <= 0) {
+            return '';
+        }
+        $atributos = [
+            'class'             => 'fnh-infinite-sentinel',
+            'data-context'      => $contexto,
+            'data-per-page'     => (string) $perPage,
+            'data-current-page' => '1',
+            'data-total-pages'  => (string) $totalPaginas,
+        ];
+        foreach ($filtros as $clave => $valor) {
+            if ($valor === '' || $valor === 0 || $valor === null) {
+                continue;
+            }
+            $atributos['data-' . $clave] = (string) $valor;
+        }
+        $html = '<div';
+        foreach ($atributos as $clave => $valor) {
+            $html .= ' ' . esc_attr($clave) . '="' . esc_attr($valor) . '"';
+        }
+        $html .= ' aria-hidden="true">';
+        $html .= '<span class="fnh-infinite-spinner" role="status">' . esc_html__('Cargando más…', 'flavor-news-hub') . '</span>';
+        $html .= '</div>';
+        return $html;
+    }
+
+    /**
+     * Renderiza una card de noticia (`<li class="fnh-feed-item">…</li>`)
+     * como string. Extraído del bucle de renderFeed para reutilizarlo
+     * desde el endpoint REST de scroll infinito.
+     */
+    public static function renderFeedItemHtml(
+        \WP_Post $post,
+        bool $esPaginaNoticias,
+        bool $esDestacado,
+        bool $mostrarMedia,
+        bool $mostrarExcerpt
+    ): string {
+        $datos = ItemTransformer::transformar($post);
+        $fuenteNombre = $datos['source']['name'] ?? '';
+        $urlOriginal = $datos['original_url'] ?: $datos['url'];
+        $clasesItem = 'fnh-feed-item';
+        if ($esPaginaNoticias && $esDestacado) {
+            $clasesItem .= ' fnh-feed-item--destacado';
+        }
+        ob_start();
+        printf('<li class="%s">', esc_attr($clasesItem));
+        if ($esPaginaNoticias && $mostrarMedia && !empty($datos['media_url'])) {
+            printf('<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>', esc_url($datos['media_url']));
+        }
+        printf('<h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>', esc_url($urlOriginal), esc_html((string) $datos['title']));
+        echo '<div class="fnh-meta">' . esc_html($fuenteNombre);
+        if (!empty($datos['published_at'])) {
+            $fecha = date_i18n(get_option('date_format', 'F j, Y'), strtotime((string) $datos['published_at']));
+            echo ' · ' . esc_html($fecha);
+        }
+        echo '</div>';
+        if (!$esPaginaNoticias && $mostrarMedia && !empty($datos['media_url'])) {
+            printf('<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>', esc_url($datos['media_url']));
+        }
+        if ($mostrarExcerpt && !empty($datos['excerpt'])) {
+            echo '<div class="fnh-excerpt">' . wp_kses_post((string) $datos['excerpt']) . '</div>';
+        }
+        echo self::renderBotonesCompartir((string) $urlOriginal, (string) $datos['title']);
+        echo '</li>';
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Renderiza una card de vídeo (`<article class="fnh-video-card">…</article>`)
+     * como string, incluyendo miniatura + meta (fuente · fecha) + título +
+     * excerpt + botones de compartir. Reutilizado por el endpoint REST.
+     */
+    public static function renderVideoCardHtml(\WP_Post $post): string
+    {
+        $datos = ItemTransformer::transformar($post);
+        $url = $datos['original_url'] ?: $datos['url'];
+        $fuenteNombre = $datos['source']['name'] ?? '';
+        $meta = $fuenteNombre;
+        if (!empty($datos['published_at'])) {
+            $fecha = date_i18n(get_option('date_format', 'F j, Y'), strtotime((string) $datos['published_at']));
+            $meta = trim($meta . ($meta !== '' ? ' · ' : '') . $fecha);
+        }
+        ob_start();
+        echo '<article class="fnh-video-card">';
+        printf('<a class="fnh-video" href="%s" target="_blank" rel="noopener">', esc_url($url));
+        if (!empty($datos['media_url'])) {
+            printf('<img src="%s" alt="" loading="lazy" />', esc_url($datos['media_url']));
+        }
+        echo '</a>';
+        echo '<div class="fnh-video-contenido">';
+        if ($meta !== '') {
+            echo '<div class="fnh-video-meta">' . esc_html($meta) . '</div>';
+        }
+        printf('<h3 class="fnh-video-titulo"><a href="%s" target="_blank" rel="noopener">%s</a></h3>', esc_url($url), esc_html((string) $datos['title']));
+        if (!empty($datos['excerpt'])) {
+            echo '<div class="fnh-video-excerpt">' . wp_kses_post((string) $datos['excerpt']) . '</div>';
+        }
+        echo '</div>';
+        echo self::renderBotonesCompartir((string) $url, (string) $datos['title']);
+        echo '</article>';
+        return (string) ob_get_clean();
+    }
+
     private static function renderBotonesCompartir(string $url, string $titulo): string
     {
         if ($url === '') {
@@ -710,8 +827,11 @@ final class Shortcodes
         .fnh-filtros-boton,.fnh-filtros-reset{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.65rem 1rem;border-radius:999px;text-decoration:none;font:inherit;font-weight:600}
         .fnh-filtros-boton{border:0;background:var(--fnh-color-accent);color:var(--fnh-color-accent-contrast);cursor:pointer}
         .fnh-filtros-reset{border:1px solid var(--fnh-color-border);background:transparent;color:var(--fnh-color-text)}
-        .fnh-shortcode-wrap .fnh-share{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}
-        .fnh-shortcode-wrap .fnh-share-link{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:.35rem .7rem;border:1px solid var(--fnh-color-border);border-radius:999px;background:var(--fnh-color-surface);font-size:.78rem;line-height:1.2;text-decoration:none;color:var(--fnh-color-text-soft)}
+        .fnh-infinite-sentinel{display:flex;justify-content:center;align-items:center;padding:1.5rem 0;min-height:60px}
+        .fnh-infinite-sentinel.fnh-infinite-sentinel--done{display:none}
+        .fnh-infinite-spinner{font-size:.85rem;color:var(--fnh-color-text-soft);opacity:.7}
+        .fnh-shortcode-wrap .fnh-share{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.45rem}
+        .fnh-shortcode-wrap .fnh-share-link{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:.15rem .5rem;border:1px solid var(--fnh-color-border);border-radius:999px;background:var(--fnh-color-surface);font-size:.68rem;line-height:1.1;text-decoration:none;color:var(--fnh-color-text-soft)}
         .fnh-shortcode-wrap .fnh-share-link:hover{background:var(--fnh-color-surface-alt);color:var(--fnh-color-text)}
         @media (max-width:640px){.fnh-filtros{padding:.9rem}.fnh-filtros-grid{grid-template-columns:1fr}}
 
@@ -890,11 +1010,18 @@ final class Shortcodes
           .fnh-shortcode-wrap--feed .fnh-feed-lista{grid-template-columns:1fr}
           .fnh-shortcode-wrap--feed .fnh-feed-item .fnh-media{aspect-ratio:16/9}
         }
-        .fnh-shortcode-wrap .fnh-videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-        .fnh-shortcode-wrap .fnh-videos-grid .fnh-video{background:#000;border-radius:8px;overflow:hidden;position:relative;aspect-ratio:16/9}
-        .fnh-shortcode-wrap .fnh-videos-grid .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
-        .fnh-shortcode-wrap .fnh-videos-grid .fnh-video .fnh-video-title{position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:.9em}
-        .fnh-shortcode-wrap .fnh-video-card{display:grid;gap:.55rem}
+        .fnh-shortcode-wrap .fnh-videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;list-style:none;padding:0;margin:0}
+        .fnh-shortcode-wrap .fnh-video-card{display:flex;flex-direction:column;gap:.55rem;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);min-width:0}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video{display:block;background:#000;overflow:hidden;aspect-ratio:16/9;text-decoration:none}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-contenido{display:flex;flex-direction:column;gap:.35rem;padding:.15rem 1rem 0}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-meta{font-size:.78rem;color:var(--fnh-color-text-soft);font-weight:600}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-titulo{margin:0;font-size:1rem;line-height:1.3;font-weight:700;word-wrap:break-word;overflow-wrap:break-word}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-titulo a{color:var(--fnh-color-text) !important;text-decoration:none}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-titulo a:hover{text-decoration:underline}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-excerpt{font-size:.85rem;color:var(--fnh-color-text-soft);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-excerpt p{margin:0 !important}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-share{padding:0 1rem 1rem}
         .fnh-shortcode-wrap .fnh-radios-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.8rem;padding:0;list-style:none}
         .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio{border:1px solid var(--fnh-color-border);border-radius:12px;padding:1rem;background:var(--fnh-color-surface);display:flex;flex-direction:column;gap:.4rem;min-width:0;box-shadow:0 1px 2px rgba(0,0,0,.03);list-style:none}
         .fnh-shortcode-wrap .fnh-radios-lista .fnh-radio h4{margin:0 !important;font-size:1em;font-weight:600;color:var(--fnh-color-text) !important}
@@ -1042,25 +1169,118 @@ final class Shortcodes
         wp_enqueue_style('flavor-news-hub-shortcodes');
         wp_add_inline_style('flavor-news-hub-shortcodes', $css);
 
-        $js = <<<'JS'
-document.addEventListener('click', function (event) {
-    var trigger = event.target.closest('[data-fnh-copy-url]');
-    if (!trigger) {
-        return;
-    }
-    event.preventDefault();
-    var url = trigger.getAttribute('data-fnh-copy-url');
-    if (!url || !navigator.clipboard || !navigator.clipboard.writeText) {
-        return;
-    }
-    navigator.clipboard.writeText(url).then(function () {
-        var original = trigger.textContent;
-        trigger.textContent = 'Copiado';
-        window.setTimeout(function () {
-            trigger.textContent = original;
-        }, 1400);
+        $restBase = esc_url_raw(rest_url('flavor-news/v1/feed-html'));
+        $js = <<<JS
+(function () {
+    document.addEventListener('click', function (event) {
+        var trigger = event.target.closest('[data-fnh-copy-url]');
+        if (!trigger) {
+            return;
+        }
+        event.preventDefault();
+        var url = trigger.getAttribute('data-fnh-copy-url');
+        if (!url || !navigator.clipboard || !navigator.clipboard.writeText) {
+            return;
+        }
+        navigator.clipboard.writeText(url).then(function () {
+            var original = trigger.textContent;
+            trigger.textContent = 'Copiado';
+            window.setTimeout(function () {
+                trigger.textContent = original;
+            }, 1400);
+        });
     });
-});
+
+    // Scroll infinito: observa cada sentinel y pide la siguiente página
+    // al endpoint REST /feed-html. Añade los items al destino correcto
+    // (ul.fnh-feed-lista o div.fnh-videos-grid) y actualiza data-current-page.
+    var REST_URL = '$restBase';
+    var sentinelesBloqueados = new WeakSet();
+    function destinoDeSentinel(sentinel) {
+        var ctx = sentinel.getAttribute('data-context') || '';
+        var wrap = sentinel.closest('.fnh-shortcode-wrap');
+        if (!wrap) return null;
+        if (ctx === 'videos') {
+            return wrap.querySelector('.fnh-videos-grid');
+        }
+        return wrap.querySelector('.fnh-feed-lista');
+    }
+    function cargarSiguientePagina(sentinel) {
+        if (sentinelesBloqueados.has(sentinel)) return;
+        var actual = parseInt(sentinel.getAttribute('data-current-page') || '1', 10);
+        var total = parseInt(sentinel.getAttribute('data-total-pages') || '1', 10);
+        if (actual >= total) {
+            sentinel.classList.add('fnh-infinite-sentinel--done');
+            return;
+        }
+        sentinelesBloqueados.add(sentinel);
+        var proximaPagina = actual + 1;
+        var params = new URLSearchParams();
+        params.set('context', sentinel.getAttribute('data-context') || 'feed');
+        params.set('page', String(proximaPagina));
+        params.set('per_page', sentinel.getAttribute('data-per-page') || '10');
+        ['topic','territory','language','source_type','exclude_source_type','show_excerpt','show_media'].forEach(function (clave) {
+            var valor = sentinel.getAttribute('data-' + clave);
+            if (valor !== null && valor !== '') {
+                params.set(clave, valor);
+            }
+        });
+        fetch(REST_URL + '?' + params.toString(), { credentials: 'same-origin' })
+            .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+            .then(function (data) {
+                var destino = destinoDeSentinel(sentinel);
+                if (destino && data && typeof data.html === 'string' && data.html.length > 0) {
+                    destino.insertAdjacentHTML('beforeend', data.html);
+                }
+                sentinel.setAttribute('data-current-page', String(proximaPagina));
+                if (!data || !data.has_more) {
+                    sentinel.classList.add('fnh-infinite-sentinel--done');
+                } else {
+                    sentinelesBloqueados.delete(sentinel);
+                }
+            })
+            .catch(function () {
+                // En caso de error liberamos el lock para permitir reintento
+                // cuando el usuario siga bajando.
+                sentinelesBloqueados.delete(sentinel);
+            });
+    }
+    function inicializarSentineles() {
+        var sentineles = document.querySelectorAll('.fnh-infinite-sentinel:not([data-fnh-observado])');
+        if (sentineles.length === 0) return;
+        if (!('IntersectionObserver' in window)) {
+            // Fallback: carga todas las páginas de golpe en navegadores
+            // viejos. Raro hoy, pero evita dejar la lista coja.
+            sentineles.forEach(function (s) {
+                s.setAttribute('data-fnh-observado', '1');
+                var step = function () {
+                    cargarSiguientePagina(s);
+                    if (!s.classList.contains('fnh-infinite-sentinel--done')) {
+                        window.setTimeout(step, 400);
+                    }
+                };
+                step();
+            });
+            return;
+        }
+        var observador = new IntersectionObserver(function (entradas) {
+            entradas.forEach(function (entrada) {
+                if (entrada.isIntersecting) {
+                    cargarSiguientePagina(entrada.target);
+                }
+            });
+        }, { rootMargin: '400px 0px' });
+        sentineles.forEach(function (s) {
+            s.setAttribute('data-fnh-observado', '1');
+            observador.observe(s);
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarSentineles);
+    } else {
+        inicializarSentineles();
+    }
+})();
 JS;
         wp_register_script('flavor-news-hub-shortcodes', '', [], false, true);
         wp_enqueue_script('flavor-news-hub-shortcodes');
@@ -1245,48 +1465,30 @@ JS;
                 $esPaginaNoticias ? ' fnh-feed-lista--noticias' : ''
             );
             foreach ($postsListado as $indice => $post) {
-                $datos = ItemTransformer::transformar($post);
-                $fuenteNombre = $datos['source']['name'] ?? '';
-                $urlOriginal = $datos['original_url'] ?: $datos['url'];
-                $clasesItem = 'fnh-feed-item';
-                if ($esPaginaNoticias && $indice === 0) {
-                    $clasesItem .= ' fnh-feed-item--destacado';
-                }
-                printf(
-                    '<li class="%s">',
-                    esc_attr($clasesItem)
+                echo self::renderFeedItemHtml(
+                    $post,
+                    $esPaginaNoticias,
+                    $indice === 0,
+                    (int) $a['show_media'] === 1,
+                    (int) $a['show_excerpt'] === 1
                 );
-                if ($esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
-                    printf(
-                        '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
-                        esc_url($datos['media_url'])
-                    );
-                }
-                printf(
-                    '<h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>',
-                    esc_url($urlOriginal),
-                    esc_html($datos['title'])
-                );
-                echo '<div class="fnh-meta">' . esc_html($fuenteNombre);
-                if (!empty($datos['published_at'])) {
-                    $fecha = date_i18n(get_option('date_format', 'F j, Y'), strtotime($datos['published_at']));
-                    echo ' · ' . esc_html($fecha);
-                }
-                echo '</div>';
-                if (!$esPaginaNoticias && (int) $a['show_media'] === 1 && !empty($datos['media_url'])) {
-                    printf(
-                        '<div class="fnh-media"><img src="%s" alt="" loading="lazy" /></div>',
-                        esc_url($datos['media_url'])
-                    );
-                }
-                if ((int) $a['show_excerpt'] === 1 && !empty($datos['excerpt'])) {
-                    echo '<div class="fnh-excerpt">' . wp_kses_post($datos['excerpt']) . '</div>';
-                }
-                echo self::renderBotonesCompartir((string) $urlOriginal, (string) $datos['title']);
-                echo '</li>';
             }
             echo '</ul>';
         }
+        echo self::renderSentinelScrollInfinito(
+            $esPaginaNoticias ? 'noticias' : (self::paginaAutoActual() === 'podcasts' ? 'podcasts' : 'feed'),
+            (int) $a['limit'],
+            $consulta->max_num_pages,
+            [
+                'topic'               => (string) $a['topic'],
+                'territory'           => (string) $a['territory'],
+                'language'            => (string) $a['language'],
+                'source_type'         => (string) $a['source_type'],
+                'exclude_source_type' => (string) $a['exclude_source_type'],
+                'show_excerpt'        => (int) $a['show_excerpt'],
+                'show_media'          => (int) $a['show_media'],
+            ]
+        );
         return self::envolverShortcode('feed', (string) ob_get_clean(), $filtros);
     }
 
@@ -1422,19 +1624,19 @@ JS;
         ob_start();
         echo '<div class="fnh-videos-grid">';
         foreach ($consulta->posts as $post) {
-            $datos = ItemTransformer::transformar($post);
-            $url = $datos['original_url'] ?: $datos['url'];
-            echo '<article class="fnh-video-card">';
-            printf('<a class="fnh-video" href="%s" target="_blank" rel="noopener">', esc_url($url));
-            if (!empty($datos['media_url'])) {
-                printf('<img src="%s" alt="" loading="lazy" />', esc_url($datos['media_url']));
-            }
-            printf('<div class="fnh-video-title">%s</div>', esc_html($datos['title']));
-            echo '</a>';
-            echo self::renderBotonesCompartir((string) $url, (string) $datos['title']);
-            echo '</article>';
+            echo self::renderVideoCardHtml($post);
         }
         echo '</div>';
+        echo self::renderSentinelScrollInfinito(
+            'videos',
+            (int) $a['limit'],
+            $consulta->max_num_pages,
+            [
+                'topic'     => (string) $a['topic'],
+                'territory' => (string) $a['territory'],
+                'language'  => (string) $a['language'],
+            ]
+        );
         return self::envolverShortcode('videos', (string) ob_get_clean(), $filtros);
     }
 
@@ -1482,7 +1684,7 @@ JS;
      *
      * @return list<int>
      */
-    private static function resolverIdsSources(
+    public static function resolverIdsSources(
         string $territorio,
         string $idioma,
         string $tiposSource,
