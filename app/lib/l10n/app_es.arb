@@ -20,6 +20,8 @@
   "tvEmptyUltimas": "Sin emisiones recientes de los canales de TV.",
   "radiosTitle": "Radios libres",
   "radiosEmpty": "No hay radios en esta instancia.",
+  "radiosOnlyFavorites": "Sólo mis radios",
+  "radiosOnlyFavoritesEmpty": "Aún no tienes radios favoritas.",
   "radiosStreamError": "No se pudo conectar con el stream. Toca para reintentar.",
   "videosTitle": "Vídeos",
   "videosEmpty": "No hay vídeos ahora mismo. Añade canales de YouTube desde Ajustes → Mis medios para que aparezcan aquí.",

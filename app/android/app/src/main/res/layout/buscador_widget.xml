@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget "Buscar en Flavor News" estilo Google Quick Search Box: pill
+  alargada con el icono de la app a la izquierda y el placeholder
+  "Buscar medios y publicaciones" a la derecha. Al tocar abre la app
+  en /search vía deep link `flavornews://search`.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/buscador_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp"
+    android:background="@drawable/buscador_widget_pill"
+    android:minHeight="56dp">
+
+    <ImageView
+        android:id="@+id/buscador_widget_icono"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/widget_buscador_descripcion"
+        android:src="@mipmap/ic_launcher" />
+
+    <TextView
+        android:id="@+id/buscador_widget_texto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginEnd="8dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="15sp"
+        android:textColor="#555555"
+        android:text="@string/widget_buscador_hint" />
+
+    <ImageView
+        android:id="@+id/buscador_widget_lupa"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="@null"
+        android:src="@android:drawable/ic_menu_search"
+        android:tint="#555555" />
+
+</LinearLayout>

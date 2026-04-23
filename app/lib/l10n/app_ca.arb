@@ -15,6 +15,8 @@
   "tvEmptyUltimas": "Sense emissions recents dels canals de TV.",
   "radiosTitle": "Ràdios lliures",
   "radiosEmpty": "No hi ha ràdios en aquesta instància.",
+  "radiosOnlyFavorites": "Només les meves ràdios",
+  "radiosOnlyFavoritesEmpty": "Encara no tens ràdios favorites.",
   "radiosStreamError": "No s'ha pogut connectar amb el canal. Toca per tornar-ho a provar.",
   "videosTitle": "Vídeos",
   "videosEmpty": "Ara mateix no hi ha vídeos. Afegeix canals de YouTube a Ajustaments → Els meus mitjans.",

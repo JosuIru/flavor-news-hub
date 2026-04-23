@@ -94,6 +94,17 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
       }
     }
 
+    // Ruta `search`: desde el widget de búsqueda del home.
+    if (uri.host == 'search') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          ref.read(enrutadorProvider).push('/search');
+        } catch (_) {}
+      });
+      return;
+    }
+
     // (`flavornews://refresh` se eliminó: el widget usa un broadcast
     // nativo propio para refrescar sin abrir la app.)
   }

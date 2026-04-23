@@ -15,6 +15,8 @@
   "tvEmptyUltimas": "TB kanaletatik ez dago azken emisiorik.",
   "radiosTitle": "Irrati libreak",
   "radiosEmpty": "Ez dago irratirik instantzia honetan.",
+  "radiosOnlyFavorites": "Nire irratiak soilik",
+  "radiosOnlyFavoritesEmpty": "Oraindik ez duzu irrati gogokorik.",
   "radiosStreamError": "Ezin izan da jariora konektatu. Ukitu berriro saiatzeko.",
   "settingsShareApp": "Partekatu aplikazioa",
   "settingsShareAppSubtitle": "Pasa erabilgarri egin dakiokeen jendeari.",

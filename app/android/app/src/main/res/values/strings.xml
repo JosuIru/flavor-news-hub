@@ -22,4 +22,7 @@
     <string name="widget_favoritos_descripcion">Radios favoritas</string>
     <string name="widget_favoritos_cabecera">Mis radios</string>
     <string name="widget_favoritos_vacio">Marca radios con ❤ en la app para que aparezcan aquí.</string>
+
+    <string name="widget_buscador_descripcion">Buscar en Flavor News</string>
+    <string name="widget_buscador_hint">Buscar medios y publicaciones</string>
 </resources>

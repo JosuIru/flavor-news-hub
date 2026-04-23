@@ -135,6 +135,21 @@
                 android:resource="@xml/favoritos_widget_info" />
         </receiver>
 
+        <!-- Widget de pantalla de inicio: barra de búsqueda. Pill tipo
+             Google Quick Search Box con el icono de la app + placeholder.
+             Al tocar abre /search vía flavornews://search. -->
+        <receiver
+            android:name=".BuscadorWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_buscador_descripcion">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/buscador_widget_info" />
+        </receiver>
+
         <!-- Deep link handler desde el widget (pulsar titular → detalle).
              El Receiver delega en un Service; ambos tienen que estar
              declarados o Android revienta con:

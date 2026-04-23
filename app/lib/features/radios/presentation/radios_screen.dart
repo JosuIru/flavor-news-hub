@@ -13,6 +13,9 @@ import '../data/programas_radio_provider.dart';
 import '../data/radios_favoritas_notifier.dart';
 import '../data/reproductor_radio_notifier.dart';
 
+/// Estado local del chip "sólo favoritas" en la pantalla de radios.
+final soloRadiosFavoritasProvider = StateProvider<bool>((_) => false);
+
 /// Directorio de radios libres. Cada fila con play/pause. Sólo una suena
 /// a la vez — al pulsar play en otra, la anterior se detiene.
 ///
@@ -62,32 +65,85 @@ class RadiosBody extends ConsumerWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
-          );
+            );
         }
+        final soloFavoritas = ref.watch(soloRadiosFavoritasProvider);
+        final radiosVisibles = soloFavoritas
+            ? radios.where((radio) => favoritas.contains(radio.id)).toList()
+            : [...radios];
         // Favoritas arriba del listado — la preferencia del usuario pesa más
         // que el orden alfabético del backend.
-        final ordenadas = [...radios]
+        final ordenadas = radiosVisibles
           ..sort((a, b) {
             final aFav = favoritas.contains(a.id) ? 0 : 1;
             final bFav = favoritas.contains(b.id) ? 0 : 1;
             if (aFav != bFav) return aFav - bFav;
             return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           });
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: ordenadas.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, indice) {
-            final radio = ordenadas[indice];
-            return _FilaRadio(
-              radio: radio,
-              estadoReproductor: estadoReproductor,
-              esFavorita: favoritas.contains(radio.id),
-              onToggle: () => ref.read(reproductorRadioProvider.notifier).alternar(radio),
-              onFavorita: () =>
-                  ref.read(radiosFavoritasProvider.notifier).alternar(radio.id),
-            );
-          },
+        return Column(
+          children: [
+            if (favoritas.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                child: Row(
+                  children: [
+                    FilterChip(
+                      avatar: Icon(
+                        soloFavoritas ? Icons.favorite : Icons.favorite_border,
+                        size: 16,
+                      ),
+                      label: Text(textos.radiosOnlyFavorites),
+                      selected: soloFavoritas,
+                      onSelected: (valor) =>
+                          ref.read(soloRadiosFavoritasProvider.notifier).state = valor,
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: radiosVisibles.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        const SizedBox(height: 120),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.favorite_border,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                textos.radiosOnlyFavoritesEmpty,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: ordenadas.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, indice) {
+                        final radio = ordenadas[indice];
+                        return _FilaRadio(
+                          radio: radio,
+                          estadoReproductor: estadoReproductor,
+                          esFavorita: favoritas.contains(radio.id),
+                          onToggle: () => ref.read(reproductorRadioProvider.notifier).alternar(radio),
+                          onFavorita: () =>
+                              ref.read(radiosFavoritasProvider.notifier).alternar(radio.id),
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
     );
