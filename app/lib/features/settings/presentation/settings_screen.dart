@@ -3,8 +3,10 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/providers/preferences_provider.dart';
+import '../../actualizaciones/data/actualizaciones_provider.dart';
 import '../../feed/data/filtros_feed.dart';
 
 /// Ajustes completos de la app: idioma UI, tema, tamaño de texto, URL de
@@ -114,6 +116,12 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
+            leading: const Icon(Icons.system_update_alt_outlined),
+            title: Text(textos.settingsCheckUpdate),
+            subtitle: Text(textos.settingsCheckUpdateSubtitle),
+            onTap: () => _comprobarActualizacion(context, ref, textos),
+          ),
+          ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(textos.settingsAbout),
             onTap: () => context.push('/about'),
@@ -146,6 +154,64 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Forzamos una comprobación inmediata saltando el cache local y el
+  /// cache del backend: limpiamos las dos claves de SharedPreferences
+  /// donde el provider guarda la última respuesta y su timestamp, y
+  /// luego invalidamos el provider para que vuelva a pedir. Si hay
+  /// actualización, abrimos directamente la release en el navegador —
+  /// no dependemos del diálogo automático de `AvisoActualizacion`
+  /// (cuyo flag `_mostrado` puede estar a `true` si ya apareció).
+  Future<void> _comprobarActualizacion(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations textos,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.remove('fnh.pref.actualizacion.respuesta');
+    await prefs.remove('fnh.pref.actualizacion.ts');
+    await prefs.remove('fnh.pref.actualizacion.descartada');
+    ref.invalidate(actualizacionProvider);
+    messenger.showSnackBar(SnackBar(
+      content: Text(textos.settingsCheckUpdateChecking),
+      duration: const Duration(seconds: 2),
+    ));
+    try {
+      final estado = await ref.read(actualizacionProvider.future);
+      if (!context.mounted) return;
+      if (!estado.hayActualizacion) {
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(SnackBar(
+          content: Text(textos.settingsCheckUpdateUpToDate),
+        ));
+        return;
+      }
+      final url = estado.urlRelease ?? estado.urlDescarga;
+      if (url == null || url.isEmpty) return;
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          textos.settingsCheckUpdateAvailable(estado.versionRemota ?? ''),
+        ),
+        action: SnackBarAction(
+          label: textos.updateDownload,
+          onPressed: () async {
+            final uri = Uri.tryParse(url);
+            if (uri == null) return;
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          },
+        ),
+        duration: const Duration(seconds: 8),
+      ));
+    } catch (_) {
+      if (!context.mounted) return;
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(
+        content: Text(textos.settingsCheckUpdateError),
+      ));
+    }
   }
 
   String _etiquetaTema(AppLocalizations textos, ThemeMode modo) {

@@ -158,6 +158,15 @@
   "settingsBackendUrl": "Instance URL",
   "settingsBackendUrlDescription": "Change this to consume a different Flavor News Hub instance.",
   "settingsAbout": "About",
+  "settingsCheckUpdate": "Check for updates",
+  "settingsCheckUpdateSubtitle": "Force a fresh check, ignoring cache.",
+  "settingsCheckUpdateChecking": "Checking…",
+  "settingsCheckUpdateUpToDate": "You already have the latest version.",
+  "settingsCheckUpdateAvailable": "A new version is available ({version}).",
+  "@settingsCheckUpdateAvailable": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "settingsCheckUpdateError": "Couldn't check right now. Try again later.",
   "settingsAdvanced": "Advanced",
   "settingsVersion": "Version",
   "settingsProposeSource": "Propose a source",

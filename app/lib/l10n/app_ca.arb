@@ -158,6 +158,15 @@
   "settingsBackendUrl": "URL de la instància",
   "settingsBackendUrlDescription": "Si ho canvies, l'app consumirà dades d'una altra instància de Flavor News Hub.",
   "settingsAbout": "Quant a",
+  "settingsCheckUpdate": "Comprovar actualitzacions",
+  "settingsCheckUpdateSubtitle": "Força la comprovació ara, saltant la memòria cau.",
+  "settingsCheckUpdateChecking": "Comprovant…",
+  "settingsCheckUpdateUpToDate": "Ja tens la darrera versió.",
+  "settingsCheckUpdateAvailable": "Hi ha una nova versió disponible ({version}).",
+  "@settingsCheckUpdateAvailable": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "settingsCheckUpdateError": "No s'ha pogut comprovar ara. Prova-ho d'aquí una estona.",
   "settingsAdvanced": "Avançat",
   "settingsVersion": "Versió",
   "settingsProposeSource": "Proposa un mitjà",

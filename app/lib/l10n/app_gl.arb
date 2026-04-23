@@ -218,6 +218,15 @@
   "settingsBackendUrl": "URL da instancia",
   "settingsBackendUrlDescription": "Se o cambias, a app consumirá os datos doutra instancia de Flavor News Hub.",
   "settingsAbout": "Acerca de",
+  "settingsCheckUpdate": "Comprobar actualizacións",
+  "settingsCheckUpdateSubtitle": "Forzar comprobación agora saltando a caché.",
+  "settingsCheckUpdateChecking": "Comprobando…",
+  "settingsCheckUpdateUpToDate": "Xa tes a última versión.",
+  "settingsCheckUpdateAvailable": "Hai unha nova versión dispoñible ({version}).",
+  "@settingsCheckUpdateAvailable": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "settingsCheckUpdateError": "Non se puido comprobar agora. Téntao de novo máis tarde.",
   "settingsAdvanced": "Avanzado",
   "settingsVersion": "Versión",
   "settingsProposeSource": "Propor un medio",

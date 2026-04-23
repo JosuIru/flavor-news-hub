@@ -218,6 +218,15 @@
   "settingsBackendUrl": "Instantziaren URLa",
   "settingsBackendUrlDescription": "Hau aldatuz gero, aplikazioak beste Flavor News Hub instantzia batetik jasoko ditu datuak.",
   "settingsAbout": "Honi buruz",
+  "settingsCheckUpdate": "Eguneratzeak begiratu",
+  "settingsCheckUpdateSubtitle": "Behartu orain egiaztatzea, cachea alde batera utzita.",
+  "settingsCheckUpdateChecking": "Begiratzen…",
+  "settingsCheckUpdateUpToDate": "Azken bertsioa duzu jada.",
+  "settingsCheckUpdateAvailable": "Bertsio berri bat dago eskuragarri ({version}).",
+  "@settingsCheckUpdateAvailable": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "settingsCheckUpdateError": "Ezin izan da orain egiaztatu. Saiatu geroago.",
   "settingsAdvanced": "Aurreratua",
   "settingsVersion": "Bertsioa",
   "settingsProposeSource": "Hedabide bat proposatu",
