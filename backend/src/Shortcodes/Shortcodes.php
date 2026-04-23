@@ -689,13 +689,37 @@ final class Shortcodes
             $fecha = date_i18n(get_option('date_format', 'F j, Y'), strtotime((string) $datos['published_at']));
             $meta = trim($meta . ($meta !== '' ? ' · ' : '') . $fecha);
         }
+
+        // Embebido inline sólo para YouTube, Vimeo y PeerTube: son
+        // plataformas cuyo iframe oficial está diseñado y permitido por
+        // ToS para embebido en terceros, atribuyendo al canal y
+        // respetando monetización. Para cualquier otra URL mantenemos
+        // el click a pestaña externa. `construirDatosEmbed` devuelve
+        // null si la URL no es de ninguna de esas 3.
+        $datosEmbed = self::construirDatosEmbed((string) $url);
+
         ob_start();
         echo '<article class="fnh-video-card">';
-        printf('<a class="fnh-video" href="%s" target="_blank" rel="noopener">', esc_url($url));
-        if (!empty($datos['media_url'])) {
-            printf('<img src="%s" alt="" loading="lazy" />', esc_url($datos['media_url']));
+        if ($datosEmbed !== null) {
+            printf(
+                '<a class="fnh-video fnh-video--embebible" href="%s" target="_blank" rel="noopener" data-fnh-embed-url="%s" data-fnh-embed-type="%s" aria-label="%s">',
+                esc_url($url),
+                esc_attr($datosEmbed['embedUrl']),
+                esc_attr($datosEmbed['tipo']),
+                esc_attr__('Reproducir', 'flavor-news-hub')
+            );
+            if (!empty($datos['media_url'])) {
+                printf('<img src="%s" alt="" loading="lazy" />', esc_url($datos['media_url']));
+            }
+            echo '<span class="fnh-video-play" aria-hidden="true">&#9654;</span>';
+            echo '</a>';
+        } else {
+            printf('<a class="fnh-video" href="%s" target="_blank" rel="noopener">', esc_url($url));
+            if (!empty($datos['media_url'])) {
+                printf('<img src="%s" alt="" loading="lazy" />', esc_url($datos['media_url']));
+            }
+            echo '</a>';
         }
-        echo '</a>';
         echo '<div class="fnh-video-contenido">';
         if ($meta !== '') {
             echo '<div class="fnh-video-meta">' . esc_html($meta) . '</div>';
@@ -708,6 +732,73 @@ final class Shortcodes
         echo self::renderBotonesCompartir((string) $url, (string) $datos['title']);
         echo '</article>';
         return (string) ob_get_clean();
+    }
+
+    /**
+     * Detecta si la URL del vídeo corresponde a YouTube, PeerTube o
+     * Vimeo y devuelve la URL canónica del iframe de embed, o null si
+     * el tipo no es reconocido.
+     *
+     * YouTube usa `youtube-nocookie.com` para no sembrar cookies hasta
+     * que el usuario pulse play — más respetuoso con la privacidad y
+     * compatible con la política del proyecto.
+     *
+     * @return array{embedUrl:string,tipo:string}|null
+     */
+    private static function construirDatosEmbed(string $urlVideo): ?array
+    {
+        $partes = wp_parse_url($urlVideo);
+        if (!is_array($partes) || empty($partes['host'])) {
+            return null;
+        }
+        $host = strtolower((string) $partes['host']);
+        $path = (string) ($partes['path'] ?? '');
+        $query = [];
+        if (!empty($partes['query'])) {
+            parse_str((string) $partes['query'], $query);
+        }
+
+        // YouTube: watch?v=ID  |  youtu.be/ID  |  shorts/ID
+        if (str_ends_with($host, 'youtube.com') || str_ends_with($host, 'youtu.be')) {
+            $videoId = '';
+            if ($host === 'youtu.be' || str_ends_with($host, '.youtu.be')) {
+                $videoId = ltrim($path, '/');
+            } elseif (isset($query['v'])) {
+                $videoId = (string) $query['v'];
+            } elseif (preg_match('#/(embed|shorts|v)/([A-Za-z0-9_-]+)#', $path, $m) === 1) {
+                $videoId = $m[2];
+            }
+            $videoId = preg_replace('/[^A-Za-z0-9_-]/', '', $videoId) ?? '';
+            if ($videoId === '') {
+                return null;
+            }
+            return [
+                'embedUrl' => 'https://www.youtube-nocookie.com/embed/' . $videoId . '?rel=0',
+                'tipo'     => 'youtube',
+            ];
+        }
+
+        // Vimeo: vimeo.com/ID
+        if ($host === 'vimeo.com' || str_ends_with($host, '.vimeo.com')) {
+            if (preg_match('#^/(\d+)#', $path, $m) === 1) {
+                return [
+                    'embedUrl' => 'https://player.vimeo.com/video/' . $m[1],
+                    'tipo'     => 'vimeo',
+                ];
+            }
+        }
+
+        // PeerTube: /videos/watch/UUID  →  /videos/embed/UUID
+        // Hay muchas instancias, así que confiamos en el patrón del path
+        // en lugar de un allow-list de hosts.
+        if (preg_match('#^/videos/(?:watch|embed)/([A-Za-z0-9-]+)#', $path, $m) === 1) {
+            return [
+                'embedUrl' => $partes['scheme'] . '://' . $partes['host'] . '/videos/embed/' . $m[1],
+                'tipo'     => 'peertube',
+            ];
+        }
+
+        return null;
     }
 
     private static function renderBotonesCompartir(string $url, string $titulo): string
@@ -1013,8 +1104,13 @@ final class Shortcodes
         }
         .fnh-shortcode-wrap .fnh-videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;list-style:none;padding:0;margin:0}
         .fnh-shortcode-wrap .fnh-video-card{display:flex;flex-direction:column;gap:.55rem;background:var(--fnh-color-surface);border:1px solid var(--fnh-color-border);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);min-width:0}
-        .fnh-shortcode-wrap .fnh-video-card .fnh-video{display:block;background:#000;overflow:hidden;aspect-ratio:16/9;text-decoration:none}
-        .fnh-shortcode-wrap .fnh-video-card .fnh-video img{width:100%;height:100%;object-fit:cover;display:block}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video{display:block;position:relative;background:#000;overflow:hidden;aspect-ratio:16/9;text-decoration:none}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video--embebible:hover img{transform:scale(1.02)}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.6rem;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6);pointer-events:none;opacity:.92;transition:opacity .15s}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video--embebible:hover .fnh-video-play{opacity:1}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-iframe-wrap{position:relative;aspect-ratio:16/9;background:#000}
+        .fnh-shortcode-wrap .fnh-video-card .fnh-video-iframe-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
         .fnh-shortcode-wrap .fnh-video-card .fnh-video-contenido{display:flex;flex-direction:column;gap:.35rem;padding:.15rem 1rem 0}
         .fnh-shortcode-wrap .fnh-video-card .fnh-video-meta{font-size:.78rem;color:var(--fnh-color-text-soft);font-weight:600}
         .fnh-shortcode-wrap .fnh-video-card .fnh-video-titulo{margin:0;font-size:1rem;line-height:1.3;font-weight:700;word-wrap:break-word;overflow-wrap:break-word}
@@ -1190,6 +1286,35 @@ final class Shortcodes
                 trigger.textContent = original;
             }, 1400);
         });
+    });
+
+    // Reproducción inline de vídeos CC: al pulsar sobre una thumbnail
+    // marcada como embebible (data-fnh-embed-url) sustituimos el enlace
+    // por un iframe con autoplay. Ctrl/cmd/shift-click abre en pestaña
+    // externa como siempre, respetando la expectativa del usuario.
+    document.addEventListener('click', function (event) {
+        var video = event.target.closest('.fnh-video--embebible');
+        if (!video) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1) {
+            return;
+        }
+        var embedUrl = video.getAttribute('data-fnh-embed-url');
+        if (!embedUrl) return;
+        event.preventDefault();
+
+        var contenedor = document.createElement('div');
+        contenedor.className = 'fnh-video-iframe-wrap';
+        var iframe = document.createElement('iframe');
+        // Añadimos autoplay=1 a la URL de embed. En YouTube/Vimeo/
+        // PeerTube el parámetro es el mismo.
+        var separador = embedUrl.indexOf('?') === -1 ? '?' : '&';
+        iframe.src = embedUrl + separador + 'autoplay=1';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('loading', 'lazy');
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        contenedor.appendChild(iframe);
+        video.replaceWith(contenedor);
     });
 
     // Scroll infinito: observa cada sentinel y pide la siguiente página

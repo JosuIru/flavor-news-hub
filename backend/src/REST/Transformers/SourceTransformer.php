@@ -38,12 +38,17 @@ final class SourceTransformer
         }
         $tipoFeed = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
         return [
-            'id'          => (int) $post->ID,
-            'slug'        => (string) $post->post_name,
-            'name'        => get_the_title($post),
-            'website_url' => (string) get_post_meta($post->ID, '_fnh_website_url', true),
-            'url'         => (string) get_permalink($post),
-            'feed_type'   => $tipoFeed !== '' ? $tipoFeed : 'rss',
+            'id'              => (int) $post->ID,
+            'slug'            => (string) $post->post_name,
+            'name'            => get_the_title($post),
+            'website_url'     => (string) get_post_meta($post->ID, '_fnh_website_url', true),
+            'url'             => (string) get_permalink($post),
+            'feed_type'       => $tipoFeed !== '' ? $tipoFeed : 'rss',
+            // Incluido en el resumen porque la app y la web deciden en
+            // tiempo de render si pueden embebir vídeo/audio inline
+            // (solo CC/public-domain/mixed). Evita un lookup extra por
+            // item para obtener esta sola pieza de metadato.
+            'content_license' => (string) get_post_meta($post->ID, '_fnh_content_license', true),
         ];
     }
 
