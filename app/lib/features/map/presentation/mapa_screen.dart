@@ -10,6 +10,8 @@ import 'package:latlong2/latlong.dart';
 import '../../../core/models/collective.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_normalizer.dart';
 import '../../collectives/data/colectivos_directorio_notifier.dart';
 import '../data/territorio_geocoder.dart';
 
@@ -24,12 +26,27 @@ class MapaScreen extends ConsumerWidget {
 
   static const _centroIberico = LatLng(40.0, -3.5);
   static const _zoomInicial = 5.5;
+  static const _zoomTerritorioBase = 8.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
     final asyncRadios = ref.watch(radiosProvider);
     final asyncColectivos = ref.watch(colectivosDirectorioProvider);
+    final territorioBase = ref.watch(
+      preferenciasProvider.select((p) => p.territorioBase),
+    );
+
+    // Centrado inicial: si el usuario fijó "Mi territorio" y su clave se
+    // resuelve a coordenadas conocidas, arrancamos allí con zoom más
+    // cercano. Si no, caemos al centro ibérico histórico — coherente
+    // con la mayor concentración actual del catálogo.
+    final centroEtiqueta = _territorioBaseParaCentrar(territorioBase);
+    final centroPreferido = centroEtiqueta.isEmpty
+        ? null
+        : TerritorioGeocoder.buscar(centroEtiqueta);
+    final centroInicial = centroPreferido ?? _centroIberico;
+    final zoomInicial = centroPreferido != null ? _zoomTerritorioBase : _zoomInicial;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,18 +64,46 @@ class MapaScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text(e.toString())),
         data: (radios) {
           final colectivos = asyncColectivos.valueOrNull?.items ?? const <Collective>[];
-          return _Mapa(radios: radios, colectivos: colectivos);
+          return _Mapa(
+            radios: radios,
+            colectivos: colectivos,
+            centroInicial: centroInicial,
+            zoomInicial: zoomInicial,
+          );
         },
       ),
     );
   }
+
+  /// Devuelve la etiqueta más específica que podemos pedirle al
+  /// geocoder para una clave de territorio base: primero prueba ciudad
+  /// o región, luego país; si es sólo una red transnacional (Euskal
+  /// Herria, Latinoamérica…) o cadena vacía, devuelve "" y el mapa
+  /// mantiene su centro por defecto.
+  static String _territorioBaseParaCentrar(String clave) {
+    if (clave.isEmpty) return '';
+    final ubicacion = TerritoryNormalizer.desglosar(clave);
+    if (ubicacion.city.isNotEmpty) return ubicacion.city;
+    if (ubicacion.region.isNotEmpty) return ubicacion.region;
+    if (ubicacion.country.isNotEmpty) return ubicacion.country;
+    // Para redes transnacionales (Euskal Herria, Latinoamérica, etc.)
+    // el geocoder tiene entrada directa con la clave normalizada.
+    return clave;
+  }
 }
 
 class _Mapa extends StatelessWidget {
-  const _Mapa({required this.radios, required this.colectivos});
+  const _Mapa({
+    required this.radios,
+    required this.colectivos,
+    required this.centroInicial,
+    required this.zoomInicial,
+  });
 
   final List<modelo_radio.Radio> radios;
   final List<Collective> colectivos;
+  final LatLng centroInicial;
+  final double zoomInicial;
 
   @override
   Widget build(BuildContext context) {
@@ -86,9 +131,9 @@ class _Mapa extends StatelessWidget {
     }
 
     return FlutterMap(
-      options: const MapOptions(
-        initialCenter: MapaScreen._centroIberico,
-        initialZoom: MapaScreen._zoomInicial,
+      options: MapOptions(
+        initialCenter: centroInicial,
+        initialZoom: zoomInicial,
         minZoom: 3,
         maxZoom: 16,
       ),
