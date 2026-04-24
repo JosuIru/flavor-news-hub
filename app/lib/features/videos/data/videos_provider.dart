@@ -6,6 +6,7 @@ import '../../../core/models/item.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_scoring.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../personal_sources/data/items_personales_provider.dart';
 
@@ -161,8 +162,11 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   for (final it in items) {
     porId[it.id] = it;
   }
-  final combinados = porId.values.toList()
-    ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+  final combinados = porId.values.toList();
+  final territorioBase = ref.read(
+    preferenciasProvider.select((p) => p.territorioBase),
+  );
+  ordenarItemsLocalPrimero(combinados, territorioBase);
   return combinados;
 });
 

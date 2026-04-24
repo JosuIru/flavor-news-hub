@@ -1,3 +1,4 @@
+import '../models/item.dart';
 import 'territory_normalizer.dart';
 
 /// Devuelve la fecha "efectiva" de un contenido para ordenarlo con
@@ -97,4 +98,30 @@ int prioridadLocal({
   if (referencia.country.isNotEmpty && _coincide(country, referencia.country)) return 2;
   if (referencia.network.isNotEmpty && _coincide(network, referencia.network)) return 1;
   return 0;
+}
+
+/// Ordena una lista de [Item] aplicando el sesgo local-primero sobre
+/// `publishedAt`: si [territorioBase] está fijado, cada item envejece
+/// más lento según el match con su `source` (city > region > country >
+/// network). Sin territorio base, equivale al orden estándar por
+/// `publishedAt` descendente.
+///
+/// Muta la lista in-place (igual que `List.sort`).
+void ordenarItemsLocalPrimero(List<Item> items, String territorioBase) {
+  if (territorioBase.isEmpty) {
+    items.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+    return;
+  }
+  final ahora = DateTime.now();
+  DateTime efectiva(Item it) => fechaEfectivaLocal(
+        publishedAt: DateTime.tryParse(it.publishedAt) ??
+            DateTime.fromMillisecondsSinceEpoch(0),
+        country: it.source?.country ?? '',
+        region: it.source?.region ?? '',
+        city: it.source?.city ?? '',
+        network: it.source?.network ?? '',
+        territorioBase: territorioBase,
+        ahora: ahora,
+      );
+  items.sort((a, b) => efectiva(b).compareTo(efectiva(a)));
 }

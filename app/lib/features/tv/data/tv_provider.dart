@@ -5,6 +5,8 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_scoring.dart';
 
 @immutable
 class FiltrosTv {
@@ -106,9 +108,13 @@ final tvItemsRecientesProvider =
   for (final lista in resultados) {
     todos.addAll(lista);
   }
-  // publishedAt es ISO 8601 como string: compareTo alfabético ordena
-  // correctamente ASC; aquí queremos DESC, así que invertimos.
-  todos.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+  // Orden: local-primero si el usuario fijó "Mi territorio"; sin él,
+  // equivale a publishedAt desc. `ordenarItemsLocalPrimero` gestiona
+  // los dos casos y maneja internamente el parseo ISO 8601.
+  final territorioBase = ref.read(
+    preferenciasProvider.select((p) => p.territorioBase),
+  );
+  ordenarItemsLocalPrimero(todos, territorioBase);
   // Nos quedamos con los 30 más recientes agregados entre todas las
   // fuentes — suficiente para una pestaña sin paginado y manteniendo
   // señal editorial (no 200 entradas de la misma fuente).

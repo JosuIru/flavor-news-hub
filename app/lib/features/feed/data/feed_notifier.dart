@@ -256,28 +256,10 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     return combinados;
   }
 
-  /// Ordena por fecha de publicación efectiva (`fechaEfectivaLocal`):
-  /// si el usuario fijó un territorio base, los items que matchean suben
-  /// por encima de los globales de edad parecida pero se mezclan por
-  /// fecha — no se agrupan todos los locales arriba. Sin territorio
-  /// base, equivale al orden por `publishedAt` puro.
+  /// Delega en [ordenarItemsLocalPrimero]. Se mantiene este wrapper
+  /// para no reescribir los puntos de llamada dentro del notifier.
   static void _ordenarLocalPrimero(List<Item> lista, String territorioBase) {
-    if (territorioBase.isEmpty) {
-      lista.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
-      return;
-    }
-    final ahora = DateTime.now();
-    DateTime efectiva(Item it) => fechaEfectivaLocal(
-          publishedAt: DateTime.tryParse(it.publishedAt) ??
-              DateTime.fromMillisecondsSinceEpoch(0),
-          country: it.source?.country ?? '',
-          region: it.source?.region ?? '',
-          city: it.source?.city ?? '',
-          network: it.source?.network ?? '',
-          territorioBase: territorioBase,
-          ahora: ahora,
-        );
-    lista.sort((a, b) => efectiva(b).compareTo(efectiva(a)));
+    ordenarItemsLocalPrimero(lista, territorioBase);
   }
 
   /// Recarga la primera página manteniendo los filtros actuales.
