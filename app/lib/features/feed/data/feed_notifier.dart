@@ -8,6 +8,7 @@ import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../../core/utils/territory_scoring.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
@@ -32,6 +33,9 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     final api = ref.watch(flavorNewsApiProvider);
     final dao = await ref.watch(itemsLocalesDaoProvider.future);
     final fuentesBloqueadas = ref.watch(fuentesBloqueadasProvider);
+    final territorioBase = ref.watch(
+      preferenciasProvider.select((p) => p.territorioBase),
+    );
 
     final futuroPersonales = filtros.estaVacio
         ? ref.watch(itemsDeFuentesPersonalesProvider.future)
@@ -59,7 +63,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
           .where(_noEsVideo) // filtra personales tipo youtube/video
           .where((it) => !_estaFuenteBloqueada(it, fuentesBloqueadas))
           .toList();
-      combinados.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+      _ordenarLocalPrimero(combinados, territorioBase);
 
       // Empujamos los 3 más recientes al widget Android para que pinte
       // titulares en la pantalla de inicio. No-op si no hay widget colocado.
@@ -104,6 +108,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
                 filtros: filtros,
                 idiomasPorIdSource: idiomasPorIdSource,
                 territorioPorIdSource: territorioPorIdSource,
+                territorioBase: territorioBase,
               ),
               paginaActual: 1,
               totalPaginas: 1,
@@ -129,6 +134,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
               filtros: filtros,
               idiomasPorIdSource: idiomasPorIdSource,
               territorioPorIdSource: territorioPorIdSource,
+              territorioBase: territorioBase,
             );
             unawaited(WidgetTitularesWriter.escribir(combinados));
             state = AsyncValue.data(EstadoFeed(
@@ -182,6 +188,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     required FiltrosFeed filtros,
     required Map<int, List<String>> idiomasPorIdSource,
     required Map<int, String> territorioPorIdSource,
+    required String territorioBase,
   }) {
     final idsSeed = desdeSeed.map((e) => e.id).toSet();
     final cacheNoSolapado = cache.where((i) => !idsSeed.contains(i.id));
@@ -245,8 +252,32 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       'idioma:$filtroIdiomaActivo source:$idSourceFiltrada '
       'bloqueadas:${fuentesBloqueadas.length}}',
     );
-    combinados.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+    _ordenarLocalPrimero(combinados, territorioBase);
     return combinados;
+  }
+
+  /// Ordena por fecha de publicación efectiva (`fechaEfectivaLocal`):
+  /// si el usuario fijó un territorio base, los items que matchean suben
+  /// por encima de los globales de edad parecida pero se mezclan por
+  /// fecha — no se agrupan todos los locales arriba. Sin territorio
+  /// base, equivale al orden por `publishedAt` puro.
+  static void _ordenarLocalPrimero(List<Item> lista, String territorioBase) {
+    if (territorioBase.isEmpty) {
+      lista.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+      return;
+    }
+    final ahora = DateTime.now();
+    DateTime efectiva(Item it) => fechaEfectivaLocal(
+          publishedAt: DateTime.tryParse(it.publishedAt) ??
+              DateTime.fromMillisecondsSinceEpoch(0),
+          country: it.source?.country ?? '',
+          region: it.source?.region ?? '',
+          city: it.source?.city ?? '',
+          network: it.source?.network ?? '',
+          territorioBase: territorioBase,
+          ahora: ahora,
+        );
+    lista.sort((a, b) => efectiva(b).compareTo(efectiva(a)));
   }
 
   /// Recarga la primera página manteniendo los filtros actuales.
@@ -293,10 +324,17 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       unawaited(dao.cachearMuchos(siguientePagina.items));
 
       final bloqueadas = ref.read(fuentesBloqueadasProvider);
+      final territorioBase = ref.read(
+        preferenciasProvider.select((p) => p.territorioBase),
+      );
       final nuevosFiltrados = siguientePagina.items
           .where(_noEsVideo)
           .where((it) => !_estaFuenteBloqueada(it, bloqueadas))
           .toList();
+      // Aplicamos scoring local-primero dentro de la página nueva.
+      // No reordenamos lo ya mostrado: un item de la pág 2 que fuera
+      // muy local no debe "saltar" a la pág 1 que el usuario ya vio.
+      _ordenarLocalPrimero(nuevosFiltrados, territorioBase);
       state = AsyncData(EstadoFeed(
         items: [...estadoActual.items, ...nuevosFiltrados],
         paginaActual: estadoActual.paginaActual + 1,
