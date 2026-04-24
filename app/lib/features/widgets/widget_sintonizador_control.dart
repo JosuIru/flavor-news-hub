@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Callback de interactividad del widget "Sintonizador".
 ///
@@ -77,20 +76,15 @@ Future<void> _arrancar(String url, String titulo, String idRadio) async {
     ),
   );
   await _playerFondo!.play();
-  // Marcamos qué estamos reproduciendo para que la app UI pueda
-  // reflejarlo si se abre después.
-  final sp = await SharedPreferences.getInstance();
-  await sp.setString('fnh.widget.sintonizador.reproduciendo', jsonEncode({
-    'id': idRadio,
-    'url': url,
-    'titulo': titulo,
-  }));
+  // Marcamos qué estamos reproduciendo en el almacén compartido del
+  // widget (HomeWidgetPlugin). Lo lee el provider Kotlin para saber
+  // si ◄/► debe también cambiar el playback, no sólo el dial.
+  await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', idRadio);
 }
 
 Future<void> _detener() async {
   await _playerFondo?.stop();
   await _playerFondo?.dispose();
   _playerFondo = null;
-  final sp = await SharedPreferences.getInstance();
-  await sp.remove('fnh.widget.sintonizador.reproduciendo');
+  await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', '');
 }

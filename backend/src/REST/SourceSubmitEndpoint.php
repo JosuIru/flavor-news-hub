@@ -5,6 +5,7 @@ namespace FlavorNewsHub\REST;
 
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Taxonomy\Topic;
+use FlavorNewsHub\Support\TerritoryNormalizer;
 
 /**
  * Endpoint público para proponer un medio:
@@ -52,6 +53,10 @@ final class SourceSubmitEndpoint
             'description'   => ['type' => 'string'],
             'website_url'   => ['type' => 'string'],
             'territory'     => ['type' => 'string'],
+            'country'       => ['type' => 'string'],
+            'region'        => ['type' => 'string'],
+            'city'          => ['type' => 'string'],
+            'network'       => ['type' => 'string'],
             'languages'     => ['type' => 'array', 'items' => ['type' => 'string']],
             'topics'        => ['type' => 'array', 'items' => ['type' => 'string']],
             'website'       => ['type' => 'string'], // honeypot
@@ -106,6 +111,11 @@ final class SourceSubmitEndpoint
         $descripcionMedio = wp_kses_post((string) $request->get_param('description'));
         $urlSitioWeb = esc_url_raw((string) $request->get_param('website_url'));
         $territorio = sanitize_text_field((string) $request->get_param('territory'));
+        $country = sanitize_text_field((string) $request->get_param('country'));
+        $region = sanitize_text_field((string) $request->get_param('region'));
+        $city = sanitize_text_field((string) $request->get_param('city'));
+        $network = sanitize_text_field((string) $request->get_param('network'));
+        $ubicacion = TerritoryNormalizer::desglosar($territorio);
 
         $idiomasEntrada = (array) $request->get_param('languages');
         $idiomasLimpios = [];
@@ -135,6 +145,10 @@ final class SourceSubmitEndpoint
         update_post_meta($idNuevo, '_fnh_feed_type', $tipoFeed);
         update_post_meta($idNuevo, '_fnh_website_url', $urlSitioWeb);
         update_post_meta($idNuevo, '_fnh_territory', $territorio);
+        update_post_meta($idNuevo, '_fnh_country', $country !== '' ? $country : $ubicacion['country']);
+        update_post_meta($idNuevo, '_fnh_region', $region !== '' ? $region : $ubicacion['region']);
+        update_post_meta($idNuevo, '_fnh_city', $city !== '' ? $city : $ubicacion['city']);
+        update_post_meta($idNuevo, '_fnh_network', $network !== '' ? $network : $ubicacion['network']);
         update_post_meta($idNuevo, '_fnh_languages', $idiomasLimpios);
         update_post_meta($idNuevo, '_fnh_active', false);
         update_post_meta($idNuevo, '_fnh_submitted_by_email', $emailContacto);

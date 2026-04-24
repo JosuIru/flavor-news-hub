@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace FlavorNewsHub\REST\Transformers;
 
 use FlavorNewsHub\CPT\Source;
+use FlavorNewsHub\Support\TerritoryNormalizer;
 
 /**
  * Transformador de fuentes (`fnh_source`) para la API pública.
@@ -17,7 +18,9 @@ final class SourceTransformer
 {
     /**
      * @return array{
-     *   id:int, slug:string, name:string, website_url:string, url:string
+     *   id:int, slug:string, name:string, website_url:string, url:string,
+     *   feed_type:string, territory:string, country:string, region:string,
+     *   city:string, network:string, content_license:string
      * }|null
      */
     public static function transformarResumen(int $idSource): ?array
@@ -37,6 +40,8 @@ final class SourceTransformer
             return null;
         }
         $tipoFeed = (string) get_post_meta($post->ID, '_fnh_feed_type', true);
+        $territorio = (string) get_post_meta($post->ID, '_fnh_territory', true);
+        $ubicacion = self::obtenerUbicacion($post->ID, $territorio);
         return [
             'id'              => (int) $post->ID,
             'slug'            => (string) $post->post_name,
@@ -44,6 +49,11 @@ final class SourceTransformer
             'website_url'     => (string) get_post_meta($post->ID, '_fnh_website_url', true),
             'url'             => (string) get_permalink($post),
             'feed_type'       => $tipoFeed !== '' ? $tipoFeed : 'rss',
+            'territory'       => $territorio,
+            'country'         => $ubicacion['country'],
+            'region'          => $ubicacion['region'],
+            'city'            => $ubicacion['city'],
+            'network'         => $ubicacion['network'],
             // Incluido en el resumen porque la app y la web deciden en
             // tiempo de render si pueden embebir vídeo/audio inline
             // (solo CC/public-domain/mixed). Evita un lookup extra por
@@ -69,6 +79,8 @@ final class SourceTransformer
         }
         $tipoMedio = (string) get_post_meta($idSource, '_fnh_medium_type', true);
         $permisoStream = (string) get_post_meta($idSource, '_fnh_live_stream_permit', true);
+        $territorio = (string) get_post_meta($idSource, '_fnh_territory', true);
+        $ubicacion = self::obtenerUbicacion($idSource, $territorio);
 
         return [
             'id'                 => $idSource,
@@ -80,7 +92,11 @@ final class SourceTransformer
             'feed_type'          => $tipoFeed !== '' ? $tipoFeed : 'rss',
             'website_url'        => (string) get_post_meta($idSource, '_fnh_website_url', true),
             'languages'          => array_values(array_map('strval', $idiomasGuardados)),
-            'territory'          => (string) get_post_meta($idSource, '_fnh_territory', true),
+            'territory'          => $territorio,
+            'country'            => $ubicacion['country'],
+            'region'             => $ubicacion['region'],
+            'city'               => $ubicacion['city'],
+            'network'            => $ubicacion['network'],
             'ownership'          => (string) get_post_meta($idSource, '_fnh_ownership', true),
             'editorial_note'     => (string) get_post_meta($idSource, '_fnh_editorial_note', true),
             'active'             => (bool) get_post_meta($idSource, '_fnh_active', true),
@@ -91,6 +107,26 @@ final class SourceTransformer
             'legal_note'         => (string) get_post_meta($idSource, '_fnh_legal_note', true),
             'has_live_stream'    => (bool) get_post_meta($idSource, '_fnh_has_live_stream', true),
             'live_stream_permit' => $permisoStream !== '' ? $permisoStream : 'none',
+        ];
+    }
+
+    /**
+     * @return array{country:string,region:string,city:string,network:string}
+     */
+    private static function obtenerUbicacion(int $idSource, string $territorio): array
+    {
+        $country = (string) get_post_meta($idSource, '_fnh_country', true);
+        $region = (string) get_post_meta($idSource, '_fnh_region', true);
+        $city = (string) get_post_meta($idSource, '_fnh_city', true);
+        $network = (string) get_post_meta($idSource, '_fnh_network', true);
+        if ($country === '' && $region === '' && $city === '' && $network === '') {
+            return TerritoryNormalizer::desglosar($territorio);
+        }
+        return [
+            'country' => $country,
+            'region' => $region,
+            'city' => $city,
+            'network' => $network,
         ];
     }
 }

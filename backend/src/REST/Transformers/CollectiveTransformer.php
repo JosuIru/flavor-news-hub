@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\REST\Transformers;
 
+use FlavorNewsHub\Support\TerritoryNormalizer;
+
 /**
  * Transformador de colectivos (`fnh_collective`) para la API pública.
  *
@@ -23,6 +25,8 @@ final class CollectiveTransformer
         $emailInterno = (string) get_post_meta($idColectivo, '_fnh_contact_email', true);
         $websiteUrl = (string) get_post_meta($idColectivo, '_fnh_website_url', true);
         $flavorUrl = (string) get_post_meta($idColectivo, '_fnh_flavor_url', true);
+        $territorio = (string) get_post_meta($idColectivo, '_fnh_territory', true);
+        $ubicacion = self::obtenerUbicacion($idColectivo, $territorio);
 
         return [
             'id'          => $idColectivo,
@@ -32,10 +36,32 @@ final class CollectiveTransformer
             'url'         => (string) get_permalink($post),
             'website_url' => $websiteUrl,
             'flavor_url'  => $flavorUrl,
-            'territory'   => (string) get_post_meta($idColectivo, '_fnh_territory', true),
+            'territory'   => $territorio,
+            'country'     => $ubicacion['country'],
+            'region'      => $ubicacion['region'],
+            'city'        => $ubicacion['city'],
             'has_contact' => $emailInterno !== '' || $websiteUrl !== '' || $flavorUrl !== '',
             'verified'    => (bool) get_post_meta($idColectivo, '_fnh_verified', true),
             'topics'      => TopicsHelper::obtenerTopicsDelPost($idColectivo),
+        ];
+    }
+
+    /**
+     * @return array{country:string,region:string,city:string,network:string}
+     */
+    private static function obtenerUbicacion(int $idColectivo, string $territorio): array
+    {
+        $country = (string) get_post_meta($idColectivo, '_fnh_country', true);
+        $region = (string) get_post_meta($idColectivo, '_fnh_region', true);
+        $city = (string) get_post_meta($idColectivo, '_fnh_city', true);
+        if ($country === '' && $region === '' && $city === '') {
+            return TerritoryNormalizer::desglosar($territorio);
+        }
+        return [
+            'country' => $country,
+            'region' => $region,
+            'city' => $city,
+            'network' => '',
         ];
     }
 }

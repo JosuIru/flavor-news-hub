@@ -65,12 +65,22 @@ class _Mapa extends StatelessWidget {
     final markers = <Marker>[];
 
     for (final radio in radios) {
-      final coords = TerritorioGeocoder.buscar(radio.territory);
+      final coords = TerritorioGeocoder.buscar(_territorioParaMapa(
+        country: radio.country,
+        region: radio.region,
+        city: radio.city,
+        fallback: radio.territory,
+      ));
       if (coords == null) continue;
       markers.add(_MarcadorRadio.construir(context, radio, coords));
     }
     for (final colectivo in colectivos) {
-      final coords = TerritorioGeocoder.buscar(colectivo.territory);
+      final coords = TerritorioGeocoder.buscar(_territorioParaMapa(
+        country: colectivo.country,
+        region: colectivo.region,
+        city: colectivo.city,
+        fallback: colectivo.territory,
+      ));
       if (coords == null) continue;
       markers.add(_MarcadorColectivo.construir(context, colectivo, coords));
     }
@@ -126,6 +136,18 @@ class _Mapa extends StatelessWidget {
       }
     }
     return salida;
+  }
+
+  static String _territorioParaMapa({
+    required String country,
+    required String region,
+    required String city,
+    required String fallback,
+  }) {
+    if (city.isNotEmpty) return city;
+    if (region.isNotEmpty) return region;
+    if (country.isNotEmpty) return country;
+    return fallback;
   }
 }
 

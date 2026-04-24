@@ -7,6 +7,7 @@ use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\Taxonomy\Topic;
+use FlavorNewsHub\Support\TerritoryNormalizer;
 
 /**
  * Servicio de importación del catálogo curado. Lo invocan tanto la
@@ -72,7 +73,13 @@ final class ImportadorCatalogo
             update_post_meta($idPost, '_fnh_feed_url', (string) ($raw['feed_url'] ?? ''));
             update_post_meta($idPost, '_fnh_feed_type', (string) ($raw['feed_type'] ?? 'rss'));
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
-            update_post_meta($idPost, '_fnh_territory', (string) ($raw['territory'] ?? ''));
+            $territorio = (string) ($raw['territory'] ?? '');
+            update_post_meta($idPost, '_fnh_territory', $territorio);
+            $ubicacion = TerritoryNormalizer::desglosar($territorio);
+            update_post_meta($idPost, '_fnh_country', (string) ($raw['country'] ?? $ubicacion['country']));
+            update_post_meta($idPost, '_fnh_region', (string) ($raw['region'] ?? $ubicacion['region']));
+            update_post_meta($idPost, '_fnh_city', (string) ($raw['city'] ?? $ubicacion['city']));
+            update_post_meta($idPost, '_fnh_network', (string) ($raw['network'] ?? $ubicacion['network']));
             $idiomas = $raw['languages'] ?? [];
             if (!is_array($idiomas)) $idiomas = [];
             update_post_meta(
@@ -186,7 +193,12 @@ final class ImportadorCatalogo
             update_post_meta($idPost, '_fnh_stream_url', $streamUrl);
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
             update_post_meta($idPost, '_fnh_rss_url', (string) ($raw['rss_url'] ?? ''));
-            update_post_meta($idPost, '_fnh_territory', (string) ($raw['territory'] ?? ''));
+            $territorio = (string) ($raw['territory'] ?? '');
+            update_post_meta($idPost, '_fnh_territory', $territorio);
+            $ubicacion = TerritoryNormalizer::desglosar($territorio);
+            update_post_meta($idPost, '_fnh_country', (string) ($raw['country'] ?? $ubicacion['country']));
+            update_post_meta($idPost, '_fnh_region', (string) ($raw['region'] ?? $ubicacion['region']));
+            update_post_meta($idPost, '_fnh_city', (string) ($raw['city'] ?? $ubicacion['city']));
             $idiomas = $raw['languages'] ?? [];
             if (!is_array($idiomas)) $idiomas = [];
             update_post_meta(
@@ -271,7 +283,12 @@ final class ImportadorCatalogo
 
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
             update_post_meta($idPost, '_fnh_flavor_url', (string) ($raw['flavor_url'] ?? ''));
-            update_post_meta($idPost, '_fnh_territory', (string) ($raw['territory'] ?? ''));
+            $territorio = (string) ($raw['territory'] ?? '');
+            update_post_meta($idPost, '_fnh_territory', $territorio);
+            $ubicacion = TerritoryNormalizer::desglosar($territorio);
+            update_post_meta($idPost, '_fnh_country', (string) ($raw['country'] ?? $ubicacion['country']));
+            update_post_meta($idPost, '_fnh_region', (string) ($raw['region'] ?? $ubicacion['region']));
+            update_post_meta($idPost, '_fnh_city', (string) ($raw['city'] ?? $ubicacion['city']));
             update_post_meta($idPost, '_fnh_verified', $verificado);
 
             // No inventamos emails: los seed bundleados suelen no traer

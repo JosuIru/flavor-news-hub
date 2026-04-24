@@ -8,6 +8,7 @@ import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/models/source.dart';
 import '../../../core/models/source_summary.dart';
 import '../../../core/models/topic.dart';
+import '../../../core/utils/territory_normalizer.dart';
 import 'seed_cache.dart';
 
 /// Entrada del seed de fuentes — versión reducida de `Source` con sólo los
@@ -21,6 +22,10 @@ class FuenteSeed {
     required this.feedType,
     required this.websiteUrl,
     required this.territory,
+    required this.country,
+    required this.region,
+    required this.city,
+    required this.network,
     required this.languages,
     this.topics = const [],
   });
@@ -31,6 +36,10 @@ class FuenteSeed {
   final String feedType;
   final String websiteUrl;
   final String territory;
+  final String country;
+  final String region;
+  final String city;
+  final String network;
   final List<String> languages;
   /// Slugs de las temáticas que cubre este medio (curación editorial
   /// de la instancia). Los items descargados de su RSS heredan estos
@@ -49,6 +58,11 @@ class FuenteSeed {
         websiteUrl: websiteUrl,
         url: websiteUrl,
         feedType: feedType,
+        territory: territory,
+        country: country,
+        region: region,
+        city: city,
+        network: network,
       );
 }
 
@@ -68,7 +82,7 @@ final sourcesSeedProvider = FutureProvider<List<Source>>((ref) async {
   final lista = await _cargarListaConCache('sources.json');
   return lista
       .whereType<Map<String, dynamic>>()
-      .map(Source.fromJson)
+      .map((raw) => Source.fromJson(_enriquecerUbicacionFuente(raw)))
       .toList(growable: false);
 });
 
@@ -83,6 +97,7 @@ Future<List<dynamic>> _cargarListaConCache(String nombre) async {
 }
 
 FuenteSeed _leerFuente(Map<String, dynamic> raw) {
+  final ubicacion = TerritoryNormalizer.desglosar((raw['territory'] ?? '').toString());
   return FuenteSeed(
     id: (raw['id'] is int) ? raw['id'] as int : int.tryParse('${raw['id']}') ?? 0,
     name: (raw['name'] ?? '').toString(),
@@ -91,6 +106,10 @@ FuenteSeed _leerFuente(Map<String, dynamic> raw) {
     feedType: (raw['feed_type'] ?? 'rss').toString(),
     websiteUrl: (raw['website_url'] ?? '').toString(),
     territory: (raw['territory'] ?? '').toString(),
+    country: (raw['country'] ?? ubicacion.country).toString(),
+    region: (raw['region'] ?? ubicacion.region).toString(),
+    city: (raw['city'] ?? ubicacion.city).toString(),
+    network: (raw['network'] ?? ubicacion.network).toString(),
     languages: (raw['languages'] is List)
         ? (raw['languages'] as List).map((e) => e.toString()).toList()
         : const [],
@@ -124,6 +143,7 @@ final radiosSeedProvider = FutureProvider<List<modelo_radio.Radio>>((ref) async 
 });
 
 modelo_radio.Radio _leerRadio(Map<String, dynamic> raw) {
+  final ubicacion = TerritoryNormalizer.desglosar((raw['territory'] ?? '').toString());
   return modelo_radio.Radio(
     id: (raw['id'] is int) ? raw['id'] as int : int.tryParse('${raw['id']}') ?? 0,
     slug: (raw['slug'] ?? '').toString(),
@@ -132,6 +152,9 @@ modelo_radio.Radio _leerRadio(Map<String, dynamic> raw) {
     websiteUrl: (raw['website_url'] ?? '').toString(),
     rssUrl: (raw['rss_url'] ?? '').toString(),
     territory: (raw['territory'] ?? '').toString(),
+    country: (raw['country'] ?? ubicacion.country).toString(),
+    region: (raw['region'] ?? ubicacion.region).toString(),
+    city: (raw['city'] ?? ubicacion.city).toString(),
     languages: (raw['languages'] is List)
         ? (raw['languages'] as List).map((e) => e.toString()).toList()
         : const [],
@@ -160,6 +183,7 @@ Collective _leerColectivo(Map<String, dynamic> raw) {
       }
     }
   }
+  final ubicacion = TerritoryNormalizer.desglosar((raw['territory'] ?? '').toString());
   return Collective(
     id: (raw['id'] is int) ? raw['id'] as int : int.tryParse('${raw['id']}') ?? 0,
     slug: (raw['slug'] ?? '').toString(),
@@ -169,8 +193,22 @@ Collective _leerColectivo(Map<String, dynamic> raw) {
     websiteUrl: (raw['website_url'] ?? '').toString(),
     flavorUrl: (raw['flavor_url'] ?? '').toString(),
     territory: (raw['territory'] ?? '').toString(),
+    country: (raw['country'] ?? ubicacion.country).toString(),
+    region: (raw['region'] ?? ubicacion.region).toString(),
+    city: (raw['city'] ?? ubicacion.city).toString(),
     hasContact: raw['has_contact'] == true,
     verified: raw['verified'] != false,
     topics: topics,
   );
+}
+
+Map<String, dynamic> _enriquecerUbicacionFuente(Map<String, dynamic> raw) {
+  final ubicacion = TerritoryNormalizer.desglosar((raw['territory'] ?? '').toString());
+  return {
+    ...raw,
+    if ((raw['country'] ?? '').toString().isEmpty) 'country': ubicacion.country,
+    if ((raw['region'] ?? '').toString().isEmpty) 'region': ubicacion.region,
+    if ((raw['city'] ?? '').toString().isEmpty) 'city': ubicacion.city,
+    if ((raw['network'] ?? '').toString().isEmpty) 'network': ubicacion.network,
+  };
 }

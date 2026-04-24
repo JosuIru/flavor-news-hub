@@ -334,7 +334,11 @@ backend/
 | `_fnh_feed_type`      | string  | sí   | `rss`, `atom`, `youtube`, `mastodon`, `podcast` (por defecto `rss`)    |
 | `_fnh_website_url`    | string  | sí   | Web pública del medio                                                  |
 | `_fnh_languages`      | array   | sí   | Lista de códigos ISO 639-1                                             |
-| `_fnh_territory`      | string  | sí   | Texto libre (Bizkaia, Catalunya, Estado…)                              |
+| `_fnh_territory`      | string  | sí   | Texto libre / etiqueta humana (Bizkaia, Catalunya, Estado…)            |
+| `_fnh_country`        | string  | sí   | País normalizado, derivado de `territory` cuando no se rellena a mano    |
+| `_fnh_region`         | string  | sí   | Región/provincia/comunidad normalizada                                  |
+| `_fnh_city`           | string  | sí   | Ciudad/localidad normalizada                                             |
+| `_fnh_network`        | string  | sí   | Red o territorio transnacional normalizado (`Internacional`, `Euskal…`) |
 | `_fnh_ownership`      | string  | sí   | Quién posee/financia (HTML permitido)                                  |
 | `_fnh_editorial_note` | string  | sí   | Línea editorial declarada (HTML permitido)                             |
 | `_fnh_active`         | boolean | sí   | Si se ingesta o no                                                     |
@@ -362,7 +366,10 @@ backend/
 | `_fnh_rss_url`     | string  | sí   | RSS opcional de programas / podcast             |
 | `_fnh_website_url` | string  | sí   | Web pública de la emisora                       |
 | `_fnh_languages`   | array   | sí   | Lista de códigos ISO 639-1                      |
-| `_fnh_territory`   | string  | sí   | Texto libre                                     |
+| `_fnh_territory`   | string  | sí   | Texto libre / etiqueta humana                   |
+| `_fnh_country`     | string  | sí   | País normalizado                                |
+| `_fnh_region`      | string  | sí   | Región/provincia/comunidad normalizada          |
+| `_fnh_city`        | string  | sí   | Ciudad/localidad normalizada                    |
 | `_fnh_ownership`   | string  | sí   | Quién posee/financia                             |
 | `_fnh_active`      | boolean | sí   | Si la radio aparece en el directorio            |
 
@@ -372,7 +379,10 @@ backend/
 |----------------------------|---------|-------|----------------------------------------------------------|
 | `_fnh_website_url`         | string  | sí    | Web del colectivo                                        |
 | `_fnh_contact_email`       | string  | **no**| Uso interno; nunca se expone                             |
-| `_fnh_territory`           | string  | sí    | Texto libre                                              |
+| `_fnh_territory`           | string  | sí    | Texto libre / etiqueta humana                            |
+| `_fnh_country`             | string  | sí    | País normalizado                                          |
+| `_fnh_region`              | string  | sí    | Región/provincia/comunidad normalizada                    |
+| `_fnh_city`                | string  | sí    | Ciudad/localidad normalizada                              |
 | `_fnh_flavor_url`          | string  | sí    | Opcional; enlace a su instancia Flavor si la tienen     |
 | `_fnh_verified`            | boolean | sí    | Sólo los verificados aparecen en la API pública          |
 | `_fnh_submitted_by_email`  | string  | **no**| Auditoría de altas públicas; nunca se expone             |

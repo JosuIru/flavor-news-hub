@@ -109,9 +109,13 @@ a:focus-visible {
 }
 .site-nav {
     font-size: .9rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .15rem .6rem;
 }
 .site-nav a {
-    margin-left: 1rem;
+    white-space: nowrap;
 }
 
 main {

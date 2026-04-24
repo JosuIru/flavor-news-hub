@@ -6,6 +6,7 @@ namespace FlavorNewsHub\REST;
 use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\REST\Transformers\TopicsHelper;
+use FlavorNewsHub\Support\TerritoryNormalizer;
 
 /**
  * Endpoints del directorio de radios libres:
@@ -138,6 +139,8 @@ final class RadiosEndpoint
         if (!is_array($idiomas)) {
             $idiomas = [];
         }
+        $territorio = (string) get_post_meta($idRadio, '_fnh_territory', true);
+        $ubicacion = self::obtenerUbicacion($idRadio, $territorio);
         return [
             'id'          => $idRadio,
             'slug'        => (string) $post->post_name,
@@ -147,11 +150,33 @@ final class RadiosEndpoint
             'stream_url'  => (string) get_post_meta($idRadio, '_fnh_stream_url', true),
             'website_url' => (string) get_post_meta($idRadio, '_fnh_website_url', true),
             'rss_url'     => (string) get_post_meta($idRadio, '_fnh_rss_url', true),
-            'territory'   => (string) get_post_meta($idRadio, '_fnh_territory', true),
+            'territory'   => $territorio,
+            'country'     => $ubicacion['country'],
+            'region'      => $ubicacion['region'],
+            'city'        => $ubicacion['city'],
             'languages'   => array_values(array_map('strval', $idiomas)),
             'ownership'   => (string) get_post_meta($idRadio, '_fnh_ownership', true),
             'active'      => (bool) get_post_meta($idRadio, '_fnh_active', true),
             'topics'      => TopicsHelper::obtenerTopicsDelPost($idRadio),
+        ];
+    }
+
+    /**
+     * @return array{country:string,region:string,city:string,network:string}
+     */
+    private static function obtenerUbicacion(int $idRadio, string $territorio): array
+    {
+        $country = (string) get_post_meta($idRadio, '_fnh_country', true);
+        $region = (string) get_post_meta($idRadio, '_fnh_region', true);
+        $city = (string) get_post_meta($idRadio, '_fnh_city', true);
+        if ($country === '' && $region === '' && $city === '') {
+            return TerritoryNormalizer::desglosar($territorio);
+        }
+        return [
+            'country' => $country,
+            'region' => $region,
+            'city' => $city,
+            'network' => '',
         ];
     }
 }

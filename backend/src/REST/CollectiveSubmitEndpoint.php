@@ -5,6 +5,7 @@ namespace FlavorNewsHub\REST;
 
 use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\Taxonomy\Topic;
+use FlavorNewsHub\Support\TerritoryNormalizer;
 
 /**
  * Endpoint público para alta de colectivos:
@@ -46,6 +47,9 @@ final class CollectiveSubmitEndpoint
             'contact_email' => ['type' => 'string', 'required' => true, 'format' => 'email'],
             'website_url'   => ['type' => 'string'],
             'territory'     => ['type' => 'string'],
+            'country'       => ['type' => 'string'],
+            'region'        => ['type' => 'string'],
+            'city'          => ['type' => 'string'],
             'flavor_url'    => ['type' => 'string'],
             'topics'        => ['type' => 'array', 'items' => ['type' => 'string']],
             'website'       => ['type' => 'string'], // honeypot: debe venir vacío
@@ -91,6 +95,10 @@ final class CollectiveSubmitEndpoint
         $urlWeb = esc_url_raw((string) $request->get_param('website_url'));
         $urlFlavor = esc_url_raw((string) $request->get_param('flavor_url'));
         $territorioColectivo = sanitize_text_field((string) $request->get_param('territory'));
+        $country = sanitize_text_field((string) $request->get_param('country'));
+        $region = sanitize_text_field((string) $request->get_param('region'));
+        $city = sanitize_text_field((string) $request->get_param('city'));
+        $ubicacion = TerritoryNormalizer::desglosar($territorioColectivo);
 
         // 4. Crear el post en estado `pending`.
         $idColectivoNuevo = wp_insert_post([
@@ -117,6 +125,9 @@ final class CollectiveSubmitEndpoint
         if ($territorioColectivo !== '') {
             update_post_meta($idColectivoNuevo, '_fnh_territory', $territorioColectivo);
         }
+        update_post_meta($idColectivoNuevo, '_fnh_country', $country !== '' ? $country : $ubicacion['country']);
+        update_post_meta($idColectivoNuevo, '_fnh_region', $region !== '' ? $region : $ubicacion['region']);
+        update_post_meta($idColectivoNuevo, '_fnh_city', $city !== '' ? $city : $ubicacion['city']);
 
         // 6. Topics: sólo se aceptan slugs que ya existan; no se crean temáticas nuevas desde esta vía.
         $slugsEntrantes = (array) $request->get_param('topics');

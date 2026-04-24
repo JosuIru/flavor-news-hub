@@ -86,6 +86,42 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        register_post_meta($tipoPostSource, '_fnh_country', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPostSource, '_fnh_region', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPostSource, '_fnh_city', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPostSource, '_fnh_network', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         register_post_meta($tipoPostSource, '_fnh_ownership', [
             'type'              => 'string',
             'single'            => true,
@@ -279,6 +315,33 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        register_post_meta($tipoPostCollective, '_fnh_country', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPostCollective, '_fnh_region', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPostCollective, '_fnh_city', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         register_post_meta($tipoPostCollective, '_fnh_flavor_url', [
             'type'              => 'string',
             'single'            => true,
@@ -342,6 +405,33 @@ final class MetaRegistrar
         ]);
 
         register_post_meta($tipoPost, '_fnh_territory', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPost, '_fnh_country', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPost, '_fnh_region', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        register_post_meta($tipoPost, '_fnh_city', [
             'type'              => 'string',
             'single'            => true,
             'show_in_rest'      => true,

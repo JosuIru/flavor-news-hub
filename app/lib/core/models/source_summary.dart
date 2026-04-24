@@ -15,6 +15,11 @@ class SourceSummary with _$SourceSummary {
     @Default('') String websiteUrl,
     @Default('') String url,
     @Default('rss') String feedType,
+    @Default('') String territory,
+    @Default('') String country,
+    @Default('') String region,
+    @Default('') String city,
+    @Default('') String network,
   }) = _SourceSummary;
 
   factory SourceSummary.fromJson(Map<String, dynamic> json) => _$SourceSummaryFromJson(json);

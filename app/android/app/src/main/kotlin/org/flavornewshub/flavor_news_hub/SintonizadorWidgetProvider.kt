@@ -82,6 +82,27 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val actual = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
         val nuevo = ((actual + delta) % radios.size + radios.size) % radios.size
         prefs.edit().putInt(CLAVE_INDICE, nuevo).apply()
+
+        // Si ya hay radio sonando (marca escrita por el callback Dart
+        // al reproducir), disparar play de la nueva emisora — así ◄/►
+        // funciona como "cambiar de emisora en directo" sin pasar por
+        // el botón ▶. Si el widget está parado, sólo cambiamos el dial.
+        val reproduciendo = prefs.getString("sintonizador_reproduciendo_id", "") ?: ""
+        if (reproduciendo.isNotEmpty()) {
+            val nuevaRadio = radios[nuevo]
+            val urlCodificada = URLEncoder.encode(nuevaRadio.streamUrl, "UTF-8")
+            val tituloCodificado = URLEncoder.encode(nuevaRadio.nombre, "UTF-8")
+            val uriPlay = Uri.parse(
+                "flavornews://sintonizador/play?id=${nuevaRadio.id}&url=$urlCodificada&titulo=$tituloCodificado"
+            )
+            try {
+                HomeWidgetBackgroundIntent.getBroadcast(context, uriPlay).send()
+            } catch (_: Exception) {
+                // send() puede lanzar PendingIntent.CanceledException en
+                // race conditions — ignoramos y el usuario re-pulsa.
+            }
+        }
+
         // Forzar redibujado inmediato del widget.
         val mgr = AppWidgetManager.getInstance(context)
         val ids = mgr.getAppWidgetIds(

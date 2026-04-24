@@ -22,10 +22,16 @@ Modelos inmutables con `freezed` + `json_serializable` (`field_rename: snake` gl
 - `Topic` — temática.
 - `SourceSummary` — fuente resumida (la que viene embebida en un item).
 - `Source` — ficha editorial completa.
+- `Radio` — radio libre con stream y metadatos editoriales.
 - `Item` — noticia agregada.
 - `Collective` — colectivo verificado.
 - `PaginatedList<T>` — wrapper para respuestas paginadas (construido a partir de `X-WP-Total` / `X-WP-TotalPages`).
 - `CollectiveSubmission` / `CollectiveSubmissionResult` — body y respuesta del POST público.
+
+`Source`, `SourceSummary`, `Radio` y `Collective` exponen tanto `territory` como
+`country`, `region`, `city` y, en el caso de fuentes, `network`. `territory`
+sigue siendo la etiqueta humana de referencia; los otros campos se derivan o
+se guardan para ordenar mejor el mapa, los filtros y los listados.
 
 Cliente `FlavorNewsApi` (`lib/core/api/flavor_news_api.dart`):
 

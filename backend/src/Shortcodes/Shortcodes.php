@@ -1411,6 +1411,29 @@ final class Shortcodes
         #fnh-landing .fnh-radios-lista .fnh-radio audio{width:100% !important;height:36px;margin:.35em 0 !important;display:block}
         #fnh-landing .fnh-radios-lista .fnh-radio .fnh-listen{display:inline-block;margin-top:.4em !important;font-size:.88em !important;color:#3b7bdb !important;text-decoration:none !important}
         #fnh-landing .fnh-radios-lista .fnh-radio .fnh-listen:hover{text-decoration:underline !important}
+        @media (prefers-color-scheme:dark){
+          #fnh-landing,#fnh-landing h1,#fnh-landing h2,#fnh-landing h3,#fnh-landing h4{color:#e8e8e8 !important}
+          #fnh-landing .fnh-bloque-alt{background:#181818 !important}
+          #fnh-landing .fnh-seccion-titulo{color:#e8e8e8 !important}
+          #fnh-landing .fnh-seccion-ico{background:#ddd !important;color:#111 !important}
+          #fnh-landing .fnh-subseccion{color:#aaa !important}
+          #fnh-landing .fnh-portada-card{background:#1c1c1c !important;border-color:#2a2a2a !important}
+          #fnh-landing .fnh-portada-titulo{color:#e8e8e8 !important}
+          #fnh-landing .fnh-ver-mas a{color:#aaa !important}
+          #fnh-landing .fnh-ver-mas a:hover{color:#e8e8e8 !important}
+          #fnh-landing .fnh-destacado-meta{color:#aaa !important}
+          #fnh-landing .fnh-feed-lista li{border-bottom-color:#2a2a2a !important}
+          #fnh-landing .fnh-feed-lista h3 a{color:#e8e8e8 !important}
+          #fnh-landing .fnh-feed-lista .fnh-meta{color:#888 !important}
+          #fnh-landing .fnh-feed-lista .fnh-excerpt{color:#bbb !important}
+          #fnh-landing .fnh-radios-lista .fnh-radio{background:#1c1c1c !important;border-color:#2a2a2a !important;box-shadow:none !important}
+          #fnh-landing .fnh-radios-lista .fnh-radio h4{color:#e8e8e8 !important}
+          #fnh-landing .fnh-radios-lista .fnh-radio .fnh-meta{color:#888 !important}
+          #fnh-landing .fnh-apoyo{background:linear-gradient(135deg,#2a1010 0%,#1a0814 100%) !important;border-color:#4a1030 !important}
+          #fnh-landing .fnh-apoyo-titulo{color:#f08090 !important}
+          #fnh-landing .fnh-apoyo-copy{color:#deb0b8 !important}
+          #fnh-landing .fnh-repo{color:#888 !important}
+        }
         ";
         wp_register_style('flavor-news-hub-shortcodes', false);
         wp_enqueue_style('flavor-news-hub-shortcodes');
@@ -2073,7 +2096,7 @@ JS;
             <!-- HERO con gradiente oscuro -->
             <section class="fnh-hero">
                 <div class="fnh-hero-inner">
-                    <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
+                    <h1><?php echo esc_html(get_bloginfo('name')); ?></h1>
                     <p class="fnh-lema"><?php esc_html_e('Medios alternativos y colectivos organizados. Informarte y actuar, en un solo sitio.', 'flavor-news-hub'); ?></p>
                     <div class="fnh-hero-ctas">
                         <?php if ($urlNoticias !== '') : ?>

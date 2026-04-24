@@ -67,6 +67,28 @@ $textoTituloEfectivo = $tituloPagina !== '' ? $tituloPagina . ' · ' . $nombreSi
             </p>
             <nav class="site-nav" aria-label="<?php esc_attr_e('Navegación principal', 'flavor-news-hub'); ?>">
                 <a href="<?php echo esc_url($urlInicio); ?>"><?php esc_html_e('Inicio', 'flavor-news-hub'); ?></a>
+                <?php
+                $paginasNav = get_posts([
+                    'post_type'      => 'page',
+                    'post_status'    => 'publish',
+                    'posts_per_page' => 20,
+                    'meta_key'       => '_fnh_pagina_auto',
+                    'orderby'        => 'menu_order',
+                    'order'          => 'ASC',
+                    'no_found_rows'  => true,
+                ]);
+                foreach ($paginasNav as $paginaNav) {
+                    if (get_post_meta($paginaNav->ID, '_fnh_pagina_auto', true) === 'inicio') {
+                        continue;
+                    }
+                    printf(
+                        '<a href="%s">%s</a>',
+                        esc_url((string) get_permalink($paginaNav->ID)),
+                        esc_html(get_the_title($paginaNav->ID))
+                    );
+                }
+                wp_reset_postdata();
+                ?>
             </nav>
         </div>
     </header>
