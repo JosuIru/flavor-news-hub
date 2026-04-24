@@ -14,6 +14,7 @@ class PreferenciasUsuario {
     required this.codigoIdioma,
     required this.urlInstanciaBackend,
     required this.escalaTexto,
+    required this.territorioBase,
   });
 
   /// ThemeMode de Flutter (`system`, `light`, `dark`).
@@ -29,18 +30,28 @@ class PreferenciasUsuario {
   /// Factor de escalado de texto (0.8 – 1.4). 1.0 = default del sistema.
   final double escalaTexto;
 
+  /// Territorio base del usuario — clave del `TerritoryNormalizer`
+  /// (p. ej. `bizkaia`, `argentina`, `euskal herria`). Cadena vacía =
+  /// sin preferencia: feed y mapa se muestran sin ponderación local.
+  /// Cuando está fijado, los contenidos cuyo territorio coincide (por
+  /// ciudad, región, país o red) ganan prioridad editorial sobre los
+  /// globales sin ocultar nada.
+  final String territorioBase;
+
   PreferenciasUsuario copyWith({
     ThemeMode? modoTema,
     String? codigoIdioma,
     bool borrarCodigoIdioma = false,
     String? urlInstanciaBackend,
     double? escalaTexto,
+    String? territorioBase,
   }) {
     return PreferenciasUsuario(
       modoTema: modoTema ?? this.modoTema,
       codigoIdioma: borrarCodigoIdioma ? null : (codigoIdioma ?? this.codigoIdioma),
       urlInstanciaBackend: urlInstanciaBackend ?? this.urlInstanciaBackend,
       escalaTexto: escalaTexto ?? this.escalaTexto,
+      territorioBase: territorioBase ?? this.territorioBase,
     );
   }
 }
@@ -51,6 +62,7 @@ class _Claves {
   static const localeCode = 'fnh.pref.localeCode';
   static const backendUrl = 'fnh.pref.backendUrl';
   static const textScale = 'fnh.pref.textScale';
+  static const territorioBase = 'fnh.pref.territorioBase';
 }
 
 /// Valor por defecto de la URL de la instancia.
@@ -89,6 +101,7 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
       codigoIdioma: sp.getString(_Claves.localeCode),
       urlInstanciaBackend: sp.getString(_Claves.backendUrl) ?? urlInstanciaOficialDefault,
       escalaTexto: sp.getDouble(_Claves.textScale) ?? 1.0,
+      territorioBase: sp.getString(_Claves.territorioBase) ?? '',
     );
   }
 
@@ -119,6 +132,16 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
     final escalaAcotada = escala.clamp(0.8, 1.4);
     state = state.copyWith(escalaTexto: escalaAcotada);
     await _sharedPrefs.setDouble(_Claves.textScale, escalaAcotada);
+  }
+
+  Future<void> establecerTerritorioBase(String clave) async {
+    final claveLimpia = clave.trim();
+    state = state.copyWith(territorioBase: claveLimpia);
+    if (claveLimpia.isEmpty) {
+      await _sharedPrefs.remove(_Claves.territorioBase);
+    } else {
+      await _sharedPrefs.setString(_Claves.territorioBase, claveLimpia);
+    }
   }
 }
 

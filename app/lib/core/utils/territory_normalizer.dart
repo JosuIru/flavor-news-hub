@@ -12,7 +12,108 @@ class TerritoryLocation {
   final String network;
 }
 
+/// Entrada del selector "Mi territorio" en ajustes.
+///
+/// `clave` es lo que se guarda en SharedPreferences y lo que se pasa a
+/// [TerritoryNormalizer.desglosar]; `etiqueta` es el nombre visible; y
+/// `grupo` sirve sólo para cabeceras de sección en el bottom sheet.
+class TerritoryOption {
+  const TerritoryOption({
+    required this.clave,
+    required this.etiqueta,
+    required this.grupo,
+  });
+
+  final String clave;
+  final String etiqueta;
+  final String grupo;
+}
+
 class TerritoryNormalizer {
+  /// Lista curada para el selector "Mi territorio" en Ajustes.
+  ///
+  /// No es el mapa completo del normalizer (ese sólo lo usamos para
+  /// transformar etiquetas libres del catálogo). Esta lista es lo que
+  /// ofrecemos al usuario para fijar su ubicación base — por eso
+  /// incluye redes transnacionales, naciones/regiones del Estado
+  /// español, Ipar Euskal Herria y una selección de países y grandes
+  /// ciudades de Latinoamérica. Se ordena por grupo y dentro de cada
+  /// grupo de más específico a más general.
+  static List<TerritoryOption> listarOpcionesCuradas() {
+    return const [
+      // Redes / marcos transnacionales.
+      TerritoryOption(clave: 'euskal herria', etiqueta: 'Euskal Herria', grupo: 'Redes'),
+      TerritoryOption(clave: 'latinoamerica', etiqueta: 'Latinoamérica', grupo: 'Redes'),
+      TerritoryOption(clave: 'mesoamerica', etiqueta: 'Mesoamérica', grupo: 'Redes'),
+      TerritoryOption(clave: 'wallmapu', etiqueta: 'Wallmapu', grupo: 'Redes'),
+      TerritoryOption(clave: 'internacional', etiqueta: 'Internacional', grupo: 'Redes'),
+
+      // Estado español — regiones habituales.
+      TerritoryOption(clave: 'bizkaia', etiqueta: 'Bizkaia', grupo: 'Estado español'),
+      TerritoryOption(clave: 'gipuzkoa', etiqueta: 'Gipuzkoa', grupo: 'Estado español'),
+      TerritoryOption(clave: 'araba', etiqueta: 'Araba', grupo: 'Estado español'),
+      TerritoryOption(clave: 'nafarroa', etiqueta: 'Nafarroa', grupo: 'Estado español'),
+      TerritoryOption(clave: 'euskadi', etiqueta: 'Euskadi', grupo: 'Estado español'),
+      TerritoryOption(clave: 'catalunya', etiqueta: 'Catalunya', grupo: 'Estado español'),
+      TerritoryOption(clave: 'país valencià', etiqueta: 'País Valencià', grupo: 'Estado español'),
+      TerritoryOption(clave: 'galicia', etiqueta: 'Galicia', grupo: 'Estado español'),
+      TerritoryOption(clave: 'andalucía', etiqueta: 'Andalucía', grupo: 'Estado español'),
+      TerritoryOption(clave: 'madrid', etiqueta: 'Madrid', grupo: 'Estado español'),
+      TerritoryOption(clave: 'asturias', etiqueta: 'Asturias', grupo: 'Estado español'),
+      TerritoryOption(clave: 'aragón', etiqueta: 'Aragón', grupo: 'Estado español'),
+      TerritoryOption(clave: 'cantabria', etiqueta: 'Cantabria', grupo: 'Estado español'),
+      TerritoryOption(clave: 'castilla y león', etiqueta: 'Castilla y León', grupo: 'Estado español'),
+      TerritoryOption(clave: 'castilla-la mancha', etiqueta: 'Castilla-La Mancha', grupo: 'Estado español'),
+      TerritoryOption(clave: 'la rioja', etiqueta: 'La Rioja', grupo: 'Estado español'),
+      TerritoryOption(clave: 'murcia', etiqueta: 'Murcia', grupo: 'Estado español'),
+      TerritoryOption(clave: 'canarias', etiqueta: 'Canarias', grupo: 'Estado español'),
+      TerritoryOption(clave: 'balears', etiqueta: 'Illes Balears', grupo: 'Estado español'),
+      TerritoryOption(clave: 'españa', etiqueta: 'España (todo el Estado)', grupo: 'Estado español'),
+
+      // Iparralde.
+      TerritoryOption(clave: 'ipar euskal herria', etiqueta: 'Ipar Euskal Herria', grupo: 'Francia'),
+
+      // Portugal.
+      TerritoryOption(clave: 'portugal', etiqueta: 'Portugal', grupo: 'Portugal'),
+      TerritoryOption(clave: 'lisboa', etiqueta: 'Lisboa', grupo: 'Portugal'),
+
+      // América.
+      TerritoryOption(clave: 'argentina', etiqueta: 'Argentina', grupo: 'América'),
+      TerritoryOption(clave: 'bolivia', etiqueta: 'Bolivia', grupo: 'América'),
+      TerritoryOption(clave: 'brasil', etiqueta: 'Brasil', grupo: 'América'),
+      TerritoryOption(clave: 'chile', etiqueta: 'Chile', grupo: 'América'),
+      TerritoryOption(clave: 'colombia', etiqueta: 'Colombia', grupo: 'América'),
+      TerritoryOption(clave: 'costa rica', etiqueta: 'Costa Rica', grupo: 'América'),
+      TerritoryOption(clave: 'ecuador', etiqueta: 'Ecuador', grupo: 'América'),
+      TerritoryOption(clave: 'el salvador', etiqueta: 'El Salvador', grupo: 'América'),
+      TerritoryOption(clave: 'estados unidos', etiqueta: 'Estados Unidos', grupo: 'América'),
+      TerritoryOption(clave: 'guatemala', etiqueta: 'Guatemala', grupo: 'América'),
+      TerritoryOption(clave: 'honduras', etiqueta: 'Honduras', grupo: 'América'),
+      TerritoryOption(clave: 'méxico', etiqueta: 'México', grupo: 'América'),
+      TerritoryOption(clave: 'nicaragua', etiqueta: 'Nicaragua', grupo: 'América'),
+      TerritoryOption(clave: 'panamá', etiqueta: 'Panamá', grupo: 'América'),
+      TerritoryOption(clave: 'paraguay', etiqueta: 'Paraguay', grupo: 'América'),
+      TerritoryOption(clave: 'perú', etiqueta: 'Perú', grupo: 'América'),
+      TerritoryOption(clave: 'república dominicana', etiqueta: 'República Dominicana', grupo: 'América'),
+      TerritoryOption(clave: 'uruguay', etiqueta: 'Uruguay', grupo: 'América'),
+      TerritoryOption(clave: 'venezuela', etiqueta: 'Venezuela', grupo: 'América'),
+
+      // Asia.
+      TerritoryOption(clave: 'india', etiqueta: 'India', grupo: 'Asia'),
+    ];
+  }
+
+  /// Etiqueta humana (en castellano, con tildes) de una clave guardada
+  /// en prefs. Devuelve cadena vacía si no existe — útil para recuperar
+  /// el label sin tener que recorrer la lista desde cada pantalla.
+  static String etiquetaDeClave(String clave) {
+    if (clave.isEmpty) return '';
+    for (final opcion in listarOpcionesCuradas()) {
+      if (opcion.clave == clave) return opcion.etiqueta;
+    }
+    return clave;
+  }
+
   static TerritoryLocation desglosar(String territory) {
     final key = _normalizarCadena(territory);
     if (key.isEmpty) {

@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_normalizer.dart';
 import '../../actualizaciones/data/actualizaciones_provider.dart';
 import '../../feed/data/filtros_feed.dart';
 
@@ -70,6 +71,16 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(textos.settingsTusIntereses),
             subtitle: Text(textos.settingsTusInteresesSubtitle),
             onTap: () => context.push('/tus-intereses'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.place_outlined),
+            title: Text(textos.settingsMyTerritory),
+            subtitle: Text(
+              preferencias.territorioBase.isEmpty
+                  ? textos.settingsMyTerritorySubtitle
+                  : TerritoryNormalizer.etiquetaDeClave(preferencias.territorioBase),
+            ),
+            onTap: () => _seleccionarTerritorio(context, notifier, preferencias.territorioBase, textos),
           ),
           ListTile(
             leading: const Icon(Icons.rss_feed),
@@ -313,6 +324,77 @@ class SettingsScreen extends ConsumerWidget {
       if (seleccion.codigo != null) {
         await ref.read(filtrosFeedProvider.notifier).adoptarIdiomaUi(seleccion.codigo);
       }
+    }
+  }
+
+  Future<void> _seleccionarTerritorio(
+    BuildContext context,
+    PreferenciasNotifier notifier,
+    String actual,
+    AppLocalizations textos,
+  ) async {
+    final opciones = TerritoryNormalizer.listarOpcionesCuradas();
+    final porGrupo = <String, List<TerritoryOption>>{};
+    for (final opcion in opciones) {
+      porGrupo.putIfAbsent(opcion.grupo, () => []).add(opcion);
+    }
+    final seleccion = await showModalBottomSheet<String?>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) {
+        final altoPantalla = MediaQuery.of(ctx).size.height;
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: altoPantalla * 0.85),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: Text(
+                    textos.settingsMyTerritoryChoose,
+                    style: Theme.of(ctx).textTheme.titleMedium,
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      RadioListTile<String>(
+                        value: '',
+                        groupValue: actual,
+                        title: Text(textos.settingsMyTerritoryNone),
+                        onChanged: (valor) => Navigator.pop(ctx, valor ?? ''),
+                      ),
+                      for (final entrada in porGrupo.entries) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                          child: Text(
+                            entrada.key,
+                            style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
+                                  color: Theme.of(ctx).colorScheme.primary,
+                                ),
+                          ),
+                        ),
+                        for (final opcion in entrada.value)
+                          RadioListTile<String>(
+                            value: opcion.clave,
+                            groupValue: actual,
+                            title: Text(opcion.etiqueta),
+                            onChanged: (valor) => Navigator.pop(ctx, valor),
+                          ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (seleccion != null) {
+      await notifier.establecerTerritorioBase(seleccion);
     }
   }
 
