@@ -123,7 +123,7 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(textos.settingsShareApp),
             subtitle: Text(textos.settingsShareAppSubtitle),
             onTap: () => Share.share(
-              '${textos.appName} — ${textos.appTagline}\nhttps://github.com/flavor-news-hub',
+              '${textos.appName} — ${textos.appTagline}\nhttps://github.com/JosuIru/flavor-news-hub',
             ),
           ),
           ListTile(
