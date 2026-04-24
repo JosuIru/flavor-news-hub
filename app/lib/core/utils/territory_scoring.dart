@@ -70,3 +70,31 @@ bool _coincide(String a, String b) {
   if (a.isEmpty || b.isEmpty) return false;
   return a.toLowerCase().trim() == b.toLowerCase().trim();
 }
+
+/// Prioridad local de una entidad estática (radio, colectivo, fuente)
+/// para ordenar directorios según "de lo local a lo global". A diferencia
+/// de [fechaEfectivaLocal], aquí no hay tiempo que penderar — se usa
+/// una escala discreta y el resultado se compara directamente en un
+/// `sort`. Un número mayor sube antes en la lista.
+///
+/// Escala:
+///   4 — match de ciudad
+///   3 — match de región
+///   2 — match de país
+///   1 — match de red transnacional
+///   0 — sin match o sin territorio base
+int prioridadLocal({
+  required String country,
+  required String region,
+  required String city,
+  required String network,
+  required String territorioBase,
+}) {
+  if (territorioBase.isEmpty) return 0;
+  final referencia = TerritoryNormalizer.desglosar(territorioBase);
+  if (referencia.city.isNotEmpty && _coincide(city, referencia.city)) return 4;
+  if (referencia.region.isNotEmpty && _coincide(region, referencia.region)) return 3;
+  if (referencia.country.isNotEmpty && _coincide(country, referencia.country)) return 2;
+  if (referencia.network.isNotEmpty && _coincide(network, referencia.network)) return 1;
+  return 0;
+}

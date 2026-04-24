@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/models/collective.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_scoring.dart';
 import '../../offline_seed/data/seed_cache.dart';
 import '../../offline_seed/data/seed_loader.dart';
 import 'filtros_colectivos.dart';
@@ -53,6 +55,9 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
   Future<EstadoDirectorioColectivos> build() async {
     final filtros = ref.watch(filtrosColectivosProvider);
     final api = ref.watch(flavorNewsApiProvider);
+    final territorioBase = ref.watch(
+      preferenciasProvider.select((p) => p.territorioBase),
+    );
     try {
       final primera = await api.fetchCollectives(
         page: 1,
@@ -84,7 +89,7 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
         );
       }
       return EstadoDirectorioColectivos(
-        items: primera.items,
+        items: _ordenarLocalPrimero(primera.items, territorioBase),
         paginaActual: 1,
         totalPaginas: primera.totalPages,
         cargandoMasPaginas: false,
@@ -96,12 +101,44 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
       final seed = await ref.watch(colectivosSeedProvider.future);
       final filtrados = _aplicarFiltros(seed, filtros);
       return EstadoDirectorioColectivos(
-        items: filtrados,
+        items: _ordenarLocalPrimero(filtrados, territorioBase),
         paginaActual: 1,
         totalPaginas: 1,
         cargandoMasPaginas: false,
       );
     }
+  }
+
+  /// Ordena la lista con prioridad local desc (city > region > country >
+  /// network match), manteniendo estable el orden interno de cada grupo
+  /// — así respetamos el orden editorial que venga del backend.
+  static List<Collective> _ordenarLocalPrimero(
+    List<Collective> items,
+    String territorioBase,
+  ) {
+    if (territorioBase.isEmpty) return items;
+    final copia = [...items];
+    // Guardamos el índice original para desempatar (sort estable manual).
+    final indicePorId = {for (var i = 0; i < copia.length; i++) copia[i].id: i};
+    copia.sort((a, b) {
+      final pa = prioridadLocal(
+        country: a.country,
+        region: a.region,
+        city: a.city,
+        network: '',
+        territorioBase: territorioBase,
+      );
+      final pb = prioridadLocal(
+        country: b.country,
+        region: b.region,
+        city: b.city,
+        network: '',
+        territorioBase: territorioBase,
+      );
+      if (pa != pb) return pb - pa;
+      return (indicePorId[a.id] ?? 0).compareTo(indicePorId[b.id] ?? 0);
+    });
+    return copia;
   }
 
   List<Collective> _aplicarFiltros(
@@ -141,13 +178,20 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
     try {
       final filtros = ref.read(filtrosColectivosProvider);
       final api = ref.read(flavorNewsApiProvider);
+      final territorioBase = ref.read(
+        preferenciasProvider.select((p) => p.territorioBase),
+      );
       final siguiente = await api.fetchCollectives(
         page: estadoActual.paginaActual + 1,
         topic: filtros.topicsParaQueryParam,
         territory: filtros.codigoTerritorio,
       );
+      // Ordenamos sólo los nuevos: reordenar los ya mostrados haría que
+      // un colectivo "saltara" a una posición que el usuario ya había
+      // scrolleado. Misma política que el feed.
+      final nuevosOrdenados = _ordenarLocalPrimero(siguiente.items, territorioBase);
       state = AsyncData(EstadoDirectorioColectivos(
-        items: [...estadoActual.items, ...siguiente.items],
+        items: [...estadoActual.items, ...nuevosOrdenados],
         paginaActual: estadoActual.paginaActual + 1,
         totalPaginas: siguiente.totalPages,
         cargandoMasPaginas: false,

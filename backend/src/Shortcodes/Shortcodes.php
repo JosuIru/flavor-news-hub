@@ -165,7 +165,7 @@ final class Shortcodes
 
         $urlPaypal = self::urlDonaciones();
         ?>
-<div class="fnh-dona-fab" id="fnh-dona-fab" role="button" tabindex="0" data-fnh-open-dona aria-label="<?php esc_attr_e('Apoyar el proyecto', 'flavor-news-hub'); ?>" title="<?php esc_attr_e('Apoyar', 'flavor-news-hub'); ?>"><span aria-hidden="true">♥</span></div>
+<div class="fnh-dona-fab" id="fnh-dona-fab" role="button" tabindex="0" data-fnh-open-dona aria-label="<?php esc_attr_e('Apoyar el proyecto', 'flavor-news-hub'); ?>" title="<?php esc_attr_e('Apoyar', 'flavor-news-hub'); ?>"><span class="material-icons material-icons-outlined" aria-hidden="true">volunteer_activism</span></div>
 <div class="fnh-dona-modal" id="fnh-dona-modal" role="dialog" aria-hidden="true" aria-labelledby="fnh-dona-modal-titulo">
     <div class="fnh-dona-backdrop" data-fnh-close-dona></div>
     <div class="fnh-dona-dialog" role="document">

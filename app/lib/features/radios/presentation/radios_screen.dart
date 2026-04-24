@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_scoring.dart';
 import '../../audio/presentation/reproductor_episodio_sheet.dart';
 import '../data/programas_radio_provider.dart';
 import '../data/radios_favoritas_notifier.dart';
@@ -32,6 +34,9 @@ class RadiosBody extends ConsumerWidget {
     final asyncRadios = ref.watch(radiosProvider);
     final estadoReproductor = ref.watch(reproductorRadioProvider);
     final favoritas = ref.watch(radiosFavoritasProvider);
+    final territorioBase = ref.watch(
+      preferenciasProvider.select((p) => p.territorioBase),
+    );
 
     return asyncRadios.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -71,13 +76,23 @@ class RadiosBody extends ConsumerWidget {
         final radiosVisibles = soloFavoritas
             ? radios.where((radio) => favoritas.contains(radio.id)).toList()
             : [...radios];
-        // Favoritas arriba del listado — la preferencia del usuario pesa más
-        // que el orden alfabético del backend.
+        // Orden: favoritas arriba (preferencia explícita del usuario) →
+        // dentro de cada bloque, prioridad local si hay territorio base
+        // fijado → alfabético como desempate estable.
+        int prio(modelo_radio.Radio r) => prioridadLocal(
+              country: r.country,
+              region: r.region,
+              city: r.city,
+              network: '',
+              territorioBase: territorioBase,
+            );
         final ordenadas = radiosVisibles
           ..sort((a, b) {
             final aFav = favoritas.contains(a.id) ? 0 : 1;
             final bFav = favoritas.contains(b.id) ? 0 : 1;
             if (aFav != bFav) return aFav - bFav;
+            final diffPrio = prio(b) - prio(a);
+            if (diffPrio != 0) return diffPrio;
             return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           });
         return Column(

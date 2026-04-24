@@ -377,5 +377,149 @@
     "languages": [
       "pt"
     ]
+  },
+  {
+    "id": 7001,
+    "name": "Radio Cuyum",
+    "slug": "radio-cuyum",
+    "stream_url": "https://radios.liberaturadio.org/Cuyum",
+    "website_url": "https://comecuco.org/radio-cuyum/",
+    "rss_url": "https://comecuco.org/radio-cuyum/feed/",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7002,
+    "name": "Radio La Leñera",
+    "slug": "radio-la-lenera",
+    "stream_url": "https://radios.liberaturadio.org/LaLeñera",
+    "website_url": "https://comecuco.org/la-lenera/",
+    "rss_url": "https://comecuco.org/la-lenera/feed/",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7003,
+    "name": "Radio Tierra Campesina",
+    "slug": "radio-tierra-campesina",
+    "stream_url": "https://radios.liberaturadio.org/TierraCampesina",
+    "website_url": "https://comecuco.org/radio-en-vivo/",
+    "rss_url": "",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7004,
+    "name": "Radio sin Dueño",
+    "slug": "radio-sin-dueno",
+    "stream_url": "https://radios.liberaturadio.org/RadiosinDueño",
+    "website_url": "https://comecuco.org/radio-en-vivo/",
+    "rss_url": "",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7005,
+    "name": "La Mosquitera",
+    "slug": "la-mosquitera",
+    "stream_url": "https://radios.liberaturadio.org/lamosquitera",
+    "website_url": "https://comecuco.org/radio-en-vivo/",
+    "rss_url": "",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7006,
+    "name": "Radio Cooperativa",
+    "slug": "radio-cooperativa",
+    "stream_url": "https://radios.liberaturadio.org/Cooperativa",
+    "website_url": "https://comecuco.org/radio-en-vivo/",
+    "rss_url": "",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7007,
+    "name": "Radio La Montonera",
+    "slug": "radio-la-montonera",
+    "stream_url": "https://stm.livecastradio.com:7154/;",
+    "website_url": "https://comecuco.org/radio-en-vivo/",
+    "rss_url": "",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7008,
+    "name": "Radio La Lechuza",
+    "slug": "radio-la-lechuza",
+    "stream_url": "https://radios.liberaturadio.org/LaLechuza",
+    "website_url": "https://comecuco.org/radio-en-vivo/",
+    "rss_url": "",
+    "territory": "Mendoza",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7009,
+    "name": "Radio Deseo",
+    "slug": "radio-deseo",
+    "stream_url": "https://conectperu.com/8396/stream",
+    "website_url": "https://radiodeseo.com/",
+    "rss_url": "https://radiodeseo.com/feed/",
+    "territory": "La Paz",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7010,
+    "name": "Radio Zona 503",
+    "slug": "radio-zona-503",
+    "stream_url": "https://jm8n.net/8050/stream",
+    "website_url": "https://radiozona503.com/",
+    "rss_url": "https://radiozona503.com/feed/",
+    "territory": "San Salvador",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7011,
+    "name": "La Colectiva Radio",
+    "slug": "la-colectiva-radio",
+    "stream_url": "https://radios.solumedia.com/6198/stream",
+    "website_url": "https://lacolectiva.org.ar/",
+    "rss_url": "https://lacolectiva.org.ar/feed/",
+    "territory": "Buenos Aires",
+    "languages": [
+      "es"
+    ]
+  },
+  {
+    "id": 7012,
+    "name": "Radio Cumbre",
+    "slug": "radio-cumbre",
+    "stream_url": "https://streamingned.com:7056/stream",
+    "website_url": "https://emisoracumbre.com.ve/",
+    "rss_url": "https://emisoracumbre.com.ve/feed/",
+    "territory": "Bejuma",
+    "languages": [
+      "es"
+    ]
   }
 ]
