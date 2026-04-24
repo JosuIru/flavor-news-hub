@@ -15,6 +15,7 @@ class PreferenciasUsuario {
     required this.urlInstanciaBackend,
     required this.escalaTexto,
     required this.territorioBase,
+    required this.onboardingCompleto,
   });
 
   /// ThemeMode de Flutter (`system`, `light`, `dark`).
@@ -38,6 +39,11 @@ class PreferenciasUsuario {
   /// globales sin ocultar nada.
   final String territorioBase;
 
+  /// `true` cuando el usuario ha pasado por (o saltado explícitamente)
+  /// el onboarding de primer arranque. Se usa para no volver a mostrar
+  /// el sheet de "Mi territorio" en siguientes aperturas de la app.
+  final bool onboardingCompleto;
+
   PreferenciasUsuario copyWith({
     ThemeMode? modoTema,
     String? codigoIdioma,
@@ -45,6 +51,7 @@ class PreferenciasUsuario {
     String? urlInstanciaBackend,
     double? escalaTexto,
     String? territorioBase,
+    bool? onboardingCompleto,
   }) {
     return PreferenciasUsuario(
       modoTema: modoTema ?? this.modoTema,
@@ -52,6 +59,7 @@ class PreferenciasUsuario {
       urlInstanciaBackend: urlInstanciaBackend ?? this.urlInstanciaBackend,
       escalaTexto: escalaTexto ?? this.escalaTexto,
       territorioBase: territorioBase ?? this.territorioBase,
+      onboardingCompleto: onboardingCompleto ?? this.onboardingCompleto,
     );
   }
 }
@@ -63,6 +71,7 @@ class _Claves {
   static const backendUrl = 'fnh.pref.backendUrl';
   static const textScale = 'fnh.pref.textScale';
   static const territorioBase = 'fnh.pref.territorioBase';
+  static const onboardingCompleto = 'fnh.pref.onboardingCompleto';
 }
 
 /// Valor por defecto de la URL de la instancia.
@@ -102,6 +111,7 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
       urlInstanciaBackend: sp.getString(_Claves.backendUrl) ?? urlInstanciaOficialDefault,
       escalaTexto: sp.getDouble(_Claves.textScale) ?? 1.0,
       territorioBase: sp.getString(_Claves.territorioBase) ?? '',
+      onboardingCompleto: sp.getBool(_Claves.onboardingCompleto) ?? false,
     );
   }
 
@@ -142,6 +152,11 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
     } else {
       await _sharedPrefs.setString(_Claves.territorioBase, claveLimpia);
     }
+  }
+
+  Future<void> marcarOnboardingCompleto() async {
+    state = state.copyWith(onboardingCompleto: true);
+    await _sharedPrefs.setBool(_Claves.onboardingCompleto, true);
   }
 }
 

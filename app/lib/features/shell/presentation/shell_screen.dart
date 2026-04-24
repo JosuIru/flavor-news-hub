@@ -3,7 +3,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/providers/preferences_provider.dart';
 import '../../audio/data/reproductor_episodio_notifier.dart';
+import '../../onboarding/presentation/onboarding_territorio_sheet.dart';
 import '../../radios/data/reproductor_radio_notifier.dart';
 
 /// Shell con NavigationBar inferior que envuelve las 4 destinaciones
@@ -18,13 +20,20 @@ import '../../radios/data/reproductor_radio_notifier.dart';
 /// aparece un mini-player persistente con pausa/stop — es el único control
 /// garantizado si el usuario cerró el sheet del reproductor o la
 /// notificación del sistema no está visible.
-class ShellScreen extends ConsumerWidget {
+class ShellScreen extends ConsumerStatefulWidget {
   const ShellScreen({required this.child, required this.rutaActual, super.key});
 
   final Widget child;
   final String rutaActual;
 
   static const List<String> _rutasPorIndice = ['/', '/audio', '/tv', '/collectives', '/settings'];
+
+  @override
+  ConsumerState<ShellScreen> createState() => _EstadoShell();
+}
+
+class _EstadoShell extends ConsumerState<ShellScreen> {
+  bool _onboardingLanzado = false;
 
   int _indiceDesdeRuta(String ruta) {
     if (ruta.startsWith('/settings')) return 4;
@@ -36,13 +45,38 @@ class ShellScreen extends ConsumerWidget {
     return 0;
   }
 
+  /// Dispara el sheet de onboarding la primera vez que el shell se
+  /// monta y las prefs dicen que no se ha completado. Se guarda una
+  /// bandera local (`_onboardingLanzado`) para no reabrirlo si el
+  /// shell se reconstruye antes de que el usuario lo cierre.
+  void _quizaAbrirOnboarding() {
+    if (_onboardingLanzado) return;
+    final prefs = ref.read(preferenciasProvider);
+    if (prefs.onboardingCompleto) return;
+    // Si el usuario ya se molestó en fijar un territorio por su cuenta
+    // (tenía una versión previa donde el selector sólo vivía en
+    // Ajustes), damos el onboarding por cumplido para no volver a
+    // molestarle con el sheet.
+    if (prefs.territorioBase.isNotEmpty) {
+      ref.read(preferenciasProvider.notifier).marcarOnboardingCompleto();
+      _onboardingLanzado = true;
+      return;
+    }
+    _onboardingLanzado = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      OnboardingTerritorioSheet.mostrar(context);
+    });
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    _quizaAbrirOnboarding();
     final textos = AppLocalizations.of(context);
-    final indice = _indiceDesdeRuta(rutaActual);
+    final indice = _indiceDesdeRuta(widget.rutaActual);
 
     return Scaffold(
-      body: child,
+      body: widget.child,
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -50,7 +84,7 @@ class ShellScreen extends ConsumerWidget {
           NavigationBar(
             selectedIndex: indice,
             onDestinationSelected: (nuevoIndice) {
-              final nuevaRuta = _rutasPorIndice[nuevoIndice];
+              final nuevaRuta = ShellScreen._rutasPorIndice[nuevoIndice];
               if (GoRouterState.of(context).uri.toString() != nuevaRuta) {
                 context.go(nuevaRuta);
               }
