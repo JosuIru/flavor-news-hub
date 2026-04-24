@@ -188,6 +188,7 @@ final class CreadorPaginas
                 $existente = $mapaTraducciones[$idioma] ?? self::buscarPaginaPorClaveEIdioma($config['clave'], $idioma);
                 if ($existente > 0) {
                     $mapaTraducciones[$idioma] = $existente;
+                    self::asegurarShortcodeContenido($config, $existente);
                     continue;
                 }
 
@@ -204,6 +205,7 @@ final class CreadorPaginas
                 update_post_meta($idPagina, '_fnh_pagina_auto', $config['clave']);
                 update_post_meta($idPagina, '_fnh_pagina_auto_lang', $idioma);
                 self::asignarIdiomaWpml($idPagina, $idioma, $mapaTraducciones[$idiomaOriginal] ?? 0, $idiomaOriginal);
+                self::asegurarShortcodeContenido($config, $idPagina);
                 $mapaTraducciones[$idioma] = $idPagina;
                 $idiomaOriginal = self::idiomaOriginalTraduccionesWpml($mapaTraducciones);
             }
@@ -228,6 +230,7 @@ final class CreadorPaginas
                 $existente = $mapaTraducciones[$idioma] ?? self::buscarPaginaPorClaveEIdioma($config['clave'], $idioma);
                 if ($existente > 0) {
                     $mapaTraducciones[$idioma] = $existente;
+                    self::asegurarShortcodeContenido($config, $existente);
                     continue;
                 }
 
@@ -244,6 +247,7 @@ final class CreadorPaginas
                 update_post_meta($idPagina, '_fnh_pagina_auto', $config['clave']);
                 update_post_meta($idPagina, '_fnh_pagina_auto_lang', $idioma);
                 pll_set_post_language($idPagina, $idioma);
+                self::asegurarShortcodeContenido($config, $idPagina);
                 $mapaTraducciones[$idioma] = $idPagina;
             }
 
@@ -538,8 +542,21 @@ final class CreadorPaginas
             return;
         }
 
-        if ($config['clave'] === 'colectivos' && str_contains($contenido, '[flavor_news_feed per_page="20"]')) {
-            $contenidoNuevo = str_replace('[flavor_news_feed per_page="20"]', $config['shortcode'], $contenido);
+        // La página de colectivos se creó históricamente con el
+        // shortcode de noticias (`[flavor_news_feed ...]`) porque
+        // `[flavor_news_collectives]` no existía aún. Si lo
+        // detectamos — con cualquier variante de atributos o sin
+        // ellos — lo sustituimos por el correcto en vez de
+        // concatenar: evita la duplicación visual de noticias +
+        // colectivos en la misma página.
+        if ($config['clave'] === 'colectivos'
+            && preg_match('/\[flavor_news_feed(?:\s+[^\]]*)?\]/', $contenido) === 1
+        ) {
+            $contenidoNuevo = (string) preg_replace(
+                '/\[flavor_news_feed(?:\s+[^\]]*)?\]/',
+                $config['shortcode'],
+                $contenido
+            );
         } else {
             $contenidoNuevo = trim($contenido . "\n\n" . $config['shortcode']);
         }
