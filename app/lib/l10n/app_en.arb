@@ -129,6 +129,8 @@
   "directoryTitle": "Collectives",
   "directoryEmpty": "No verified collectives yet in this instance.",
   "directoryAddCta": "Is your collective missing? Add it",
+  "collectiveMediaTitle": "Media edited by this collective",
+  "collectiveMediaEmpty": "No linked media for this collective.",
   "collectiveVisitWebsite": "Visit website",
   "collectiveFlavorCommunity": "Community on Flavor",
   "collectiveShare": "Share",

@@ -291,6 +291,34 @@ final class ImportadorCatalogo
             update_post_meta($idPost, '_fnh_city', (string) ($raw['city'] ?? $ubicacion['city']));
             update_post_meta($idPost, '_fnh_verified', $verificado);
 
+            // Sources vinculadas: admitimos o bien una lista de IDs
+            // (`source_ids`) o una lista de slugs (`source_slugs`) por
+            // comodidad editorial — resolvemos los slugs al vuelo en
+            // un WP_Query interno para no pedirle al editor del seed
+            // memorizar los IDs generados al importar fuentes.
+            $idsSourceBrutos = [];
+            if (isset($raw['source_ids']) && is_array($raw['source_ids'])) {
+                foreach ($raw['source_ids'] as $id) {
+                    $idEntero = is_numeric($id) ? (int) $id : 0;
+                    if ($idEntero > 0) $idsSourceBrutos[] = $idEntero;
+                }
+            }
+            if (isset($raw['source_slugs']) && is_array($raw['source_slugs'])) {
+                foreach ($raw['source_slugs'] as $slug) {
+                    $slugLimpio = sanitize_title((string) $slug);
+                    if ($slugLimpio === '') continue;
+                    $postSource = get_page_by_path($slugLimpio, OBJECT, Source::SLUG);
+                    if ($postSource instanceof \WP_Post) {
+                        $idsSourceBrutos[] = (int) $postSource->ID;
+                    }
+                }
+            }
+            $idsSource = array_values(array_unique(array_filter(
+                $idsSourceBrutos,
+                static fn($id) => $id > 0
+            )));
+            update_post_meta($idPost, '_fnh_source_ids', $idsSource);
+
             // No inventamos emails: los seed bundleados suelen no traer
             // un contacto canónico. La API pública expondrá `has_contact`
             // como false hasta que el admin añada un email interno.

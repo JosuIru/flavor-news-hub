@@ -189,6 +189,8 @@
   "directoryTitle": "Kolektiboak",
   "directoryEmpty": "Oraindik ez dago egiaztatutako kolektiborik instantzia honetan.",
   "directoryAddCta": "Zure kolektiboa ez dago? Gehitu",
+  "collectiveMediaTitle": "Editatzen duen hedabideak",
+  "collectiveMediaEmpty": "Kolektibo honek ez du hedabide loturarik.",
   "collectiveVisitWebsite": "Bisitatu webgunea",
   "collectiveFlavorCommunity": "Komunitatea Flavor-en",
   "collectiveShare": "Partekatu",

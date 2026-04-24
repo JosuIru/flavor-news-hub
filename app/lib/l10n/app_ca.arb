@@ -129,6 +129,8 @@
   "directoryTitle": "Col·lectius",
   "directoryEmpty": "Encara no hi ha col·lectius verificats en aquesta instància.",
   "directoryAddCta": "El teu col·lectiu no hi és? Afegeix-lo",
+  "collectiveMediaTitle": "Mitjans que edita",
+  "collectiveMediaEmpty": "Aquest col·lectiu no té mitjans vinculats.",
   "collectiveVisitWebsite": "Visita la web",
   "collectiveFlavorCommunity": "Comunitat a Flavor",
   "collectiveShare": "Comparteix",

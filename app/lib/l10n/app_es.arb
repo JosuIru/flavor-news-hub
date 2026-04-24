@@ -129,6 +129,8 @@
   "collectiveVisitWebsite": "Visitar web",
   "collectiveFlavorCommunity": "Comunidad en Flavor",
   "collectiveShare": "Compartir",
+  "collectiveMediaTitle": "Medios que edita",
+  "collectiveMediaEmpty": "Este colectivo no tiene medios vinculados.",
 
   "submitTitle": "Dar de alta un colectivo",
   "submitName": "Nombre del colectivo",

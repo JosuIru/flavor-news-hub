@@ -360,6 +360,26 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        // IDs de `fnh_source` que este colectivo edita o mantiene. Un
+        // medio puede "pertenecer" a un colectivo en el sentido
+        // editorial (ej. Pikara Magazine ↔ una asociación que la
+        // edita). No es exclusivo: un item heredará el colectivo vía
+        // su source. N:1 por ahora (un colectivo puede tener varios
+        // medios; un source sólo a un colectivo como máximo).
+        register_post_meta($tipoPostCollective, '_fnh_source_ids', [
+            'type'              => 'array',
+            'single'            => true,
+            'show_in_rest'      => [
+                'schema' => [
+                    'type'  => 'array',
+                    'items' => ['type' => 'integer'],
+                ],
+            ],
+            'default'           => [],
+            'sanitize_callback' => [self::class, 'sanearArrayEnteros'],
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         // Email del remitente de un alta pública: auditoría interna únicamente.
         register_post_meta($tipoPostCollective, '_fnh_submitted_by_email', [
             'type'              => 'string',
@@ -582,6 +602,29 @@ final class MetaRegistrar
             }
         }
         return array_values(array_unique($codigosSaneados));
+    }
+
+    /**
+     * Lista de IDs enteros positivos (por ejemplo, IDs de `fnh_source`
+     * vinculadas a un colectivo). Deduplica, descarta no-enteros y
+     * ceros/negativos.
+     *
+     * @param mixed $valorEntrada
+     * @return list<int>
+     */
+    public static function sanearArrayEnteros($valorEntrada): array
+    {
+        if (!is_array($valorEntrada)) {
+            return [];
+        }
+        $ids = [];
+        foreach ($valorEntrada as $valor) {
+            $entero = is_numeric($valor) ? (int) $valor : 0;
+            if ($entero > 0) {
+                $ids[] = $entero;
+            }
+        }
+        return array_values(array_unique($ids));
     }
 
     /**

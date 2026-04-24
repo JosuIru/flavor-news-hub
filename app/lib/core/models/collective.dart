@@ -27,6 +27,7 @@ class Collective with _$Collective {
     @Default(false) bool hasContact,
     @Default(true) bool verified,
     @Default(<Topic>[]) List<Topic> topics,
+    @Default(<int>[]) List<int> sourceIds,
   }) = _Collective;
 
   factory Collective.fromJson(Map<String, dynamic> json) => _$CollectiveFromJson(json);

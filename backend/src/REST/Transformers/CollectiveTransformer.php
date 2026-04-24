@@ -28,6 +28,18 @@ final class CollectiveTransformer
         $territorio = (string) get_post_meta($idColectivo, '_fnh_territory', true);
         $ubicacion = self::obtenerUbicacion($idColectivo, $territorio);
 
+        $idsSourcesCrudo = get_post_meta($idColectivo, '_fnh_source_ids', true);
+        $idsSources = [];
+        if (is_array($idsSourcesCrudo)) {
+            foreach ($idsSourcesCrudo as $id) {
+                $idEntero = is_numeric($id) ? (int) $id : 0;
+                if ($idEntero > 0) {
+                    $idsSources[] = $idEntero;
+                }
+            }
+        }
+        $idsSources = array_values(array_unique($idsSources));
+
         return [
             'id'          => $idColectivo,
             'slug'        => (string) $post->post_name,
@@ -43,6 +55,7 @@ final class CollectiveTransformer
             'has_contact' => $emailInterno !== '' || $websiteUrl !== '' || $flavorUrl !== '',
             'verified'    => (bool) get_post_meta($idColectivo, '_fnh_verified', true),
             'topics'      => TopicsHelper::obtenerTopicsDelPost($idColectivo),
+            'source_ids'  => $idsSources,
         ];
     }
 

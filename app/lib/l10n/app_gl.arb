@@ -189,6 +189,8 @@
   "directoryTitle": "Colectivos",
   "directoryEmpty": "Aínda non hai colectivos verificados nesta instancia.",
   "directoryAddCta": "O teu colectivo non está aquí? Engádeo",
+  "collectiveMediaTitle": "Medios que edita",
+  "collectiveMediaEmpty": "Este colectivo non ten medios vinculados.",
   "collectiveVisitWebsite": "Visitar web",
   "collectiveFlavorCommunity": "Comunidade en Flavor",
   "collectiveShare": "Compartir",
