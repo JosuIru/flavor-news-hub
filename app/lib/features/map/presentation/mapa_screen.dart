@@ -12,6 +12,7 @@ import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/territory_normalizer.dart';
+import '../../../core/utils/territory_scoring.dart';
 import '../../collectives/data/colectivos_directorio_notifier.dart';
 import '../data/territorio_geocoder.dart';
 
@@ -69,6 +70,7 @@ class MapaScreen extends ConsumerWidget {
             colectivos: colectivos,
             centroInicial: centroInicial,
             zoomInicial: zoomInicial,
+            territorioBase: territorioBase,
           );
         },
       ),
@@ -98,12 +100,14 @@ class _Mapa extends StatelessWidget {
     required this.colectivos,
     required this.centroInicial,
     required this.zoomInicial,
+    required this.territorioBase,
   });
 
   final List<modelo_radio.Radio> radios;
   final List<Collective> colectivos;
   final LatLng centroInicial;
   final double zoomInicial;
+  final String territorioBase;
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +121,14 @@ class _Mapa extends StatelessWidget {
         fallback: radio.territory,
       ));
       if (coords == null) continue;
-      markers.add(_MarcadorRadio.construir(context, radio, coords));
+      final prioridad = prioridadLocal(
+        country: radio.country,
+        region: radio.region,
+        city: radio.city,
+        network: '',
+        territorioBase: territorioBase,
+      );
+      markers.add(_MarcadorRadio.construir(context, radio, coords, prioridad));
     }
     for (final colectivo in colectivos) {
       final coords = TerritorioGeocoder.buscar(_territorioParaMapa(
@@ -127,7 +138,14 @@ class _Mapa extends StatelessWidget {
         fallback: colectivo.territory,
       ));
       if (coords == null) continue;
-      markers.add(_MarcadorColectivo.construir(context, colectivo, coords));
+      final prioridad = prioridadLocal(
+        country: colectivo.country,
+        region: colectivo.region,
+        city: colectivo.city,
+        network: '',
+        territorioBase: territorioBase,
+      );
+      markers.add(_MarcadorColectivo.construir(context, colectivo, coords, prioridad));
     }
 
     return FlutterMap(
@@ -197,16 +215,25 @@ class _Mapa extends StatelessWidget {
 }
 
 class _MarcadorRadio {
-  static Marker construir(BuildContext context, modelo_radio.Radio radio, LatLng coords) {
+  static Marker construir(
+    BuildContext context,
+    modelo_radio.Radio radio,
+    LatLng coords,
+    int prioridadLocal,
+  ) {
+    final esLocal = prioridadLocal > 0;
     return Marker(
       point: coords,
-      width: 120,
-      height: 60,
+      // Los marcadores locales son ligeramente más grandes para que
+      // destaquen sin romper la composición general del mapa.
+      width: esLocal ? 130 : 120,
+      height: esLocal ? 66 : 60,
       alignment: Alignment.topCenter,
       child: _ChipMarcador(
         icono: Icons.radio,
         color: Theme.of(context).colorScheme.primary,
         etiqueta: radio.name,
+        prioridadLocal: prioridadLocal,
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('${radio.name} · ${radio.territory}')),
@@ -219,16 +246,23 @@ class _MarcadorRadio {
 }
 
 class _MarcadorColectivo {
-  static Marker construir(BuildContext context, Collective colectivo, LatLng coords) {
+  static Marker construir(
+    BuildContext context,
+    Collective colectivo,
+    LatLng coords,
+    int prioridadLocal,
+  ) {
+    final esLocal = prioridadLocal > 0;
     return Marker(
       point: coords,
-      width: 120,
-      height: 60,
+      width: esLocal ? 130 : 120,
+      height: esLocal ? 66 : 60,
       alignment: Alignment.topCenter,
       child: _ChipMarcador(
         icono: Icons.groups,
         color: Theme.of(context).colorScheme.tertiary,
         etiqueta: colectivo.name,
+        prioridadLocal: prioridadLocal,
         onTap: () => GoRouter.of(context).push('/collectives/${colectivo.id}'),
       ),
     );
@@ -241,6 +275,7 @@ class _ChipMarcador extends StatelessWidget {
     required this.color,
     required this.etiqueta,
     required this.onTap,
+    this.prioridadLocal = 0,
   });
 
   final IconData icono;
@@ -248,8 +283,26 @@ class _ChipMarcador extends StatelessWidget {
   final String etiqueta;
   final VoidCallback onTap;
 
+  /// Prioridad local (0 = sin match; 4 = match de ciudad). Cuando es
+  /// > 0, el chip recibe un anillo dorado y la etiqueta va en negrita
+  /// para que los marcadores del territorio del usuario destaquen a
+  /// ojo sin que compitan con la distinción radio/colectivo (colores
+  /// primary vs tertiary del tema).
+  final int prioridadLocal;
+
   @override
   Widget build(BuildContext context) {
+    final esLocal = prioridadLocal > 0;
+    // Ring dorado: grosor mayor cuanto más específico el match.
+    // Ciudad=3, región=2, país/red=1.5.
+    final grosorAnillo = prioridadLocal >= 4
+        ? 3.0
+        : prioridadLocal >= 3
+            ? 2.0
+            : 1.5;
+    const colorAnillo = Color(0xFFFFC107); // ámbar
+    final tamIcono = esLocal ? 22.0 : 18.0;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -260,11 +313,24 @@ class _ChipMarcador extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              boxShadow: const [
-                BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2)),
+              border: esLocal
+                  ? Border.all(color: colorAnillo, width: grosorAnillo)
+                  : null,
+              boxShadow: [
+                const BoxShadow(
+                  color: Colors.black38,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+                if (esLocal)
+                  BoxShadow(
+                    color: colorAnillo.withOpacity(0.55),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  ),
               ],
             ),
-            child: Icon(icono, color: Colors.white, size: 18),
+            child: Icon(icono, color: Colors.white, size: tamIcono),
           ),
           const SizedBox(height: 2),
           Container(
@@ -272,6 +338,9 @@ class _ChipMarcador extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(3),
+              border: esLocal
+                  ? Border.all(color: colorAnillo, width: 1)
+                  : null,
             ),
             constraints: const BoxConstraints(maxWidth: 110),
             child: Text(
@@ -279,7 +348,11 @@ class _ChipMarcador extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 10, color: Colors.black),
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.black,
+                fontWeight: esLocal ? FontWeight.w700 : FontWeight.normal,
+              ),
             ),
           ),
         ],
