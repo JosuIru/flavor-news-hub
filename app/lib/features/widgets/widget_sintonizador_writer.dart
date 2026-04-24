@@ -22,6 +22,9 @@ class WidgetSintonizadorWriter {
           'id': r.id,
           'name': r.name,
           'territory': r.territory,
+          // URL del stream necesaria para que el widget pueda arrancar
+          // playback en background sin abrir la app.
+          'stream_url': r.streamUrl,
         }).toList();
     await HomeWidget.saveWidgetData<String>(
       'sintonizador_radios',

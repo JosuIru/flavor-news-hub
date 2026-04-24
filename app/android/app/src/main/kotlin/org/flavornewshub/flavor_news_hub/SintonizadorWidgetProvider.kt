@@ -8,8 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONArray
+import java.net.URLEncoder
 
 /**
  * Widget "Sintonizador" — radio antigua de madera con cuatro botones
@@ -52,19 +54,22 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private fun obtenerRadios(context: Context): List<Triple<Int, String, String>> {
+    data class Radio(val id: Int, val nombre: String, val territorio: String, val streamUrl: String)
+
+    private fun obtenerRadios(context: Context): List<Radio> {
         val prefs = HomeWidgetPlugin.getData(context)
         val raw = prefs.getString(CLAVE_RADIOS, "[]") ?: "[]"
         return try {
             val arr = JSONArray(raw)
             (0 until arr.length()).map { i ->
                 val o = arr.getJSONObject(i)
-                Triple(
-                    o.optInt("id", 0),
-                    o.optString("name", ""),
-                    o.optString("territory", ""),
+                Radio(
+                    id = o.optInt("id", 0),
+                    nombre = o.optString("name", ""),
+                    territorio = o.optString("territory", ""),
+                    streamUrl = o.optString("stream_url", ""),
                 )
-            }.filter { it.first > 0 && it.second.isNotEmpty() }
+            }.filter { it.id > 0 && it.nombre.isNotEmpty() }
         } catch (_: Exception) {
             emptyList()
         }
@@ -103,9 +108,10 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         }
 
         val indice = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
-        val (idRadio, nombre, territorio) = radios[indice]
-        views.setTextViewText(R.id.sintonizador_nombre, nombre)
-        views.setTextViewText(R.id.sintonizador_territorio, territorio.ifEmpty { "·" })
+        val radio = radios[indice]
+        val idRadio = radio.id
+        views.setTextViewText(R.id.sintonizador_nombre, radio.nombre)
+        views.setTextViewText(R.id.sintonizador_territorio, radio.territorio.ifEmpty { "·" })
         views.setTextViewText(R.id.sintonizador_leds, construirLeds(indice, radios.size))
 
         // Botón anterior → broadcast ACCION_ANTERIOR.
@@ -124,31 +130,34 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.sintonizador_btn_siguiente, pSig)
 
-        // Botón play → deep link a radios/play/<id>. Abre la app y
-        // arranca la emisora sintonizada vía ReproductorRadioProvider.
-        val intentPlay = Intent(Intent.ACTION_VIEW, Uri.parse("flavornews://radios/play/$idRadio")).apply {
-            setPackage(context.packageName)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        val pPlay = PendingIntent.getActivity(
-            context, widgetId * 10 + 3, intentPlay,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        // Botón play → HomeWidgetBackgroundIntent que dispara el
+        // callback Dart del widget (registrado en main.dart) en un
+        // isolate background, sin abrir la app. El callback arranca
+        // AudioPlayer con la URL del stream.
+        val urlCodificada = URLEncoder.encode(radio.streamUrl, "UTF-8")
+        val tituloCodificado = URLEncoder.encode(radio.nombre, "UTF-8")
+        val uriPlay = Uri.parse(
+            "flavornews://sintonizador/play?id=$idRadio&url=$urlCodificada&titulo=$tituloCodificado"
         )
+        val pPlay = HomeWidgetBackgroundIntent.getBroadcast(context, uriPlay)
         views.setOnClickPendingIntent(R.id.sintonizador_btn_play, pPlay)
-        views.setOnClickPendingIntent(R.id.sintonizador_dial, pPlay)
 
-        // Botón stop → deep link genérico a /audio que abre la pestaña
-        // de audio; el usuario pulsa stop allí. Alternativa: crear un
-        // deep link específico `flavornews://radios/stop` — por ahora
-        // mantenemos el flujo actual para evitar cambios en Dart.
-        val intentStop = Intent(Intent.ACTION_VIEW, Uri.parse("flavornews://radios/play/$idRadio")).apply {
+        // Tap en el display abre la app (comportamiento clásico:
+        // "ver más" lleva al sitio detallado). Mantenemos el deep link.
+        val intentDial = Intent(Intent.ACTION_VIEW, Uri.parse("flavornews://radios/play/$idRadio")).apply {
             setPackage(context.packageName)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        val pStop = PendingIntent.getActivity(
-            context, widgetId * 10 + 4, intentStop,
+        val pDial = PendingIntent.getActivity(
+            context, widgetId * 10 + 3, intentDial,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        views.setOnClickPendingIntent(R.id.sintonizador_dial, pDial)
+
+        // Botón stop → HomeWidgetBackgroundIntent → callback Dart
+        // detiene el AudioPlayer del widget. También sin abrir la app.
+        val uriStop = Uri.parse("flavornews://sintonizador/stop")
+        val pStop = HomeWidgetBackgroundIntent.getBroadcast(context, uriStop)
         views.setOnClickPendingIntent(R.id.sintonizador_btn_stop, pStop)
 
         appWidgetManager.updateAppWidget(widgetId, views)

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,6 +12,7 @@ import 'core/services/ingest_trigger.dart';
 import 'core/services/settings_sync.dart';
 import 'features/notifications/data/preferencias_notif.dart';
 import 'features/notifications/data/servicio_notificaciones.dart';
+import 'features/widgets/widget_sintonizador_control.dart';
 
 /// Punto de entrada. Cargamos SharedPreferences antes de montar la UI
 /// para que el tema y el idioma apliquen desde el primer frame (sin
@@ -27,6 +29,10 @@ Future<void> main() async {
     androidNotificationChannelName: 'Radios en directo',
     androidNotificationOngoing: true,
   );
+
+  // Callback del widget sintonizador: permite play/stop sin abrir la app
+  // despachando un isolate Dart en background. Ver widget_sintonizador_control.dart.
+  HomeWidget.registerInteractivityCallback(manejadorInteractividadSintonizador);
 
   final sharedPrefs = await SharedPreferences.getInstance();
 
