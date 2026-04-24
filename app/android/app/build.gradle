@@ -5,6 +5,22 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// Configuración de firma release. Busca `android/key.properties` con:
+//   storeFile=ruta al .keystore
+//   storePassword=...
+//   keyAlias=flavor-news-hub
+//   keyPassword=...
+// Si el archivo no existe, el release build cae a la debug keystore —
+// útil en desarrollo pero incompatible entre máquinas: sólo firmado
+// real garantiza que la app se pueda actualizar. En CI, el workflow
+// reconstruye key.properties a partir de secrets antes de compilar.
+def propiedadesKey = new Properties()
+def archivoKey = rootProject.file("key.properties")
+def hayFirmaRelease = archivoKey.exists()
+if (hayFirmaRelease) {
+    archivoKey.withInputStream { propiedadesKey.load(it) }
+}
+
 android {
     namespace = "org.flavornewshub.flavor_news_hub"
     compileSdk = flutter.compileSdkVersion
@@ -33,11 +49,25 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        release {
+            if (hayFirmaRelease) {
+                storeFile file(propiedadesKey.getProperty('storeFile'))
+                storePassword propiedadesKey.getProperty('storePassword')
+                keyAlias propiedadesKey.getProperty('keyAlias')
+                keyPassword propiedadesKey.getProperty('keyPassword')
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            // Usar la keystore de release si hay `key.properties`; si
+            // no, caer a debug para que `flutter run --release` siga
+            // funcionando durante desarrollo. Para distribución real
+            // (Play Store, F-Droid, GitHub Releases) `key.properties`
+            // es obligatorio.
+            signingConfig = hayFirmaRelease ? signingConfigs.release : signingConfigs.debug
         }
     }
 
