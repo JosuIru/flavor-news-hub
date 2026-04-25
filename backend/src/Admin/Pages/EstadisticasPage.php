@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Admin\Pages;
 
+use FlavorNewsHub\Stats\Recopilador;
+
 /**
  * Pantalla "Estadísticas" del menú admin.
  *
@@ -116,6 +118,9 @@ final class EstadisticasPage
                     </tbody>
                 </table>
             <?php endif; ?>
+
+            <?php self::renderSeccionIngesta(); ?>
+            <?php self::renderSeccionMedios(); ?>
         </div>
         <?php
     }
@@ -193,5 +198,226 @@ final class EstadisticasPage
         ];
         set_transient(self::TRANSIENT_CACHE, $datos, self::TTL_CACHE_SEGUNDOS);
         return $datos;
+    }
+
+    /**
+     * Sección "Ingesta": items nuevos por ventana, tasa de éxito, último
+     * cron, próximo cron. Datos calculados por Stats\Recopilador.
+     */
+    private static function renderSeccionIngesta(): void
+    {
+        $stats = Recopilador::actividadIngesta();
+        ?>
+        <h2 style="margin-top:2em;"><?php esc_html_e('Ingesta', 'flavor-news-hub'); ?></h2>
+        <p class="description">
+            <?php esc_html_e('Volumen de noticias entrando al sistema y salud del cron.', 'flavor-news-hub'); ?>
+        </p>
+        <div style="display:flex;gap:1em;margin:1em 0;flex-wrap:wrap;">
+            <?php
+            self::renderTarjeta(__('Items últimas 24h', 'flavor-news-hub'), (string) $stats['items_24h']);
+            self::renderTarjeta(__('Items últimos 7 días', 'flavor-news-hub'), (string) $stats['items_7d']);
+            self::renderTarjeta(__('Items últimos 30 días', 'flavor-news-hub'), (string) $stats['items_30d']);
+            self::renderTarjeta(
+                __('Tasa de éxito 7d', 'flavor-news-hub'),
+                $stats['tasa_exito_7d'] . '%',
+                sprintf(
+                    /* translators: %1$d ingestas totales, %2$d con error */
+                    __('%1$d ingestas · %2$d con error', 'flavor-news-hub'),
+                    (int) $stats['ingestas_7d'],
+                    (int) $stats['ingestas_error_7d']
+                )
+            );
+            ?>
+        </div>
+        <p>
+            <?php
+            $ultimaIngesta = $stats['ultima_ingesta_utc'];
+            $proximoCron = $stats['proximo_cron_utc'];
+            if ($ultimaIngesta) {
+                $tsUltima = strtotime($ultimaIngesta);
+                if ($tsUltima !== false) {
+                    printf(
+                        /* translators: %s = momento humanizado de la última ingesta */
+                        esc_html__('Última ingesta exitosa: %s.', 'flavor-news-hub'),
+                        '<strong>' . esc_html(human_time_diff($tsUltima) . ' ' . __('atrás', 'flavor-news-hub')) . '</strong>'
+                    );
+                }
+            } else {
+                esc_html_e('Aún no hay ingestas exitosas registradas.', 'flavor-news-hub');
+            }
+            echo ' ';
+            if ($proximoCron) {
+                $tsProx = strtotime($proximoCron);
+                if ($tsProx !== false) {
+                    printf(
+                        /* translators: %s = momento humanizado del próximo cron */
+                        esc_html__('Próxima programada: %s.', 'flavor-news-hub'),
+                        '<strong>' . esc_html(human_time_diff($tsProx) . ' ' . __('por delante', 'flavor-news-hub')) . '</strong>'
+                    );
+                }
+            }
+            ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Sección "Medios": totales del catálogo, top fuentes activas, fuentes
+     * muertas, fuentes con error, distribución por tipo de feed.
+     */
+    private static function renderSeccionMedios(): void
+    {
+        $totales = Recopilador::totalesCatalogo();
+        $top = Recopilador::topFuentesActivas(10, 7);
+        $muertas = Recopilador::fuentesMuertas(10);
+        $errores = Recopilador::fuentesConError(10);
+        $distribucion = Recopilador::distribucionPorTipoFeed();
+        ?>
+        <h2 style="margin-top:2em;"><?php esc_html_e('Medios', 'flavor-news-hub'); ?></h2>
+        <p class="description">
+            <?php esc_html_e('Catálogo agregado y salud individual de cada fuente activa.', 'flavor-news-hub'); ?>
+        </p>
+        <div style="display:flex;gap:1em;margin:1em 0;flex-wrap:wrap;">
+            <?php
+            self::renderTarjeta(
+                __('Fuentes', 'flavor-news-hub'),
+                (string) $totales['sources_activas'],
+                sprintf(
+                    /* translators: %d total de fuentes */
+                    __('de %d publicadas', 'flavor-news-hub'),
+                    (int) $totales['sources_total']
+                )
+            );
+            self::renderTarjeta(__('Colectivos', 'flavor-news-hub'), (string) $totales['collectives_total']);
+            self::renderTarjeta(__('Radios', 'flavor-news-hub'), (string) $totales['radios_total']);
+            self::renderTarjeta(__('Items totales', 'flavor-news-hub'), (string) $totales['items_total']);
+            $pendientes = (int) $totales['pendientes_sources'] + (int) $totales['pendientes_collectives'];
+            if ($pendientes > 0) {
+                self::renderTarjeta(
+                    __('Pendientes', 'flavor-news-hub'),
+                    (string) $pendientes,
+                    sprintf(
+                        /* translators: %1$d sources, %2$d colectivos */
+                        __('%1$d medios · %2$d colectivos', 'flavor-news-hub'),
+                        (int) $totales['pendientes_sources'],
+                        (int) $totales['pendientes_collectives']
+                    )
+                );
+            }
+            ?>
+        </div>
+
+        <?php if ($distribucion !== []) : ?>
+            <p style="margin:1em 0;">
+                <strong><?php esc_html_e('Distribución por tipo de feed:', 'flavor-news-hub'); ?></strong>
+                <?php
+                $partes = array_map(
+                    static fn(array $f) => esc_html($f['tipo']) . ' (' . (int) $f['total'] . ')',
+                    $distribucion
+                );
+                echo implode(' · ', $partes);
+                ?>
+            </p>
+        <?php endif; ?>
+
+        <h3 style="margin-top:1.5em;"><?php esc_html_e('Top fuentes más activas (últimos 7 días)', 'flavor-news-hub'); ?></h3>
+        <?php if ($top === []) : ?>
+            <p><?php esc_html_e('Aún no hay actividad reciente para mostrar.', 'flavor-news-hub'); ?></p>
+        <?php else : ?>
+            <table class="widefat striped" style="max-width:900px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Fuente', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('Items 7d', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($top as $fila) : ?>
+                        <tr>
+                            <td><?php echo esc_html($fila['nombre']); ?></td>
+                            <td style="text-align:right;"><?php echo (int) $fila['items']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <?php if ($muertas !== []) : ?>
+            <h3 style="margin-top:1.5em;color:#dc3232;">
+                <?php
+                printf(
+                    /* translators: %d días umbral para "muerta" */
+                    esc_html__('Fuentes muertas (sin items en %d días)', 'flavor-news-hub'),
+                    (int) Recopilador::UMBRAL_MUERTA_DIAS
+                );
+                ?>
+            </h3>
+            <table class="widefat striped" style="max-width:900px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Fuente', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Último item', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($muertas as $fila) : ?>
+                        <tr>
+                            <td><?php echo esc_html($fila['nombre']); ?></td>
+                            <td>
+                                <?php
+                                if ($fila['ultimo_item_utc']) {
+                                    $ts = strtotime($fila['ultimo_item_utc']);
+                                    if ($ts !== false) {
+                                        echo esc_html(human_time_diff($ts) . ' ' . __('atrás', 'flavor-news-hub'));
+                                    }
+                                } else {
+                                    esc_html_e('sin items', 'flavor-news-hub');
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <?php if ($errores !== []) : ?>
+            <h3 style="margin-top:1.5em;color:#dc3232;">
+                <?php esc_html_e('Fuentes con error en la última ingesta', 'flavor-news-hub'); ?>
+            </h3>
+            <table class="widefat striped" style="max-width:900px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Fuente', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Error', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($errores as $fila) : ?>
+                        <tr>
+                            <td><?php echo esc_html($fila['nombre']); ?></td>
+                            <td><code style="font-size:.85em;"><?php echo esc_html($fila['error']); ?></code></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+        <?php
+    }
+
+    /**
+     * Tarjeta visual reutilizable para los KPIs de las dos secciones.
+     */
+    private static function renderTarjeta(string $etiqueta, string $valorPrincipal, string $sub = ''): void
+    {
+        ?>
+        <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:160px;">
+            <div style="font-size:.85em;color:#666;"><?php echo esc_html($etiqueta); ?></div>
+            <div style="font-size:2em;font-weight:600;"><?php echo esc_html($valorPrincipal); ?></div>
+            <?php if ($sub !== '') : ?>
+                <div style="font-size:.8em;color:#888;margin-top:.25em;"><?php echo esc_html($sub); ?></div>
+            <?php endif; ?>
+        </div>
+        <?php
     }
 }
