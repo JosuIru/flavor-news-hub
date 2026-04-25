@@ -1,4 +1,4 @@
-name: App · release APK on tag
+name: Release · APK + plugin ZIP on tag
 
 # Se dispara al empujar un tag con forma vX.Y.Z. Compila el APK de
 # release firmado con la keystore de producción (inyectada desde
@@ -90,6 +90,39 @@ jobs:
           mv build/app/outputs/flutter-apk/app-release.apk \
              build/app/outputs/flutter-apk/flavor-news-hub-${GITHUB_REF_NAME}.apk
 
+      - name: Setup PHP
+        # Necesario para `composer install` del plugin WordPress.
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+
+      - name: Build plugin ZIP for WordPress
+        # El plugin Update Checker (PUC) que vive dentro del plugin
+        # busca en cada release un asset que matchee
+        # `flavor-news-hub-plugin-*.zip`. Sin este paso, PUC caía al
+        # zipball por defecto del repo (que incluye `app/` y `backend/`
+        # en raíz) y WordPress no encontraba el `.php` del plugin.
+        # Estructura del ZIP: directorio raíz `flavor-news-hub/` con
+        # los contenidos de `backend/` y `vendor/` instalado vía
+        # `composer install --no-dev`.
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p plugin_build/flavor-news-hub
+          cp -r backend/. plugin_build/flavor-news-hub/
+          rm -rf plugin_build/flavor-news-hub/vendor \
+                 plugin_build/flavor-news-hub/tests \
+                 plugin_build/flavor-news-hub/phpunit.xml.dist \
+                 plugin_build/flavor-news-hub/composer.lock \
+                 plugin_build/flavor-news-hub/coverage
+          composer install \
+            --working-dir=plugin_build/flavor-news-hub \
+            --no-dev --no-interaction --quiet
+          cd plugin_build
+          zip -rq flavor-news-hub-plugin-${GITHUB_REF_NAME}.zip flavor-news-hub \
+            -x "*.DS_Store" "**/.git/*" "**/coverage/*"
+          ls -lh flavor-news-hub-plugin-${GITHUB_REF_NAME}.zip
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -100,3 +133,4 @@ jobs:
           generate_release_notes: true
           files: |
             app/build/app/outputs/flutter-apk/flavor-news-hub-${{ github.ref_name }}.apk
+            plugin_build/flavor-news-hub-plugin-${{ github.ref_name }}.zip
