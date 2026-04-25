@@ -197,7 +197,9 @@
     "feed_type": "rss",
     "website_url": "https://www.elsaltodiario.com",
     "territory": "Estado",
-    "languages": [],
+    "languages": [
+      "es"
+    ],
     "topics": [
       "vivienda",
       "laboral",

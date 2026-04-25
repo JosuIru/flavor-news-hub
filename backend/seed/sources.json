@@ -226,7 +226,9 @@
     "feed_type": "rss",
     "website_url": "https://www.elsaltodiario.com",
     "territory": "Estado español",
-    "languages": [],
+    "languages": [
+      "es"
+    ],
     "topics": [
       "vivienda",
       "laboral",
@@ -3407,7 +3409,7 @@
   {
     "slug": "yt-almayadeen-espanol",
     "name": "Al Mayadeen Español",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC9YbjpvsFZytS0DnO1FnTKw",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCip9Q0ZxDwXSlMmjFAZFCKw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@AlmayadeenEspanol",
     "territory": "Internacional",
