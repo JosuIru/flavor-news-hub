@@ -5,7 +5,7 @@
     "slug": "stop-desahucios-bizkaia",
     "description": "<p>Red de apoyo mutuo frente a desahucios en Bizkaia.</p>\n",
     "url": "http://localhost:10028/c/stop-desahucios-bizkaia/",
-    "website_url": "https://ejemplo.org/stop",
+    "website_url": "",
     "flavor_url": "",
     "territory": "Bizkaia",
     "has_contact": true,
@@ -263,7 +263,8 @@
         "name": "Economía social",
         "slug": "economia-social"
       }
-    ]
+    ],
+    "support_url": "https://www.somenergia.coop/es/cooperativa/asociarse"
   },
   {
     "id": 6210,
@@ -375,7 +376,8 @@
         "name": "Internacional",
         "slug": "internacional"
       }
-    ]
+    ],
+    "support_url": "http://www.nodo50.org/donacion/"
   },
   {
     "id": 6214,
@@ -875,7 +877,8 @@
         "name": "Educación",
         "slug": "educacion"
       }
-    ]
+    ],
+    "support_url": "https://fundaciondeloscomunes.net/la-fundacion/donacion/"
   },
   {
     "id": 6232,
@@ -1020,7 +1023,8 @@
         "name": "Memoria histórica",
         "slug": "memoria-historica"
       }
-    ]
+    ],
+    "support_url": "https://sare.eus/bazkidetu/"
   },
   {
     "id": 6238,
@@ -1257,7 +1261,8 @@
         "name": "Derechos civiles",
         "slug": "derechos-civiles"
       }
-    ]
+    ],
+    "support_url": "https://kontseilua.eus/harpidetu-buletinera/"
   },
   {
     "id": 6248,
@@ -1402,7 +1407,8 @@
         "name": "Derechos civiles",
         "slug": "derechos-civiles"
       }
-    ]
+    ],
+    "support_url": "https://bizimugi.eu/adherer/"
   },
   {
     "id": 6254,
@@ -1724,7 +1730,8 @@
     "verified": true,
     "source_slugs": [
       "iniciativa-pol-asturianu"
-    ]
+    ],
+    "support_url": "https://iniciativapolasturianu.org/ventayes-pa-socios/"
   },
   {
     "id": 6267,
@@ -1822,7 +1829,8 @@
     "verified": true,
     "source_slugs": [
       "som-mobilitat"
-    ]
+    ],
+    "support_url": "https://sommobilitat.coop/formulari-fes-te-soci/"
   },
   {
     "id": 6272,
@@ -1937,7 +1945,8 @@
     "verified": true,
     "source_slugs": [
       "mtst-brasil"
-    ]
+    ],
+    "support_url": "https://www.catarse.me/colabore_mtst"
   },
   {
     "id": 6278,

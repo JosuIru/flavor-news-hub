@@ -47,7 +47,8 @@
     "territory": "Nafarroa",
     "languages": [
       "eu"
-    ]
+    ],
+    "support_url": "https://euskalerriairratia.eus/bazkidetza/"
   },
   {
     "id": 6587,
@@ -108,7 +109,8 @@
     "territory": "Andalucía",
     "languages": [
       "es"
-    ]
+    ],
+    "support_url": "https://radioalmaina.org/hazte-soci/"
   },
   {
     "id": 6599,
@@ -557,7 +559,8 @@
     "territory": "Nafarroa",
     "languages": [
       "eu"
-    ]
+    ],
+    "support_url": "https://erran.eus/bazkidetu/"
   },
   {
     "id": 7016,

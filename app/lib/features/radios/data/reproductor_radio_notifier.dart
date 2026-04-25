@@ -31,14 +31,12 @@ class EstadoReproductor {
 
 class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
   ReproductorRadioNotifier(this._ref) : super(EstadoReproductor.detenido) {
-    _player.playbackEventStream.listen((evento) {
-      final actual = state.radioActual;
-      if (actual == null) return;
-      if (_player.processingState == ProcessingState.ready && _player.playing) {
-        state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
-      } else if (_player.processingState == ProcessingState.idle && !_player.playing) {
-        state = EstadoReproductor.detenido;
-      }
+    // El listener deriva el estado completo del player en cualquier evento.
+    // Maneja todos los `ProcessingState` para que el icono refleje siempre
+    // lo que hace el motor de audio (no sólo los dos casos extremos
+    // ready+playing y idle+!playing).
+    _player.playbackEventStream.listen((_) {
+      _sincronizarEstadoConPlayer();
     }, onError: (Object error, StackTrace st) {
       final actual = state.radioActual;
       state = EstadoReproductor(
@@ -52,9 +50,19 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
   final AudioPlayer _player = AudioPlayer();
   final Ref _ref;
 
+  /// Contador que invalida flujos `_reproducir` en curso cuando el usuario
+  /// pulsa parar o cambia de radio mientras la anterior aún cargaba.
+  /// Cada llamada nueva incrementa el contador; los awaits internos
+  /// comparan su epoch capturado con el actual y abortan si difieren —
+  /// así un `_reproducir` lento no puede sobrescribir un `state=detenido`
+  /// posterior con un `reproduciendo` obsoleto.
+  int _epochActual = 0;
+
   Future<void> alternar(modelo_radio.Radio radio) async {
-    if (state.radioActual?.id == radio.id &&
-        (state.estado == EstadoPlayback.reproduciendo || state.estado == EstadoPlayback.cargando)) {
+    final esLaMisma = state.radioActual?.id == radio.id;
+    final estaSonandoOCargando = state.estado == EstadoPlayback.reproduciendo ||
+        state.estado == EstadoPlayback.cargando;
+    if (esLaMisma && estaSonandoOCargando) {
       await parar();
       return;
     }
@@ -62,17 +70,20 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
   }
 
   Future<void> parar() async {
-    await _player.stop();
+    _epochActual++;
     state = EstadoReproductor.detenido;
+    await _player.stop();
   }
 
   Future<void> _reproducir(modelo_radio.Radio radio) async {
+    final miEpoch = ++_epochActual;
     // Sólo puede haber un AudioPlayer activo con la sesión de audio del
     // sistema (just_audio_background registra una única MediaSession).
     // Si el reproductor de música/podcast está sonando, lo paramos
     // antes de arrancar la radio — si no, el segundo `setAudioSource`
     // falla con "Failed to set source".
     await _ref.read(reproductorEpisodioProvider.notifier).parar();
+    if (miEpoch != _epochActual) return;
     state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: radio);
     try {
       await _player.setAudioSource(
@@ -86,14 +97,48 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
           ),
         ),
       );
+      if (miEpoch != _epochActual) return;
       await _player.play();
+      if (miEpoch != _epochActual) return;
       state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: radio);
     } catch (error) {
+      if (miEpoch != _epochActual) return;
       state = EstadoReproductor(
         estado: EstadoPlayback.error,
         radioActual: radio,
         mensajeError: error.toString(),
       );
+    }
+  }
+
+  /// Deriva el estado del player y lo aplica al state de Riverpod si hay
+  /// una radio asociada. Cubre todos los `ProcessingState` para que el
+  /// icono no se quede congelado en transiciones (ej. usuario pulsa stop
+  /// y el player emite `ready+!playing` antes de `idle+!playing`).
+  void _sincronizarEstadoConPlayer() {
+    final actual = state.radioActual;
+    if (actual == null) return;
+    final ps = _player.processingState;
+    final reproduciendo = _player.playing;
+    if (ps == ProcessingState.idle) {
+      state = EstadoReproductor.detenido;
+      return;
+    }
+    if (ps == ProcessingState.loading || ps == ProcessingState.buffering) {
+      if (state.estado != EstadoPlayback.cargando) {
+        state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: actual);
+      }
+      return;
+    }
+    // ready o completed.
+    if (reproduciendo) {
+      if (state.estado != EstadoPlayback.reproduciendo) {
+        state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
+      }
+    } else {
+      // Player pausado externamente (foco de audio cedido a otra app o
+      // notificación pause). En streams en directo equivale a parar.
+      state = EstadoReproductor.detenido;
     }
   }
 
