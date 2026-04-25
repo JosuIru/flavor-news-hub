@@ -231,26 +231,14 @@ final class ItemsEndpoint
             ];
         }
         if ($idioma !== '') {
-            // `_fnh_languages` se guarda como array PHP serializado. Admite
-            // varios códigos coma-separados: `es,eu` → source coincide si
-            // tiene CUALQUIERA de ellos.
-            $codigos = array_filter(array_map('sanitize_key', array_map('trim', explode(',', $idioma))));
-            if (count($codigos) === 1) {
-                $metaQuery[] = [
-                    'key'     => '_fnh_languages',
-                    'value'   => reset($codigos),
-                    'compare' => 'LIKE',
-                ];
-            } elseif (count($codigos) > 1) {
-                $orQuery = ['relation' => 'OR'];
-                foreach ($codigos as $codigo) {
-                    $orQuery[] = [
-                        'key'     => '_fnh_languages',
-                        'value'   => $codigo,
-                        'compare' => 'LIKE',
-                    ];
-                }
-                $metaQuery[] = $orQuery;
+            // Reutilizamos el helper común — política permisiva con
+            // sources que no declaran `_fnh_languages` (NOT EXISTS
+            // pasa). Antes este endpoint tenía su propia lógica
+            // estricta y descartaba canales en castellano cuyo meta
+            // venía vacío del seed.
+            $queryIdiomas = \FlavorNewsHub\Shortcodes\Shortcodes::construirMetaQueryIdiomas($idioma);
+            if ($queryIdiomas !== []) {
+                $metaQuery[] = $queryIdiomas;
             }
         }
         if ($tiposSource !== '') {

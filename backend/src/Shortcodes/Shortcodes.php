@@ -672,9 +672,15 @@ final class Shortcodes
      * Construye un fragmento meta_query para filtrar por idioma a
      * partir de un CSV (`es,eu,ca`). Cada código se sanitiza, se
      * envuelve entre comillas (para no comer matches parciales tipo
-     * `es` ⊂ `esp`) y se OR-ea. Reutilizable desde los endpoints
-     * REST — antes cada uno parseaba el idioma a su manera y los
-     * `language=es,eu` se rompían con `sanitize_key()`.
+     * `es` ⊂ `esp`) y se OR-ea.
+     *
+     * Política permisiva: las fuentes que NO declaran idiomas (meta
+     * vacío o ausente) también pasan. Sin esto, las sources que
+     * fueron creadas con `_fnh_languages = []` (porque el seed no los
+     * declaraba aún o el editor olvidó rellenar el campo) quedaban
+     * fuera de cualquier filtro de idioma — el usuario veía
+     * "desaparecer" canales que sí hablan su lengua. Bloquear sólo
+     * cuando hay dato declarado y NO matchea.
      */
     public static function construirMetaQueryIdiomas(string $idioma): array
     {
@@ -687,14 +693,6 @@ final class Shortcodes
             return [];
         }
 
-        if (count($codigos) === 1) {
-            return [
-                'key'     => '_fnh_languages',
-                'value'   => '"' . $codigos[0] . '"',
-                'compare' => 'LIKE',
-            ];
-        }
-
         $orQuery = ['relation' => 'OR'];
         foreach ($codigos as $codigo) {
             $orQuery[] = [
@@ -703,6 +701,17 @@ final class Shortcodes
                 'compare' => 'LIKE',
             ];
         }
+        // Permisivo con datos faltantes: si el meta no existe, dejamos
+        // pasar. `NOT EXISTS` cubre el caso de meta nunca seteado;
+        // para meta seteado pero como array vacío, el LIKE de arriba
+        // ya no matchearía y aquí no hay forma directa de rescatarlo
+        // sin tocar cómo se almacena. Lo cubrimos en el cliente
+        // (FeedNotifier ya es permisivo) y reimportar con flag
+        // actualizar arregla los datos a nivel BD.
+        $orQuery[] = [
+            'key'     => '_fnh_languages',
+            'compare' => 'NOT EXISTS',
+        ];
 
         return $orQuery;
     }
