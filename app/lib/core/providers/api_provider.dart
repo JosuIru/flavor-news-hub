@@ -178,8 +178,17 @@ final sourcesProvider = FutureProvider<PaginatedList<Source>>((ref) async {
 /// externos (Icecast/HLS), así que funcionan sin depender del backend.
 final radiosProvider = FutureProvider<List<modelo_radio.Radio>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
+  // Backend y web aceptan filtro `language`; la app móvil estaba
+  // pidiendo siempre la lista cruda. Si el usuario fijó idioma de UI
+  // (un solo locale soportado), lo enviamos como pista — mantiene la
+  // pestaña Radios alineada con Feed/Vídeos/Podcasts. Si tiene "seguir
+  // sistema" no filtramos: el set de radios libres es pequeño y a un
+  // hispanohablante le interesa también la lista en euskera/catalán.
+  final codigoIdiomaUi = ref.watch(
+    preferenciasProvider.select((p) => p.codigoIdioma),
+  );
   try {
-    final radios = await api.fetchRadios();
+    final radios = await api.fetchRadios(language: codigoIdiomaUi);
     guardarSnapshotSeed(
       'radios.json',
       radios

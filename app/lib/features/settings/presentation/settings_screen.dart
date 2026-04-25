@@ -8,7 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/territory_normalizer.dart';
 import '../../actualizaciones/data/actualizaciones_provider.dart';
+import '../../audio/presentation/podcasts_body.dart';
 import '../../feed/data/filtros_feed.dart';
+import '../../videos/data/videos_provider.dart';
 
 /// Ajustes completos de la app: idioma UI, tema, tamaño de texto, URL de
 /// la instancia backend. Todo persistido via `preferenciasProvider`.
@@ -319,10 +321,35 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (seleccion != null) {
       await notifier.establecerIdiomaUi(seleccion.codigo);
-      // Propagamos el nuevo idioma al filtro de noticias, salvo que el
-      // usuario tuviera varios idiomas seleccionados a propósito.
-      if (seleccion.codigo != null) {
-        await ref.read(filtrosFeedProvider.notifier).adoptarIdiomaUi(seleccion.codigo);
+      // Propagamos el nuevo idioma a TODOS los filtros de contenido
+      // (Feed, Vídeos y Podcasts) cuando el usuario tenía sólo un
+      // idioma marcado: indica que iba "siguiendo el idioma de UI".
+      // Si tenía varios marcados a propósito, no le pisamos la
+      // elección manual. TV no se sincroniza aún porque su provider
+      // no expone el filtro de idioma de forma reactiva.
+      final codigoNuevo = seleccion.codigo;
+      if (codigoNuevo != null) {
+        await ref.read(filtrosFeedProvider.notifier).adoptarIdiomaUi(codigoNuevo);
+
+        const idiomasApp = {'es', 'ca', 'eu', 'gl', 'en'};
+        if (idiomasApp.contains(codigoNuevo)) {
+          final filtroVideos = ref.read(filtrosVideosProvider);
+          if (filtroVideos.codigosIdiomas.length <= 1) {
+            ref.read(filtrosVideosProvider.notifier).state = FiltrosVideos(
+              slugsTopics: filtroVideos.slugsTopics,
+              codigosIdiomas: [codigoNuevo],
+              idSource: filtroVideos.idSource,
+            );
+          }
+          final filtroPodcasts = ref.read(filtrosPodcastsProvider);
+          if (filtroPodcasts.codigosIdiomas.length <= 1) {
+            ref.read(filtrosPodcastsProvider.notifier).state =
+                FiltrosPodcasts(
+                  slugsTopics: filtroPodcasts.slugsTopics,
+                  codigosIdiomas: [codigoNuevo],
+                );
+          }
+        }
       }
     }
   }

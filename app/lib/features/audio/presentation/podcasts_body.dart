@@ -49,7 +49,20 @@ class FiltrosPodcasts {
   }
 }
 
-final filtrosPodcastsProvider = StateProvider<FiltrosPodcasts>((_) => FiltrosPodcasts.vacios);
+/// Inicializa el filtro con el idioma UI del usuario (mismo patrón que
+/// `filtrosVideosProvider` para no dejar Podcasts como única pestaña sin
+/// herencia de idioma). El usuario puede limpiar el filtro a mano.
+final filtrosPodcastsProvider = StateProvider<FiltrosPodcasts>((ref) {
+  String codigoIdiomaUi = ref.read(preferenciasProvider).codigoIdioma ?? '';
+  if (codigoIdiomaUi.isEmpty) {
+    codigoIdiomaUi = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  }
+  const idiomasApp = {'es', 'ca', 'eu', 'gl', 'en'};
+  if (idiomasApp.contains(codigoIdiomaUi)) {
+    return FiltrosPodcasts(codigosIdiomas: [codigoIdiomaUi]);
+  }
+  return FiltrosPodcasts.vacios;
+});
 
 /// Episodios de podcast (items cuyo source tiene feed_type='podcast').
 /// Online pregunta al backend con `source_type=podcast`; offline filtra

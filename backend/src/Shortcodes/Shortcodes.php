@@ -595,6 +595,11 @@ final class Shortcodes
             'posts_per_page' => -1,
             'fields'         => 'ids',
             'no_found_rows'  => true,
+            // Solo opciones provenientes de contenido activo. Antes
+            // los selectores de territorio/idioma incluían valores
+            // "fantasma" de medios desactivados, y al filtrar por
+            // ellos el listado quedaba vacío.
+            'meta_query'     => [self::metaActivoVerdadero()],
         ]);
 
         $opciones = [];
@@ -621,6 +626,8 @@ final class Shortcodes
             'posts_per_page' => -1,
             'fields'         => 'ids',
             'no_found_rows'  => true,
+            // Mismo motivo que obtenerOpcionesMetaTexto: sólo activos.
+            'meta_query'     => [self::metaActivoVerdadero()],
         ]);
 
         $opciones = [];

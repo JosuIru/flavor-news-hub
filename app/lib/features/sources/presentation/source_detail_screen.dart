@@ -207,13 +207,13 @@ class _BotonVerContenido extends StatelessWidget {
     if (esVideo) {
       return FilledButton.icon(
         onPressed: () {
-          // Ajustamos el filtro de la pestaña Videos a este canal
-          // concreto antes de navegar, si no veríamos todos mezclados.
-          // `push` preserva el back stack — así desde la lista de
-          // vídeos filtrada del canal puedes volver al detalle del
-          // canal con el botón atrás del sistema.
+          // Ajustamos `idSource` PRESERVANDO los demás filtros activos
+          // (idioma, topics). Antes hacíamos `FiltrosVideos.vacios.conSource(...)`
+          // que reseteaba todo, perdiendo el idioma de contenido que el
+          // usuario hubiera fijado en Ajustes o configurado a mano.
+          final filtroActual = ref.read(filtrosVideosProvider);
           ref.read(filtrosVideosProvider.notifier).state =
-              FiltrosVideos.vacios.conSource(source.id);
+              filtroActual.conSource(source.id);
           context.push('/videos');
         },
         icon: const Icon(Icons.play_circle_outline),
