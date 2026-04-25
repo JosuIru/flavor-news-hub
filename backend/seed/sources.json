@@ -1441,21 +1441,6 @@
     "support_url": "https://97irratia.info/colabora/"
   },
   {
-    "id": 7158,
-    "name": "Tas Tas Irratia",
-    "slug": "tas-tas-irratia",
-    "feed_url": "https://tastasirratia.org/feed/",
-    "feed_type": "podcast",
-    "website_url": "https://tastasirratia.org",
-    "territory": "Bilbo",
-    "languages": [
-      "eu"
-    ],
-    "topics": [
-      "memoria-historica"
-    ]
-  },
-  {
     "id": 7159,
     "name": "Aiaraldea Komunikabidea",
     "slug": "aiaraldea-komunikabidea",
@@ -1650,22 +1635,6 @@
     "territory": "Torino",
     "languages": [
       "it"
-    ],
-    "topics": [
-      "memoria-historica",
-      "internacional"
-    ]
-  },
-  {
-    "id": 7172,
-    "name": "A-Radio Berlin",
-    "slug": "a-radio-berlin",
-    "feed_url": "https://aradio.blogsport.de/feed/",
-    "feed_type": "podcast",
-    "website_url": "https://aradio.blogsport.de",
-    "territory": "Berlin",
-    "languages": [
-      "de"
     ],
     "topics": [
       "memoria-historica",
@@ -2798,33 +2767,6 @@
     "live_stream_permit": "none"
   },
   {
-    "id": 7317,
-    "name": "FM La Tribu",
-    "slug": "fm-la-tribu",
-    "feed_url": "https://www.fmlatribu.com/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.fmlatribu.com/",
-    "territory": "Buenos Aires",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "feminismos",
-      "cultura",
-      "educacion",
-      "derechos-civiles"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none"
-  },
-  {
     "id": 7318,
     "name": "Radio Victoria",
     "slug": "radio-victoria",
@@ -3895,33 +3837,6 @@
     "live_stream_permit": "none"
   },
   {
-    "id": 7336,
-    "name": "Kipa Radio",
-    "slug": "kipa-radio",
-    "feed_url": "https://kiparadio.com/feed/",
-    "feed_type": "rss",
-    "website_url": "https://kiparadio.com/",
-    "territory": "Saraguro",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "cultura",
-      "educacion",
-      "derechos-civiles",
-      "rural"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none"
-  },
-  {
     "id": 7337,
     "name": "Radio Cutivalú",
     "slug": "radio-cutivalu",
@@ -4153,33 +4068,6 @@
       "educacion",
       "derechos-civiles",
       "economia-social"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none"
-  },
-  {
-    "id": 7346,
-    "name": "Radio Activa Bolivia",
-    "slug": "radio-activa-bolivia",
-    "feed_url": "https://radioactivabolivia.com/feed/",
-    "feed_type": "rss",
-    "website_url": "https://radioactivabolivia.com/",
-    "territory": "Patacamaya, La Paz",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "cultura",
-      "educacion",
-      "derechos-civiles",
-      "juventud"
     ],
     "medium_type": "news",
     "broadcast_format": [
@@ -4900,21 +4788,6 @@
     ]
   },
   {
-    "id": 7385,
-    "name": "ConFech",
-    "slug": "confech",
-    "feed_url": "https://www.confech.cl/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.confech.cl",
-    "territory": "Chile",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ]
-  },
-  {
     "id": 7386,
     "name": "COPINH",
     "slug": "copinh",
@@ -4930,22 +4803,6 @@
       "ecologismo"
     ],
     "support_url": "https://copinh.org/colabora/"
-  },
-  {
-    "id": 7387,
-    "name": "Coordinadora Arauco-Malleco",
-    "slug": "coordinadora-arauco-malleco",
-    "feed_url": "https://weftun.org/feed/",
-    "feed_type": "rss",
-    "website_url": "https://weftun.org",
-    "territory": "Wallmapu",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "derechos-civiles",
-      "memoria-historica"
-    ]
   },
   {
     "id": 7388,

@@ -1270,10 +1270,7 @@
         "slug": "educacion"
       }
     ],
-    "verified": true,
-    "source_slugs": [
-      "confech"
-    ]
+    "verified": true
   },
   {
     "id": 6252,
@@ -1310,10 +1307,7 @@
         "slug": "memoria-historica"
       }
     ],
-    "verified": true,
-    "source_slugs": [
-      "coordinadora-arauco-malleco"
-    ]
+    "verified": true
   },
   {
     "id": 6254,
