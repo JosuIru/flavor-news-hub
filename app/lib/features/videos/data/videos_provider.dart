@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
@@ -58,25 +59,12 @@ class FiltrosVideos {
   }
 }
 
-/// Inicializa el filtro de vídeos con el idioma UI del usuario como
-/// default: sin filtro muchas fuentes son en inglés/francés y el usuario
-/// hispanohablante ve un feed mayoritariamente no-hispano. Leemos el
-/// idioma una vez al crear el provider — los cambios posteriores de
-/// preferencia no reinicializan (sería reseteo inesperado de filtros).
-/// Si el usuario limpia el filtro de idioma, queda limpio.
-final filtrosVideosProvider = StateProvider<FiltrosVideos>((ref) {
-  String codigoIdiomaUi = ref.read(preferenciasProvider).codigoIdioma ?? '';
-  if (codigoIdiomaUi.isEmpty) {
-    // Preferencia en "seguir sistema" → leer locale del sistema.
-    final sistemaLocale = PlatformDispatcher.instance.locale.languageCode;
-    codigoIdiomaUi = sistemaLocale;
-  }
-  const idiomasApp = {'es', 'ca', 'eu', 'gl', 'en'};
-  if (idiomasApp.contains(codigoIdiomaUi)) {
-    return FiltrosVideos(codigosIdiomas: [codigoIdiomaUi]);
-  }
-  return FiltrosVideos.vacios;
-});
+/// Filtros locales por pestaña — ahora arrancan vacíos. El idioma de
+/// contenido por defecto se calcula desde
+/// `idiomasContenidoEfectivosProvider`. Si el usuario marca chips en
+/// el bottom sheet de filtros, eso actúa como override por pestaña.
+final filtrosVideosProvider =
+    StateProvider<FiltrosVideos>((_) => FiltrosVideos.vacios);
 
 /// Items tipo "vídeo" filtrados por `filtrosVideosProvider`.
 ///
@@ -92,9 +80,13 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   final itemsDelSeed = <Item>[];
   bool fallbackAlSeed = false;
   try {
-    final idiomasCsv = filtros.codigosIdiomas.isEmpty
-        ? null
-        : filtros.codigosIdiomas.join(',');
+    // Override por pestaña > política central. Sin override, la
+    // política central decide si se filtra y por qué idiomas.
+    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
+        ? filtros.codigosIdiomas
+        : idiomasContenido;
+    final idiomasCsv = idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
     // Si el usuario pidió un canal concreto, no restringimos por
     // `source_type` — él ya eligió qué fuente ver y el tipo de feed
     // es irrelevante para "ver los últimos items de este medio". Sin

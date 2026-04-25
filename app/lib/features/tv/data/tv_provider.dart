@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
@@ -74,9 +75,13 @@ final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
         return false;
       }
     }
-    if (filtros.codigosIdiomas.isNotEmpty) {
+    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
+        ? filtros.codigosIdiomas
+        : idiomasContenido;
+    if (idiomasEfectivos.isNotEmpty) {
       final idiomas = s.languages.map((e) => e.toLowerCase()).toSet();
-      if (!idiomas.any(filtros.codigosIdiomas.contains)) {
+      if (!idiomas.any(idiomasEfectivos.contains)) {
         return false;
       }
     }

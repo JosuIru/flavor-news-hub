@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -49,20 +50,12 @@ class FiltrosPodcasts {
   }
 }
 
-/// Inicializa el filtro con el idioma UI del usuario (mismo patrón que
-/// `filtrosVideosProvider` para no dejar Podcasts como única pestaña sin
-/// herencia de idioma). El usuario puede limpiar el filtro a mano.
-final filtrosPodcastsProvider = StateProvider<FiltrosPodcasts>((ref) {
-  String codigoIdiomaUi = ref.read(preferenciasProvider).codigoIdioma ?? '';
-  if (codigoIdiomaUi.isEmpty) {
-    codigoIdiomaUi = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-  }
-  const idiomasApp = {'es', 'ca', 'eu', 'gl', 'en'};
-  if (idiomasApp.contains(codigoIdiomaUi)) {
-    return FiltrosPodcasts(codigosIdiomas: [codigoIdiomaUi]);
-  }
-  return FiltrosPodcasts.vacios;
-});
+/// Filtros locales del bottom sheet — arrancan vacíos. El idioma de
+/// contenido por defecto se calcula desde
+/// `idiomasContenidoEfectivosProvider`. Marcar chips en el bottom
+/// sheet sirve como override por pestaña.
+final filtrosPodcastsProvider =
+    StateProvider<FiltrosPodcasts>((_) => FiltrosPodcasts.vacios);
 
 /// Episodios de podcast (items cuyo source tiene feed_type='podcast').
 /// Online pregunta al backend con `source_type=podcast`; offline filtra
@@ -72,7 +65,11 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
   final filtros = ref.watch(filtrosPodcastsProvider);
   try {
     final topicCsv = filtros.slugsTopics.isEmpty ? null : filtros.slugsTopics.join(',');
-    final idiomaCsv = filtros.codigosIdiomas.isEmpty ? null : filtros.codigosIdiomas.join(',');
+    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
+        ? filtros.codigosIdiomas
+        : idiomasContenido;
+    final idiomaCsv = idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
     final pagina = await api.fetchItems(
       page: 1,
       perPage: 50,
@@ -89,7 +86,12 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
           .where((i) => i.source?.feedType == 'podcast')
           .toList();
       final topicsActivos = filtros.slugsTopics.toSet();
-      final idiomasActivos = filtros.codigosIdiomas.toSet();
+      // Mismo override: filtro local pisa la política central.
+      final idiomasContenidoOffline = ref.watch(idiomasContenidoEfectivosProvider);
+      final idiomasActivos = (filtros.codigosIdiomas.isNotEmpty
+              ? filtros.codigosIdiomas
+              : idiomasContenidoOffline)
+          .toSet();
       final idiomasPorFuente = <int, Set<String>>{};
       if (idiomasActivos.isNotEmpty) {
         try {

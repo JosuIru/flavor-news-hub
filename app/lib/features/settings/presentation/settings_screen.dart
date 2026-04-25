@@ -5,12 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/territory_normalizer.dart';
 import '../../actualizaciones/data/actualizaciones_provider.dart';
-import '../../audio/presentation/podcasts_body.dart';
-import '../../feed/data/filtros_feed.dart';
-import '../../videos/data/videos_provider.dart';
 
 /// Ajustes completos de la app: idioma UI, tema, tamaño de texto, URL de
 /// la instancia backend. Todo persistido via `preferenciasProvider`.
@@ -48,6 +46,17 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(textos.settingsInterfaceLanguage),
             subtitle: Text(_etiquetaIdioma(textos, preferencias.codigoIdioma)),
             onTap: () => _seleccionarIdioma(context, ref, notifier, preferencias.codigoIdioma, textos),
+          ),
+          Consumer(
+            builder: (context, refIdioma, _) {
+              final estado = refIdioma.watch(politicaIdiomaContenidoProvider);
+              return ListTile(
+                leading: const Icon(Icons.subtitles_outlined),
+                title: Text(textos.settingsContentLanguage),
+                subtitle: Text(_etiquetaPoliticaIdioma(textos, estado)),
+                onTap: () => _abrirPoliticaIdiomaContenido(context, refIdioma, textos),
+              );
+            },
           ),
           const Divider(height: 24),
           _ControlEscalaTexto(
@@ -321,37 +330,43 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (seleccion != null) {
       await notifier.establecerIdiomaUi(seleccion.codigo);
-      // Propagamos el nuevo idioma a TODOS los filtros de contenido
-      // (Feed, Vídeos y Podcasts) cuando el usuario tenía sólo un
-      // idioma marcado: indica que iba "siguiendo el idioma de UI".
-      // Si tenía varios marcados a propósito, no le pisamos la
-      // elección manual. TV no se sincroniza aún porque su provider
-      // no expone el filtro de idioma de forma reactiva.
-      final codigoNuevo = seleccion.codigo;
-      if (codigoNuevo != null) {
-        await ref.read(filtrosFeedProvider.notifier).adoptarIdiomaUi(codigoNuevo);
-
-        const idiomasApp = {'es', 'ca', 'eu', 'gl', 'en'};
-        if (idiomasApp.contains(codigoNuevo)) {
-          final filtroVideos = ref.read(filtrosVideosProvider);
-          if (filtroVideos.codigosIdiomas.length <= 1) {
-            ref.read(filtrosVideosProvider.notifier).state = FiltrosVideos(
-              slugsTopics: filtroVideos.slugsTopics,
-              codigosIdiomas: [codigoNuevo],
-              idSource: filtroVideos.idSource,
-            );
-          }
-          final filtroPodcasts = ref.read(filtrosPodcastsProvider);
-          if (filtroPodcasts.codigosIdiomas.length <= 1) {
-            ref.read(filtrosPodcastsProvider.notifier).state =
-                FiltrosPodcasts(
-                  slugsTopics: filtroPodcasts.slugsTopics,
-                  codigosIdiomas: [codigoNuevo],
-                );
-          }
-        }
-      }
+      // Ya no hace falta propagar manualmente a los filtros de
+      // contenido: la política central
+      // (`idiomasContenidoEfectivosProvider`) detecta el cambio del
+      // idioma de UI cuando está en modo `seguirInterfaz` y todas las
+      // pestañas se refrescan automáticamente.
     }
+  }
+
+  /// Texto resumen para mostrar bajo el ListTile "Idioma del contenido".
+  /// Tres modos posibles: seguir UI / manual (lista de chips) / off.
+  String _etiquetaPoliticaIdioma(AppLocalizations textos, EstadoIdiomaContenido estado) {
+    switch (estado.modo) {
+      case ModoIdiomaContenido.seguirInterfaz:
+        return textos.settingsContentLanguageFollowUi;
+      case ModoIdiomaContenido.desactivado:
+        return textos.settingsContentLanguageOff;
+      case ModoIdiomaContenido.manual:
+        if (estado.idiomasManuales.isEmpty) {
+          return textos.settingsContentLanguageManual;
+        }
+        return estado.idiomasManuales
+            .map((c) => _nombreIdioma(c))
+            .join(' · ');
+    }
+  }
+
+  Future<void> _abrirPoliticaIdiomaContenido(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations textos,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => const _SheetPoliticaIdiomaContenido(),
+    );
   }
 
   Future<void> _seleccionarTerritorio(
@@ -605,4 +620,122 @@ class _OpcionIdioma {
 
   @override
   int get hashCode => codigo.hashCode;
+}
+
+/// Bottom sheet para configurar la política central de idioma de
+/// contenido. Tres opciones de modo + grid de chips de idiomas
+/// soportados (sólo activo en modo manual).
+class _SheetPoliticaIdiomaContenido extends ConsumerWidget {
+  const _SheetPoliticaIdiomaContenido();
+
+  static const _idiomasOrden = ['es', 'ca', 'eu', 'gl', 'en', 'pt', 'fr'];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textos = AppLocalizations.of(context);
+    final estado = ref.watch(politicaIdiomaContenidoProvider);
+    final notifier = ref.read(politicaIdiomaContenidoProvider.notifier);
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 4),
+              child: Text(
+                textos.settingsContentLanguage,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              child: Text(
+                textos.settingsContentLanguageSubtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
+            RadioListTile<ModoIdiomaContenido>(
+              value: ModoIdiomaContenido.seguirInterfaz,
+              groupValue: estado.modo,
+              title: Text(textos.settingsContentLanguageFollowUi),
+              onChanged: (m) {
+                if (m != null) notifier.establecerModo(m);
+              },
+            ),
+            RadioListTile<ModoIdiomaContenido>(
+              value: ModoIdiomaContenido.manual,
+              groupValue: estado.modo,
+              title: Text(textos.settingsContentLanguageManual),
+              onChanged: (m) {
+                if (m != null) notifier.establecerModo(m);
+              },
+            ),
+            RadioListTile<ModoIdiomaContenido>(
+              value: ModoIdiomaContenido.desactivado,
+              groupValue: estado.modo,
+              title: Text(textos.settingsContentLanguageOff),
+              onChanged: (m) {
+                if (m != null) notifier.establecerModo(m);
+              },
+            ),
+            if (estado.modo == ModoIdiomaContenido.manual) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Text(
+                  textos.settingsContentLanguageManualHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final codigo in _idiomasOrden)
+                      FilterChip(
+                        label: Text(_nombreLegible(codigo)),
+                        selected: estado.idiomasManuales.contains(codigo),
+                        onSelected: (_) => notifier.alternarIdiomaManual(codigo),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _nombreLegible(String codigo) {
+    switch (codigo) {
+      case 'es':
+        return 'Castellano';
+      case 'ca':
+        return 'Català';
+      case 'eu':
+        return 'Euskara';
+      case 'gl':
+        return 'Galego';
+      case 'en':
+        return 'English';
+      case 'pt':
+        return 'Português';
+      case 'fr':
+        return 'Français';
+      default:
+        return codigo;
+    }
+  }
 }

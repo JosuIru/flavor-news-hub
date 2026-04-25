@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -36,6 +37,16 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     final territorioBase = ref.watch(
       preferenciasProvider.select((p) => p.territorioBase),
     );
+    // Idioma efectivo: si el usuario fijó idiomas en este filtro
+    // (override por pestaña vía bottom sheet), respetamos su elección.
+    // Si no, caemos a la política central — antes el filtro arrancaba
+    // pre-rellenado con el idioma de UI y producía resultados
+    // incoherentes entre pestañas.
+    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
+        ? filtros.codigosIdiomas
+        : idiomasContenido;
+    final idiomasCsv = idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
 
     final futuroPersonales = filtros.estaVacio
         ? ref.watch(itemsDeFuentesPersonalesProvider.future)
@@ -47,7 +58,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
         topic: filtros.topicsParaQueryParam,
         source: filtros.idSource,
         territory: filtros.codigoTerritorio,
-        language: filtros.idiomasParaQueryParam,
+        language: idiomasCsv,
         // Feed de titulares = sólo texto. Vídeos y podcasts viven en su
         // propia pestaña porque los canales YouTube publican mucho más
         // frecuentemente que los medios de texto y los tapan.
@@ -109,6 +120,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
                 idiomasPorIdSource: idiomasPorIdSource,
                 territorioPorIdSource: territorioPorIdSource,
                 territorioBase: territorioBase,
+                idiomasEfectivos: idiomasEfectivos,
               ),
               paginaActual: 1,
               totalPaginas: 1,
@@ -139,6 +151,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
               idiomasPorIdSource: idiomasPorIdSource,
               territorioPorIdSource: territorioPorIdSource,
               territorioBase: territorioBase,
+              idiomasEfectivos: idiomasEfectivos,
             );
             unawaited(WidgetTitularesWriter.escribir(combinados));
             state = AsyncValue.data(EstadoFeed(
@@ -193,6 +206,7 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     required Map<int, List<String>> idiomasPorIdSource,
     required Map<int, String> territorioPorIdSource,
     required String territorioBase,
+    required List<String> idiomasEfectivos,
   }) {
     final idsSeed = desdeSeed.map((e) => e.id).toSet();
     final cacheNoSolapado = cache.where((i) => !idsSeed.contains(i.id));
@@ -200,8 +214,8 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     final topicsActivos = filtros.slugsTopics.toSet();
     final territorio = filtros.codigoTerritorio?.toLowerCase().trim();
     final filtroTerritorioActivo = territorio != null && territorio.isNotEmpty;
-    final filtroIdiomaActivo = filtros.codigosIdiomas.isNotEmpty;
-    final codigosIdiomasSet = filtros.codigosIdiomas.toSet();
+    final filtroIdiomaActivo = idiomasEfectivos.isNotEmpty;
+    final codigosIdiomasSet = idiomasEfectivos.toSet();
     final idSourceFiltrada = filtros.idSource;
 
     bool pasaTodosLosFiltros(Item it) {
@@ -299,12 +313,16 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       final filtros = ref.read(filtrosFeedProvider);
       final api = ref.read(flavorNewsApiProvider);
       final dao = await ref.read(itemsLocalesDaoProvider.future);
+      final idiomasContenido = ref.read(idiomasContenidoEfectivosProvider);
+      final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
+          ? filtros.codigosIdiomas
+          : idiomasContenido;
       final siguientePagina = await api.fetchItems(
         page: estadoActual.paginaActual + 1,
         topic: filtros.topicsParaQueryParam,
         source: filtros.idSource,
         territory: filtros.codigoTerritorio,
-        language: filtros.idiomasParaQueryParam,
+        language: idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(','),
         excludeSourceType: 'video,youtube,podcast',
       );
       unawaited(dao.cachearMuchos(siguientePagina.items));

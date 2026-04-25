@@ -6,6 +6,7 @@ import '../../features/offline_seed/data/seed_cache.dart';
 import '../../features/offline_seed/data/seed_loader.dart';
 import '../api/api_exception.dart';
 import '../api/flavor_news_api.dart';
+import '../idioma_contenido/politica_idioma_contenido.dart';
 import '../models/item.dart';
 import '../models/paginated_list.dart';
 import '../models/radio.dart' as modelo_radio;
@@ -178,17 +179,14 @@ final sourcesProvider = FutureProvider<PaginatedList<Source>>((ref) async {
 /// externos (Icecast/HLS), así que funcionan sin depender del backend.
 final radiosProvider = FutureProvider<List<modelo_radio.Radio>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  // Backend y web aceptan filtro `language`; la app móvil estaba
-  // pidiendo siempre la lista cruda. Si el usuario fijó idioma de UI
-  // (un solo locale soportado), lo enviamos como pista — mantiene la
-  // pestaña Radios alineada con Feed/Vídeos/Podcasts. Si tiene "seguir
-  // sistema" no filtramos: el set de radios libres es pequeño y a un
-  // hispanohablante le interesa también la lista en euskera/catalán.
-  final codigoIdiomaUi = ref.watch(
-    preferenciasProvider.select((p) => p.codigoIdioma),
-  );
+  // Política central de idioma de contenido. Si está en `desactivado`
+  // o no hay idiomas resueltos (locale no soportado), pedimos la lista
+  // entera. Si está en `seguirInterfaz` o `manual`, filtramos en
+  // consonancia con el resto de pestañas.
+  final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+  final idiomaCsv = idiomasContenido.isEmpty ? null : idiomasContenido.join(',');
   try {
-    final radios = await api.fetchRadios(language: codigoIdiomaUi);
+    final radios = await api.fetchRadios(language: idiomaCsv);
     guardarSnapshotSeed(
       'radios.json',
       radios
