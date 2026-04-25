@@ -22,7 +22,8 @@ final class FeedItemParser
      *   permalink:string,
      *   published_at:string,
      *   guid:string,
-     *   media_url:string
+     *   media_url:string,
+     *   audio_url:string
      * }
      */
     public static function parsear(\SimplePie_Item $itemFeed): array
@@ -63,6 +64,7 @@ final class FeedItemParser
         }
 
         $urlImagenDestacada = self::extraerImagenDestacada($itemFeed);
+        $urlAudio = self::extraerEnclosureDeAudio($itemFeed);
 
         return [
             'title'        => $titularLimpio,
@@ -71,7 +73,28 @@ final class FeedItemParser
             'published_at' => $fechaPublicacionIso,
             'guid'         => $identificadorUnico,
             'media_url'    => $urlImagenDestacada,
+            'audio_url'    => $urlAudio,
         ];
+    }
+
+    /**
+     * Extrae la URL del enclosure cuando su MIME declara audio (feeds
+     * de podcast típicos: `audio/mpeg`, `audio/mp4`…). Sin esto, la
+     * pestaña Podcasts de la app mostraba episodios que no se podían
+     * reproducir porque `audio_url` venía vacío.
+     */
+    private static function extraerEnclosureDeAudio(\SimplePie_Item $itemFeed): string
+    {
+        $enclosure = $itemFeed->get_enclosure();
+        if (!$enclosure instanceof \SimplePie_Enclosure) {
+            return '';
+        }
+        $tipoMime = (string) $enclosure->get_type();
+        if ($tipoMime !== '' && !str_starts_with($tipoMime, 'audio/')) {
+            return '';
+        }
+        $urlEnclosure = (string) $enclosure->get_link();
+        return $urlEnclosure !== '' ? esc_url_raw($urlEnclosure) : '';
     }
 
     /**

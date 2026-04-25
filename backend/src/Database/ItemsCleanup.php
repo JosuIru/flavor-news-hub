@@ -38,12 +38,15 @@ final class ItemsCleanup
         global $wpdb;
 
         $diasARetener = (int) (OptionsRepository::todas()['item_retention_days'] ?? 90);
+        // Orden importante: 0 = "retención desactivada" y es un valor
+        // válido que se acepta desde OptionsRepository. Chequeamos el
+        // 0 ANTES de aplicar el mínimo — si no, 0 se elevaba a 7 y la
+        // rama de desactivación quedaba inalcanzable.
+        if ($diasARetener === 0) {
+            return 0;
+        }
         if ($diasARetener < OptionsRepository::RETENCION_MINIMA_ITEMS_DIAS) {
             $diasARetener = OptionsRepository::RETENCION_MINIMA_ITEMS_DIAS;
-        }
-        if ($diasARetener === 0) {
-            // Retención desactivada explícitamente (no-op).
-            return 0;
         }
 
         $idsABorrar = $wpdb->get_col($wpdb->prepare(

@@ -137,9 +137,13 @@ final class FeedIngester
         // (Redis, Memcached) donde el transient vive fuera de wp_options
         // y nuestro DELETE global no lo toca. `delete_transient` usa la
         // API correcta que maneja DB + object cache.
-        $nombreCache = 'feed_' . md5($urlFeed);
-        delete_transient($nombreCache);
-        delete_transient($nombreCache . '_mod');
+        $hashFeed = md5($urlFeed);
+        // WordPress guarda el cuerpo cacheado como `feed_{hash}` y la
+        // marca de modificación como `feed_mod_{hash}` — prefijo
+        // `feed_mod_` delante del hash, no sufijo `_mod` detrás.
+        // El sufijo _mod que había aquí nunca borraba nada.
+        delete_transient('feed_' . $hashFeed);
+        delete_transient('feed_mod_' . $hashFeed);
         $feedDescargado = fetch_feed($urlFeed);
         remove_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         remove_action('wp_feed_options', $filtroAjustesFeed);
@@ -261,11 +265,12 @@ final class FeedIngester
     }
 
     /**
-     * @param array{title:string,excerpt:string,permalink:string,published_at:string,guid:string,media_url:string} $datosNormalizados
+     * @param array{title:string,excerpt:string,permalink:string,published_at:string,guid:string,media_url:string,audio_url?:string} $datosNormalizados
      * @param list<int> $idsTematicas
      *
      * Público porque `FlavorPlatformIngester` también persiste items con
-     * este mismo contrato.
+     * este mismo contrato. `audio_url` es opcional porque
+     * FlavorPlatformIngester aún no lo provee; los feeds RSS sí.
      */
     public static function insertarItem(int $idFuente, array $datosNormalizados, array $idsTematicas): int
     {
@@ -304,6 +309,13 @@ final class FeedIngester
         update_post_meta($idItemNuevo, '_fnh_published_at_ts', $timestampPublicacion);
         update_post_meta($idItemNuevo, '_fnh_guid', $datosNormalizados['guid']);
         update_post_meta($idItemNuevo, '_fnh_media_url', $datosNormalizados['media_url']);
+        // `audio_url` viene del enclosure con MIME audio/* en feeds de
+        // podcast. Sin esto, la pestaña Podcasts lista episodios pero
+        // el reproductor no tiene nada que sonar.
+        $urlAudio = (string) ($datosNormalizados['audio_url'] ?? '');
+        if ($urlAudio !== '') {
+            update_post_meta($idItemNuevo, '_fnh_audio_url', $urlAudio);
+        }
 
         $segundosDuracion = self::extraerDuracionVideoSiAplica($datosNormalizados['permalink']);
         if ($segundosDuracion > 0) {

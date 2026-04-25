@@ -1625,7 +1625,20 @@ JS;
             ]];
         }
         if ((int) $a['source'] > 0) {
-            $query['meta_query'] = [['key' => '_fnh_source_id', 'value' => (int) $a['source']]];
+            // Validamos que la fuente siga activa y publicada antes de
+            // aceptar el filtro. Un shortcode que apunte a un medio
+            // retirado no debe servir sus items históricos.
+            $idFuentePedida = (int) $a['source'];
+            $postFuente = get_post($idFuentePedida);
+            $activaFuente = $postFuente instanceof \WP_Post
+                && $postFuente->post_type === Source::SLUG
+                && $postFuente->post_status === 'publish'
+                && (string) get_post_meta($idFuentePedida, '_fnh_active', true) !== '0';
+            if (!$activaFuente) {
+                $filtros = self::renderFiltrosPaginaAuto(self::paginaAutoActual(), ['topic', 'territory', 'language']);
+                return self::envolverShortcode('feed', '<p class="fnh-empty">' . esc_html__('Sin titulares que mostrar.', 'flavor-news-hub') . '</p>', $filtros);
+            }
+            $query['meta_query'] = [['key' => '_fnh_source_id', 'value' => $idFuentePedida]];
         }
         // Para territory/language/source_type reutilizamos la lógica del
         // endpoint REST para mantener una única verdad.
@@ -1967,7 +1980,15 @@ JS;
             return '';
         }
         $post = get_post($idSource);
-        if (!$post || $post->post_type !== Source::SLUG) {
+        // Mismo contrato que `/wp-json/flavor-news/v1/sources/{id}`:
+        // sólo se expone públicamente si está publicada y activa. Un
+        // `[flavor_news_source id="…"]` no debe revelar borradores,
+        // pending ni fuentes retiradas.
+        if (!$post instanceof \WP_Post
+            || $post->post_type !== Source::SLUG
+            || $post->post_status !== 'publish'
+            || (string) get_post_meta($idSource, '_fnh_active', true) === '0'
+        ) {
             return '';
         }
         $web = (string) get_post_meta($idSource, '_fnh_website_url', true);
@@ -2000,13 +2021,32 @@ JS;
      *
      * @return list<int>
      */
+    /**
+     * Fragmento de meta_query que exige `_fnh_active = '1'`. Se
+     * combina en todas las consultas públicas de sources y radios para
+     * que contenido desactivado por el admin no reaparezca por
+     * filtros de territorio/idioma/tipo. Aceptamos también ausencia
+     * del meta como "activo por defecto" — el comportamiento histórico
+     * antes de que la opción existiera.
+     *
+     * @return array<int,mixed>
+     */
+    public static function metaActivoVerdadero(): array
+    {
+        return [
+            'relation' => 'OR',
+            ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
+            ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+        ];
+    }
+
     public static function resolverIdsSources(
         string $territorio,
         string $idioma,
         string $tiposSource,
         string $tiposSourceExcluidos
     ): array {
-        $metaQuery = [];
+        $metaQuery = [self::metaActivoVerdadero()];
         if ($territorio !== '') {
             $metaQuery[] = [
                 'key'     => '_fnh_territory',
@@ -2263,6 +2303,15 @@ JS;
      */
     private static function obtenerItemsRecientes(int $cuantos): array
     {
+        // Sólo items de fuentes activas. `resolverIdsSources('','','','')`
+        // devuelve todos los IDs de sources con `_fnh_active=1` (o sin
+        // meta). Si no hay ninguna, cortamos ya — la portada saldrá sin
+        // el bloque de últimos titulares en vez de con contenido
+        // huérfano de medios retirados.
+        $idsSourcesActivas = self::resolverIdsSources('', '', '', '');
+        if (empty($idsSourcesActivas)) {
+            return [];
+        }
         $consulta = new \WP_Query([
             'post_type'      => Item::SLUG,
             'post_status'    => 'publish',
@@ -2271,6 +2320,13 @@ JS;
             'meta_key'       => '_fnh_published_at',
             'order'          => 'DESC',
             'no_found_rows'  => true,
+            'meta_query'     => [
+                [
+                    'key'     => '_fnh_source_id',
+                    'value'   => array_map('strval', $idsSourcesActivas),
+                    'compare' => 'IN',
+                ],
+            ],
         ]);
         $resultado = [];
         foreach ($consulta->posts as $post) {
@@ -2341,6 +2397,7 @@ JS;
             'no_found_rows'  => true,
             'meta_query'     => [
                 'relation' => 'AND',
+                self::metaActivoVerdadero(),
                 ['key' => '_fnh_medium_type', 'value' => 'video'],
                 [
                     'relation' => 'OR',

@@ -91,8 +91,14 @@ final resultadosBusquedaProvider =
     } catch (e) {
       if (!esError(e)) return const [];
       final fuentesSeed = await ref.watch(sourcesSeedProvider.future);
+      // Alineado con `s=` del backend: nombre + descripción (post_content).
+      // Añadimos también territorio como desempate útil ("¿qué medios
+      // hay en Bizkaia?" se resuelve sin red).
       return fuentesSeed
-          .where((s) => s.name.toLowerCase().contains(minuscula))
+          .where((s) =>
+              s.name.toLowerCase().contains(minuscula) ||
+              s.description.toLowerCase().contains(minuscula) ||
+              s.territory.toLowerCase().contains(minuscula))
           .take(10)
           .toList();
     }
@@ -105,7 +111,10 @@ final resultadosBusquedaProvider =
       if (!esError(e)) return const [];
       final radios = await ref.watch(radiosSeedProvider.future);
       return radios
-          .where((r) => r.name.toLowerCase().contains(minuscula))
+          .where((r) =>
+              r.name.toLowerCase().contains(minuscula) ||
+              r.description.toLowerCase().contains(minuscula) ||
+              r.territory.toLowerCase().contains(minuscula))
           .take(10)
           .toList();
     }

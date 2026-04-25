@@ -4416,5 +4416,208 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none"
+  },
+  {
+    "id": 7356,
+    "name": "Argia",
+    "slug": "argia",
+    "feed_url": "https://www.argia.eus/feed",
+    "feed_type": "rss",
+    "website_url": "https://www.argia.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura",
+      "derechos-civiles",
+      "memoria-historica"
+    ]
+  },
+  {
+    "id": 7357,
+    "name": "Hamaika Telebista",
+    "slug": "hamaika-tb",
+    "feed_url": "https://www.hamaika.eus/feed",
+    "feed_type": "rss",
+    "website_url": "https://www.hamaika.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "Televisión asociativa íntegramente en euskera. Emite por TDT con licencia y por web.",
+    "has_live_stream": true,
+    "live_stream_permit": "licensed"
+  },
+  {
+    "id": 7358,
+    "name": "Sustatu",
+    "slug": "sustatu",
+    "feed_url": "https://sustatu.eus/feed",
+    "feed_type": "rss",
+    "website_url": "https://sustatu.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura",
+      "educacion"
+    ]
+  },
+  {
+    "id": 7359,
+    "name": "Goiena",
+    "slug": "goiena",
+    "feed_url": "https://goiena.eus/rss",
+    "feed_type": "rss",
+    "website_url": "https://goiena.eus",
+    "territory": "Debagoiena",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7360,
+    "name": "Anboto",
+    "slug": "anboto",
+    "feed_url": "https://anboto.org/feed",
+    "feed_type": "rss",
+    "website_url": "https://anboto.org",
+    "territory": "Durangaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7361,
+    "name": "Geuria",
+    "slug": "geuria",
+    "feed_url": "https://geuria.eus/feed/",
+    "feed_type": "rss",
+    "website_url": "https://geuria.eus",
+    "territory": "Bilboaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7362,
+    "name": "Tolosaldeko Ataria",
+    "slug": "tolosaldeko-ataria",
+    "feed_url": "https://www.ataria.eus/rss",
+    "feed_type": "rss",
+    "website_url": "https://www.ataria.eus",
+    "territory": "Tolosaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7363,
+    "name": "Aiurri",
+    "slug": "aiurri",
+    "feed_url": "https://aiurri.eus/feed/",
+    "feed_type": "rss",
+    "website_url": "https://aiurri.eus",
+    "territory": "Buruntzaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7364,
+    "name": "Mediabask",
+    "slug": "mediabask",
+    "feed_url": "https://www.mediabask.eus/eu/rss",
+    "feed_type": "rss",
+    "website_url": "https://www.mediabask.eus",
+    "territory": "Iparralde",
+    "languages": [
+      "eu",
+      "fr"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7365,
+    "name": "Enbata",
+    "slug": "enbata",
+    "feed_url": "https://www.enbata.info/articles/feed",
+    "feed_type": "rss",
+    "website_url": "https://www.enbata.info",
+    "territory": "Iparralde",
+    "languages": [
+      "eu",
+      "fr"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "memoria-historica"
+    ]
+  },
+  {
+    "id": 7366,
+    "name": "Karkara",
+    "slug": "karkara",
+    "feed_url": "https://karkara.eus/feed/",
+    "feed_type": "rss",
+    "website_url": "https://karkara.eus",
+    "territory": "Urola Kosta",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7367,
+    "name": "Erran.eus",
+    "slug": "erran",
+    "feed_url": "https://erran.eus/feed/",
+    "feed_type": "rss",
+    "website_url": "https://erran.eus",
+    "territory": "Sakana",
+    "languages": [
+      "eu"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7368,
+    "name": "Kanaldude",
+    "slug": "kanaldude",
+    "feed_url": "https://www.kanaldude.eus/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.kanaldude.eus",
+    "territory": "Iparralde",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "Telebista parte-hartzailea / TV participativa de Iparralde, íntegramente en euskera.",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
   }
 ]

@@ -28,7 +28,7 @@ final class SourceSubmitEndpoint
     public const NOMBRE_ZONA_RATELIMIT = 'source_submit';
     public const MAX_ALTAS_POR_VENTANA = 3;
 
-    private const TIPOS_FEED_PERMITIDOS = ['rss', 'atom', 'youtube', 'mastodon', 'podcast', 'flavor_platform'];
+    private const TIPOS_FEED_PERMITIDOS = ['rss', 'atom', 'youtube', 'video', 'mastodon', 'podcast', 'flavor_platform'];
 
     public static function registrarRutas(): void
     {

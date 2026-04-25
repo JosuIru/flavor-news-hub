@@ -120,12 +120,16 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
             );
 
         // Escuchamos el stream del seed: cada tramo refresca la UI con
-        // los items acumulados. Sólo al terminar el stream dejamos
-        // `cargandoMasPaginas` en false.
+        // los items acumulados. También procesamos tramos vacíos —
+        // antes se ignoraban, lo que dejaba la UI con `cargandoMasPaginas=true`
+        // para siempre si todos los feeds fallaban y no había ningún
+        // item que acumular. Al recibir un vacío, combinamos con lo que
+        // ya hubiera (cache, personales) y al menos apagamos el spinner.
         ref.listen<AsyncValue<List<Item>>>(itemsDesdeSeedProvider, (prev, next) {
           next.whenData((desdeSeed) {
-            if (desdeSeed.isEmpty) return;
-            unawaited(dao.cachearMuchos(desdeSeed));
+            if (desdeSeed.isNotEmpty) {
+              unawaited(dao.cachearMuchos(desdeSeed));
+            }
             final combinados = _combinar(
               desdeSeed: desdeSeed,
               cache: cache,

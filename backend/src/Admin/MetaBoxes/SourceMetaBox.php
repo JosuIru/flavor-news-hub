@@ -21,11 +21,13 @@ final class SourceMetaBox
 
     /** Tipos de feed soportados por la ingesta (coherente con MetaRegistrar). */
     public const TIPOS_FEED_DISPONIBLES = [
-        'rss'      => 'RSS',
-        'atom'     => 'Atom',
-        'youtube'  => 'YouTube',
-        'mastodon' => 'Mastodon',
-        'podcast'  => 'Podcast',
+        'rss'             => 'RSS',
+        'atom'            => 'Atom',
+        'youtube'         => 'YouTube',
+        'video'           => 'Vídeo (PeerTube/MP4/HLS)',
+        'mastodon'        => 'Mastodon',
+        'podcast'         => 'Podcast',
+        'flavor_platform' => 'Flavor Platform',
     ];
 
     public static function registrar(): void

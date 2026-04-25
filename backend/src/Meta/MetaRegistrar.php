@@ -273,6 +273,17 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        // URL del audio del episodio (enclosure de podcast). La app la
+        // pasa directa al reproductor de audio.
+        register_post_meta($tipoPostItem, '_fnh_audio_url', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'esc_url_raw',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         register_post_meta($tipoPostItem, '_fnh_duration_seconds', [
             'type'              => 'integer',
             'single'            => true,

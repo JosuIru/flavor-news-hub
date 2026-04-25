@@ -63,10 +63,16 @@ final class RadiosEndpoint
             'posts_per_page' => $porPagina,
             'orderby'        => 'title',
             'order'          => 'ASC',
+            // Ver nota en SourcesEndpoint: anidamos el OR de activo
+            // dentro de un AND raíz para que filtros adicionales
+            // (territorio/idioma/busqueda) no relajen la restricción.
             'meta_query'     => [
-                'relation' => 'OR',
-                ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
-                ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                'relation' => 'AND',
+                [
+                    'relation' => 'OR',
+                    ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
+                    ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                ],
             ],
         ];
 
@@ -120,7 +126,13 @@ final class RadiosEndpoint
     {
         $idRadio = (int) $request['id'];
         $post = get_post($idRadio);
-        if (!$post || $post->post_type !== Radio::SLUG || $post->post_status !== 'publish') {
+        if (!$post
+            || $post->post_type !== Radio::SLUG
+            || $post->post_status !== 'publish'
+            || (string) get_post_meta($idRadio, '_fnh_active', true) === '0'
+        ) {
+            // Misma política que el listado: una radio desactivada no
+            // se expone por /radios/{id} aunque el post exista.
             return new \WP_REST_Response([
                 'error'   => 'not_found',
                 'message' => __('Radio no encontrada.', 'flavor-news-hub'),

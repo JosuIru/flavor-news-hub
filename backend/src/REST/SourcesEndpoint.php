@@ -63,11 +63,20 @@ final class SourcesEndpoint
             'posts_per_page' => $porPagina,
             'orderby'        => 'title',
             'order'          => 'ASC',
-            // Sólo fuentes activas (o sin meta, que se interpretan como activas).
+            // Sólo fuentes activas (o sin meta, que se interpretan como
+            // activas). Importante: el OR de _fnh_active va anidado en
+            // un AND raíz — si se dejara como OR a nivel superior,
+            // cualquier filtro adicional (territorio/idioma/busqueda)
+            // que se añadiese con meta_query[] se uniría al OR y
+            // dejaría entrar fuentes inactivas con sólo cumplir uno
+            // de los subfiltros.
             'meta_query'     => [
-                'relation' => 'OR',
-                ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
-                ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                'relation' => 'AND',
+                [
+                    'relation' => 'OR',
+                    ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
+                    ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                ],
             ],
         ];
 

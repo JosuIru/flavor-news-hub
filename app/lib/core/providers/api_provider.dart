@@ -115,12 +115,27 @@ const List<Topic> _temasCanonicosOffline = [
 final sourcesProvider = FutureProvider<PaginatedList<Source>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
   try {
-    final pagina = await api.fetchSources(perPage: 100);
-    // Snapshot del catálogo en disco: la siguiente vez que el backend esté
-    // caído, el fallback usará estos datos frescos en vez del bundleado.
+    final primera = await api.fetchSources(perPage: 100);
+    // Snapshot completo en disco para el fallback offline: recorremos
+    // todas las páginas si hay más de 100 fuentes. Antes se guardaba
+    // sólo la primera página (100 fuentes máximo), y a partir de ahí
+    // el modo offline perdía el resto del catálogo. Preservamos
+    // `topics` también porque `seed_loader` los necesita para
+    // reconstruir la relación source → topic en offline.
+    final todasLasFuentes = <Source>[...primera.items];
+    for (var p = 2; p <= primera.totalPages; p++) {
+      try {
+        final siguiente = await api.fetchSources(perPage: 100, page: p);
+        todasLasFuentes.addAll(siguiente.items);
+      } on FlavorNewsApiException {
+        // Si una página falla, seguimos con lo que tengamos — es mejor
+        // snapshot parcial que snapshot corrupto.
+        break;
+      }
+    }
     guardarSnapshotSeed(
       'sources.json',
-      pagina.items
+      todasLasFuentes
           .where((s) => s.feedUrl.isNotEmpty)
           .map((s) => {
                 'id': s.id,
@@ -131,10 +146,13 @@ final sourcesProvider = FutureProvider<PaginatedList<Source>>((ref) async {
                 'website_url': s.websiteUrl,
                 'territory': s.territory,
                 'languages': s.languages,
+                'topics': s.topics
+                    .map((t) => {'id': t.id, 'name': t.name, 'slug': t.slug})
+                    .toList(),
               })
           .toList(),
     );
-    return pagina;
+    return primera;
   } on FlavorNewsApiException catch (e) {
     if (!e.esProblemaRed) rethrow;
     final desdeSeed = await ref.watch(sourcesSeedProvider.future);

@@ -12,18 +12,25 @@ import '../../feed/data/filtros_feed.dart';
 import '../../offline_seed/data/seed_loader.dart';
 import '../../videos/data/videos_provider.dart';
 
-/// Detalle de un medio. Intenta el backend primero; si falla por red o
-/// el medio no existe ahí (p. ej. canales de YouTube que sólo vienen
-/// en el seed bundleado), buscamos en el seed local — así abrir una
-/// fuente desde el buscador no explota cuando la instancia está caída
-/// o aún no ha ingestado ese medio.
+/// Detalle de un medio.
+///
+/// Política:
+///  - Si el backend responde → usamos lo que devuelve (fuente
+///    canónica).
+///  - Si falla por red (sin conexión / timeout / 5xx) → fallback al
+///    seed bundleado. Es la situación donde queremos degradar bien.
+///  - Si el backend devuelve 404 → NO hacemos fallback. Un 404
+///    significa que el medio no existe o fue desactivado por el
+///    admin; servir la versión antigua del seed rompería el contrato
+///    público de `/sources/{id}` y mostraría contenido que el admin
+///    quiso retirar.
 final sourceDetalleProvider =
     FutureProvider.autoDispose.family<Source, int>((ref, idSource) async {
   final api = ref.watch(flavorNewsApiProvider);
   try {
     return await api.fetchSource(idSource);
   } on FlavorNewsApiException catch (e) {
-    if (!e.esProblemaRed && !e.esNoEncontrado) rethrow;
+    if (!e.esProblemaRed) rethrow;
     final seed = await ref.watch(sourcesSeedProvider.future);
     final match = seed.where((s) => s.id == idSource).toList();
     if (match.isNotEmpty) return match.first;
@@ -190,7 +197,11 @@ class _BotonVerContenido extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tipo = source.feedType;
-    final esVideo = tipo == 'youtube' || tipo == 'video';
+    // El resto del app considera `peertube` audiovisual también (ver
+    // `_esItemDeVideo` en videos_provider y la heurística del feed).
+    // Aquí no lo incluíamos, así que el CTA "Ver vídeos" no aparecía
+    // en la ficha de canales PeerTube.
+    final esVideo = tipo == 'youtube' || tipo == 'video' || tipo == 'peertube';
     final esPodcast = tipo == 'podcast';
 
     if (esVideo) {

@@ -34,6 +34,7 @@ final class ItemTransformer
             'original_url' => (string) get_post_meta($idItem, '_fnh_original_url', true),
             'published_at' => (string) get_post_meta($idItem, '_fnh_published_at', true),
             'media_url'        => (string) get_post_meta($idItem, '_fnh_media_url', true),
+            'audio_url'        => (string) get_post_meta($idItem, '_fnh_audio_url', true),
             'duration_seconds' => (int) get_post_meta($idItem, '_fnh_duration_seconds', true),
             'source'           => SourceTransformer::transformarResumen($idSource),
             'topics'           => TopicsHelper::obtenerTopicsDelPost($idItem),

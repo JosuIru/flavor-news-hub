@@ -87,10 +87,18 @@ final class ImportadorCatalogo
                 '_fnh_languages',
                 array_values(array_map('strval', $idiomas))
             );
-            // Al importar ponemos activa por defecto — si el usuario
-            // ya había desactivado una manualmente, sólo se sobreescribe
-            // con `--actualizar`. Sin esa flag el `saltados` ya cortó.
-            update_post_meta($idPost, '_fnh_active', true);
+            // Política al importar:
+            //  - Si el seed declara explícitamente `active`, gana el
+            //    seed (permite desactivar en masa desde el JSON).
+            //  - Si es un post nuevo y no lo declara, activo.
+            //  - Si el post ya existe, respetamos lo que el admin haya
+            //    puesto manualmente en WP; no pisamos su decisión de
+            //    desactivar un medio.
+            if (array_key_exists('active', $raw)) {
+                update_post_meta($idPost, '_fnh_active', (bool) $raw['active']);
+            } elseif (!$existente) {
+                update_post_meta($idPost, '_fnh_active', true);
+            }
 
             // Campos opcionales introducidos con Vol. 3 (TV, PeerTube,
             // licencias). Sólo sobreescribimos si el seed los trae — así

@@ -37,6 +37,17 @@ const Duration _timeoutPorFeed = Duration(seconds: 6);
 /// cierra, con la lista completa.
 final itemsDesdeSeedProvider = StreamProvider.autoDispose<List<Item>>((ref) async* {
   final fuentes = await ref.watch(fuentesSeedProvider.future);
+  // Diccionario slug → nombre editorial de topic. Se usa al reconstruir
+  // los `Topic` heredados por los items del seed. Si `topicsProvider`
+  // falla (offline, backend caído), el fallback de `_temasCanonicosOffline`
+  // ya nos da nombres razonables. Si incluso eso fallara, caemos a slug.
+  Map<String, String> nombresDeTopic = const {};
+  try {
+    final lista = await ref.watch(topicsProvider.future);
+    nombresDeTopic = {for (final t in lista) t.slug: t.name};
+  } catch (_) {
+    nombresDeTopic = const {};
+  }
   debugPrint('[itemsDesdeSeed] fuentes totales=${fuentes.length}');
   final rsss = fuentes.where((f) {
     // YouTube deprecó en 2026 su endpoint `/feeds/videos.xml?channel_id`:
@@ -62,7 +73,7 @@ final itemsDesdeSeedProvider = StreamProvider.autoDispose<List<Item>>((ref) asyn
   // la lista ordenada ya acumulada.
   for (var i = 0; i < rsss.length; i += _maxConcurrentes) {
     final chunk = rsss.sublist(i, (i + _maxConcurrentes).clamp(0, rsss.length));
-    final futuros = chunk.map((fuente) => _traerUna(httpClient, fuente));
+    final futuros = chunk.map((fuente) => _traerUna(httpClient, fuente, nombresDeTopic));
     final listas = await Future.wait(futuros);
     for (final lista in listas) {
       if (lista.isEmpty) {
@@ -80,7 +91,11 @@ final itemsDesdeSeedProvider = StreamProvider.autoDispose<List<Item>>((ref) asyn
   debugPrint('[itemsDesdeSeed] final OK=$fuentesOk fallidas=$fuentesFallidas items=${acumulados.length}');
 });
 
-Future<List<Item>> _traerUna(http.Client cliente, FuenteSeed fuente) async {
+Future<List<Item>> _traerUna(
+  http.Client cliente,
+  FuenteSeed fuente,
+  Map<String, String> nombresDeTopic,
+) async {
   final uri = Uri.tryParse(fuente.feedUrl);
   if (uri == null) {
     debugPrint('[itemsDesdeSeed] URI inválida: ${fuente.feedUrl}');
@@ -118,8 +133,15 @@ Future<List<Item>> _traerUna(http.Client cliente, FuenteSeed fuente) async {
     // seed). El parser RSS no los extrae por su cuenta, así que si el
     // usuario filtra por temática vía UI, esta heredancia es lo único
     // que hace que los items del seed respondan al filtro.
+    // Usamos el nombre editorial del topic si `topicsProvider` nos lo
+    // pudo dar. Si no (red caída y sin fallback), caemos al slug — peor
+    // UX pero consistente con lo que se veía antes.
     final topicsHeredados = fuente.topics
-        .map((slug) => Topic(id: 0, slug: slug, name: slug))
+        .map((slug) => Topic(
+              id: 0,
+              slug: slug,
+              name: nombresDeTopic[slug] ?? slug,
+            ))
         .toList(growable: false);
     return crudos.map((it) {
       final source = it.source;
