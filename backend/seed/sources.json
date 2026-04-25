@@ -1057,9 +1057,9 @@
     "id": 7133,
     "name": "Date un Voltio",
     "slug": "yt-date-un-voltio",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH-Z8ya93m7_RD02WsCSZYA",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCns-8DssCBba7M4nu7wk7Aw",
     "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@DateunVoltio",
+    "website_url": "https://www.youtube.com/@dateunvoltio",
     "territory": "Internacional",
     "languages": [
       "es"
@@ -4990,6 +4990,36 @@
     "topics": [
       "rural",
       "laboral"
+    ]
+  },
+  {
+    "id": 7389,
+    "name": "Derivando",
+    "slug": "derivando",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH-Z8ya93m7_RD02WsCSZYA",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UCH-Z8ya93m7_RD02WsCSZYA",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "educacion"
+    ]
+  },
+  {
+    "id": 7390,
+    "name": "Date un Vlog",
+    "slug": "date-un-vlog",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCQX_MZRCaluNKxkywkLEgfA",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@dateunvlog",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "educacion"
     ]
   }
 ]

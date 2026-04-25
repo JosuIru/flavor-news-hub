@@ -4,81 +4,77 @@ declare(strict_types=1);
 namespace FlavorNewsHub\Support;
 
 /**
- * Reordena una lista de posts de tipo `fnh_item` para evitar rachas
- * largas de items consecutivos del mismo medio.
+ * Reordena una lista de posts de tipo `fnh_item` para que las fuentes
+ * con mucha frecuencia de publicación no monopolicen la página.
  *
- * Problema: cuando un medio publica varias piezas seguidas (p.ej. Berria
- * sube 5 columnas de opinión en 10 minutos), al ordenar por fecha
- * descendente el usuario ve las 5 apiñadas al principio y parece que
- * "sólo hay Berria". Queremos mostrar como mucho 2 consecutivas por
- * source sin perder del todo el orden cronológico.
+ * Problema antiguo (un solo medio): cuando un medio publicaba varias
+ * piezas seguidas (Berria sube 5 columnas en 10 min) salían apiñadas.
  *
- * Algoritmo: recorrido in-place. Cuando detecta 3+ consecutivas del
- * mismo source terminando en la posición i, busca hacia adelante el
- * primer post con un source distinto y lo intercambia con el de
- * posición i. Preserva aproximadamente el orden por fecha: sólo
- * adelanta posts como mucho tanto como la racha a romper, y sólo cuando
- * realmente hay acumulación.
+ * Problema nuevo detectado en pestaña Vídeos: un canal muy prolífico
+ * como MakerTube llenaba 40 de los 50 últimos items y los canales
+ * pequeños (Miguel Ruiz Calvo, Tu Profe de RI…) no aparecían nunca,
+ * porque el interleave de "máximo 2 consecutivos" no podía
+ * ayudar — todos los items eran del mismo source.
+ *
+ * Algoritmo round-robin con ventana ampliada:
+ *  1. El caller pasa una ventana mayor que `per_page` (típico 3×).
+ *  2. Agrupamos posts por source manteniendo orden cronológico.
+ *  3. Round-robin: 1 item por source en cada vuelta, hasta agotar la
+ *     ventana. Las fuentes con más items irán al final de cada vuelta.
+ *
+ * Resultado: dentro de la ventana, cada source aporta items repartidos
+ * (no en racha), y los canales con poca frecuencia no quedan ocultos
+ * por uno prolífico.
  */
 final class InterleaveSources
 {
-    /** Máximo de posts consecutivos del mismo source antes de des-apelmazar. */
-    private const MAX_CONSECUTIVOS = 2;
-
     /**
      * @param array<int,\WP_Post> $posts
      * @return array<int,\WP_Post>
      */
     public static function aplicar(array $posts): array
     {
-        if (count($posts) < self::MAX_CONSECUTIVOS + 2) {
+        if (count($posts) < 3) {
             return array_values($posts);
         }
 
-        $resultado = array_values($posts);
-        // Cache source_id por post ID para evitar llamar a get_post_meta
-        // varias veces al mismo post dentro del bucle.
-        $cacheSources = [];
-        $obtenerSource = static function (\WP_Post $post) use (&$cacheSources): int {
-            $idPost = (int) $post->ID;
-            if (!array_key_exists($idPost, $cacheSources)) {
-                $cacheSources[$idPost] = (int) get_post_meta($idPost, '_fnh_source_id', true);
+        // Agrupar por source preservando el orden cronológico recibido.
+        // Cache para no leer post_meta dos veces por post.
+        $gruposPorSource = [];
+        $ordenLlegadaPorSource = [];
+        foreach ($posts as $post) {
+            if (!$post instanceof \WP_Post) continue;
+            $idSource = (int) get_post_meta((int) $post->ID, '_fnh_source_id', true);
+            if (!isset($gruposPorSource[$idSource])) {
+                $gruposPorSource[$idSource] = [];
+                $ordenLlegadaPorSource[$idSource] = count($ordenLlegadaPorSource);
             }
-            return $cacheSources[$idPost];
-        };
+            $gruposPorSource[$idSource][] = $post;
+        }
 
-        $total = count($resultado);
-        for ($i = self::MAX_CONSECUTIVOS; $i < $total; $i++) {
-            $sourceActual = $obtenerSource($resultado[$i]);
-            // Cuenta cuántos anteriores contiguos son del mismo source.
-            $contiguos = 1;
-            for ($j = $i - 1; $j >= 0; $j--) {
-                if ($obtenerSource($resultado[$j]) !== $sourceActual) {
-                    break;
+        if (count($gruposPorSource) <= 1) {
+            return array_values($posts);
+        }
+
+        // Round-robin: tomamos 1 item por source en cada vuelta. Para
+        // estabilidad, las fuentes se ordenan por aparición original
+        // (la primera en publicar el item más reciente va primero).
+        // Eso preserva un sesgo cronológico aproximado.
+        $idsOrdenados = array_keys($ordenLlegadaPorSource);
+        usort($idsOrdenados, fn($a, $b) => $ordenLlegadaPorSource[$a] - $ordenLlegadaPorSource[$b]);
+
+        $resultado = [];
+        $hayMas = true;
+        while ($hayMas) {
+            $hayMas = false;
+            foreach ($idsOrdenados as $idSource) {
+                if (!empty($gruposPorSource[$idSource])) {
+                    $resultado[] = array_shift($gruposPorSource[$idSource]);
+                    if (!empty($gruposPorSource[$idSource])) {
+                        $hayMas = true;
+                    }
                 }
-                $contiguos++;
             }
-            if ($contiguos <= self::MAX_CONSECUTIVOS) {
-                continue;
-            }
-            // Buscar el siguiente post con source distinto y traerlo aquí.
-            $indiceAlternativo = null;
-            for ($k = $i + 1; $k < $total; $k++) {
-                if ($obtenerSource($resultado[$k]) !== $sourceActual) {
-                    $indiceAlternativo = $k;
-                    break;
-                }
-            }
-            if ($indiceAlternativo === null) {
-                // Todos los restantes son del mismo source: no podemos
-                // des-apelmazar más sin sacarnos posts de la nada. Dejamos
-                // la cola tal cual.
-                break;
-            }
-            // Swap: el post alternativo sube a $i, el del racha baja a $k.
-            $temp = $resultado[$i];
-            $resultado[$i] = $resultado[$indiceAlternativo];
-            $resultado[$indiceAlternativo] = $temp;
         }
 
         return $resultado;

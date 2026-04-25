@@ -153,7 +153,19 @@ final sourcesProvider = FutureProvider<PaginatedList<Source>>((ref) async {
               })
           .toList(),
     );
-    return primera;
+    // Devolvemos TODAS las fuentes recolectadas, no sólo la primera
+    // página. Antes se devolvía `primera` (100 sources) y la pantalla
+    // "Fuentes preferencias" sólo mostraba los 100 primeros por título
+    // — Miguel Ruiz Calvo, todos los que empezaran por K-Z, etc., no
+    // aparecían en la lista. El snapshot offline ya recorría todas
+    // las páginas, sólo faltaba devolver lo recolectado.
+    return PaginatedList<Source>(
+      items: todasLasFuentes,
+      total: primera.total,
+      totalPages: 1,
+      page: 1,
+      perPage: todasLasFuentes.length,
+    );
   } on FlavorNewsApiException catch (e) {
     if (!e.esProblemaRed) rethrow;
     final desdeSeed = await ref.watch(sourcesSeedProvider.future);
