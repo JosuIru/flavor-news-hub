@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_titulares_cabecera">Titulares</string>
+    <string name="widget_titulares_descripcion">Últimos titulares de Flavor News Hub</string>
+    <string name="widget_titulares_vacio">Aínda non hai titulares. Toca ↻ para cargar ou abre a app.</string>
+    <string name="widget_titulares_actualizando">Actualizando…</string>
+    <string name="widget_titulares_error">Non se puido actualizar (%1$s)</string>
+    <string name="widget_refrescar">Refrescar</string>
+
+    <string name="widget_radio_descripcion">Radio libre en directo</string>
+    <string name="widget_radio_sin_radio">Sen radio soando</string>
+    <string name="widget_radio_play">Reproducir</string>
+    <string name="widget_radio_stop">Parar</string>
+    <string name="widget_radio_cabecera">Radio</string>
+
+    <string name="widget_musica_descripcion">Reprodutor de música</string>
+    <string name="widget_musica_cabecera">Soando</string>
+    <string name="widget_musica_sin_pista">Sen pista</string>
+    <string name="widget_musica_portada">Portada</string>
+    <string name="widget_musica_estado">Estado</string>
+
+    <string name="widget_favoritos_descripcion">Radios favoritas</string>
+    <string name="widget_favoritos_cabecera">As miñas radios</string>
+    <string name="widget_favoritos_vacio">Marca radios con ❤ na app para que aparezan aquí.</string>
+
+    <string name="widget_buscador_descripcion">Buscar en Flavor News</string>
+    <string name="widget_buscador_hint">Buscar medios e publicacións</string>
+
+    <string name="widget_sintonizador_cabecera">FLAVOR RADIO</string>
+    <string name="widget_sintonizador_descripcion">Sintonizador estilo radio antiga para cambiar entre emisoras.</string>
+    <string name="widget_sintonizador_anterior">Emisora anterior</string>
+    <string name="widget_sintonizador_siguiente">Emisora seguinte</string>
+    <string name="widget_sintonizador_play">Acender</string>
+    <string name="widget_sintonizador_stop">Apagar</string>
+    <string name="widget_sintonizador_sin_radios">— sen emisoras —</string>
+
+    <string name="widget_preview_titular_1">O pobo saharauí cumpre 50 anos de loita pola autodeterminación</string>
+    <string name="widget_preview_fuente_1">Berria · hai 2 h</string>
+    <string name="widget_preview_titular_2">As cooperativas enerxéticas medran un 40% no Estado</string>
+    <string name="widget_preview_fuente_2">Kaos en la Red · hai 4 h</string>
+    <string name="widget_preview_titular_3">O sindicato de inquilinas convoca folga xeral de alugueiros</string>
+    <string name="widget_preview_fuente_3">VilaWeb · hai 6 h</string>
+    <string name="widget_preview_radio_nombre">Radio Bronka</string>
+    <string name="widget_preview_radio_meta">Barcelona · en directo</string>
+    <string name="widget_preview_musica_titulo">Zirkulus</string>
+    <string name="widget_preview_musica_artista">Zea Mays · Uzta</string>
+    <string name="widget_preview_favorito_1">Radio Almaina</string>
+    <string name="widget_preview_favorito_2">Radio Vallekas</string>
+    <string name="widget_preview_favorito_3">Cuac FM</string>
+    <string name="widget_preview_favorito_4">Radio Bronka</string>
+</resources>

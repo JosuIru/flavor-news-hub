@@ -121,7 +121,7 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val prefs = HomeWidgetPlugin.getData(context)
 
         if (radios.isEmpty()) {
-            views.setTextViewText(R.id.sintonizador_nombre, context.getString(R.string.widget_sintonizador_sin_radios))
+            views.setTextViewText(R.id.sintonizador_nombre, IdiomaWidget.recursos(context).getString(R.string.widget_sintonizador_sin_radios))
             views.setTextViewText(R.id.sintonizador_territorio, "")
             views.setTextViewText(R.id.sintonizador_leds, repeatCompat("· ", NUM_LEDS).trim())
             appWidgetManager.updateAppWidget(widgetId, views)

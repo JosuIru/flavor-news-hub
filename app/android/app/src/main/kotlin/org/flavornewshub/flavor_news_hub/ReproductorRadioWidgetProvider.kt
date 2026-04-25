@@ -55,7 +55,7 @@ class ReproductorRadioWidgetProvider : AppWidgetProvider() {
         } else {
             views.setTextViewText(
                 R.id.radio_nombre,
-                context.getString(R.string.widget_radio_sin_radio)
+                IdiomaWidget.recursos(context).getString(R.string.widget_radio_sin_radio)
             )
             views.setImageViewResource(
                 R.id.radio_icon_estado,

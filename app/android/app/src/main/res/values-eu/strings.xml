@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_titulares_cabecera">Titularrak</string>
+    <string name="widget_titulares_descripcion">Flavor News Hub-eko azken titularrak</string>
+    <string name="widget_titulares_vacio">Oraindik titularrik ez. Sakatu ↻ kargatzeko edo ireki aplikazioa.</string>
+    <string name="widget_titulares_actualizando">Eguneratzen…</string>
+    <string name="widget_titulares_error">Ezin izan da eguneratu (%1$s)</string>
+    <string name="widget_refrescar">Eguneratu</string>
+
+    <string name="widget_radio_descripcion">Irrati librea zuzenean</string>
+    <string name="widget_radio_sin_radio">Ez dago irratirik entzuten</string>
+    <string name="widget_radio_play">Erreproduzitu</string>
+    <string name="widget_radio_stop">Gelditu</string>
+    <string name="widget_radio_cabecera">Irratia</string>
+
+    <string name="widget_musica_descripcion">Musika erreproduzitzailea</string>
+    <string name="widget_musica_cabecera">Entzuten</string>
+    <string name="widget_musica_sin_pista">Pistarik gabe</string>
+    <string name="widget_musica_portada">Azala</string>
+    <string name="widget_musica_estado">Egoera</string>
+
+    <string name="widget_favoritos_descripcion">Gogoko irratiak</string>
+    <string name="widget_favoritos_cabecera">Nire irratiak</string>
+    <string name="widget_favoritos_vacio">Markatu irratiak ❤ batekin aplikazioan hemen agertzeko.</string>
+
+    <string name="widget_buscador_descripcion">Bilatu Flavor News-en</string>
+    <string name="widget_buscador_hint">Bilatu hedabideak eta argitalpenak</string>
+
+    <string name="widget_sintonizador_cabecera">FLAVOR RADIO</string>
+    <string name="widget_sintonizador_descripcion">Garai bateko irrati estiloko sintonizadorea irratiz aldatzeko.</string>
+    <string name="widget_sintonizador_anterior">Aurreko irratia</string>
+    <string name="widget_sintonizador_siguiente">Hurrengo irratia</string>
+    <string name="widget_sintonizador_play">Piztu</string>
+    <string name="widget_sintonizador_stop">Itzali</string>
+    <string name="widget_sintonizador_sin_radios">— irratirik gabe —</string>
+
+    <string name="widget_preview_titular_1">Saharar herriak 50 urte autodeterminazioaren aldeko borrokan</string>
+    <string name="widget_preview_fuente_1">Berria · duela 2 ord</string>
+    <string name="widget_preview_titular_2">Energia kooperatibek %40 hazi dira Estatuan</string>
+    <string name="widget_preview_fuente_2">Kaos en la Red · duela 4 ord</string>
+    <string name="widget_preview_titular_3">Maizteren sindikatuak alokairu greba orokorra deitu du</string>
+    <string name="widget_preview_fuente_3">VilaWeb · duela 6 ord</string>
+    <string name="widget_preview_radio_nombre">Radio Bronka</string>
+    <string name="widget_preview_radio_meta">Bartzelona · zuzenean</string>
+    <string name="widget_preview_musica_titulo">Zirkulus</string>
+    <string name="widget_preview_musica_artista">Zea Mays · Uzta</string>
+    <string name="widget_preview_favorito_1">Radio Almaina</string>
+    <string name="widget_preview_favorito_2">Radio Vallekas</string>
+    <string name="widget_preview_favorito_3">Cuac FM</string>
+    <string name="widget_preview_favorito_4">Radio Bronka</string>
+</resources>

@@ -70,7 +70,7 @@ class ReproductorMusicaWidgetProvider : AppWidgetProvider() {
         } else {
             views.setTextViewText(
                 R.id.musica_titulo,
-                context.getString(R.string.widget_musica_sin_pista)
+                IdiomaWidget.recursos(context).getString(R.string.widget_musica_sin_pista)
             )
             views.setTextViewText(R.id.musica_artista, "")
             views.setImageViewResource(
@@ -106,16 +106,32 @@ class ReproductorMusicaWidgetProvider : AppWidgetProvider() {
             idsTextoSecundario = listOf(R.id.musica_cabecera, R.id.musica_artista),
         )
 
-        // Descarga la portada en background y actualiza el widget cuando
-        // llega. Si no hay URL o falla, dejamos el icono por defecto ya
-        // puesto en el layout.
+        // Descarga la portada en background y actualiza el widget
+        // cuando llega. Si no hay URL o falla, dejamos el icono por
+        // defecto ya puesto en el layout.
+        //
+        // Carrera con cambios rápidos de pista: si el usuario salta
+        // varias canciones seguidas, varios hilos descargan portadas
+        // en paralelo y al terminar todos llaman a updateAppWidget.
+        // Sin esta protección, una portada vieja podía llegar tarde
+        // y sobrescribir la nueva. Solución: comparar la URL de la
+        // pista actual al persistir; si cambió mientras descargábamos,
+        // descartamos el resultado.
         if (portadaUrl.startsWith("http")) {
+            val urlEsperada = portadaUrl
             thread(start = true, isDaemon = true, name = "fnh-cover-widget") {
                 try {
-                    val bitmap = descargarBitmap(portadaUrl)
+                    val bitmap = descargarBitmap(urlEsperada)
                     if (bitmap != null) {
-                        views.setImageViewBitmap(R.id.musica_portada, bitmap)
-                        appWidgetManager.updateAppWidget(widgetId, views)
+                        val urlActualEnPrefs = HomeWidgetPlugin.getData(context)
+                            .getString("musica_portada", "") ?: ""
+                        if (urlActualEnPrefs == urlEsperada) {
+                            views.setImageViewBitmap(R.id.musica_portada, bitmap)
+                            appWidgetManager.updateAppWidget(widgetId, views)
+                        }
+                        // Si la URL cambió mientras descargábamos,
+                        // descartamos esta portada — un thread más
+                        // reciente la sobrescribirá con la correcta.
                     }
                 } catch (_: Exception) {
                     // Ignorar: el widget queda con el icono genérico.

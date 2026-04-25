@@ -9,6 +9,7 @@ import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/territory_normalizer.dart';
 import '../../actualizaciones/data/actualizaciones_provider.dart';
+import '../../widgets/widgets_refrescador.dart';
 
 /// Ajustes completos de la app: idioma UI, tema, tamaño de texto, URL de
 /// la instancia backend. Todo persistido via `preferenciasProvider`.
@@ -335,6 +336,13 @@ class SettingsScreen extends ConsumerWidget {
       // (`idiomasContenidoEfectivosProvider`) detecta el cambio del
       // idioma de UI cuando está en modo `seguirInterfaz` y todas las
       // pestañas se refrescan automáticamente.
+      //
+      // Sí necesitamos repintar los widgets nativos: leen sus textos
+      // de `strings.xml` con `IdiomaWidget.recursos()`, que mira la
+      // preferencia recién cambiada. Sin este disparo, el widget en
+      // pantalla de inicio se queda con los textos del idioma anterior
+      // hasta el siguiente refresh natural.
+      await WidgetsRefrescador.repintarTodos();
     }
   }
 

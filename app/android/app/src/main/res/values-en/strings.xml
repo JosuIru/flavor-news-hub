@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_titulares_cabecera">Headlines</string>
+    <string name="widget_titulares_descripcion">Latest headlines from Flavor News Hub</string>
+    <string name="widget_titulares_vacio">No headlines yet. Tap ↻ to load or open the app.</string>
+    <string name="widget_titulares_actualizando">Updating…</string>
+    <string name="widget_titulares_error">Update failed (%1$s)</string>
+    <string name="widget_refrescar">Refresh</string>
+
+    <string name="widget_radio_descripcion">Live free radio</string>
+    <string name="widget_radio_sin_radio">No radio playing</string>
+    <string name="widget_radio_play">Play</string>
+    <string name="widget_radio_stop">Stop</string>
+    <string name="widget_radio_cabecera">Radio</string>
+
+    <string name="widget_musica_descripcion">Music player</string>
+    <string name="widget_musica_cabecera">Now playing</string>
+    <string name="widget_musica_sin_pista">No track</string>
+    <string name="widget_musica_portada">Cover</string>
+    <string name="widget_musica_estado">State</string>
+
+    <string name="widget_favoritos_descripcion">Favorite radios</string>
+    <string name="widget_favoritos_cabecera">My radios</string>
+    <string name="widget_favoritos_vacio">Mark radios with ❤ in the app to see them here.</string>
+
+    <string name="widget_buscador_descripcion">Search Flavor News</string>
+    <string name="widget_buscador_hint">Search media and publications</string>
+
+    <string name="widget_sintonizador_cabecera">FLAVOR RADIO</string>
+    <string name="widget_sintonizador_descripcion">Old-school radio tuner to switch between stations.</string>
+    <string name="widget_sintonizador_anterior">Previous station</string>
+    <string name="widget_sintonizador_siguiente">Next station</string>
+    <string name="widget_sintonizador_play">Power on</string>
+    <string name="widget_sintonizador_stop">Power off</string>
+    <string name="widget_sintonizador_sin_radios">— no stations —</string>
+
+    <string name="widget_preview_titular_1">Sahrawi people mark 50 years of struggle for self-determination</string>
+    <string name="widget_preview_fuente_1">Berria · 2h ago</string>
+    <string name="widget_preview_titular_2">Energy co-ops grow 40% across the State</string>
+    <string name="widget_preview_fuente_2">Kaos en la Red · 4h ago</string>
+    <string name="widget_preview_titular_3">Tenants union calls general rent strike</string>
+    <string name="widget_preview_fuente_3">VilaWeb · 6h ago</string>
+    <string name="widget_preview_radio_nombre">Radio Bronka</string>
+    <string name="widget_preview_radio_meta">Barcelona · live</string>
+    <string name="widget_preview_musica_titulo">Zirkulus</string>
+    <string name="widget_preview_musica_artista">Zea Mays · Uzta</string>
+    <string name="widget_preview_favorito_1">Radio Almaina</string>
+    <string name="widget_preview_favorito_2">Radio Vallekas</string>
+    <string name="widget_preview_favorito_3">Cuac FM</string>
+    <string name="widget_preview_favorito_4">Radio Bronka</string>
+</resources>

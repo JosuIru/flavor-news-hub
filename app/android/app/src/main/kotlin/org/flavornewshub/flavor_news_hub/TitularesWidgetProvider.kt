@@ -13,6 +13,8 @@ import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
+import java.util.Locale
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -96,18 +98,23 @@ class TitularesWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        // Estado visual del refresh:
-        //  - actualizando=true      → "Actualizando…"
-        //  - error no vacío         → "No se pudo actualizar: <error>"
-        //  - ningún titular pintado → mensaje estándar "no hay titulares"
+        // Estado visual del refresh — orden por prioridad:
+        //  - actualizando → "Actualizando…"
+        //  - error no vacío → "No se pudo actualizar: <error>"
+        //    (gana al vacío: si no hay titulares por fallo de red, el
+        //    usuario debe ver el motivo, no un genérico "sin titulares")
+        //  - sin nada pintado y sin error → "no hay titulares"
+        // Antes el orden invertido enmascaraba el fallo cuando además
+        // no había contenido que mostrar.
+        val recursos = IdiomaWidget.recursos(context)
         val actualizando = prefs.getBoolean("titulares_actualizando", false)
         val ultimoError = prefs.getString("titulares_ultimo_error", "") ?: ""
         val textoEstado = when {
-            actualizando -> context.getString(R.string.widget_titulares_actualizando)
-            !algunoPintado -> context.getString(R.string.widget_titulares_vacio)
-            ultimoError.isNotEmpty() -> context.getString(
+            actualizando -> recursos.getString(R.string.widget_titulares_actualizando)
+            ultimoError.isNotEmpty() -> recursos.getString(
                 R.string.widget_titulares_error, ultimoError
             )
+            !algunoPintado -> recursos.getString(R.string.widget_titulares_vacio)
             else -> ""
         }
         if (textoEstado.isNotEmpty()) {
@@ -218,9 +225,27 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                     return@Thread
                 }
                 val base = urlBase.trimEnd('/')
-                // Traemos más items (20) que slots (3) para poder filtrar
-                // localmente por fuentes bloqueadas sin quedarnos cortos.
-                val url = URL("$base/items?per_page=20&exclude_source_type=video,youtube,podcast")
+                // Replicamos los filtros que la app aplica al feed:
+                //  - territory: "Mi territorio" del usuario.
+                //  - language: política central de idioma de contenido
+                //    (ver `politica_idioma_contenido.dart`). Sólo se
+                //    persisten las claves desde la app si el modo
+                //    elegido no es "desactivado".
+                // Sin esto, el widget refrescaba con feed crudo y podía
+                // mostrar titulares en idiomas/territorios distintos a
+                // los que el usuario ve dentro de la app.
+                val parametros = StringBuilder("per_page=20&exclude_source_type=video,youtube,podcast")
+                val territorioBase = prefs.getString("flutter.fnh.pref.territorioBase", "") ?: ""
+                if (territorioBase.isNotBlank()) {
+                    parametros.append("&territory=").append(URLEncoder.encode(territorioBase, "UTF-8"))
+                }
+                val idiomasContenido = leerIdiomasContenidoEfectivos(prefs)
+                if (idiomasContenido.isNotEmpty()) {
+                    parametros.append("&language=").append(
+                        URLEncoder.encode(idiomasContenido.joinToString(","), "UTF-8")
+                    )
+                }
+                val url = URL("$base/items?$parametros")
                 val conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
                     setRequestProperty("Accept", "application/json")
@@ -283,5 +308,59 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                 if (ids.isNotEmpty()) onUpdate(context, mgr, ids)
             }
         }.start()
+    }
+
+    /**
+     * Réplica en Kotlin de `idiomasContenidoEfectivosProvider`. Lee la
+     * preferencia JSON `politicaIdiomaContenido` (escrita desde
+     * Flutter en `politica_idioma_contenido.dart`) y devuelve la
+     * lista de idiomas que el widget debe pasar como `language=`.
+     *
+     *   - `desactivado` → lista vacía (sin filtro de idioma).
+     *   - `manual` → idiomas manuales fijados.
+     *   - `seguirInterfaz` (o ausencia de preferencia) → idioma de UI
+     *     o, en su defecto, locale del sistema. Restringido al set
+     *     soportado del backend para evitar enviar `de`/`it` cuando
+     *     no hay catálogo en esos idiomas.
+     */
+    private fun leerIdiomasContenidoEfectivos(
+        prefs: android.content.SharedPreferences
+    ): List<String> {
+        val soportados = setOf("es", "ca", "eu", "gl", "en", "pt", "fr")
+        val politicaJson = prefs.getString("flutter.fnh.pref.politicaIdiomaContenido", null)
+        var modo = "seguirInterfaz"
+        var manuales: List<String> = emptyList()
+        if (!politicaJson.isNullOrBlank()) {
+            try {
+                val raiz = JSONObject(politicaJson)
+                modo = raiz.optString("modo", modo)
+                val arrayManuales = raiz.optJSONArray("idiomas_manuales")
+                if (arrayManuales != null) {
+                    val acumulado = mutableListOf<String>()
+                    for (i in 0 until arrayManuales.length()) {
+                        val codigo = arrayManuales.optString(i, "")
+                        if (codigo.isNotBlank() && soportados.contains(codigo)) {
+                            acumulado.add(codigo)
+                        }
+                    }
+                    manuales = acumulado
+                }
+            } catch (_: Exception) {
+                // Política corrupta — degradamos a default seguirInterfaz.
+            }
+        }
+        return when (modo) {
+            "desactivado" -> emptyList()
+            "manual" -> manuales
+            else -> {
+                val codigoUi = prefs.getString("flutter.fnh.pref.localeCode", null)
+                val efectivo = if (!codigoUi.isNullOrBlank()) {
+                    codigoUi
+                } else {
+                    Locale.getDefault().language
+                }
+                if (soportados.contains(efectivo)) listOf(efectivo) else emptyList()
+            }
+        }
     }
 }
