@@ -2210,7 +2210,7 @@
   },
   {
     "id": 7294,
-    "name": "Furor TV",
+    "name": "FurorTV (web)",
     "slug": "furor-tv",
     "feed_url": "https://www.furor.tv/feed/",
     "feed_type": "rss",
