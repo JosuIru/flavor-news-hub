@@ -1073,7 +1073,7 @@
     "id": 7134,
     "name": "Date un Vlog",
     "slug": "yt-date-un-vlog",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC6lHx7hjQq0_SX0jWj2dwFg",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCQX_MZRCaluNKxkywkLEgfA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@dateunvlog",
     "territory": "Internacional",
@@ -1118,7 +1118,7 @@
     "id": 7137,
     "name": "Derivando",
     "slug": "yt-derivando",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCriEZRMA_gLwgrD0cwwAagA",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH-Z8ya93m7_RD02WsCSZYA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@Derivando",
     "territory": "Internacional",
@@ -1210,7 +1210,7 @@
     "id": 7143,
     "name": "3Blue1Brown",
     "slug": "yt-3blue1brown",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC1_uAIS3r8Vu6JjXWvastJg",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCYO_jab_esuFRV4b17AJtAw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@3blue1brown",
     "territory": "Internacional",
@@ -1256,7 +1256,7 @@
     "id": 7146,
     "name": "PBS Space Time",
     "slug": "yt-pbs-space-time",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCq6OAftTQOuUBRdtUDq5SUA",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC7_gcs09iThXybpVgjHZ_7g",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@pbsspacetime",
     "territory": "Internacional",
@@ -1303,7 +1303,7 @@
     "id": 7149,
     "name": "Our Changing Climate",
     "slug": "yt-our-changing-climate",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAz17eZxF5tD7vNOEVgegKg",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCNXvxXpDJXp-mZu3pFMzYHQ",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@OurChangingClimate",
     "territory": "Internacional",
@@ -1335,7 +1335,7 @@
     "id": 7151,
     "name": "MIT OpenCourseWare",
     "slug": "yt-mit-opencourseware",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCN0QBfKk0ZSytyX_16M11fA",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCEBb1b_L6zDS3xTUrIALZOw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@mitocw",
     "territory": "Internacional",
@@ -1350,7 +1350,7 @@
     "id": 7152,
     "name": "CCC (Chaos Computer Club)",
     "slug": "yt-ccc-chaos-computer-club",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCz1JblICecvr-EYJFZikZ_A",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCfcjMkexNyn0ZR2nx8C7c6Q",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@mediacccde",
     "territory": "Internacional",
@@ -1367,7 +1367,7 @@
     "id": 7153,
     "name": "TED-Ed",
     "slug": "yt-ted-ed",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAuUUnT6oDeKwE6v1NGQxug",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa4yRKGN_zEE8iknghZA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@TEDEd",
     "territory": "Internacional",
@@ -3426,7 +3426,7 @@
   {
     "slug": "yt-sorprendente-films",
     "name": "Sorprendente Films",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAPib_VVMKhfUERJEbXuUhg",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCjVcmTU3_46iGo64mZ8BQeQ",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@SorprendenteFilms",
     "territory": "Internacional",
@@ -3443,7 +3443,7 @@
   {
     "slug": "yt-pol-bertran",
     "name": "Pol Bertran",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCY29i-dTLePyVxS5Fd4TdBA",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC7XQcDCPNGjNxy9HeFkqMsg",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@PolBertran",
     "territory": "Internacional",
@@ -4990,36 +4990,6 @@
     "topics": [
       "rural",
       "laboral"
-    ]
-  },
-  {
-    "id": 7389,
-    "name": "Derivando",
-    "slug": "derivando",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH-Z8ya93m7_RD02WsCSZYA",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/channel/UCH-Z8ya93m7_RD02WsCSZYA",
-    "territory": "Estado español",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ]
-  },
-  {
-    "id": 7390,
-    "name": "Date un Vlog",
-    "slug": "date-un-vlog",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCQX_MZRCaluNKxkywkLEgfA",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@dateunvlog",
-    "territory": "Estado español",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
     ]
   }
 ]
