@@ -1,7 +1,7 @@
 name: flavor_news_hub
 description: "Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados)."
 publish_to: 'none'
-version: 0.9.73+67
+version: 0.9.74+68
 
 environment:
   sdk: ^3.5.0
@@ -134,7 +134,3 @@ flutter:
     - assets/seed/sources.json
     - assets/seed/radios.json
     - assets/seed/collectives.json
-    # Ruido sucio (loop corto de estática filtrada) que suena durante la
-    # carga del stream de cada radio, a modo de feedback nostálgico — las
-    # radios libres tardan 1-3s en bufferear y el silencio era confuso.
-    - assets/audio/static.mp3
