@@ -96,11 +96,13 @@ final class RadiosEndpoint
 
         $idioma = (string) $request->get_param('language');
         if ($idioma !== '') {
-            $argumentosQuery['meta_query'][] = [
-                'key'     => '_fnh_languages',
-                'value'   => sanitize_key($idioma),
-                'compare' => 'LIKE',
-            ];
+            // Soportamos CSV (`es,eu,ca`). Antes hacíamos `sanitize_key`
+            // directo sobre toda la cadena, que comía las comas y
+            // generaba `eseuca` — ningún radio matcheaba.
+            $queryIdiomas = \FlavorNewsHub\Shortcodes\Shortcodes::construirMetaQueryIdiomas($idioma);
+            if ($queryIdiomas !== []) {
+                $argumentosQuery['meta_query'][] = $queryIdiomas;
+            }
         }
 
         $terminoBusqueda = trim((string) $request->get_param('s'));

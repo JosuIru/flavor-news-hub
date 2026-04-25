@@ -668,7 +668,15 @@ final class Shortcodes
      *
      * @return array<string,mixed>
      */
-    private static function construirMetaQueryIdiomas(string $idioma): array
+    /**
+     * Construye un fragmento meta_query para filtrar por idioma a
+     * partir de un CSV (`es,eu,ca`). Cada código se sanitiza, se
+     * envuelve entre comillas (para no comer matches parciales tipo
+     * `es` ⊂ `esp`) y se OR-ea. Reutilizable desde los endpoints
+     * REST — antes cada uno parseaba el idioma a su manera y los
+     * `language=es,eu` se rompían con `sanitize_key()`.
+     */
+    public static function construirMetaQueryIdiomas(string $idioma): array
     {
         $codigos = array_values(array_filter(array_map(
             'sanitize_key',

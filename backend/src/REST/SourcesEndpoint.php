@@ -100,11 +100,14 @@ final class SourcesEndpoint
 
         $idioma = (string) $request->get_param('language');
         if ($idioma !== '') {
-            $argumentosQuery['meta_query'][] = [
-                'key'     => '_fnh_languages',
-                'value'   => sanitize_key($idioma),
-                'compare' => 'LIKE',
-            ];
+            // CSV `es,eu,ca` se traduce a OR de LIKE entre comillas
+            // (ver `construirMetaQueryIdiomas`). El `sanitize_key`
+            // anterior comía las comas y generaba un único token sin
+            // matches.
+            $queryIdiomas = \FlavorNewsHub\Shortcodes\Shortcodes::construirMetaQueryIdiomas($idioma);
+            if ($queryIdiomas !== []) {
+                $argumentosQuery['meta_query'][] = $queryIdiomas;
+            }
         }
 
         $terminoBusqueda = trim((string) $request->get_param('s'));
