@@ -7,6 +7,7 @@ import '../../../core/models/item.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/filtro_idioma_contenido.dart';
 import '../../../core/utils/territory_scoring.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../personal_sources/data/items_personales_provider.dart';
@@ -159,7 +160,10 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
     preferenciasProvider.select((p) => p.territorioBase),
   );
   ordenarItemsLocalPrimero(combinados, territorioBase);
-  return combinados;
+  // Defensa contra contenido legacy de feeds mal etiquetados
+  // (canales que decían `es` pero servían árabe/cirílico/etc).
+  final idiomasContenido = ref.read(idiomasContenidoEfectivosProvider);
+  return filtrarContenidoNoLatino(combinados, idiomasContenido);
 });
 
 bool _esItemDeVideo(Item item) {

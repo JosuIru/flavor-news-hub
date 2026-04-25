@@ -9,6 +9,7 @@ import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../../core/utils/filtro_idioma_contenido.dart';
 import '../../../core/utils/territory_scoring.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
@@ -70,9 +71,13 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       unawaited(dao.cachearMuchos(primeraPaginaBackend.items));
 
       final itemsPersonales = await futuroPersonales;
-      final combinados = [...primeraPaginaBackend.items, ...itemsPersonales]
+      final preCombinados = [...primeraPaginaBackend.items, ...itemsPersonales]
           .where(_noEsVideo) // filtra personales tipo youtube/video
           .where((it) => !_estaFuenteBloqueada(it, fuentesBloqueadas))
+          .toList();
+      // Defensa contra items legacy de feeds mal etiquetados (source
+      // declara `es` pero contenido es árabe/cirílico/etc).
+      final combinados = filtrarContenidoNoLatino(preCombinados, idiomasEfectivos)
           .toList();
       _ordenarLocalPrimero(combinados, territorioBase);
 

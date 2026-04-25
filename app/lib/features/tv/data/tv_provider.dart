@@ -7,6 +7,7 @@ import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/filtro_idioma_contenido.dart';
 import '../../../core/utils/territory_scoring.dart';
 
 @immutable
@@ -133,8 +134,16 @@ final tvItemsRecientesProvider =
     preferenciasProvider.select((p) => p.territorioBase),
   );
   ordenarItemsLocalPrimero(todos, territorioBase);
+  // Filtro defensivo: descarta items con título dominantemente
+  // no-latino cuando los idiomas efectivos son todos latinos. Sirve
+  // para items legacy de feeds mal etiquetados (caso histórico:
+  // Al Mayadeen Español apuntando al canal árabe antes de v0.9.54;
+  // los items ya ingestados quedan en BD bajo un source que ahora
+  // declara `es` y se colaban en la pestaña TV).
+  final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+  final filtrados = filtrarContenidoNoLatino(todos, idiomasContenido);
   // Nos quedamos con los 30 más recientes agregados entre todas las
   // fuentes — suficiente para una pestaña sin paginado y manteniendo
   // señal editorial (no 200 entradas de la misma fuente).
-  return todos.take(30).toList();
+  return filtrados.take(30).toList();
 });
