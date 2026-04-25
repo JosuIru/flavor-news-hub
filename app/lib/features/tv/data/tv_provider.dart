@@ -60,10 +60,23 @@ final filtrosTvProvider = StateProvider<FiltrosTv>((_) => FiltrosTv.vacios);
 final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
   final filtros = ref.watch(filtrosTvProvider);
-  final pagina = await api.fetchSources(perPage: 100);
+  // Misma corrección que sourcesProvider en v0.9.55: recorrer todas
+  // las páginas para no truncar la lista alfabéticamente. Antes el
+  // pestaña TV → Medios solo mostraba sources hasta "Jot Down" porque
+  // pedía solo la primera página de 100.
+  final primera = await api.fetchSources(perPage: 100);
+  final todas = <Source>[...primera.items];
+  for (var p = 2; p <= primera.totalPages; p++) {
+    try {
+      final siguiente = await api.fetchSources(perPage: 100, page: p);
+      todas.addAll(siguiente.items);
+    } on FlavorNewsApiException {
+      break;
+    }
+  }
   const mediosAudiovisuales = {'tv_station', 'video'};
   const feedTypesAudiovisuales = {'youtube', 'video', 'peertube'};
-  final fuentes = pagina.items.where((s) {
+  final fuentes = todas.where((s) {
     if (!s.active) return false;
     return mediosAudiovisuales.contains(s.mediumType) ||
         feedTypesAudiovisuales.contains(s.feedType);
