@@ -266,14 +266,17 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
               Wrap(
                 spacing: 6, runSpacing: 6,
                 children: [
-                  for (final codigo in const ['es', 'ca', 'eu', 'gl', 'en'])
+                  // Los códigos vienen de los locales soportados por la app
+                  // (declarados en `app_*.arb`). Así no hace falta sincronizar
+                  // este chip a mano cuando se añade un idioma nuevo.
+                  for (final locale in AppLocalizations.supportedLocales)
                     FilterChip(
-                      label: Text(codigo.toUpperCase()),
-                      selected: filtros.codigosIdiomas.contains(codigo),
+                      label: Text(locale.languageCode.toUpperCase()),
+                      selected: filtros.codigosIdiomas.contains(locale.languageCode),
                       onSelected: (_) {
                         final current = ref.read(filtrosVideosProvider);
                         ref.read(filtrosVideosProvider.notifier).state =
-                            current.alternarIdioma(codigo);
+                            current.alternarIdioma(locale.languageCode);
                       },
                     ),
                 ],

@@ -108,11 +108,34 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
     return PreferenciasUsuario(
       modoTema: modoTema,
       codigoIdioma: sp.getString(_Claves.localeCode),
-      urlInstanciaBackend: sp.getString(_Claves.backendUrl) ?? urlInstanciaOficialDefault,
-      escalaTexto: sp.getDouble(_Claves.textScale) ?? 1.0,
+      urlInstanciaBackend: _saneoUrlBackend(sp.getString(_Claves.backendUrl)),
+      escalaTexto: _saneoEscalaTexto(sp.getDouble(_Claves.textScale)),
       territorioBase: sp.getString(_Claves.territorioBase) ?? '',
       onboardingCompleto: sp.getBool(_Claves.onboardingCompleto) ?? false,
     );
+  }
+
+  /// Valida la URL guardada antes de devolverla. Si está corrupta (no
+  /// parsea, no tiene scheme http/https o no tiene host), cae al default
+  /// — así una SharedPreferences corrupta no rompe la app al arrancar.
+  static String _saneoUrlBackend(String? valorGuardado) {
+    if (valorGuardado == null || valorGuardado.trim().isEmpty) {
+      return urlInstanciaOficialDefault;
+    }
+    final uri = Uri.tryParse(valorGuardado.trim());
+    if (uri == null) return urlInstanciaOficialDefault;
+    final scheme = uri.scheme.toLowerCase();
+    if (scheme != 'http' && scheme != 'https') return urlInstanciaOficialDefault;
+    if (uri.host.isEmpty) return urlInstanciaOficialDefault;
+    return valorGuardado.trim();
+  }
+
+  /// Limita la escala de texto a un rango razonable. Un valor corrupto
+  /// (negativo, NaN o exagerado) podría hacer la UI ilegible o crashear
+  /// algunos widgets de texto.
+  static double _saneoEscalaTexto(double? valorGuardado) {
+    if (valorGuardado == null || valorGuardado.isNaN) return 1.0;
+    return valorGuardado.clamp(0.8, 1.6);
   }
 
   Future<void> establecerModoTema(ThemeMode modo) async {

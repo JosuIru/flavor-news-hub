@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -152,7 +151,6 @@ class _EstadoAvisoActualizacion extends ConsumerState<AvisoActualizacion> {
     );
 
     File? apk;
-    String? errorMensaje;
     try {
       apk = await _descargarAPK(
         ref: ref,
@@ -167,7 +165,6 @@ class _EstadoAvisoActualizacion extends ConsumerState<AvisoActualizacion> {
         },
       );
     } catch (e) {
-      errorMensaje = e.toString();
       debugPrint('[AvisoActualizacion] descarga falló: $e');
     }
 
