@@ -2209,33 +2209,6 @@
     "live_stream_permit": "none"
   },
   {
-    "id": 7294,
-    "name": "FurorTV (web)",
-    "slug": "furor-tv",
-    "feed_url": "https://www.furor.tv/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.furor.tv/",
-    "territory": "Estado español",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "internacional",
-      "feminismos",
-      "cultura",
-      "derechos-civiles"
-    ],
-    "medium_type": "video",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none"
-  },
-  {
     "id": 7295,
     "name": "Prensa Comunitaria",
     "slug": "prensa-comunitaria",
