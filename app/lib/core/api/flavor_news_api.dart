@@ -41,6 +41,7 @@ class FlavorNewsApi {
     String? sourceType,
     String? excludeSourceType,
     String? search,
+    bool? esMovimiento,
   }) async {
     final respuesta = await _get(
       'items',
@@ -56,6 +57,7 @@ class FlavorNewsApi {
         if (excludeSourceType != null && excludeSourceType.isNotEmpty)
           'exclude_source_type': excludeSourceType,
         if (search != null && search.isNotEmpty) 's': search,
+        if (esMovimiento == true) 'es_movimiento': '1',
       },
     );
     final lista = _parsearLista<Item>(respuesta.body, Item.fromJson);

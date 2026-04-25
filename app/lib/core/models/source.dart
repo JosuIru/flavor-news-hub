@@ -39,6 +39,7 @@ class Source with _$Source {
     @Default('') String city,
     @Default('') String network,
     @Default('') String supportUrl,
+    @Default(false) bool esMovimiento,
     @Default('') String ownership,
     @Default('') String editorialNote,
     @Default(true) bool active,

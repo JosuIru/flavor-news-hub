@@ -162,6 +162,20 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        // "Voz de movimiento": medio cuyo contenido es vital y queda
+        // tapado por agregadores prolíficos. Los items de fuentes
+        // marcadas reciben un boost de scoring en el feed principal y
+        // pueblan la sección "Voces de movimientos" — equivalente a
+        // los colectivos pero para medios pequeños/militantes.
+        register_post_meta($tipoPostSource, '_fnh_es_movimiento', [
+            'type'              => 'boolean',
+            'single'            => true,
+            'default'           => false,
+            'show_in_rest'      => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         // `medium_type` es el tipo de medio (news, video, radio, tv_station),
         // distinto de `feed_type` (rss/youtube/podcast...) que describe el
         // transporte técnico. Una TV comunitaria puede publicar vía YouTube
@@ -382,6 +396,19 @@ final class MetaRegistrar
             'show_in_rest'      => true,
             'default'           => '',
             'sanitize_callback' => 'esc_url_raw',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        // Misma semántica que en source — colectivos suelen ser
+        // voces de movimiento por definición; el flag permite excluir
+        // a los que no encajen (p.ej. ONGs grandes que el admin
+        // prefiere no mezclar con bases sociales).
+        register_post_meta($tipoPostCollective, '_fnh_es_movimiento', [
+            'type'              => 'boolean',
+            'single'            => true,
+            'default'           => true,
+            'show_in_rest'      => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 

@@ -1,21 +1,34 @@
 import '../models/item.dart';
 import 'territory_normalizer.dart';
 
+/// Multiplicador adicional para fuentes marcadas como movimiento social
+/// o medio militante pequeño. El principio: "voces críticas no se tapan".
+/// Aplica un envejecimiento más lento (factor 0.85) para que items de
+/// medios pequeños/militantes no queden enterrados bajo agregadores
+/// prolíficos. Se compone con el factor territorial multiplicativamente,
+/// así un medio local-y-movimiento sube todavía más.
+const double _factorMovimiento = 0.85;
+
 /// Devuelve la fecha "efectiva" de un contenido para ordenarlo con
-/// sesgo local-primero. El principio editorial: "de lo local a lo
-/// global", sin ocultar nada — los items cercanos al territorio base
-/// del usuario envejecen más lento, así suben por encima de los
-/// globales de edad similar pero no tapan al breaking news mundial.
+/// sesgo local-primero y boost para movimientos sociales. El principio
+/// editorial: "de lo local a lo global", sin ocultar nada — los items
+/// cercanos al territorio base del usuario envejecen más lento, así
+/// suben por encima de los globales de edad similar pero no tapan al
+/// breaking news mundial. Adicionalmente, fuentes marcadas como
+/// movimiento social reciben un boost suave para que no queden ocultas
+/// por agregadores prolíficos.
 ///
-/// Si [territorioBase] está vacío, devuelve [publishedAt] tal cual
-/// (comportamiento neutro: el feed se ordena por fecha real).
+/// Si [territorioBase] está vacío y [esMovimiento] es false, devuelve
+/// [publishedAt] tal cual (comportamiento neutro).
 ///
-/// Factores de envejecimiento (cuanto más pequeño, más sube):
+/// Factores de envejecimiento territorial (cuanto más pequeño, más sube):
 ///   - city match:    0.3
 ///   - region match:  0.5
 ///   - country match: 0.7
 ///   - network match: 0.8
 ///   - sin match:     1.0 (sin sesgo)
+///
+/// Si [esMovimiento] es true, el factor se multiplica por 0.85 adicional.
 DateTime fechaEfectivaLocal({
   required DateTime publishedAt,
   required String country,
@@ -23,17 +36,23 @@ DateTime fechaEfectivaLocal({
   required String city,
   required String network,
   required String territorioBase,
+  bool esMovimiento = false,
   DateTime? ahora,
 }) {
-  if (territorioBase.isEmpty) return publishedAt;
-  final referencia = TerritoryNormalizer.desglosar(territorioBase);
-  final factor = _factorEdad(
-    country: country,
-    region: region,
-    city: city,
-    network: network,
-    referencia: referencia,
-  );
+  double factor = 1.0;
+  if (territorioBase.isNotEmpty) {
+    final referencia = TerritoryNormalizer.desglosar(territorioBase);
+    factor = _factorEdad(
+      country: country,
+      region: region,
+      city: city,
+      network: network,
+      referencia: referencia,
+    );
+  }
+  if (esMovimiento) {
+    factor *= _factorMovimiento;
+  }
   if (factor >= 1.0) return publishedAt;
   final momentoActual = ahora ?? DateTime.now();
   if (!publishedAt.isBefore(momentoActual)) return publishedAt;
@@ -103,15 +122,12 @@ int prioridadLocal({
 /// Ordena una lista de [Item] aplicando el sesgo local-primero sobre
 /// `publishedAt`: si [territorioBase] está fijado, cada item envejece
 /// más lento según el match con su `source` (city > region > country >
-/// network). Sin territorio base, equivale al orden estándar por
-/// `publishedAt` descendente.
+/// network). Items de fuentes marcadas como movimiento reciben además
+/// un boost suave (0.85) para que no queden ocultos por agregadores
+/// prolíficos, incluso sin territorio base.
 ///
 /// Muta la lista in-place (igual que `List.sort`).
 void ordenarItemsLocalPrimero(List<Item> items, String territorioBase) {
-  if (territorioBase.isEmpty) {
-    items.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
-    return;
-  }
   final ahora = DateTime.now();
   DateTime efectiva(Item it) => fechaEfectivaLocal(
         publishedAt: DateTime.tryParse(it.publishedAt) ??
@@ -121,6 +137,7 @@ void ordenarItemsLocalPrimero(List<Item> items, String territorioBase) {
         city: it.source?.city ?? '',
         network: it.source?.network ?? '',
         territorioBase: territorioBase,
+        esMovimiento: it.source?.esMovimiento ?? false,
         ahora: ahora,
       );
   items.sort((a, b) => efectiva(b).compareTo(efectiva(a)));

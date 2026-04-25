@@ -54,6 +54,11 @@ final class SourceTransformer
             'region'          => $ubicacion['region'],
             'city'            => $ubicacion['city'],
             'network'         => $ubicacion['network'],
+            // Marca "voz de movimiento" — la app la usa para boost
+            // de scoring en feed y para filtrar la sección dedicada.
+            // Incluida en el resumen para que cliente no necesite un
+            // segundo lookup por item.
+            'es_movimiento'   => (bool) get_post_meta($post->ID, '_fnh_es_movimiento', true),
             // Incluido en el resumen porque la app y la web deciden en
             // tiempo de render si pueden embebir vídeo/audio inline
             // (solo CC/public-domain/mixed). Evita un lookup extra por
@@ -98,6 +103,7 @@ final class SourceTransformer
             'city'               => $ubicacion['city'],
             'network'            => $ubicacion['network'],
             'support_url'        => (string) get_post_meta($idSource, '_fnh_support_url', true),
+            'es_movimiento'      => (bool) get_post_meta($idSource, '_fnh_es_movimiento', true),
             'ownership'          => (string) get_post_meta($idSource, '_fnh_ownership', true),
             'editorial_note'     => (string) get_post_meta($idSource, '_fnh_editorial_note', true),
             'active'             => (bool) get_post_meta($idSource, '_fnh_active', true),

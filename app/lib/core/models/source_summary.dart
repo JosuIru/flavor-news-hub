@@ -20,6 +20,7 @@ class SourceSummary with _$SourceSummary {
     @Default('') String region,
     @Default('') String city,
     @Default('') String network,
+    @Default(false) bool esMovimiento,
   }) = _SourceSummary;
 
   factory SourceSummary.fromJson(Map<String, dynamic> json) => _$SourceSummaryFromJson(json);

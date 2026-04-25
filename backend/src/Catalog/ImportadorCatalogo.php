@@ -74,6 +74,9 @@ final class ImportadorCatalogo
             update_post_meta($idPost, '_fnh_feed_type', (string) ($raw['feed_type'] ?? 'rss'));
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
             update_post_meta($idPost, '_fnh_support_url', (string) ($raw['support_url'] ?? ''));
+            if (array_key_exists('es_movimiento', $raw)) {
+                update_post_meta($idPost, '_fnh_es_movimiento', (bool) $raw['es_movimiento']);
+            }
             $territorio = (string) ($raw['territory'] ?? '');
             update_post_meta($idPost, '_fnh_territory', $territorio);
             $ubicacion = TerritoryNormalizer::desglosar($territorio);
@@ -202,6 +205,9 @@ final class ImportadorCatalogo
             update_post_meta($idPost, '_fnh_stream_url', $streamUrl);
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
             update_post_meta($idPost, '_fnh_support_url', (string) ($raw['support_url'] ?? ''));
+            if (array_key_exists('es_movimiento', $raw)) {
+                update_post_meta($idPost, '_fnh_es_movimiento', (bool) $raw['es_movimiento']);
+            }
             update_post_meta($idPost, '_fnh_rss_url', (string) ($raw['rss_url'] ?? ''));
             $territorio = (string) ($raw['territory'] ?? '');
             update_post_meta($idPost, '_fnh_territory', $territorio);
@@ -293,6 +299,9 @@ final class ImportadorCatalogo
 
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
             update_post_meta($idPost, '_fnh_support_url', (string) ($raw['support_url'] ?? ''));
+            if (array_key_exists('es_movimiento', $raw)) {
+                update_post_meta($idPost, '_fnh_es_movimiento', (bool) $raw['es_movimiento']);
+            }
             update_post_meta($idPost, '_fnh_flavor_url', (string) ($raw['flavor_url'] ?? ''));
             $territorio = (string) ($raw['territory'] ?? '');
             update_post_meta($idPost, '_fnh_territory', $territorio);

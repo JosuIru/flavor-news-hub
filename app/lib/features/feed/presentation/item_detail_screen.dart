@@ -46,12 +46,54 @@ final itemDetalleProvider = FutureProvider.autoDispose.family<Item, int>((ref, i
   }
 });
 
-/// Colectivos relacionados por topic. Consulta `/collectives?topic=a,b,c`.
-/// El backend filtra por coincidencia en cualquier topic; es suficiente
-/// para la capa "¿Quién se organiza sobre esto?".
-final colectivosRelacionadosProvider =
-    FutureProvider.autoDispose.family<PaginatedList<Collective>, String>((ref, slugsCsv) async {
-  if (slugsCsv.isEmpty) {
+/// Argumentos para [colectivosRelacionadosProvider].
+@immutable
+class ConsultaColectivosRelacionados {
+  const ConsultaColectivosRelacionados({
+    required this.slugsTopicsCsv,
+    required this.territorio,
+  });
+
+  final String slugsTopicsCsv;
+  final String territorio;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ConsultaColectivosRelacionados &&
+      other.slugsTopicsCsv == slugsTopicsCsv &&
+      other.territorio == territorio;
+
+  @override
+  int get hashCode => Object.hash(slugsTopicsCsv, territorio);
+}
+
+/// Colectivos relacionados con un item. Estrategia de varias pasadas
+/// para que la sección "¿Quién se organiza sobre esto?" no quede vacía
+/// en items sin topics asignados (la mayoría de items RSS no traen
+/// topics; el ingester sólo los hereda si están curados en el seed):
+///
+///  1. Por topic compartido: el matching más fuerte.
+///  2. Si no hay match Y hay territorio del source → fallback a
+///     colectivos del mismo territorio. Es señal débil pero útil para
+///     que el usuario vea "estos grupos están en tu zona".
+///  3. Si nada de lo anterior produce resultados → lista vacía.
+final colectivosRelacionadosProvider = FutureProvider.autoDispose
+    .family<PaginatedList<Collective>, ConsultaColectivosRelacionados>(
+  (ref, consulta) async {
+    final api = ref.watch(flavorNewsApiProvider);
+    if (consulta.slugsTopicsCsv.isNotEmpty) {
+      final porTopic = await api.fetchCollectives(
+        topic: consulta.slugsTopicsCsv,
+        perPage: 5,
+      );
+      if (porTopic.items.isNotEmpty) return porTopic;
+    }
+    if (consulta.territorio.isNotEmpty) {
+      return api.fetchCollectives(
+        territory: consulta.territorio,
+        perPage: 5,
+      );
+    }
     return const PaginatedList<Collective>(
       items: [],
       total: 0,
@@ -59,10 +101,8 @@ final colectivosRelacionadosProvider =
       page: 1,
       perPage: 5,
     );
-  }
-  final api = ref.watch(flavorNewsApiProvider);
-  return api.fetchCollectives(topic: slugsCsv, perPage: 5);
-});
+  },
+);
 
 class ItemDetailScreen extends ConsumerStatefulWidget {
   const ItemDetailScreen({required this.idItem, super.key});
@@ -307,7 +347,18 @@ class _BloqueOrganizing extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
     final slugsCsv = item.topics.map((t) => t.slug).join(',');
-    final asyncColectivos = ref.watch(colectivosRelacionadosProvider(slugsCsv));
+    // Territorio del source como fallback cuando el item no trae
+    // topics: muchos feeds RSS no etiquetan, y sin esto la sección
+    // queda casi siempre vacía. El territorio es señal débil pero
+    // útil para que el usuario vea grupos de su zona aunque el
+    // contenido del titular no les case por temática.
+    final territorio = item.source?.territory ?? '';
+    final asyncColectivos = ref.watch(colectivosRelacionadosProvider(
+      ConsultaColectivosRelacionados(
+        slugsTopicsCsv: slugsCsv,
+        territorio: territorio,
+      ),
+    ));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

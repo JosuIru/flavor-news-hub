@@ -19,6 +19,7 @@ import '../../features/music/presentation/musica_screen.dart';
 import '../../features/notifications/presentation/notificaciones_screen.dart';
 import '../../features/personal_sources/presentation/mis_medios_screen.dart';
 import '../../features/search/presentation/buscador_screen.dart';
+import '../../features/movimientos/presentation/movimientos_screen.dart';
 import '../../features/sources_filter/presentation/fuentes_preferencias_screen.dart';
 import '../../features/videos/presentation/reproductor_video_screen.dart';
 import '../../features/videos/presentation/videos_screen.dart';
@@ -107,6 +108,10 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/fuentes-preferencias',
         builder: (context, state) => const FuentesPreferenciasScreen(),
+      ),
+      GoRoute(
+        path: '/movimientos',
+        builder: (context, state) => const MovimientosScreen(),
       ),
       GoRoute(
         path: '/notificaciones',

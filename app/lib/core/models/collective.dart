@@ -27,6 +27,7 @@ class Collective with _$Collective {
     @Default('') String city,
     @Default(false) bool hasContact,
     @Default(true) bool verified,
+    @Default(true) bool esMovimiento,
     @Default(<Topic>[]) List<Topic> topics,
     @Default(<int>[]) List<int> sourceIds,
   }) = _Collective;

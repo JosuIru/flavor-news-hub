@@ -23,7 +23,8 @@
     "languages": [
       "fr"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 6452,
@@ -36,7 +37,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 6611,
@@ -83,7 +85,8 @@
       "es"
     ],
     "topics": [],
-    "support_url": "https://arainfo.org/donaciones/"
+    "support_url": "https://arainfo.org/donaciones/",
+    "es_movimiento": true
   },
   {
     "id": 6464,
@@ -97,7 +100,8 @@
       "es"
     ],
     "topics": [],
-    "support_url": "https://ballenablanca.es/producto/suscripcion-anual/"
+    "support_url": "https://ballenablanca.es/producto/suscripcion-anual/",
+    "es_movimiento": true
   },
   {
     "id": 6414,
@@ -111,7 +115,8 @@
       "eu"
     ],
     "topics": [],
-    "support_url": "https://www.berria.eus/babestu-berria.html"
+    "support_url": "https://www.berria.eus/babestu-berria.html",
+    "es_movimiento": true
   },
   {
     "id": 6133,
@@ -124,7 +129,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 6463,
@@ -137,7 +143,8 @@
     "languages": [
       "ca"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 6931,
@@ -187,7 +194,8 @@
       "internacional",
       "cultura"
     ],
-    "support_url": "https://agora.ctxt.es/donaciones/"
+    "support_url": "https://agora.ctxt.es/donaciones/",
+    "es_movimiento": true
   },
   {
     "id": 6132,
@@ -201,7 +209,8 @@
       "es"
     ],
     "topics": [],
-    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/",
+    "es_movimiento": true
   },
   {
     "id": 6752,
@@ -234,7 +243,8 @@
       "laboral",
       "feminismos",
       "ecologismo"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 6282,
@@ -248,7 +258,8 @@
       "es"
     ],
     "topics": [],
-    "support_url": "https://eltopo.org/suscribete/"
+    "support_url": "https://eltopo.org/suscribete/",
+    "es_movimiento": true
   },
   {
     "id": 7100,
@@ -262,7 +273,8 @@
       "en"
     ],
     "topics": [],
-    "support_url": "https://supporters.eff.org/donate/join-eff-today"
+    "support_url": "https://supporters.eff.org/donate/join-eff-today",
+    "es_movimiento": true
   },
   {
     "id": 7101,
@@ -276,7 +288,8 @@
       "en"
     ],
     "topics": [],
-    "support_url": "https://my.fsfe.org/donate?referrer=https://fsfe.org/index.html"
+    "support_url": "https://my.fsfe.org/donate?referrer=https://fsfe.org/index.html",
+    "es_movimiento": true
   },
   {
     "id": 6608,
@@ -292,7 +305,8 @@
     "topics": [
       "ecologismo",
       "rural"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 6715,
@@ -324,7 +338,8 @@
     ],
     "topics": [
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 6892,
@@ -372,7 +387,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 6280,
@@ -389,7 +405,8 @@
       "memoria-historica",
       "internacional"
     ],
-    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=EBLYKADFLBBKA&amp;source=url"
+    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=EBLYKADFLBBKA&amp;source=url",
+    "es_movimiento": true
   },
   {
     "id": 6284,
@@ -402,7 +419,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 6281,
@@ -416,7 +434,8 @@
       "ca"
     ],
     "topics": [],
-    "support_url": "https://directa.cat/donar-vides/"
+    "support_url": "https://directa.cat/donar-vides/",
+    "es_movimiento": true
   },
   {
     "id": 6751,
@@ -450,7 +469,8 @@
       "ecologismo",
       "cultura"
     ],
-    "support_url": "https://kiosco.lamarea.com/donaciones-2/"
+    "support_url": "https://kiosco.lamarea.com/donaciones-2/",
+    "es_movimiento": true
   },
   {
     "id": 7099,
@@ -536,7 +556,8 @@
       "internacional",
       "rural"
     ],
-    "support_url": "https://mongabay.org/donate"
+    "support_url": "https://mongabay.org/donate",
+    "es_movimiento": true
   },
   {
     "id": 7107,
@@ -568,7 +589,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 6127,
@@ -584,7 +606,8 @@
     "topics": [
       "cultura",
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 6125,
@@ -601,7 +624,8 @@
       "feminismos",
       "cuidados"
     ],
-    "support_url": "https://www.pikaramagazine.com/apoyanos/suscribete-pikara/"
+    "support_url": "https://www.pikaramagazine.com/apoyanos/suscribete-pikara/",
+    "es_movimiento": true
   },
   {
     "id": 6754,
@@ -793,7 +817,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 6126,
@@ -809,7 +834,8 @@
     "topics": [
       "cultura",
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7104,
@@ -839,7 +865,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7108,
@@ -855,7 +882,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7109,
@@ -870,7 +898,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7111,
@@ -885,7 +914,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7112,
@@ -900,7 +930,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7113,
@@ -916,7 +947,8 @@
     "topics": [
       "tecnologia-soberana",
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7116,
@@ -931,7 +963,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7117,
@@ -946,7 +979,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7118,
@@ -961,7 +995,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7119,
@@ -976,7 +1011,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7121,
@@ -991,7 +1027,8 @@
     ],
     "topics": [
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7127,
@@ -1006,7 +1043,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7128,
@@ -1021,7 +1059,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7129,
@@ -1036,7 +1075,8 @@
     ],
     "topics": [
       "economia-social"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7132,
@@ -1297,7 +1337,8 @@
     "topics": [
       "cultura",
       "ecologismo"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7149,
@@ -1313,7 +1354,8 @@
     "topics": [
       "ecologismo"
     ],
-    "support_url": "https://www.patreon.com/OurChangingCl..."
+    "support_url": "https://www.patreon.com/OurChangingCl...",
+    "es_movimiento": true
   },
   {
     "id": 7150,
@@ -1329,7 +1371,8 @@
     "topics": [
       "cultura"
     ],
-    "support_url": "https://www.patreon.com/foldablehuman"
+    "support_url": "https://www.patreon.com/foldablehuman",
+    "es_movimiento": true
   },
   {
     "id": 7151,
@@ -1361,7 +1404,8 @@
     "topics": [
       "tecnologia-soberana",
       "derechos-civiles"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7153,
@@ -1424,7 +1468,8 @@
     "topics": [
       "internacional",
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7157,
@@ -1438,7 +1483,8 @@
       "eu"
     ],
     "topics": [],
-    "support_url": "https://97irratia.info/colabora/"
+    "support_url": "https://97irratia.info/colabora/",
+    "es_movimiento": true
   },
   {
     "id": 7159,
@@ -1454,7 +1500,8 @@
     "topics": [
       "memoria-historica",
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7160,
@@ -1469,7 +1516,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7161,
@@ -1482,7 +1530,8 @@
     "languages": [
       "ca"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7162,
@@ -1496,7 +1545,8 @@
       "ca",
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7163,
@@ -1512,7 +1562,8 @@
     "topics": [
       "cultura"
     ],
-    "support_url": "https://cuacfm.org/asociate-a-cuac-fm/"
+    "support_url": "https://cuacfm.org/asociate-a-cuac-fm/",
+    "es_movimiento": true
   },
   {
     "id": 7164,
@@ -1527,7 +1578,8 @@
     ],
     "topics": [
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7165,
@@ -1544,7 +1596,8 @@
       "migraciones",
       "laboral",
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7166,
@@ -1560,7 +1613,8 @@
     "topics": [
       "cultura"
     ],
-    "support_url": "https://radioenlace.org/colabora-con-radio-enlace/"
+    "support_url": "https://radioenlace.org/colabora-con-radio-enlace/",
+    "es_movimiento": true
   },
   {
     "id": 7167,
@@ -1575,7 +1629,8 @@
     ],
     "topics": [
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7168,
@@ -1591,7 +1646,8 @@
     "topics": [
       "ecologismo",
       "migraciones"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7169,
@@ -1607,7 +1663,8 @@
     "topics": [
       "migraciones",
       "cultura"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7170,
@@ -1623,7 +1680,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7171,
@@ -1639,7 +1697,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7173,
@@ -1655,7 +1714,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7174,
@@ -1671,7 +1731,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7274,
@@ -1697,7 +1758,8 @@
     "legal_note": "Licencia Creative Commons BY-NC-ND 3.0 US. Archivo completo desde 1996 disponible bajo esa licencia.",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.democracynow.org/donate?campaign=web-nav"
+    "support_url": "https://www.democracynow.org/donate?campaign=web-nav",
+    "es_movimiento": true
   },
   {
     "id": 7275,
@@ -1723,7 +1785,8 @@
     "content_license": "mixed",
     "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7276,
@@ -1746,7 +1809,8 @@
     "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
     "has_live_stream": true,
     "live_stream_permit": "none",
-    "support_url": "https://www.goteo.org/project/la-veinal-tv1"
+    "support_url": "https://www.goteo.org/project/la-veinal-tv1",
+    "es_movimiento": true
   },
   {
     "id": 7277,
@@ -1771,7 +1835,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
     "has_live_stream": true,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7278,
@@ -1795,7 +1860,8 @@
     "content_license": "cc-by-4.0",
     "legal_note": "Blender Foundation. Todo el contenido bajo CC BY 4.0.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7279,
@@ -1820,7 +1886,8 @@
     "content_license": "mixed",
     "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7280,
@@ -1844,7 +1911,8 @@
     "content_license": "mixed",
     "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7281,
@@ -1868,7 +1936,8 @@
     "content_license": "mixed",
     "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7282,
@@ -1919,7 +1988,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://donate.novaramedia.com"
+    "support_url": "https://donate.novaramedia.com",
+    "es_movimiento": true
   },
   {
     "id": 7284,
@@ -1944,7 +2014,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.patreon.com/BreakThroughNews"
+    "support_url": "https://www.patreon.com/BreakThroughNews",
+    "es_movimiento": true
   },
   {
     "id": 7285,
@@ -2021,7 +2092,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.paypal.com/donate/?hosted_button_id=QYAX3B8342XG2"
+    "support_url": "https://www.paypal.com/donate/?hosted_button_id=QYAX3B8342XG2",
+    "es_movimiento": true
   },
   {
     "id": 7288,
@@ -2048,7 +2120,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=YXNB7TGY954HE&amp;source=url"
+    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=YXNB7TGY954HE&amp;source=url",
+    "es_movimiento": true
   },
   {
     "id": 7289,
@@ -2126,7 +2199,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.eldiario.es/socios"
+    "support_url": "https://www.eldiario.es/socios",
+    "es_movimiento": true
   },
   {
     "id": 7292,
@@ -2175,7 +2249,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7295,
@@ -2201,7 +2276,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7296,
@@ -2228,7 +2304,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7297,
@@ -2279,7 +2356,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7299,
@@ -2306,7 +2384,8 @@
     "legal_note": "Publica bajo CC BY-NC-SA 4.0 en su web; el uso del feed debe respetar esa licencia y la atribución exigida.",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.paypal.com/cgi-bin/webscr"
+    "support_url": "https://www.paypal.com/cgi-bin/webscr",
+    "es_movimiento": true
   },
   {
     "id": 7300,
@@ -2332,7 +2411,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7301,
@@ -2358,7 +2438,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7302,
@@ -2437,7 +2518,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://www.radiosudaca.org/asociate/"
+    "support_url": "https://www.radiosudaca.org/asociate/",
+    "es_movimiento": true
   },
   {
     "id": 7305,
@@ -2463,7 +2545,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7306,
@@ -2490,7 +2573,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://fmchalet.org/donaciones-donations-dons-spenden-%e6%8d%90%e6%ac%be/"
+    "support_url": "https://fmchalet.org/donaciones-donations-dons-spenden-%e6%8d%90%e6%ac%be/",
+    "es_movimiento": true
   },
   {
     "id": 7307,
@@ -2518,7 +2602,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://radiokurruf.org/apoyo/"
+    "support_url": "https://radiokurruf.org/apoyo/",
+    "es_movimiento": true
   },
   {
     "id": 7308,
@@ -2545,7 +2630,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7309,
@@ -2572,7 +2658,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7310,
@@ -2599,7 +2686,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7311,
@@ -2626,7 +2714,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7312,
@@ -2654,7 +2743,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7313,
@@ -2682,7 +2772,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "support_url": "https://radiolavozindigena.org/apoyanos"
+    "support_url": "https://radiolavozindigena.org/apoyanos",
+    "es_movimiento": true
   },
   {
     "id": 7314,
@@ -2710,7 +2801,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7315,
@@ -2737,7 +2829,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7316,
@@ -2764,7 +2857,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7318,
@@ -2791,7 +2885,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7319,
@@ -2818,7 +2913,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7320,
@@ -2845,7 +2941,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "slug": "col-ecologistas-en-accion",
@@ -3336,7 +3433,8 @@
       "internacional"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "es_movimiento": true
   },
   {
     "slug": "yt-sorprendente-films",
@@ -3369,7 +3467,8 @@
       "educacion"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "es_movimiento": true
   },
   {
     "slug": "yt-diego-en-la-lucha",
@@ -3386,7 +3485,8 @@
       "internacional"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "es_movimiento": true
   },
   {
     "slug": "yt-urolakoen-nafarzuztarrak",
@@ -3403,7 +3503,8 @@
       "memoria-historica"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "es_movimiento": true
   },
   {
     "slug": "yt-ahotsa-info",
@@ -3421,7 +3522,8 @@
       "cultura"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "es_movimiento": true
   },
   {
     "id": 7321,
@@ -3448,7 +3550,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7322,
@@ -3475,7 +3578,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7323,
@@ -3502,7 +3606,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7324,
@@ -3529,7 +3634,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7325,
@@ -3556,7 +3662,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7326,
@@ -3583,7 +3690,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7327,
@@ -3610,7 +3718,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7328,
@@ -3637,7 +3746,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7329,
@@ -3664,7 +3774,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7330,
@@ -3691,7 +3802,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7331,
@@ -3720,7 +3832,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7332,
@@ -3748,7 +3861,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7333,
@@ -3779,7 +3893,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7334,
@@ -3807,7 +3922,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7335,
@@ -3834,7 +3950,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7337,
@@ -3861,7 +3978,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7338,
@@ -3888,7 +4006,8 @@
     "content_license": "cc-by-sa-4.0",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7339,
@@ -3915,7 +4034,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7340,
@@ -3942,7 +4062,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7341,
@@ -4050,7 +4171,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7345,
@@ -4077,7 +4199,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7347,
@@ -4107,7 +4230,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7348,
@@ -4134,7 +4258,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7349,
@@ -4161,7 +4286,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7350,
@@ -4188,7 +4314,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7351,
@@ -4215,7 +4342,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7352,
@@ -4242,7 +4370,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7353,
@@ -4269,7 +4398,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7354,
@@ -4296,7 +4426,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7355,
@@ -4323,7 +4454,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7356,
@@ -4340,7 +4472,8 @@
       "cultura",
       "derechos-civiles",
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7357,
@@ -4364,7 +4497,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "Televisión asociativa íntegramente en euskera. Emite por TDT con licencia y por web. No expone RSS público; la web es el punto de entrada.",
     "has_live_stream": true,
-    "live_stream_permit": "licensed"
+    "live_stream_permit": "licensed",
+    "es_movimiento": true
   },
   {
     "id": 7358,
@@ -4381,7 +4515,8 @@
       "cultura",
       "educacion"
     ],
-    "support_url": "https://sustatu.eus/harpidetza/"
+    "support_url": "https://sustatu.eus/harpidetza/",
+    "es_movimiento": true
   },
   {
     "id": 7359,
@@ -4394,7 +4529,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7360,
@@ -4408,7 +4544,8 @@
       "eu"
     ],
     "topics": [],
-    "support_url": "https://anboto.org/harpidetza/"
+    "support_url": "https://anboto.org/harpidetza/",
+    "es_movimiento": true
   },
   {
     "id": 7361,
@@ -4422,7 +4559,8 @@
       "eu"
     ],
     "topics": [],
-    "support_url": "https://geuria.eus/harpidetza/"
+    "support_url": "https://geuria.eus/harpidetza/",
+    "es_movimiento": true
   },
   {
     "id": 7362,
@@ -4435,7 +4573,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7363,
@@ -4448,7 +4587,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7364,
@@ -4463,7 +4603,8 @@
       "fr"
     ],
     "topics": [],
-    "support_url": "https://www.mediabask.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Fwww.mediabask.eus%2F"
+    "support_url": "https://www.mediabask.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Fwww.mediabask.eus%2F",
+    "es_movimiento": true
   },
   {
     "id": 7365,
@@ -4480,7 +4621,8 @@
     "topics": [
       "derechos-civiles",
       "memoria-historica"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7366,
@@ -4493,7 +4635,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7367,
@@ -4506,7 +4649,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "es_movimiento": true
   },
   {
     "id": 7368,
@@ -4530,7 +4674,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "Telebista parte-hartzailea / TV participativa de Iparralde, íntegramente en euskera.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "es_movimiento": true
   },
   {
     "id": 7369,
@@ -4547,7 +4692,8 @@
       "ecologismo",
       "derechos-civiles"
     ],
-    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras"
+    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras",
+    "es_movimiento": true
   },
   {
     "id": 7370,
@@ -4564,7 +4710,8 @@
     "topics": [
       "cultura",
       "derechos-civiles"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7371,
@@ -4580,7 +4727,8 @@
     "topics": [
       "cultura",
       "derechos-civiles"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7372,
@@ -4596,7 +4744,8 @@
     "topics": [
       "ecologismo",
       "rural"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7373,
@@ -4611,7 +4760,8 @@
     ],
     "topics": [
       "ecologismo"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7374,
@@ -4628,7 +4778,8 @@
       "cultura",
       "derechos-civiles"
     ],
-    "support_url": "https://omnium.cat/donatius/"
+    "support_url": "https://omnium.cat/donatius/",
+    "es_movimiento": true
   },
   {
     "id": 7375,
@@ -4644,7 +4795,8 @@
     "topics": [
       "ecologismo",
       "economia-social"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7376,
@@ -4660,7 +4812,8 @@
     "topics": [
       "vivienda",
       "laboral"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7377,
@@ -4676,7 +4829,8 @@
     "topics": [
       "ecologismo"
     ],
-    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/",
+    "es_movimiento": true
   },
   {
     "id": 7378,
@@ -4692,7 +4846,8 @@
     "topics": [
       "memoria-historica",
       "derechos-civiles"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7379,
@@ -4708,7 +4863,8 @@
     "topics": [
       "laboral",
       "derechos-civiles"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7380,
@@ -4724,7 +4880,8 @@
     "topics": [
       "rural",
       "laboral"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7381,
@@ -4739,7 +4896,8 @@
     ],
     "topics": [
       "vivienda"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7382,
@@ -4755,7 +4913,8 @@
     "topics": [
       "derechos-civiles",
       "ecologismo"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7383,
@@ -4770,7 +4929,8 @@
     ],
     "topics": [
       "feminismos"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7384,
@@ -4785,7 +4945,8 @@
     ],
     "topics": [
       "feminismos"
-    ]
+    ],
+    "es_movimiento": true
   },
   {
     "id": 7386,
@@ -4802,7 +4963,8 @@
       "derechos-civiles",
       "ecologismo"
     ],
-    "support_url": "https://copinh.org/colabora/"
+    "support_url": "https://copinh.org/colabora/",
+    "es_movimiento": true
   },
   {
     "id": 7388,
@@ -4820,6 +4982,7 @@
     "topics": [
       "rural",
       "laboral"
-    ]
+    ],
+    "es_movimiento": true
   }
 ]

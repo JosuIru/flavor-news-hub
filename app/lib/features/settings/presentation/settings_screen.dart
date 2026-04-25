@@ -68,6 +68,15 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(height: 24),
           ListTile(
+            leading: Icon(
+              Icons.campaign_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(textos.settingsMovimientos),
+            subtitle: Text(textos.settingsMovimientosSubtitle),
+            onTap: () => context.push('/movimientos'),
+          ),
+          ListTile(
             leading: const Icon(Icons.bookmark),
             title: Text(textos.savedTitle),
             subtitle: Text(textos.savedSubtitle),

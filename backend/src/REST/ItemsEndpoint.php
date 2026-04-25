@@ -61,6 +61,7 @@ final class ItemsEndpoint
             'source_type'         => ['type' => 'string', 'description' => 'Incluye sólo items de sources con estos feed_types (coma-separado).'],
             'exclude_source_type' => ['type' => 'string', 'description' => 'Excluye items de sources con estos feed_types (coma-separado). Útil para "solo texto" sin arrastrar vídeos o podcasts.'],
             's'                   => ['type' => 'string', 'description' => 'Búsqueda por texto libre en título y cuerpo.'],
+            'es_movimiento'       => ['type' => 'boolean', 'description' => 'Si true, devuelve sólo items de sources marcadas como voz de movimiento.'],
         ];
     }
 
@@ -134,8 +135,15 @@ final class ItemsEndpoint
         $idioma = (string) $request->get_param('language');
         $tiposSource = (string) $request->get_param('source_type');
         $tiposSourceExcluidos = (string) $request->get_param('exclude_source_type');
-        if ($territorio !== '' || $idioma !== '' || $tiposSource !== '' || $tiposSourceExcluidos !== '') {
-            $idsSourceFiltrados = self::resolverSourcesPorFiltros($territorio, $idioma, $tiposSource, $tiposSourceExcluidos);
+        $soloMovimiento = (bool) $request->get_param('es_movimiento');
+        if ($territorio !== '' || $idioma !== '' || $tiposSource !== '' || $tiposSourceExcluidos !== '' || $soloMovimiento) {
+            $idsSourceFiltrados = self::resolverSourcesPorFiltros(
+                $territorio,
+                $idioma,
+                $tiposSource,
+                $tiposSourceExcluidos,
+                $soloMovimiento,
+            );
             if ($idSourceDirecto > 0) {
                 $idsSourceFiltrados = in_array($idSourceDirecto, $idsSourceFiltrados, true)
                     ? [$idSourceDirecto]
@@ -220,9 +228,17 @@ final class ItemsEndpoint
         string $territorio,
         string $idioma,
         string $tiposSource = '',
-        string $tiposSourceExcluidos = ''
+        string $tiposSourceExcluidos = '',
+        bool $soloMovimiento = false
     ): array {
         $metaQuery = [];
+        if ($soloMovimiento) {
+            $metaQuery[] = [
+                'key'     => '_fnh_es_movimiento',
+                'value'   => '1',
+                'compare' => '=',
+            ];
+        }
         if ($territorio !== '') {
             $metaQuery[] = [
                 'key'     => '_fnh_territory',

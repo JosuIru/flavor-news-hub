@@ -49,6 +49,7 @@ final class CollectiveTransformer
             'website_url' => $websiteUrl,
             'flavor_url'  => $flavorUrl,
             'support_url' => (string) get_post_meta($idColectivo, '_fnh_support_url', true),
+            'es_movimiento' => (bool) (get_post_meta($idColectivo, '_fnh_es_movimiento', true) ?: true),
             'territory'   => $territorio,
             'country'     => $ubicacion['country'],
             'region'      => $ubicacion['region'],
