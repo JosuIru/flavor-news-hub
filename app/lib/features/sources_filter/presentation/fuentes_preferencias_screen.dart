@@ -122,7 +122,7 @@ class _EstadoFuentesPreferencias extends ConsumerState<FuentesPreferenciasScreen
       case _CategoriaFuente.audio:
         return tipo == 'podcast';
       case _CategoriaFuente.video:
-        return tipo == 'youtube' || tipo == 'video';
+        return tipo == 'youtube' || tipo == 'video' || tipo == 'peertube';
       case _CategoriaFuente.fediverso:
         return tipo == 'mastodon';
       case _CategoriaFuente.todas:
