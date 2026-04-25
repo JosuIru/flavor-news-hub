@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../donations/presentation/donaciones_sheet.dart';
 import '../../history/data/historial_provider.dart';
+import '../../offline_seed/data/seed_loader.dart';
 import '../data/feed_notifier.dart';
 import '../data/filtros_feed.dart';
 import 'item_card.dart';
@@ -79,7 +80,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
+      body: Column(
+        children: [
+          const _BarraFiltrosActivos(),
+          Expanded(
+            child: RefreshIndicator(
         onRefresh: () => ref.read(feedProvider.notifier).refrescar(),
         child: asyncEstadoFeed.when(
           // Durante pull-to-refresh o `invalidateSelf`, mantenemos la
@@ -171,6 +176,121 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               },
             );
           },
+        ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Barra horizontal de chips dismissables visible debajo del AppBar
+/// cuando hay filtros activos. Sin filtros, ocupa altura cero.
+///
+/// Antes el usuario podía pulsar "Ver noticias de este medio" en la
+/// ficha de una source y volver al feed sin pista visual de que
+/// estaba filtrando — sólo el badge naranja en el icono "tune" del
+/// AppBar lo delataba, y mucha gente lo pasaba por alto. Esta barra
+/// hace explícito qué filtros están activos y permite quitarlos uno
+/// por uno con un toque sin abrir la pantalla de filtros.
+class _BarraFiltrosActivos extends ConsumerWidget {
+  const _BarraFiltrosActivos();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filtros = ref.watch(filtrosFeedProvider);
+    if (filtros.estaVacio) return const SizedBox.shrink();
+
+    final textos = AppLocalizations.of(context);
+    final notifier = ref.read(filtrosFeedProvider.notifier);
+    final esquema = Theme.of(context).colorScheme;
+
+    final chips = <Widget>[];
+
+    if (filtros.idSource != null) {
+      // Resolvemos el nombre del medio desde el seed bundleado. Si no
+      // está en seed (caso raro: medio recién añadido en una instancia
+      // y aún no propagado al app), caemos a "Medio #N".
+      final fuentes = ref.watch(sourcesSeedProvider).valueOrNull ?? const [];
+      String nombre = 'Medio #${filtros.idSource}';
+      for (final s in fuentes) {
+        if (s.id == filtros.idSource) {
+          nombre = s.name;
+          break;
+        }
+      }
+      chips.add(InputChip(
+        avatar: Icon(Icons.podcasts, size: 18, color: esquema.primary),
+        label: Text(nombre),
+        onDeleted: () => notifier.establecerSource(null),
+        deleteIconColor: esquema.onSurfaceVariant,
+      ));
+    }
+
+    for (final slug in filtros.slugsTopics) {
+      // Capitalizamos el slug para presentación; el `name` real del
+      // topic vendría de cargar el provider de topics, pero el slug
+      // capitalizado da una representación suficientemente clara y
+      // evita una segunda dependencia asíncrona.
+      final etiqueta = slug.isEmpty
+          ? slug
+          : '${slug[0].toUpperCase()}${slug.substring(1).replaceAll('-', ' ')}';
+      chips.add(InputChip(
+        label: Text(etiqueta),
+        onDeleted: () => notifier.alternarTopic(slug),
+        deleteIconColor: esquema.onSurfaceVariant,
+      ));
+    }
+
+    final territorio = filtros.codigoTerritorio;
+    if (territorio != null && territorio.isNotEmpty) {
+      chips.add(InputChip(
+        avatar: Icon(Icons.place_outlined, size: 18, color: esquema.primary),
+        label: Text(territorio),
+        onDeleted: () => notifier.establecerTerritorio(null),
+        deleteIconColor: esquema.onSurfaceVariant,
+      ));
+    }
+
+    if (filtros.codigosIdiomas.isNotEmpty) {
+      chips.add(InputChip(
+        avatar: Icon(Icons.language, size: 18, color: esquema.primary),
+        label: Text(filtros.codigosIdiomas.map((c) => c.toUpperCase()).join(', ')),
+        onDeleted: notifier.limpiarIdiomas,
+        deleteIconColor: esquema.onSurfaceVariant,
+      ));
+    }
+
+    return Material(
+      color: esquema.surfaceContainerHighest,
+      child: SafeArea(
+        top: false,
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (int i = 0; i < chips.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 6),
+                        chips[i],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              if (chips.length > 1)
+                TextButton(
+                  onPressed: notifier.limpiar,
+                  child: Text(textos.filtersClear),
+                ),
+            ],
+          ),
         ),
       ),
     );

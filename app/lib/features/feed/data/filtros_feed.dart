@@ -186,6 +186,13 @@ class FiltrosFeedNotifier extends StateNotifier<FiltrosFeed> {
     await _persistir(state.copyWith(codigosIdiomas: nuevaLista));
   }
 
+  /// Vacía la selección de idiomas de un solo gesto. Usado por la barra
+  /// de filtros activos del feed cuando el chip de idiomas se descarta.
+  Future<void> limpiarIdiomas() async {
+    if (state.codigosIdiomas.isEmpty) return;
+    await _persistir(state.copyWith(codigosIdiomas: const []));
+  }
+
   Future<void> establecerSource(int? idSource) async {
     await _persistir(state.copyWith(
       idSource: idSource,
