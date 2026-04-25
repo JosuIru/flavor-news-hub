@@ -127,6 +127,8 @@
   "sourceLanguages": "Idiomes",
   "sourceWebsite": "Web",
   "directoryTitle": "Col·lectius",
+  "colectivosTabNoticias": "Notícies",
+  "colectivosTabDirectorio": "Directori",
   "directoryEmpty": "Encara no hi ha col·lectius verificats en aquesta instància.",
   "directoryAddCta": "El teu col·lectiu no hi és? Afegeix-lo",
   "collectiveMediaTitle": "Mitjans que edita",

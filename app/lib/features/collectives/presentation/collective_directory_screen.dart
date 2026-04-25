@@ -4,21 +4,165 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/api_provider.dart';
+import '../../movimientos/data/movimientos_provider.dart';
 import '../data/colectivos_directorio_notifier.dart';
 import '../data/filtros_colectivos.dart';
 import 'collective_card.dart';
 
-/// Directorio filtrable de colectivos verificados.
-/// Mismo patrón que el feed (AsyncNotifier, scroll infinito, pull-to-refresh),
-/// más un bottom sheet con los filtros para no consumir una ruta aparte.
-class CollectiveDirectoryScreen extends ConsumerStatefulWidget {
+/// Pestaña "Colectivos" del shell. Tiene dos subsecciones:
+///  1. Noticias — items de fuentes marcadas como "voz de movimiento" y
+///     colectivos. Antes esta sección sólo era accesible desde Ajustes
+///     y la mayoría de usuarios no la descubría.
+///  2. Directorio — listado filtrable de colectivos verificados (lo
+///     que ocupaba toda esta pantalla antes).
+///
+/// El `DefaultTabController` mantiene la sub-pestaña activa mientras
+/// el usuario navega dentro del shell; al salir y volver a la tab
+/// Colectivos resetea a la primera (Noticias).
+class CollectiveDirectoryScreen extends StatelessWidget {
   const CollectiveDirectoryScreen({super.key});
 
   @override
-  ConsumerState<CollectiveDirectoryScreen> createState() => _EstadoDirectorio();
+  Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(textos.directoryTitle),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: textos.searchTooltip,
+              onPressed: () => context.push('/search'),
+            ),
+          ],
+          bottom: TabBar(
+            tabs: [
+              Tab(text: textos.colectivosTabNoticias),
+              Tab(text: textos.colectivosTabDirectorio),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            _TabNoticiasMovimientos(),
+            _TabDirectorioColectivos(),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _EstadoDirectorio extends ConsumerState<CollectiveDirectoryScreen> {
+/// Subpestaña "Noticias": items de fuentes marcadas como movimiento.
+/// Replica la pantalla `/movimientos` pero sin AppBar propio (vive
+/// dentro del Scaffold del Shell). Pull-to-refresh respeta el provider
+/// del feed de movimientos.
+class _TabNoticiasMovimientos extends ConsumerWidget {
+  const _TabNoticiasMovimientos();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textos = AppLocalizations.of(context);
+    final asyncItems = ref.watch(feedMovimientosProvider);
+    return RefreshIndicator(
+      onRefresh: () async => ref.invalidate(feedMovimientosProvider),
+      child: asyncItems.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            const SizedBox(height: 120),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const Icon(Icons.error_outline, size: 48),
+                  const SizedBox(height: 12),
+                  Text(e.toString(), textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+          ],
+        ),
+        data: (items) {
+          if (items.isEmpty) {
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                const SizedBox(height: 120),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.campaign_outlined,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        textos.movimientosEmpty,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            itemCount: items.length + 1,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, indice) {
+              if (indice == 0) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    textos.movimientosSubtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                );
+              }
+              final item = items[indice - 1];
+              final fuente = item.source?.name ?? '';
+              return ListTile(
+                title: Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: fuente.isEmpty
+                    ? null
+                    : Text(fuente, maxLines: 1, overflow: TextOverflow.ellipsis),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/items/${item.id}'),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Subpestaña "Directorio": listado filtrable de colectivos verificados.
+/// Mismo patrón que el feed principal — AsyncNotifier, scroll infinito,
+/// pull-to-refresh, bottom sheet con filtros.
+class _TabDirectorioColectivos extends ConsumerStatefulWidget {
+  const _TabDirectorioColectivos();
+
+  @override
+  ConsumerState<_TabDirectorioColectivos> createState() => _EstadoDirectorio();
+}
+
+class _EstadoDirectorio extends ConsumerState<_TabDirectorioColectivos> {
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -43,44 +187,42 @@ class _EstadoDirectorio extends ConsumerState<CollectiveDirectoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textos = AppLocalizations.of(context);
     final asyncEstado = ref.watch(colectivosDirectorioProvider);
     final filtros = ref.watch(filtrosColectivosProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(textos.directoryTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: textos.searchTooltip,
-            onPressed: () => context.push('/search'),
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: () => ref.read(colectivosDirectorioProvider.notifier).refrescar(),
+          child: asyncEstado.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _PantallaErrorDirectorio(
+              mensaje: error.toString(),
+              onReintentar: () =>
+                  ref.read(colectivosDirectorioProvider.notifier).refrescar(),
+            ),
+            data: (estado) => _ContenidoDirectorio(
+              estado: estado,
+              controller: _scrollController,
+            ),
           ),
-          IconButton(
-            icon: Badge(
+        ),
+        // FAB pequeño bottom-right para abrir filtros: aparece sólo en
+        // esta tab, no contamina el AppBar global del Shell.
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton.small(
+            heroTag: 'fab-filtros-colectivos',
+            tooltip: AppLocalizations.of(context).filtersTitle,
+            onPressed: () => _abrirFiltros(context),
+            child: Badge(
               isLabelVisible: !filtros.estaVacio,
               child: const Icon(Icons.tune),
             ),
-            tooltip: textos.filtersTitle,
-            onPressed: () => _abrirFiltros(context),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(colectivosDirectorioProvider.notifier).refrescar(),
-        child: asyncEstado.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _PantallaErrorDirectorio(
-            mensaje: error.toString(),
-            onReintentar: () =>
-                ref.read(colectivosDirectorioProvider.notifier).refrescar(),
-          ),
-          data: (estado) => _ContenidoDirectorio(
-            estado: estado,
-            controller: _scrollController,
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -132,7 +274,7 @@ class _ContenidoDirectorio extends ConsumerWidget {
 
     return ListView.separated(
       controller: controller,
-      padding: const EdgeInsets.only(top: 4, bottom: 16),
+      padding: const EdgeInsets.only(top: 4, bottom: 80),
       itemCount: estado.items.length + 2, // +1 pie paginado, +1 CTA final
       separatorBuilder: (_, indice) => const Divider(height: 1),
       itemBuilder: (context, indice) {

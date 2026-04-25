@@ -127,6 +127,8 @@
   "sourceLanguages": "Languages",
   "sourceWebsite": "Website",
   "directoryTitle": "Collectives",
+  "colectivosTabNoticias": "News",
+  "colectivosTabDirectorio": "Directory",
   "directoryEmpty": "No verified collectives yet in this instance.",
   "directoryAddCta": "Is your collective missing? Add it",
   "collectiveMediaTitle": "Media edited by this collective",

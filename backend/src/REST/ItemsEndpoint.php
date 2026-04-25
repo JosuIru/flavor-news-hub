@@ -288,13 +288,22 @@ final class ItemsEndpoint
                 ];
             }
         }
-        // Restringimos SIEMPRE a sources activos: un medio desactivado no
-        // debe seguir reapareciendo por `/items?territory=…`, etc. Antes
-        // se filtraba en `/sources` pero no en `/items` — inconsistencia
-        // que rompía la expectativa del consumidor.
+        // Restringimos SIEMPRE a sources activos. Política permisiva
+        // igual que `idsDeSourcesActivos`: '1' explícito *o* meta no
+        // escrita (default true). Antes este filtro era sólo por '1'
+        // y descartaba sources del seed recién importadas que aún no
+        // habían pasado por el admin — el feed las dejaba sin items.
         $metaQuery[] = [
-            'key'   => '_fnh_active',
-            'value' => '1',
+            'relation' => 'OR',
+            [
+                'key'     => '_fnh_active',
+                'value'   => '1',
+                'compare' => '=',
+            ],
+            [
+                'key'     => '_fnh_active',
+                'compare' => 'NOT EXISTS',
+            ],
         ];
         $consulta = new \WP_Query([
             'post_type'      => Source::SLUG,
@@ -319,16 +328,32 @@ final class ItemsEndpoint
         if ($cache !== null) {
             return $cache;
         }
+        // Política permisiva: una source se considera activa si tiene
+        // `_fnh_active = '1'` *o* si no tiene la meta escrita (default
+        // `true` del schema de register_post_meta). Antes filtrábamos
+        // sólo por '1' explícito y dejábamos fuera fuentes recién
+        // importadas vía seed que aún no habían pasado por el admin —
+        // el endpoint devolvía lista vacía cuando se pedía
+        // `?source=N` para una de esas. Misma lógica que
+        // FeedIngester::obtenerIdsFuentesActivas.
         $consulta = new \WP_Query([
             'post_type'      => Source::SLUG,
             'post_status'    => 'publish',
             'posts_per_page' => -1,
             'fields'         => 'ids',
             'no_found_rows'  => true,
-            'meta_query'     => [[
-                'key'   => '_fnh_active',
-                'value' => '1',
-            ]],
+            'meta_query'     => [
+                'relation' => 'OR',
+                [
+                    'key'     => '_fnh_active',
+                    'value'   => '1',
+                    'compare' => '=',
+                ],
+                [
+                    'key'     => '_fnh_active',
+                    'compare' => 'NOT EXISTS',
+                ],
+            ],
         ]);
         $cache = array_map('intval', $consulta->posts);
         return $cache;
