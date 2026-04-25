@@ -22,6 +22,24 @@ final class FeedIngester
     private const DURACION_LOCK_SEGUNDOS = 5 * MINUTE_IN_SECONDS;
 
     /**
+     * Dominios cuyo certificado TLS está mal configurado del lado del
+     * servidor (cadena incompleta, autofirmado, expirado…) y que
+     * fallan con `cURL error 60: SSL certificate problem` aunque el
+     * feed sea legítimo y público. Para estos saltamos la verificación
+     * SSL — el riesgo de MITM es bajo en feeds RSS sin auth y la
+     * alternativa es renunciar al contenido.
+     *
+     * Lista mantenida a mano. El admin puede ampliar via filtro
+     * `fnh_dominios_ssl_bypass`.
+     */
+    private const DOMINIOS_SSL_BYPASS = [
+        // Cadena incompleta: las 5 radios indígenas mexicanas del INPI
+        // (Voz de la Mixteca, de la Montaña, de las Huastecas, del
+        // Valle, de los Vientos, de los Mayas, de los Vientos…).
+        'ecos.inpi.gob.mx',
+    ];
+
+    /**
      * Punto de entrada para cron y para disparo manual sin argumentos.
      *
      * @return array{
@@ -137,6 +155,14 @@ final class FeedIngester
             }
             return $args;
         };
+        // SSL bypass por dominio: si el feed actual está en la lista de
+        // dominios con cert problemático, desactivamos la verificación
+        // sólo para ESA petición.
+        $hostFeed = strtolower((string) wp_parse_url($urlFeed, PHP_URL_HOST));
+        $bypassSsl = self::dominioRequiereBypassSsl($hostFeed);
+        $filtroSslVerify = $bypassSsl
+            ? static fn(bool $verificar, string $urlSolicitada): bool => false
+            : null;
         // WordPress cachea los feeds 12h por defecto (vía
         // wp_feed_cache_transient_lifetime), lo que para un agregador de
         // noticias en vivo es inaceptable: aunque el cron dispare cada
@@ -149,6 +175,10 @@ final class FeedIngester
         add_action('wp_feed_options', $filtroAjustesFeed);
         add_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         add_filter('http_request_args', $filtroTimeoutHttp);
+        if ($filtroSslVerify !== null) {
+            add_filter('https_ssl_verify', $filtroSslVerify, 10, 2);
+            add_filter('https_local_ssl_verify', $filtroSslVerify, 10, 2);
+        }
         // Invalida el transient específico de este feed antes de
         // descargarlo. Crítico en sitios con object-cache externo
         // (Redis, Memcached) donde el transient vive fuera de wp_options
@@ -162,6 +192,10 @@ final class FeedIngester
         delete_transient('feed_' . $hashFeed);
         delete_transient('feed_mod_' . $hashFeed);
         $feedDescargado = fetch_feed($urlFeed);
+        if ($filtroSslVerify !== null) {
+            remove_filter('https_ssl_verify', $filtroSslVerify, 10);
+            remove_filter('https_local_ssl_verify', $filtroSslVerify, 10);
+        }
         remove_filter('http_request_args', $filtroTimeoutHttp);
         remove_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         remove_action('wp_feed_options', $filtroAjustesFeed);
@@ -239,6 +273,28 @@ final class FeedIngester
      *
      * @return list<int>
      */
+    /**
+     * Decide si un host concreto debe saltarse la verificación TLS.
+     * Match exacto o por sufijo (`.dominio`) — así un subdominio nuevo
+     * de un host ya conocido se cubre sin tocar la lista. Filtrable
+     * para que un sitio pueda ampliar la lista sin parchear el código.
+     */
+    private static function dominioRequiereBypassSsl(string $host): bool
+    {
+        $host = trim($host, '.');
+        if ($host === '') {
+            return false;
+        }
+        $dominios = (array) apply_filters('fnh_dominios_ssl_bypass', self::DOMINIOS_SSL_BYPASS);
+        foreach ($dominios as $dominio) {
+            $dominio = strtolower(trim((string) $dominio, '.'));
+            if ($dominio === '') continue;
+            if ($host === $dominio) return true;
+            if (str_ends_with($host, '.' . $dominio)) return true;
+        }
+        return false;
+    }
+
     private static function obtenerIdsFuentesActivas(): array
     {
         $consulta = new \WP_Query([
