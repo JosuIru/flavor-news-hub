@@ -126,8 +126,21 @@ int prioridadLocal({
 /// un boost suave (0.85) para que no queden ocultos por agregadores
 /// prolíficos, incluso sin territorio base.
 ///
+/// Tras el sort por fecha efectiva, aplica una diversificación
+/// anti-monopolio que evita que un agregador prolífico (ej. un canal
+/// que publica 30 items/día) tape al resto: si hay más de
+/// `maxConsecutivosPorFuente` items consecutivos de la misma source,
+/// se intercala uno de otra fuente con fecha cercana. El orden
+/// cronológico global se respeta razonablemente — esto sólo afecta
+/// al desempate dentro de ventanas de minutos/horas, no rompe la
+/// linealidad temporal de horas/días.
+///
 /// Muta la lista in-place (igual que `List.sort`).
-void ordenarItemsLocalPrimero(List<Item> items, String territorioBase) {
+void ordenarItemsLocalPrimero(
+  List<Item> items,
+  String territorioBase, {
+  int maxConsecutivosPorFuente = 2,
+}) {
   final ahora = DateTime.now();
   DateTime efectiva(Item it) => fechaEfectivaLocal(
         publishedAt: DateTime.tryParse(it.publishedAt) ??
@@ -141,4 +154,47 @@ void ordenarItemsLocalPrimero(List<Item> items, String territorioBase) {
         ahora: ahora,
       );
   items.sort((a, b) => efectiva(b).compareTo(efectiva(a)));
+  if (maxConsecutivosPorFuente > 0 &&
+      items.length > maxConsecutivosPorFuente + 1) {
+    _diversificarPorFuente(items, maxConsecutivosPorFuente);
+  }
+}
+
+/// Reordena la lista YA ordenada por fecha de modo que ninguna fuente
+/// aparezca más de [maxConsecutivos] veces seguidas. Usa una pasada
+/// lineal con un buffer de "siguiente candidato" — si el siguiente en
+/// la cola pendiente romper la regla, se promociona al primero
+/// posterior con source distinta. Resto del orden se respeta.
+void _diversificarPorFuente(List<Item> items, int maxConsecutivos) {
+  if (items.length <= maxConsecutivos + 1) return;
+  final pendientes = List<Item>.from(items);
+  items.clear();
+  while (pendientes.isNotEmpty) {
+    int idxElegido = 0;
+    if (items.length >= maxConsecutivos) {
+      // Si los últimos N items son de la misma fuente, buscamos el
+      // primer pendiente con source distinta. Si no existe, dejamos
+      // el natural — el cluster es inevitable porque el resto del
+      // feed también es de esa fuente.
+      final referencia = items[items.length - 1].source?.id;
+      bool todosIguales = referencia != null;
+      if (todosIguales) {
+        for (int i = items.length - maxConsecutivos; i < items.length; i++) {
+          if (items[i].source?.id != referencia) {
+            todosIguales = false;
+            break;
+          }
+        }
+      }
+      if (todosIguales) {
+        for (int i = 0; i < pendientes.length; i++) {
+          if (pendientes[i].source?.id != referencia) {
+            idxElegido = i;
+            break;
+          }
+        }
+      }
+    }
+    items.add(pendientes.removeAt(idxElegido));
+  }
 }

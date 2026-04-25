@@ -117,9 +117,25 @@ final class FeedIngester
         // bloquean con HTTP 400. Ponemos uno identificable mientras corre
         // fetch_feed y lo retiramos justo después para no afectar a otros
         // plugins que también usen `fetch_feed` durante la misma request.
+        // Timeout 25s (antes 15s): muchos servidores latinoamericanos y
+        // de webs autohospedadas tardan más de 10s en handshake TLS y
+        // caían sistemáticamente con "cURL error 28" antes de que diera
+        // tiempo a leer el feed. 25s sigue siendo razonable para no
+        // bloquear la ingesta global cuando un dominio está caído.
         $filtroAjustesFeed = static function (\SimplePie $feed): void {
             $feed->set_useragent('FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)');
-            $feed->set_timeout(15);
+            $feed->set_timeout(25);
+        };
+        // Algunas rutas internas de SimplePie / WordPress usan `WP_Http`
+        // y NO el timeout de SimplePie (head request, image probing). Para
+        // que esas también respeten el límite generoso, subimos el
+        // timeout de `WP_Http` durante la ingesta y lo restauramos
+        // después en el `finally`.
+        $filtroTimeoutHttp = static function (array $args): array {
+            if (!isset($args['timeout']) || (int) $args['timeout'] < 25) {
+                $args['timeout'] = 25;
+            }
+            return $args;
         };
         // WordPress cachea los feeds 12h por defecto (vía
         // wp_feed_cache_transient_lifetime), lo que para un agregador de
@@ -132,6 +148,7 @@ final class FeedIngester
         $filtroTtlCache = static fn(int $segundos): int => 10 * MINUTE_IN_SECONDS;
         add_action('wp_feed_options', $filtroAjustesFeed);
         add_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
+        add_filter('http_request_args', $filtroTimeoutHttp);
         // Invalida el transient específico de este feed antes de
         // descargarlo. Crítico en sitios con object-cache externo
         // (Redis, Memcached) donde el transient vive fuera de wp_options
@@ -145,6 +162,7 @@ final class FeedIngester
         delete_transient('feed_' . $hashFeed);
         delete_transient('feed_mod_' . $hashFeed);
         $feedDescargado = fetch_feed($urlFeed);
+        remove_filter('http_request_args', $filtroTimeoutHttp);
         remove_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         remove_action('wp_feed_options', $filtroAjustesFeed);
         if (is_wp_error($feedDescargado)) {
