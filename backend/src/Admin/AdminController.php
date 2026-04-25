@@ -5,10 +5,12 @@ namespace FlavorNewsHub\Admin;
 
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\CPT\Collective;
+use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\Admin\Menu;
 use FlavorNewsHub\Admin\MetaBoxes\SourceMetaBox;
 use FlavorNewsHub\Admin\MetaBoxes\ItemMetaBox;
 use FlavorNewsHub\Admin\MetaBoxes\CollectiveMetaBox;
+use FlavorNewsHub\Admin\MetaBoxes\RadioMetaBox;
 use FlavorNewsHub\Admin\Actions\IngestNowHandler;
 use FlavorNewsHub\Admin\Actions\CrearPaginasHandler;
 use FlavorNewsHub\Admin\Actions\VerifyCollectivesBulk;
@@ -36,10 +38,12 @@ final class AdminController
         add_action('add_meta_boxes', [SourceMetaBox::class, 'registrar']);
         add_action('add_meta_boxes', [ItemMetaBox::class, 'registrar']);
         add_action('add_meta_boxes', [CollectiveMetaBox::class, 'registrar']);
+        add_action('add_meta_boxes', [RadioMetaBox::class, 'registrar']);
 
         // Guardado de metaboxes.
         add_action('save_post_' . Source::SLUG, [SourceMetaBox::class, 'guardar'], 10, 2);
         add_action('save_post_' . Collective::SLUG, [CollectiveMetaBox::class, 'guardar'], 10, 2);
+        add_action('save_post_' . Radio::SLUG, [RadioMetaBox::class, 'guardar'], 10, 2);
 
         // Defaults de source: se aplican DESPUÉS del save del metabox.
         add_action('save_post_' . Source::SLUG, [SourceDefaults::class, 'aplicarDefaults'], 20, 2);
