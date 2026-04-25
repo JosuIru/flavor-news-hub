@@ -67,7 +67,7 @@
   "feedLoading": "S'estan carregant els titulars…",
   "feedError": "No s'ha pogut carregar el canal.",
   "filtersTitle": "Filtres",
-  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
+  "filterTopicsOffline": "Sense connexió amb el servidor: les temàtiques no estan disponibles. Torna-ho a provar quan tinguis cobertura.",
   "filterByTopic": "Per temàtica",
   "filterByTerritory": "Per territori",
   "filterByLanguage": "Per idioma",

@@ -95,27 +95,42 @@ final class Activator
         if (get_option($claveFlag) === 'done') {
             return;
         }
-        global $wpdb;
-        // Slug del CPT Item en runtime. Evitamos import para no acoplar.
-        $tabla = $wpdb->postmeta;
-        // Buscamos items sin el nuevo meta y con el antiguo presente.
-        $filas = $wpdb->get_results(
-            "SELECT pm1.post_id AS id, pm1.meta_value AS iso
-             FROM {$tabla} pm1
-             LEFT JOIN {$tabla} pm2
-               ON pm2.post_id = pm1.post_id
-              AND pm2.meta_key = '_fnh_published_at_ts'
-             WHERE pm1.meta_key = '_fnh_published_at'
-               AND pm2.meta_id IS NULL
-             LIMIT 5000"
-        );
-        foreach ($filas as $fila) {
-            $ts = (int) strtotime((string) $fila->iso);
-            if ($ts > 0) {
-                update_post_meta((int) $fila->id, '_fnh_published_at_ts', $ts);
-            }
+        // Lock atómico: `add_option` falla si la option ya existe — así que
+        // si dos requests entran aquí en paralelo, sólo uno consigue el
+        // lock y ejecuta la migración. El otro sale sin tocar nada y
+        // reintentará en el siguiente init si la migración aún no
+        // terminó. Sin esto, dos requests concurrentes ejecutaban la
+        // misma migración a la vez (idempotente, pero ineficiente y
+        // mal patrón si futuras migraciones no son idempotentes).
+        $claveLock = $claveFlag . '_lock';
+        if (!add_option($claveLock, (string) time(), '', 'no')) {
+            return;
         }
-        update_option($claveFlag, 'done', false);
+        try {
+            global $wpdb;
+            // Slug del CPT Item en runtime. Evitamos import para no acoplar.
+            $tabla = $wpdb->postmeta;
+            // Buscamos items sin el nuevo meta y con el antiguo presente.
+            $filas = $wpdb->get_results(
+                "SELECT pm1.post_id AS id, pm1.meta_value AS iso
+                 FROM {$tabla} pm1
+                 LEFT JOIN {$tabla} pm2
+                   ON pm2.post_id = pm1.post_id
+                  AND pm2.meta_key = '_fnh_published_at_ts'
+                 WHERE pm1.meta_key = '_fnh_published_at'
+                   AND pm2.meta_id IS NULL
+                 LIMIT 5000"
+            );
+            foreach ($filas as $fila) {
+                $ts = (int) strtotime((string) $fila->iso);
+                if ($ts > 0) {
+                    update_post_meta((int) $fila->id, '_fnh_published_at_ts', $ts);
+                }
+            }
+            update_option($claveFlag, 'done', false);
+        } finally {
+            delete_option($claveLock);
+        }
     }
 
     public static function precargarTematicasCanonicas(): void

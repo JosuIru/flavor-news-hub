@@ -48,6 +48,11 @@ final class DiagnosticsEndpoint
         );
 
         // Últimos 10 logs: status + items + error si hubo.
+        // Usamos `source_id` internamente para resolver el nombre, pero NO
+        // lo exponemos en el payload — el endpoint es público y el id es
+        // un identificador estable que permitiría rastrear cambios sobre
+        // una fuente concreta. El nombre legible es suficiente para
+        // diagnóstico y ya está accesible en `/sources`.
         $ultimos = $wpdb->get_results(
             "SELECT source_id, status, started_at, finished_at, items_new, items_skipped, error_message
              FROM {$nombreTabla}
@@ -57,13 +62,11 @@ final class DiagnosticsEndpoint
         );
         $ultimos = is_array($ultimos) ? $ultimos : [];
         foreach ($ultimos as &$log) {
-            // Resolvemos el nombre del source para que el diagnóstico sea
-            // legible sin tener que cruzar IDs contra /sources.
             $idSource = (int) ($log['source_id'] ?? 0);
             $log['source_name'] = $idSource > 0
                 ? (string) (get_the_title($idSource) ?: '')
                 : '';
-            $log['source_id'] = $idSource;
+            unset($log['source_id']);
             // Castear a int los contadores — $wpdb los devuelve como
             // string por defecto y en JSON quedaban como "0" vs 0, feo.
             $log['items_new'] = (int) ($log['items_new'] ?? 0);

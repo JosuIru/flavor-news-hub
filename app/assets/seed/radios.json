@@ -524,5 +524,104 @@
     "languages": [
       "es"
     ]
+  },
+  {
+    "id": 7013,
+    "name": "Bilbo Hiria Irratia",
+    "slug": "bilbo-hiria-irratia",
+    "stream_url": "https://server8.emitironline.com:18392/stream",
+    "website_url": "https://www.bilbohiria.eus",
+    "rss_url": "",
+    "territory": "Bizkaia",
+    "languages": [
+      "eu"
+    ]
+  },
+  {
+    "id": 7014,
+    "name": "Antxeta Irratia",
+    "slug": "antxeta-irratia",
+    "stream_url": "https://streaming.antxetamedia.eus:8443/antxeta1",
+    "website_url": "https://antxetamedia.eus",
+    "rss_url": "",
+    "territory": "Gipuzkoa",
+    "languages": [
+      "eu"
+    ]
+  },
+  {
+    "id": 7015,
+    "name": "Xorroxin Irratia",
+    "slug": "xorroxin-irratia",
+    "stream_url": "https://xorroxinirratia.streaming-pro.com:6002/xorroxinirratia.mp3",
+    "website_url": "https://erran.eus/irratia/",
+    "rss_url": "",
+    "territory": "Nafarroa",
+    "languages": [
+      "eu"
+    ],
+    "support_url": "https://erran.eus/bazkidetu/"
+  },
+  {
+    "id": 7016,
+    "name": "NAIZ Irratia",
+    "slug": "naiz-irratia",
+    "stream_url": "https://zuzenean.naizirratia.eus/naiz_irratia.mp3",
+    "website_url": "https://irratia.naiz.eus/eu",
+    "rss_url": "",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "support_url": "https://irratia.naiz.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Firratia.naiz.eus%2Feu"
+  },
+  {
+    "id": 7017,
+    "name": "Arraio Irratia",
+    "slug": "arraio-irratia",
+    "stream_url": "https://irratia.arraio.eus/irratia.ogg",
+    "website_url": "https://www.arraio.eus",
+    "rss_url": "",
+    "territory": "Gipuzkoa",
+    "languages": [
+      "eu"
+    ]
+  },
+  {
+    "id": 7018,
+    "name": "Xiberoko Botza",
+    "slug": "xiberoko-botza",
+    "stream_url": "https://hosting.studioradiomedia.fr:2975/stream",
+    "website_url": "https://xiberokobotza.eus",
+    "rss_url": "",
+    "territory": "Iparralde",
+    "languages": [
+      "eu"
+    ]
+  },
+  {
+    "id": 7019,
+    "name": "97 Irratia",
+    "slug": "97-irratia",
+    "stream_url": "https://airtime.97irratia.info/radio-ssl.mp3",
+    "website_url": "https://www.97irratia.info",
+    "rss_url": "",
+    "territory": "Bizkaia",
+    "languages": [
+      "eu"
+    ],
+    "support_url": "https://97irratia.info/colabora/"
+  },
+  {
+    "id": 7020,
+    "name": "Euskal Irratiak",
+    "slug": "euskal-irratiak",
+    "stream_url": "https://hosting.studioradiomedia.fr:1345/stream",
+    "website_url": "https://euskalirratiak.eus",
+    "rss_url": "",
+    "territory": "Iparralde",
+    "languages": [
+      "eu"
+    ]
   }
 ]

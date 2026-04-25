@@ -127,7 +127,7 @@
   "feedLoading": "Titularrak kargatzen…",
   "feedError": "Ezin izan da jarioa kargatu.",
   "filtersTitle": "Iragazkiak",
-  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
+  "filterTopicsOffline": "Zerbitzariarekin konexiorik ez: gaiak ez daude eskuragarri. Saiatu berriro estaldura duzunean.",
   "filterByTopic": "Gaiaren arabera",
   "filterByTerritory": "Lurraldearen arabera",
   "filterByLanguage": "Hizkuntzaren arabera",

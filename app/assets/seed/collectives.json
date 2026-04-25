@@ -955,6 +955,744 @@
   },
   {
     "id": 6235,
+    "name": "Euskal Herriko Bilgune Feminista",
+    "slug": "bilgune-feminista",
+    "description": "<p>Movimiento feminista de Euskal Herria, organizado en grupos locales por todo el territorio, articulado en torno a la soberanía feminista y el euskera.</p>\n",
+    "url": "http://localhost:10028/c/bilgune-feminista/",
+    "website_url": "https://bilgunefeminista.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 62,
+        "name": "Feminismos",
+        "slug": "feminismos"
+      },
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      }
+    ]
+  },
+  {
+    "id": 6236,
+    "name": "Etxerat",
+    "slug": "etxerat",
+    "description": "<p>Asociación de familiares de presas y presos políticos vascos, refugiadas y deportadas. Trabaja por sus derechos y el acercamiento al territorio.</p>\n",
+    "url": "http://localhost:10028/c/etxerat/",
+    "website_url": "https://www.etxerat.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      },
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      }
+    ]
+  },
+  {
+    "id": 6237,
+    "name": "Sare",
+    "slug": "sare",
+    "description": "<p>Red ciudadana por los derechos de las personas presas y exiliadas vascas; promueve el reconocimiento, la convivencia y la resolución del conflicto.</p>\n",
+    "url": "http://localhost:10028/c/sare/",
+    "website_url": "https://www.sare.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      },
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      }
+    ],
+    "support_url": "https://sare.eus/bazkidetu/"
+  },
+  {
+    "id": 6238,
+    "name": "Euskal Memoria Fundazioa",
+    "slug": "euskal-memoria",
+    "description": "<p>Fundación dedicada a recopilar, custodiar y difundir la memoria histórica de Euskal Herria, especialmente la represión sufrida por la sociedad vasca.</p>\n",
+    "url": "http://localhost:10028/c/euskal-memoria/",
+    "website_url": "https://www.euskalmemoria.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      },
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      }
+    ],
+    "support_url": "https://www.euskalmemoria.eus/eu/Babestu"
+  },
+  {
+    "id": 6239,
+    "name": "Egiari Zor Fundazioa",
+    "slug": "egiari-zor",
+    "description": "<p>Fundación que trabaja por la verdad, justicia y reparación de las víctimas de la violencia política, especialmente las causadas por agentes del Estado.</p>\n",
+    "url": "http://localhost:10028/c/egiari-zor/",
+    "website_url": "https://www.egiarizor.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      },
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      }
+    ]
+  },
+  {
+    "id": 6240,
+    "name": "Aranzadi Zientzia Elkartea",
+    "slug": "aranzadi",
+    "description": "<p>Sociedad de ciencias histórica de Euskal Herria, referente en exhumaciones de la Guerra Civil, arqueología, antropología y memoria histórica.</p>\n",
+    "url": "http://localhost:10028/c/aranzadi/",
+    "website_url": "https://www.aranzadi.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      },
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      }
+    ]
+  },
+  {
+    "id": 6241,
+    "name": "LAB Sindikatua",
+    "slug": "lab-sindikatua",
+    "description": "<p>Sindicato sociopolítico de Euskal Herria por la soberanía social, los derechos laborales y la transformación del modelo productivo.</p>\n",
+    "url": "http://localhost:10028/c/lab-sindikatua/",
+    "website_url": "https://www.lab.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 61,
+        "name": "Laboral",
+        "slug": "laboral"
+      },
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      }
+    ]
+  },
+  {
+    "id": 6242,
+    "name": "ELA Sindikatua",
+    "slug": "ela-sindikatua",
+    "description": "<p>Sindicato mayoritario en Hego Euskal Herria, organiza al conjunto de la clase trabajadora y promueve un marco vasco de relaciones laborales.</p>\n",
+    "url": "http://localhost:10028/c/ela-sindikatua/",
+    "website_url": "https://www.ela.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 61,
+        "name": "Laboral",
+        "slug": "laboral"
+      }
+    ]
+  },
+  {
+    "id": 6243,
+    "name": "Steilas",
+    "slug": "steilas",
+    "description": "<p>Sindicato del sector educativo público vasco; defiende una escuela pública, vasca, laica y feminista.</p>\n",
+    "url": "http://localhost:10028/c/steilas/",
+    "website_url": "https://steilas.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 61,
+        "name": "Laboral",
+        "slug": "laboral"
+      },
+      {
+        "id": 73,
+        "name": "Educación",
+        "slug": "educacion"
+      }
+    ]
+  },
+  {
+    "id": 6244,
+    "name": "EHNE Bizkaia",
+    "slug": "ehne-bizkaia",
+    "description": "<p>Sindicato de baserritarras de Bizkaia. Defiende la soberanía alimentaria, la agroecología y un modelo agrario campesino.</p>\n",
+    "url": "http://localhost:10028/c/ehne-bizkaia/",
+    "website_url": "https://ehnebizkaia.eus/",
+    "flavor_url": "",
+    "territory": "Bizkaia",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 84,
+        "name": "Alimentación",
+        "slug": "alimentacion"
+      },
+      {
+        "id": 75,
+        "name": "Rural",
+        "slug": "rural"
+      },
+      {
+        "id": 61,
+        "name": "Laboral",
+        "slug": "laboral"
+      }
+    ],
+    "support_url": "https://www.ehnebizkaia.eus/suscripcion-etxalde"
+  },
+  {
+    "id": 6245,
+    "name": "AEK",
+    "slug": "aek",
+    "description": "<p>Coordinadora de alfabetización y euskaldunización; principal red de euskaltegis populares de Euskal Herria. Organiza la Korrika cada dos años.</p>\n",
+    "url": "http://localhost:10028/c/aek/",
+    "website_url": "https://www.aek.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 73,
+        "name": "Educación",
+        "slug": "educacion"
+      },
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      }
+    ]
+  },
+  {
+    "id": 6246,
+    "name": "Euskaltzaleen Topagunea",
+    "slug": "topagunea",
+    "description": "<p>Federación de asociaciones de euskera (euskara elkarteak) que trabajan a pie de calle por el uso del idioma en cada pueblo y barrio.</p>\n",
+    "url": "http://localhost:10028/c/topagunea/",
+    "website_url": "https://www.topagunea.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      }
+    ]
+  },
+  {
+    "id": 6247,
+    "name": "Kontseilua",
+    "slug": "kontseilua",
+    "description": "<p>Consejo de Organismos Sociales del Euskera que articula la respuesta de la sociedad civil vasca por los derechos lingüísticos.</p>\n",
+    "url": "http://localhost:10028/c/kontseilua/",
+    "website_url": "https://kontseilua.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      }
+    ],
+    "support_url": "https://kontseilua.eus/harpidetu-buletinera/"
+  },
+  {
+    "id": 6248,
+    "name": "UEMA - Udalerri Euskaldunen Mankomunitatea",
+    "slug": "uema",
+    "description": "<p>Mancomunidad de municipios euskaldunes; agrupa a los ayuntamientos donde el euskera es la lengua mayoritaria de la sociedad y promueve políticas públicas en su favor.</p>\n",
+    "url": "http://localhost:10028/c/uema/",
+    "website_url": "https://www.uema.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 75,
+        "name": "Rural",
+        "slug": "rural"
+      }
+    ]
+  },
+  {
+    "id": 6249,
+    "name": "Gure Esku",
+    "slug": "gure-esku",
+    "description": "<p>Movimiento popular por el derecho a decidir de Euskal Herria. Organiza dinámicas territoriales y campañas para reivindicar la palabra de las vascas y los vascos.</p>\n",
+    "url": "http://localhost:10028/c/gure-esku/",
+    "website_url": "https://guresku.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      },
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      }
+    ]
+  },
+  {
+    "id": 6250,
+    "name": "Ekologistak Martxan",
+    "slug": "ekologistak-martxan",
+    "description": "<p>Confederación ecologista de Euskal Herria. Trabaja en defensa del territorio, contra macroproyectos y por la transición ecosocial.</p>\n",
+    "url": "http://localhost:10028/c/ekologistak-martxan/",
+    "website_url": "https://ekologistakmartxan.org/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 71,
+        "name": "Ecologismo",
+        "slug": "ecologismo"
+      },
+      {
+        "id": 75,
+        "name": "Rural",
+        "slug": "rural"
+      }
+    ],
+    "support_url": "https://ekologistakmartxan.org/eu/participa/asociate/"
+  },
+  {
+    "id": 6251,
+    "name": "Eguzki Taldea",
+    "slug": "eguzki-taldea",
+    "description": "<p>Grupo ecologista navarro, referente histórico de la lucha en defensa del territorio en Nafarroa, vinculado a la radio libre Eguzki Irratia.</p>\n",
+    "url": "http://localhost:10028/c/eguzki-taldea/",
+    "website_url": "https://eguzki.eus/",
+    "flavor_url": "",
+    "territory": "Nafarroa",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 71,
+        "name": "Ecologismo",
+        "slug": "ecologismo"
+      }
+    ]
+  },
+  {
+    "id": 6252,
+    "name": "Sustrai Erakuntza",
+    "slug": "sustrai-erakuntza",
+    "description": "<p>Fundación navarra de defensa del territorio. Vigilancia de macroproyectos, soberanía alimentaria y modelo energético desde Nafarroa.</p>\n",
+    "url": "http://localhost:10028/c/sustrai-erakuntza/",
+    "website_url": "https://www.sustraierakuntza.org/",
+    "flavor_url": "",
+    "territory": "Nafarroa",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 71,
+        "name": "Ecologismo",
+        "slug": "ecologismo"
+      },
+      {
+        "id": 75,
+        "name": "Rural",
+        "slug": "rural"
+      },
+      {
+        "id": 84,
+        "name": "Alimentación",
+        "slug": "alimentacion"
+      }
+    ]
+  },
+  {
+    "id": 6253,
+    "name": "Bizi!",
+    "slug": "bizi",
+    "description": "<p>Movimiento ciudadano vasco por la justicia social y climática en Iparralde. Acciones de desobediencia civil, transición ecológica y empleo local.</p>\n",
+    "url": "http://localhost:10028/c/bizi/",
+    "website_url": "https://bizimugi.eu/",
+    "flavor_url": "",
+    "territory": "Iparralde",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 71,
+        "name": "Ecologismo",
+        "slug": "ecologismo"
+      },
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      }
+    ],
+    "support_url": "https://bizimugi.eu/adherer/"
+  },
+  {
+    "id": 6254,
+    "name": "Aldarte",
+    "slug": "aldarte",
+    "description": "<p>Centro de atención y servicios para gais, lesbianas, bisexuales y trans en Bilbao. Sensibilización, formación e investigación sobre diversidad sexual y de género.</p>\n",
+    "url": "http://localhost:10028/c/aldarte/",
+    "website_url": "https://www.aldarte.org/",
+    "flavor_url": "",
+    "territory": "Bizkaia",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      },
+      {
+        "id": 62,
+        "name": "Feminismos",
+        "slug": "feminismos"
+      }
+    ]
+  },
+  {
+    "id": 6255,
+    "name": "Gehitu",
+    "slug": "gehitu",
+    "description": "<p>Asociación de personas LGTBI+ del País Vasco con sede en Donostia. Defensa de derechos, acompañamiento y memoria histórica de la disidencia sexual.</p>\n",
+    "url": "http://localhost:10028/c/gehitu/",
+    "website_url": "https://gehitu.org/",
+    "flavor_url": "",
+    "territory": "Gipuzkoa",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      },
+      {
+        "id": 62,
+        "name": "Feminismos",
+        "slug": "feminismos"
+      }
+    ]
+  },
+  {
+    "id": 6256,
+    "name": "Hegoa Institutua",
+    "slug": "hegoa",
+    "description": "<p>Instituto de estudios sobre desarrollo y cooperación internacional de la UPV/EHU. Investigación, docencia y educación para la transformación social.</p>\n",
+    "url": "http://localhost:10028/c/hegoa/",
+    "website_url": "https://www.hegoa.ehu.eus/es",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 82,
+        "name": "Internacional",
+        "slug": "internacional"
+      },
+      {
+        "id": 73,
+        "name": "Educación",
+        "slug": "educacion"
+      }
+    ],
+    "support_url": "https://www.hegoa.ehu.eus/es/membership/new"
+  },
+  {
+    "id": 6257,
+    "name": "Mundu Bat",
+    "slug": "mundu-bat",
+    "description": "<p>ONG vasca de cooperación internacionalista. Soberanía alimentaria, derechos de las mujeres y defensa de derechos humanos en el Sur global.</p>\n",
+    "url": "http://localhost:10028/c/mundu-bat/",
+    "website_url": "https://www.mundubat.org/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 82,
+        "name": "Internacional",
+        "slug": "internacional"
+      },
+      {
+        "id": 84,
+        "name": "Alimentación",
+        "slug": "alimentacion"
+      },
+      {
+        "id": 62,
+        "name": "Feminismos",
+        "slug": "feminismos"
+      }
+    ],
+    "support_url": "https://www.mundubat.org/suscribete-a-nuestro-boletin-2/"
+  },
+  {
+    "id": 6258,
+    "name": "Ernai",
+    "slug": "ernai",
+    "description": "<p>Organización de la juventud abertzale e independentista de Euskal Herria.</p>\n",
+    "url": "http://localhost:10028/c/ernai/",
+    "website_url": "https://ernai.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 77,
+        "name": "Juventud",
+        "slug": "juventud"
+      },
+      {
+        "id": 85,
+        "name": "Derechos civiles",
+        "slug": "derechos-civiles"
+      }
+    ]
+  },
+  {
+    "id": 6259,
+    "name": "Ikasle Abertzaleak",
+    "slug": "ikasle-abertzaleak",
+    "description": "<p>Sindicato de estudiantes de Euskal Herria. Lucha por una educación pública, vasca, gratuita y popular.</p>\n",
+    "url": "http://localhost:10028/c/ikasle-abertzaleak/",
+    "website_url": "https://ikasleabertzaleak.eus/",
+    "flavor_url": "",
+    "territory": "Euskal Herria",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 77,
+        "name": "Juventud",
+        "slug": "juventud"
+      },
+      {
+        "id": 73,
+        "name": "Educación",
+        "slug": "educacion"
+      }
+    ]
+  },
+  {
+    "id": 6260,
+    "name": "Errekaleor Bizirik!",
+    "slug": "errekaleor",
+    "description": "<p>Mayor proyecto vecinal autogestionado de Euskal Herria. Barrio okupado de Gasteiz que funciona como centro social, vivienda comunitaria y ecosistema cultural autoabastecido en energía.</p>\n",
+    "url": "http://localhost:10028/c/errekaleor/",
+    "website_url": "https://errekaleor.org/",
+    "flavor_url": "",
+    "territory": "Araba",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 59,
+        "name": "Vivienda",
+        "slug": "vivienda"
+      },
+      {
+        "id": 77,
+        "name": "Juventud",
+        "slug": "juventud"
+      },
+      {
+        "id": 71,
+        "name": "Ecologismo",
+        "slug": "ecologismo"
+      }
+    ]
+  },
+  {
+    "id": 6261,
+    "name": "Bonberenea",
+    "slug": "bonberenea",
+    "description": "<p>Centro social autogestionado en Tolosa, mítico de la escena punk y cultural vasca. Actividad continuada desde 1997 en una antigua estación de bomberos.</p>\n",
+    "url": "http://localhost:10028/c/bonberenea/",
+    "website_url": "https://bonberenea.eus/",
+    "flavor_url": "",
+    "territory": "Gipuzkoa",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 77,
+        "name": "Juventud",
+        "slug": "juventud"
+      }
+    ]
+  },
+  {
+    "id": 6262,
+    "name": "Astra Gernika",
+    "slug": "astra-gernika",
+    "description": "<p>Fábrica de armas recuperada en Gernika y reconvertida por gestión comunitaria en espacio cultural y de creación.</p>\n",
+    "url": "http://localhost:10028/c/astra-gernika/",
+    "website_url": "https://astragernika.net/",
+    "flavor_url": "",
+    "territory": "Bizkaia",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 74,
+        "name": "Memoria histórica",
+        "slug": "memoria-historica"
+      }
+    ]
+  },
+  {
+    "id": 6263,
+    "name": "Iruñeko Gaztetxea (Maravillas)",
+    "slug": "iruneko-gaztetxea",
+    "description": "<p>Gaztetxe de Iruñea-Pamplona. Histórico espacio juvenil autogestionado con actividad cultural, política y de barrio en pleno casco antiguo.</p>\n",
+    "url": "http://localhost:10028/c/iruneko-gaztetxea/",
+    "website_url": "",
+    "flavor_url": "",
+    "territory": "Nafarroa",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 77,
+        "name": "Juventud",
+        "slug": "juventud"
+      }
+    ]
+  },
+  {
+    "id": 6264,
+    "name": "Donostiako Gaztetxea (Kortxoenea)",
+    "slug": "donostiako-gaztetxea",
+    "description": "<p>Gaztetxe del barrio de Egia, Donostia. Espacio okupado y autogestionado con conciertos, talleres y actividad política barrial.</p>\n",
+    "url": "http://localhost:10028/c/donostiako-gaztetxea/",
+    "website_url": "",
+    "flavor_url": "",
+    "territory": "Gipuzkoa",
+    "has_contact": true,
+    "verified": true,
+    "topics": [
+      {
+        "id": 76,
+        "name": "Cultura",
+        "slug": "cultura"
+      },
+      {
+        "id": 77,
+        "name": "Juventud",
+        "slug": "juventud"
+      }
+    ]
+  },
+  {
+    "id": 6265,
     "name": "Verdegaia",
     "slug": "verdegaia",
     "description": "Asociación galega ecoloxista de defensa do territorio e o medio ambiente.",
@@ -971,10 +1709,11 @@
     "verified": true,
     "source_slugs": [
       "verdegaia"
-    ]
+    ],
+    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras"
   },
   {
-    "id": 6236,
+    "id": 6266,
     "name": "Iniciativa pol Asturianu",
     "slug": "iniciativa-pol-asturianu",
     "description": "Iniciativa social pola normalización del asturianu.",
@@ -995,7 +1734,7 @@
     "support_url": "https://iniciativapolasturianu.org/ventayes-pa-socios/"
   },
   {
-    "id": 6237,
+    "id": 6267,
     "name": "Apudepa",
     "slug": "apudepa",
     "description": "Asociación de Acción Pública para la Defensa del Patrimonio Aragonés.",
@@ -1015,7 +1754,7 @@
     ]
   },
   {
-    "id": 6238,
+    "id": 6268,
     "name": "Per l'Horta",
     "slug": "per-l-horta",
     "description": "Plataforma cívica per a la defensa de l'Horta valenciana.",
@@ -1032,11 +1771,10 @@
     "verified": true,
     "source_slugs": [
       "per-l-horta"
-    ],
-    "support_url": "https://www.euskalmemoria.eus/eu/Babestu"
+    ]
   },
   {
-    "id": 6239,
+    "id": 6269,
     "name": "Acció Ecologista Agró",
     "slug": "accio-ecologista-agro",
     "description": "Associació ecologista del País Valencià, federada en Ecologistes en Acció.",
@@ -1053,7 +1791,7 @@
     ]
   },
   {
-    "id": 6240,
+    "id": 6270,
     "name": "Òmnium Cultural",
     "slug": "omnium-cultural",
     "description": "Entitat per la promoció de la llengua, la cultura catalana i la cohesió social.",
@@ -1070,10 +1808,11 @@
     "verified": true,
     "source_slugs": [
       "omnium-cultural"
-    ]
+    ],
+    "support_url": "https://omnium.cat/donatius/"
   },
   {
-    "id": 6241,
+    "id": 6271,
     "name": "Som Mobilitat",
     "slug": "som-mobilitat",
     "description": "Cooperativa de mobilitat sostenible i compartida.",
@@ -1094,7 +1833,7 @@
     "support_url": "https://sommobilitat.coop/formulari-fes-te-soci/"
   },
   {
-    "id": 6242,
+    "id": 6272,
     "name": "Sindicato de Inquilinas de Madrid",
     "slug": "sindicato-inquilinas-madrid",
     "description": "Sindicato que organiza a inquilinas frente al alza de alquileres y desahucios.",
@@ -1114,7 +1853,7 @@
     ]
   },
   {
-    "id": 6243,
+    "id": 6273,
     "name": "Ecologistas en Acción Cantabria",
     "slug": "ecologistas-accion-cantabria",
     "description": "Federación de grupos ecologistas en Cantabria.",
@@ -1128,10 +1867,11 @@
     "verified": true,
     "source_slugs": [
       "ecologistas-accion-cantabria"
-    ]
+    ],
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
   },
   {
-    "id": 6244,
+    "id": 6274,
     "name": "Madres de Plaza de Mayo",
     "slug": "madres-plaza-mayo",
     "description": "Asociación de madres y abuelas que reclaman justicia por los detenidos-desaparecidos durante la dictadura.",
@@ -1148,11 +1888,10 @@
     "verified": true,
     "source_slugs": [
       "madres-plaza-mayo"
-    ],
-    "support_url": "https://www.ehnebizkaia.eus/suscripcion-etxalde"
+    ]
   },
   {
-    "id": 6245,
+    "id": 6275,
     "name": "Movimiento de Trabajadores Excluidos",
     "slug": "mte-argentina",
     "description": "Movimiento de trabajadores de la economía popular en Argentina.",
@@ -1172,7 +1911,7 @@
     ]
   },
   {
-    "id": 6246,
+    "id": 6276,
     "name": "MST · Movimento dos Trabalhadores Rurais Sem Terra",
     "slug": "mst-brasil",
     "description": "Movimiento campesino histórico por la reforma agraria en Brasil.",
@@ -1192,7 +1931,7 @@
     ]
   },
   {
-    "id": 6247,
+    "id": 6277,
     "name": "MTST · Movimento dos Trabalhadores Sem Teto",
     "slug": "mtst-brasil",
     "description": "Movimiento por el derecho a la vivienda en las periferias urbanas brasileñas.",
@@ -1210,7 +1949,7 @@
     "support_url": "https://www.catarse.me/colabore_mtst"
   },
   {
-    "id": 6248,
+    "id": 6278,
     "name": "APIB · Articulação dos Povos Indígenas do Brasil",
     "slug": "apib-brasil",
     "description": "Coalición que articula los pueblos y organizaciones indígenas de Brasil.",
@@ -1230,7 +1969,7 @@
     ]
   },
   {
-    "id": 6249,
+    "id": 6279,
     "name": "Mujeres Creando",
     "slug": "mujeres-creando",
     "description": "Colectivo feminista boliviano de acción callejera y radio.",
@@ -1247,7 +1986,7 @@
     ]
   },
   {
-    "id": 6250,
+    "id": 6280,
     "name": "Coordinadora Feminista 8M",
     "slug": "coordinadora-feminista-8m",
     "description": "Coordinadora chilena que articula la huelga feminista del 8 de marzo.",
@@ -1261,11 +2000,10 @@
     "verified": true,
     "source_slugs": [
       "coordinadora-feminista-8m"
-    ],
-    "support_url": "https://ekologistakmartxan.org/eu/participa/asociate/"
+    ]
   },
   {
-    "id": 6251,
+    "id": 6281,
     "name": "ConFech",
     "slug": "confech",
     "description": "Confederación de Estudiantes de Chile.",
@@ -1279,7 +2017,7 @@
     "verified": true
   },
   {
-    "id": 6252,
+    "id": 6282,
     "name": "COPINH",
     "slug": "copinh",
     "description": "Consejo Cívico de Organizaciones Populares e Indígenas de Honduras.",
@@ -1296,10 +2034,11 @@
     "verified": true,
     "source_slugs": [
       "copinh"
-    ]
+    ],
+    "support_url": "https://copinh.org/colabora/"
   },
   {
-    "id": 6253,
+    "id": 6283,
     "name": "Coordinadora Arauco-Malleco",
     "slug": "coordinadora-arauco-malleco",
     "description": "Coordinadora de comunidades mapuche en resistencia territorial.",
@@ -1316,7 +2055,7 @@
     "verified": true
   },
   {
-    "id": 6254,
+    "id": 6284,
     "name": "La Vía Campesina",
     "slug": "la-via-campesina",
     "description": "Movimiento internacional que defiende la agricultura sostenible y la soberanía alimentaria.",
@@ -1336,7 +2075,7 @@
     ]
   },
   {
-    "id": 6255,
+    "id": 6285,
     "name": "Plataforma per la Llengua",
     "slug": "plataforma-per-la-llengua",
     "description": "ONG del català que treballa per la promoció i defensa de la llengua catalana.",
@@ -1350,10 +2089,11 @@
         "slug": "derechos-civiles"
       }
     ],
-    "verified": true
+    "verified": true,
+    "support_url": "https://www.plataforma-llengua.cat/col-labora/donatius/"
   },
   {
-    "id": 6256,
+    "id": 6286,
     "name": "Yo Sí Sanidad Universal",
     "slug": "yo-si-sanidad-universal",
     "description": "Movimiento por una sanidad pública, universal y de calidad.",
@@ -1367,11 +2107,10 @@
         "slug": "derechos-civiles"
       }
     ],
-    "verified": true,
-    "support_url": "https://www.hegoa.ehu.eus/es/membership/new"
+    "verified": true
   },
   {
-    "id": 6257,
+    "id": 6287,
     "name": "Casa de la Mujer",
     "slug": "casa-de-la-mujer-bogota",
     "description": "Organización feminista en Bogotá con larga trayectoria en defensa de los derechos de las mujeres.",
@@ -1383,10 +2122,10 @@
       }
     ],
     "verified": true,
-    "support_url": "https://www.mundubat.org/suscribete-a-nuestro-boletin-2/"
+    "support_url": "https://www.casmujer.com/index.php/donaciones/"
   },
   {
-    "id": 6258,
+    "id": 6288,
     "name": "Centro de DDHH Fray Bartolomé de las Casas",
     "slug": "frayba",
     "description": "Centro de Derechos Humanos en Chiapas que documenta y acompaña a comunidades indígenas y campesinas.",
@@ -1397,6 +2136,7 @@
         "slug": "derechos-civiles"
       }
     ],
-    "verified": true
+    "verified": true,
+    "support_url": "https://donorbox.org/install-popup-button.js"
   }
 ]

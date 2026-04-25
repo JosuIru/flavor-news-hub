@@ -88,7 +88,12 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
             if (!mounted) return;
             try {
               ref.read(enrutadorProvider).push('/items/$idItem');
-            } catch (_) {}
+            } catch (error) {
+              // Cold-start: el router puede no estar attached todavía
+              // cuando llega el URI inicial. Logueamos para tener pista
+              // si esta rama empezara a fallar de forma sistemática.
+              debugPrint('[DeepLink] push /items/$idItem falló: $error');
+            }
           });
         }
       }
@@ -100,7 +105,9 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
         if (!mounted) return;
         try {
           ref.read(enrutadorProvider).push('/search');
-        } catch (_) {}
+        } catch (error) {
+          debugPrint('[DeepLink] push /search falló: $error');
+        }
       });
       return;
     }

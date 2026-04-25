@@ -53,7 +53,9 @@
       "en",
       "fr"
     ],
-    "topics": []
+    "topics": [
+      "cultura"
+    ]
   },
   {
     "id": 6753,
@@ -66,7 +68,10 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion",
+      "cultura"
+    ]
   },
   {
     "id": 6283,
@@ -120,7 +125,7 @@
     "feed_url": "https://climatica.coop/feed/",
     "feed_type": "rss",
     "website_url": "https://climatica.coop",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -148,7 +153,7 @@
     "feed_url": "https://www.cuartopoder.es/feed/",
     "feed_type": "rss",
     "website_url": "https://www.cuartopoder.es/",
-    "territory": "Estado Español",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -163,11 +168,34 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCvLrMnloIn_RqITF4Ly5ZEA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UCvLrMnloIn_RqITF4Ly5ZEA",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "politica",
+      "internacional"
+    ]
+  },
+  {
+    "id": 7103,
+    "name": "CTXT",
+    "slug": "ctxt",
+    "feed_url": "https://ctxt.es/es/?tpl=87",
+    "feed_type": "rss",
+    "website_url": "https://ctxt.es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "ecologismo",
+      "internacional",
+      "cultura"
+    ],
+    "support_url": "https://agora.ctxt.es/donaciones/",
+    "es_movimiento": true
   },
   {
     "id": 6132,
@@ -176,7 +204,7 @@
     "feed_url": "https://www.ecologistasenaccion.org/feed/",
     "feed_type": "rss",
     "website_url": "https://www.ecologistasenaccion.org",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -191,11 +219,13 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfxxmFIJGD_S6xim0EphBw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UCbfxxmFIJGD_S6xim0EphBw",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "cultura"
+    ]
   },
   {
     "id": 6065,
@@ -204,7 +234,7 @@
     "feed_url": "https://www.elsaltodiario.com/general/feed",
     "feed_type": "rss",
     "website_url": "https://www.elsaltodiario.com",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -247,19 +277,6 @@
     "es_movimiento": true
   },
   {
-    "id": 6919,
-    "name": "Flavor Platform (local)",
-    "slug": "flavor-platform-local",
-    "feed_url": "http://sitio-prueba.local/",
-    "feed_type": "flavor_platform",
-    "website_url": "http://sitio-prueba.local/",
-    "territory": "Navarra",
-    "languages": [
-      "es"
-    ],
-    "topics": []
-  },
-  {
     "id": 7101,
     "name": "Free Software Foundation Europe",
     "slug": "free-software-foundation-europe",
@@ -281,11 +298,14 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCF2k6ZA_4LP7v7Wq5qOtQpA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@SaviaYT",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "ecologismo",
+      "rural"
+    ],
     "es_movimiento": true
   },
   {
@@ -295,11 +315,13 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCH6Xr67k_7_KAgeDgQiFamw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@furortv",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "cultura"
+    ],
     "support_url": "https://patreon.com/FurorTV"
   },
   {
@@ -326,11 +348,14 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSU1606eim0bCnIpvYsz4_w",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@homodeus_espanol",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "cultura",
+      "educacion"
+    ],
     "support_url": "https://www.patreon.com/HomoDeusES"
   },
   {
@@ -346,7 +371,10 @@
       "fr",
       "en"
     ],
-    "topics": []
+    "topics": [
+      "internacional",
+      "cultura"
+    ]
   },
   {
     "id": 6930,
@@ -355,7 +383,7 @@
     "feed_url": "https://www.infolibre.es/rss",
     "feed_type": "rss",
     "website_url": "https://www.infolibre.es/",
-    "territory": "Estado Español",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -387,7 +415,7 @@
     "feed_url": "https://www.ivoox.com/feed_fg_f1893330_filtro_1.xml",
     "feed_type": "podcast",
     "website_url": "https://www.publico.es/podcasts/la-base",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -416,11 +444,13 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCvt0OljLuvQW017ppgmSVog",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UCvt0OljLuvQW017ppgmSVog",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "cultura"
+    ],
     "support_url": "https://www.patreon.com/Filmoteca"
   },
   {
@@ -430,7 +460,7 @@
     "feed_url": "https://www.lamarea.com/feed/",
     "feed_type": "rss",
     "website_url": "https://www.lamarea.com",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -472,7 +502,9 @@
       "es",
       "de"
     ],
-    "topics": [],
+    "topics": [
+      "tecnologia-soberana"
+    ],
     "support_url": "https://liberapay.com/MakerTube\\\\n-"
   },
   {
@@ -482,11 +514,14 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCoL-njX4mEWsaHlXFzWvUZw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UCoL-njX4mEWsaHlXFzWvUZw",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
     "support_url": "https://www.patreon.com/miguelcharisteas"
   },
   {
@@ -496,11 +531,14 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCgms7r9SaeYhuIBaPGOjnhw",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/@miguelruizcalvo",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "politica",
+      "internacional"
+    ]
   },
   {
     "id": 6928,
@@ -528,7 +566,7 @@
     "feed_url": "https://www.naukas.com/feed/",
     "feed_type": "rss",
     "website_url": "https://www.naukas.com/",
-    "territory": "Estado Español",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -544,7 +582,7 @@
     "feed_url": "https://nodo50.org/spip.php?page=backend",
     "feed_type": "rss",
     "website_url": "https://info.nodo50.org/",
-    "territory": "Estado Español",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -578,7 +616,7 @@
     "feed_url": "https://www.pikaramagazine.com/feed/",
     "feed_type": "rss",
     "website_url": "https://www.pikaramagazine.com",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -596,11 +634,13 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSvkCc8rbluGVsZV-KKHCFA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UCSvkCc8rbluGVsZV-KKHCFA",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "cultura"
+    ]
   },
   {
     "id": 6609,
@@ -614,7 +654,9 @@
       "ca",
       "es"
     ],
-    "topics": []
+    "topics": [
+      "cultura"
+    ]
   },
   {
     "id": 7105,
@@ -640,11 +682,13 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC_Q7-uOJy3BPWjKNdATqrag",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UC_Q7-uOJy3BPWjKNdATqrag",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "politica"
+    ]
   },
   {
     "id": 6269,
@@ -653,11 +697,13 @@
     "feed_url": "https://spanishrevolution.org/feed/",
     "feed_type": "video",
     "website_url": "https://spanishrevolution.org",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "politica"
+    ],
     "support_url": "https://donorbox.org/aliadas"
   },
   {
@@ -683,11 +729,14 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCKNW2TrrUlof4ES2y1BWjpA",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UCKNW2TrrUlof4ES2y1BWjpA",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "politica",
+      "internacional"
+    ]
   },
   {
     "id": 7106,
@@ -715,7 +764,10 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "politica",
+      "internacional"
+    ]
   },
   {
     "id": 6779,
@@ -724,11 +776,14 @@
     "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC8-6gikVs0MvKebAHEGiwHg",
     "feed_type": "youtube",
     "website_url": "https://www.youtube.com/channel/UC8-6gikVs0MvKebAHEGiwHg",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
     "support_url": "https://www.paypal.com/paypalme/tuprofederi"
   },
   {
@@ -743,7 +798,10 @@
       "es",
       "en"
     ],
-    "topics": []
+    "topics": [
+      "cultura",
+      "internacional"
+    ]
   },
   {
     "id": 6466,
@@ -752,7 +810,7 @@
     "feed_url": "https://vientosur.info/feed/",
     "feed_type": "rss",
     "website_url": "https://vientosur.info",
-    "territory": "Estado",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -786,7 +844,7 @@
     "feed_url": "https://www.xatakaciencia.com/rss2.xml",
     "feed_type": "rss",
     "website_url": "https://www.xatakaciencia.com/",
-    "territory": "Estado Español",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -995,7 +1053,7 @@
     "feed_url": "https://mastodon.social/@maldita.rss",
     "feed_type": "mastodon",
     "website_url": "https://mastodon.social/@maldita",
-    "territory": "España",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -1011,7 +1069,7 @@
     "feed_url": "https://mastodon.social/@civio.rss",
     "feed_type": "mastodon",
     "website_url": "https://mastodon.social/@civio",
-    "territory": "España",
+    "territory": "Estado español",
     "languages": [
       "es"
     ],
@@ -1031,7 +1089,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7133,
@@ -1044,7 +1104,10 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion",
+      "tecnologia-soberana"
+    ]
   },
   {
     "id": 7134,
@@ -1057,7 +1120,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7135,
@@ -1070,7 +1135,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7136,
@@ -1083,7 +1150,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7137,
@@ -1096,7 +1165,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7138,
@@ -1109,7 +1180,9 @@
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "educacion"
+    ],
     "support_url": "https://www.patreon.com/cdeciencia"
   },
   {
@@ -1123,7 +1196,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "tecnologia-soberana"
+    ]
   },
   {
     "id": 7140,
@@ -1136,7 +1211,9 @@
     "languages": [
       "es"
     ],
-    "topics": [],
+    "topics": [
+      "educacion"
+    ],
     "support_url": "https://www.patreon.com/robotitus"
   },
   {
@@ -1150,7 +1227,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "cultura"
+    ]
   },
   {
     "id": 7142,
@@ -1163,7 +1242,9 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7143,
@@ -1176,7 +1257,9 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7144,
@@ -1189,7 +1272,9 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7145,
@@ -1202,7 +1287,9 @@
     "languages": [
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "educacion"
+    ],
     "support_url": "https://donorbox.org/swtg"
   },
   {
@@ -1216,7 +1303,9 @@
     "languages": [
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "educacion"
+    ],
     "support_url": "https://www.patreon.com/pbsspacetime"
   },
   {
@@ -1230,7 +1319,9 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7148,
@@ -1243,7 +1334,10 @@
     "languages": [
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "cultura",
+      "ecologismo"
+    ],
     "es_movimiento": true
   },
   {
@@ -1257,7 +1351,9 @@
     "languages": [
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "ecologismo"
+    ],
     "support_url": "https://www.patreon.com/OurChangingCl...",
     "es_movimiento": true
   },
@@ -1272,7 +1368,9 @@
     "languages": [
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "cultura"
+    ],
     "support_url": "https://www.patreon.com/foldablehuman",
     "es_movimiento": true
   },
@@ -1287,7 +1385,9 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7152,
@@ -1301,7 +1401,10 @@
       "de",
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "tecnologia-soberana",
+      "derechos-civiles"
+    ],
     "es_movimiento": true
   },
   {
@@ -1315,7 +1418,9 @@
     "languages": [
       "en"
     ],
-    "topics": [],
+    "topics": [
+      "educacion"
+    ],
     "support_url": "https://www.patreon.com/teded"
   },
   {
@@ -1329,7 +1434,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "educacion"
+    ]
   },
   {
     "id": 7155,
@@ -1342,7 +1449,9 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [
+      "cultura"
+    ]
   },
   {
     "id": 7156,
@@ -1561,7 +1670,7 @@
     "id": 7170,
     "name": "Radio Onda Rossa",
     "slug": "radio-onda-rossa",
-    "feed_url": "https://www.ondarossa.info/rss/news.xml",
+    "feed_url": "https://www.ondarossa.info/feed/",
     "feed_type": "podcast",
     "website_url": "https://www.ondarossa.info",
     "territory": "Roma",
@@ -1612,7 +1721,7 @@
     "id": 7174,
     "name": "Radio Canut",
     "slug": "radio-canut",
-    "feed_url": "https://radiocanut.org/feed/",
+    "feed_url": "https://radiocanut.org/spip.php?page=backend",
     "feed_type": "podcast",
     "website_url": "https://radiocanut.org",
     "territory": "Lyon",
@@ -1624,6 +1733,498 @@
       "internacional"
     ],
     "es_movimiento": true
+  },
+  {
+    "id": 7274,
+    "name": "Democracy Now!",
+    "slug": "democracy-now",
+    "feed_url": "https://www.democracynow.org/podcast-video.xml",
+    "feed_type": "podcast",
+    "website_url": "https://www.democracynow.org",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "cable",
+      "satelite"
+    ],
+    "content_license": "cc-by-nc-nd-3.0-us",
+    "legal_note": "Licencia Creative Commons BY-NC-ND 3.0 US. Archivo completo desde 1996 disponible bajo esa licencia.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "support_url": "https://www.democracynow.org/donate?campaign=web-nav",
+    "es_movimiento": true
+  },
+  {
+    "id": 7275,
+    "name": "Kolektiva Media",
+    "slug": "kolektiva-media",
+    "feed_url": "https://kolektiva.media/feeds/videos.xml",
+    "feed_type": "rss",
+    "website_url": "https://kolektiva.media",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional",
+      "antirracismo",
+      "ecologismo"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7276,
+    "name": "La Veïnal TV",
+    "slug": "la-veinal-tv",
+    "feed_url": "https://www.laveinal.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.laveinal.cat",
+    "territory": "Catalunya",
+    "languages": [
+      "ca"
+    ],
+    "topics": [],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "tdt_sin_licencia"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
+    "has_live_stream": true,
+    "live_stream_permit": "none",
+    "support_url": "https://www.goteo.org/project/la-veinal-tv1",
+    "es_movimiento": true
+  },
+  {
+    "id": 7277,
+    "name": "Onda Color TV",
+    "slug": "onda-color-tv",
+    "feed_url": "https://ondacolor.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://ondacolor.org",
+    "territory": "Andalucía",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "cultura"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "tdt_sin_licencia"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
+    "has_live_stream": true,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7278,
+    "name": "Blender Video",
+    "slug": "video-blender",
+    "feed_url": "https://video.blender.org/feeds/videos.xml",
+    "feed_type": "rss",
+    "website_url": "https://video.blender.org",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "tecnologia-soberana"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "cc-by-4.0",
+    "legal_note": "Blender Foundation. Todo el contenido bajo CC BY 4.0.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7279,
+    "name": "Framatube",
+    "slug": "framatube",
+    "feed_url": "https://framatube.org/feeds/videos.xml",
+    "feed_type": "rss",
+    "website_url": "https://framatube.org",
+    "territory": "Francia",
+    "languages": [
+      "fr"
+    ],
+    "topics": [
+      "tecnologia-soberana",
+      "cultura"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7280,
+    "name": "TILvids",
+    "slug": "tilvids",
+    "feed_url": "https://tilvids.com/feeds/videos.xml",
+    "feed_type": "rss",
+    "website_url": "https://tilvids.com",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "tecnologia-soberana"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7281,
+    "name": "Diode Zone",
+    "slug": "diode-zone",
+    "feed_url": "https://diode.zone/feeds/videos.xml",
+    "feed_type": "rss",
+    "website_url": "https://diode.zone",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "tecnologia-soberana"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Instancia PeerTube federada. Cada vídeo tiene su propia licencia declarada por el autor.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7282,
+    "name": "The Real News Network",
+    "slug": "real-news-network",
+    "feed_url": "https://therealnews.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://therealnews.com",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional",
+      "laboral"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "Periodismo en vídeo independiente con sede en Baltimore. Todos los derechos reservados salvo indicación contraria en cada pieza.",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7283,
+    "name": "Novara Media",
+    "slug": "novara-media",
+    "feed_url": "https://novaramedia.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://novaramedia.com",
+    "territory": "Reino Unido",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional",
+      "laboral"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "support_url": "https://donate.novaramedia.com",
+    "es_movimiento": true
+  },
+  {
+    "id": 7284,
+    "name": "Breakthrough News",
+    "slug": "breakthrough-news",
+    "feed_url": "https://breakthroughnews.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://breakthroughnews.org",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "support_url": "https://www.patreon.com/BreakThroughNews",
+    "es_movimiento": true
+  },
+  {
+    "id": 7285,
+    "name": "Al Jazeera English",
+    "slug": "al-jazeera-english",
+    "feed_url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "feed_type": "rss",
+    "website_url": "https://www.aljazeera.com/english/",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "cable",
+      "satelite"
+    ],
+    "content_license": "all-rights-reserved",
+    "ownership": "Financiación: Estado de Qatar (Qatar Media Corporation).",
+    "legal_note": "Financiación estatal: Estado de Qatar. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+    "has_live_stream": true,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7286,
+    "name": "Telesur",
+    "slug": "telesur",
+    "feed_url": "https://www.telesurtv.net/rss",
+    "feed_type": "rss",
+    "website_url": "https://www.telesurtv.net",
+    "territory": "Latinoamérica",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "cable",
+      "satelite"
+    ],
+    "content_license": "all-rights-reserved",
+    "ownership": "Financiación: Estado de Venezuela (con participación histórica de Cuba, Nicaragua, Bolivia y Uruguay).",
+    "legal_note": "Financiación estatal: Estado de Venezuela. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+    "has_live_stream": true,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7287,
+    "name": "Resumen Latinoamericano",
+    "slug": "resumen-latinoamericano",
+    "feed_url": "https://www.resumenlatinoamericano.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.resumenlatinoamericano.org",
+    "territory": "Latinoamérica",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "support_url": "https://www.paypal.com/donate/?hosted_button_id=QYAX3B8342XG2",
+    "es_movimiento": true
+  },
+  {
+    "id": 7288,
+    "name": "Avispa Midia",
+    "slug": "avispa-midia",
+    "feed_url": "https://avispa.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://avispa.org",
+    "territory": "México",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "internacional",
+      "ecologismo",
+      "antirracismo"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=YXNB7TGY954HE&amp;source=url",
+    "es_movimiento": true
+  },
+  {
+    "id": 7289,
+    "name": "RT English",
+    "slug": "rt-english",
+    "feed_url": "https://www.rt.com/rss/",
+    "feed_type": "rss",
+    "website_url": "https://www.rt.com",
+    "territory": "Internacional",
+    "languages": [
+      "en"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "cable",
+      "satelite"
+    ],
+    "content_license": "all-rights-reserved",
+    "ownership": "Financiación: Estado ruso (TV-Novosti).",
+    "legal_note": "Financiación estatal: Estado ruso. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+    "has_live_stream": true,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7290,
+    "name": "HispanTV",
+    "slug": "hispantv",
+    "feed_url": "https://feeds.feedburner.com/hispantv",
+    "feed_type": "rss",
+    "website_url": "https://www.hispantv.com",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "satelite"
+    ],
+    "content_license": "all-rights-reserved",
+    "ownership": "Financiación: Estado iraní (IRIB).",
+    "legal_note": "Financiación estatal: Estado iraní. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
+    "has_live_stream": true,
+    "live_stream_permit": "none"
+  },
+  {
+    "id": 7291,
+    "name": "Carne Cruda",
+    "slug": "carne-cruda",
+    "feed_url": "https://www.carnecruda.es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.carnecruda.es",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "laboral",
+      "feminismos"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "support_url": "https://www.eldiario.es/socios",
+    "es_movimiento": true
+  },
+  {
+    "id": 7292,
+    "name": "Jot Down",
+    "slug": "jot-down",
+    "feed_url": "https://www.jotdown.es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.jotdown.es",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none"
   },
   {
     "id": 7293,
@@ -1732,32 +2333,6 @@
     "live_stream_permit": "none"
   },
   {
-    "id": 7286,
-    "name": "Telesur",
-    "slug": "telesur",
-    "feed_url": "https://www.telesurtv.net/rss",
-    "feed_type": "rss",
-    "website_url": "https://www.telesurtv.net",
-    "territory": "Latinoamérica",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "internacional"
-    ],
-    "medium_type": "tv_station",
-    "broadcast_format": [
-      "web",
-      "cable",
-      "satelite"
-    ],
-    "content_license": "all-rights-reserved",
-    "ownership": "Financiación: Estado de Venezuela (con participación histórica de Cuba, Nicaragua, Bolivia y Uruguay).",
-    "legal_note": "Financiación estatal: Estado de Venezuela. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
-    "has_live_stream": true,
-    "live_stream_permit": "none"
-  },
-  {
     "id": 7298,
     "name": "Maktoob",
     "slug": "maktoob",
@@ -1810,6 +2385,33 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "support_url": "https://www.paypal.com/cgi-bin/webscr",
+    "es_movimiento": true
+  },
+  {
+    "id": 7300,
+    "name": "Desinformémonos",
+    "slug": "desinformemonos",
+    "feed_url": "https://desinformemonos.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://desinformemonos.org/",
+    "territory": "México",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "antirracismo",
+      "migraciones",
+      "rural",
+      "ecologismo"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
     "es_movimiento": true
   },
   {
@@ -2343,6 +2945,587 @@
     "es_movimiento": true
   },
   {
+    "slug": "col-ecologistas-en-accion",
+    "name": "Ecologistas en Acción",
+    "feed_url": "https://www.ecologistasenaccion.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.ecologistasenaccion.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-pah-barcelona",
+    "name": "PAH Barcelona",
+    "feed_url": "https://pahbarcelona.org/ca/feed/",
+    "feed_type": "rss",
+    "website_url": "https://pahbarcelona.org/",
+    "territory": "Catalunya",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sindicat-de-llogateres",
+    "name": "Sindicat de Llogateres",
+    "feed_url": "https://sindicatdellogateres.org/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sindicatdellogateres.org/es/",
+    "territory": "Catalunya",
+    "languages": [
+      "ca"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-no-somos-delito",
+    "name": "No Somos Delito",
+    "feed_url": "https://nosomosdelito.net/feed/",
+    "feed_type": "rss",
+    "website_url": "https://nosomosdelito.net/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "derechos-civiles"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-ongi-etorri-errefuxiatuak",
+    "name": "Ongi Etorri Errefuxiatuak",
+    "feed_url": "https://ongietorrierrefuxiatuak.info/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://ongietorrierrefuxiatuak.info/es/",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-askabide",
+    "name": "Askabide",
+    "feed_url": "https://www.askabide.org/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.askabide.org/es/",
+    "territory": "Euskadi",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sindicato-kellys-andalucia",
+    "name": "Sindicato Kellys Andalucía",
+    "feed_url": "https://www.kellysandalucia.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.kellysandalucia.com/",
+    "territory": "Andalucía",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-plataforma-de-afectadas-por-la-hipoteca",
+    "name": "Plataforma de Afectadas por la Hipoteca",
+    "feed_url": "https://afectadosporlahipoteca.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://afectadosporlahipoteca.com/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-rescop",
+    "name": "RESCOP",
+    "feed_url": "http://www.nodo50.org/causapalestina/feed/",
+    "feed_type": "rss",
+    "website_url": "http://www.nodo50.org/causapalestina/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sodepaz",
+    "name": "SODePAZ",
+    "feed_url": "https://sodepaz.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sodepaz.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-loquesomos",
+    "name": "LoQueSomos",
+    "feed_url": "https://loquesomos.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://loquesomos.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "memoria-historica"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-cear",
+    "name": "CEAR",
+    "feed_url": "https://www.cear.es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.cear.es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "derechos-civiles",
+      "antirracismo",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-red-acoge",
+    "name": "Red Acoge",
+    "feed_url": "https://redacoge.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://redacoge.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "derechos-civiles",
+      "antirracismo"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-greenpeace-espana",
+    "name": "Greenpeace España",
+    "feed_url": "https://es.greenpeace.org/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://es.greenpeace.org/es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-amigas-de-la-tierra",
+    "name": "Amigas de la Tierra",
+    "feed_url": "https://www.tierra.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.tierra.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sos-racismo",
+    "name": "SOS Racismo",
+    "feed_url": "https://sosracismo.eu/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sosracismo.eu/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "antirracismo",
+      "migraciones",
+      "derechos-civiles"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-juventud-por-el-clima",
+    "name": "Juventud Por El Clima",
+    "feed_url": "https://juventudxclima.es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://juventudxclima.es/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-alianza-contra-la-pobreza-energetica",
+    "name": "Alianza contra la Pobreza Energética",
+    "feed_url": "https://pobresaenergetica.es/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://pobresaenergetica.es/es/",
+    "territory": "Cataluña",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "vivienda",
+      "ecologismo",
+      "economia-social"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-stop-mare-mortum",
+    "name": "Stop Mare Mortum",
+    "feed_url": "https://stopmaremortum.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://stopmaremortum.org/",
+    "territory": "Cataluña",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "migraciones",
+      "derechos-civiles",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-senda-de-cuidados",
+    "name": "Senda de Cuidados",
+    "feed_url": "https://www.sendadecuidados.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.sendadecuidados.org/",
+    "territory": "Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cuidados"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-mujer-y-sociedad",
+    "name": "Mujer y Sociedad",
+    "feed_url": "https://mujerysociedad.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://mujerysociedad.org/",
+    "territory": "Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "migraciones",
+      "cuidados"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-ca-la-dona",
+    "name": "Ca la Dona",
+    "feed_url": "https://caladona.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://caladona.org/",
+    "territory": "Cataluña",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-la-casa-invisible",
+    "name": "La Casa Invisible",
+    "feed_url": "https://lainvisible.net/es/feed/",
+    "feed_type": "rss",
+    "website_url": "https://lainvisible.net/es/",
+    "territory": "Málaga",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-fundacion-de-los-comunes",
+    "name": "Fundación de los Comunes",
+    "feed_url": "https://fundaciondeloscomunes.net/feed/",
+    "feed_type": "rss",
+    "website_url": "https://fundaciondeloscomunes.net/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "educacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-feministas-de-pueblo",
+    "name": "Feministas de Pueblo",
+    "feed_url": "https://feministasdepueblo.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://feministasdepueblo.org/",
+    "territory": "Castilla-La Mancha",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos",
+      "rural",
+      "alimentacion"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-coordinadora-feminista",
+    "name": "Coordinadora Feminista",
+    "feed_url": "https://feministas.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://feministas.org/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "feminismos"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "col-sindicat-de-barri-de-sants",
+    "name": "Sindicat de Barri de Sants",
+    "feed_url": "https://sindicatdebarri.org/index.php/feed/",
+    "feed_type": "rss",
+    "website_url": "https://sindicatdebarri.org/",
+    "territory": "Barcelona",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "vivienda"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-liusivaya",
+    "name": "liusivaya",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCdH8XwL73jzCu5UET8nv24g",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@liusivaya",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-lord-draugr",
+    "name": "Lord Draugr",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCtIdb7KRqOTcOogKsos_QRw",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@LordDraugr",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "cultura",
+      "politica"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-almayadeen-espanol",
+    "name": "Al Mayadeen Español",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCip9Q0ZxDwXSlMmjFAZFCKw",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@AlmayadeenEspanol",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": "",
+    "es_movimiento": true
+  },
+  {
+    "slug": "yt-sorprendente-films",
+    "name": "Sorprendente Films",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCjVcmTU3_46iGo64mZ8BQeQ",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@SorprendenteFilms",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": ""
+  },
+  {
+    "slug": "yt-pol-bertran",
+    "name": "Pol Bertran",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC7XQcDCPNGjNxy9HeFkqMsg",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@PolBertran",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "educacion"
+    ],
+    "medium_type": "news",
+    "content_license": "",
+    "es_movimiento": true
+  },
+  {
+    "slug": "yt-diego-en-la-lucha",
+    "name": "Diego en la Lucha",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCWSHe7OUrIs2ZSPOKOOV8ZQ",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@diegoenlalucha",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "news",
+    "content_license": "",
+    "es_movimiento": true
+  },
+  {
+    "slug": "yt-urolakoen-nafarzuztarrak",
+    "name": "Urolakoen Nafar Zuztarrak",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCnI1-3uQTnk4uXE9LSGWB5Q",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/@urolakoennafarzuztarrak7545",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura",
+      "memoria-historica"
+    ],
+    "medium_type": "news",
+    "content_license": "",
+    "es_movimiento": true
+  },
+  {
+    "slug": "yt-ahotsa-info",
+    "name": "Ahotsa.info (YouTube)",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCo1TrbaH7XsXzKdK9U_v5GA",
+    "feed_type": "youtube",
+    "website_url": "https://www.ahotsa.info",
+    "territory": "Nafarroa",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "cultura"
+    ],
+    "medium_type": "news",
+    "content_license": "",
+    "es_movimiento": true
+  },
+  {
     "id": 7321,
     "name": "Radio Guarajambala",
     "slug": "radio-guarajambala",
@@ -2419,33 +3602,6 @@
     "broadcast_format": [
       "web",
       "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none",
-    "es_movimiento": true
-  },
-  {
-    "id": 7300,
-    "name": "Desinformémonos",
-    "slug": "desinformemonos",
-    "feed_url": "https://desinformemonos.org/feed/",
-    "feed_type": "rss",
-    "website_url": "https://desinformemonos.org/",
-    "territory": "México",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "antirracismo",
-      "migraciones",
-      "rural",
-      "ecologismo"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web"
     ],
     "content_license": "all-rights-reserved",
     "legal_note": "",
@@ -2566,6 +3722,34 @@
     "es_movimiento": true
   },
   {
+    "id": 7328,
+    "name": "Radio Puca Opalaca",
+    "slug": "radio-puca-opalaca",
+    "feed_url": "https://www.radioscomunitarias.info/category/radios/puca-opalaca/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.radioscomunitarias.info/category/radios/puca-opalaca/",
+    "territory": "San Francisco de Opalaca",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "rural",
+      "ecologismo",
+      "memoria-historica"
+    ],
+    "medium_type": "news",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
     "id": 7329,
     "name": "Radio comunitaria Sugua 100.9fm",
     "slug": "radio-comunitaria-sugua-100-9fm",
@@ -2609,34 +3793,6 @@
       "cultura",
       "memoria-historica",
       "juventud"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none",
-    "es_movimiento": true
-  },
-  {
-    "id": 7328,
-    "name": "Radio Puca Opalaca",
-    "slug": "radio-puca-opalaca",
-    "feed_url": "https://www.radioscomunitarias.info/category/radios/puca-opalaca/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.radioscomunitarias.info/category/radios/puca-opalaca/",
-    "territory": "San Francisco de Opalaca",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "derechos-civiles",
-      "rural",
-      "ecologismo",
-      "memoria-historica"
     ],
     "medium_type": "news",
     "broadcast_format": [
@@ -3303,6 +4459,226 @@
   },
   {
     "id": 7356,
+    "name": "Argia",
+    "slug": "argia",
+    "feed_url": "https://www.argia.eus/rss/haria",
+    "feed_type": "rss",
+    "website_url": "https://www.argia.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura",
+      "derechos-civiles",
+      "memoria-historica"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7357,
+    "name": "Hamaika Telebista",
+    "slug": "hamaika-tb",
+    "feed_url": "",
+    "feed_type": "rss",
+    "website_url": "https://www.hamaika.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "Televisión asociativa íntegramente en euskera. Emite por TDT con licencia y por web. No expone RSS público; la web es el punto de entrada.",
+    "has_live_stream": true,
+    "live_stream_permit": "licensed",
+    "es_movimiento": true
+  },
+  {
+    "id": 7358,
+    "name": "Sustatu",
+    "slug": "sustatu",
+    "feed_url": "https://feeds2.feedburner.com/sustatu",
+    "feed_type": "rss",
+    "website_url": "https://sustatu.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura",
+      "educacion"
+    ],
+    "support_url": "https://sustatu.eus/harpidetza/",
+    "es_movimiento": true
+  },
+  {
+    "id": 7359,
+    "name": "Goiena",
+    "slug": "goiena",
+    "feed_url": "https://goiena.eus/aktualitatea/feed-rss",
+    "feed_type": "rss",
+    "website_url": "https://goiena.eus",
+    "territory": "Debagoiena",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7360,
+    "name": "Anboto",
+    "slug": "anboto",
+    "feed_url": "https://anboto.org/aktualitatea/feed-rss",
+    "feed_type": "rss",
+    "website_url": "https://anboto.org",
+    "territory": "Durangaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "support_url": "https://anboto.org/harpidetza/",
+    "es_movimiento": true
+  },
+  {
+    "id": 7361,
+    "name": "Geuria",
+    "slug": "geuria",
+    "feed_url": "https://geuria.eus/feed/",
+    "feed_type": "rss",
+    "website_url": "https://geuria.eus",
+    "territory": "Bilboaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "support_url": "https://geuria.eus/harpidetza/",
+    "es_movimiento": true
+  },
+  {
+    "id": 7362,
+    "name": "Tolosaldeko Ataria",
+    "slug": "tolosaldeko-ataria",
+    "feed_url": "https://ataria.eus/aktualitatea/feed-rss",
+    "feed_type": "rss",
+    "website_url": "https://ataria.eus",
+    "territory": "Tolosaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7363,
+    "name": "Aiurri",
+    "slug": "aiurri",
+    "feed_url": "https://aiurri.eus/aktualitatea/feed-rss",
+    "feed_type": "rss",
+    "website_url": "https://aiurri.eus",
+    "territory": "Buruntzaldea",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7364,
+    "name": "Mediabask",
+    "slug": "mediabask",
+    "feed_url": "https://www.mediabask.eus/eu/rss/sections/mediabask.rss",
+    "feed_type": "rss",
+    "website_url": "https://www.mediabask.eus",
+    "territory": "Iparralde",
+    "languages": [
+      "eu",
+      "fr"
+    ],
+    "topics": [],
+    "support_url": "https://www.mediabask.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Fwww.mediabask.eus%2F",
+    "es_movimiento": true
+  },
+  {
+    "id": 7365,
+    "name": "Enbata",
+    "slug": "enbata",
+    "feed_url": "https://www.enbata.info/articles/feed",
+    "feed_type": "rss",
+    "website_url": "https://www.enbata.info",
+    "territory": "Iparralde",
+    "languages": [
+      "eu",
+      "fr"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "memoria-historica"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7366,
+    "name": "Orio Guka",
+    "slug": "orio-guka",
+    "feed_url": "https://orioguka.eus/aktualitatea/feed-rss",
+    "feed_type": "rss",
+    "website_url": "https://orioguka.eus",
+    "territory": "Orio",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7367,
+    "name": "Erran.eus",
+    "slug": "erran",
+    "feed_url": "https://erran.eus/aktualitatea/feed-rss",
+    "feed_type": "rss",
+    "website_url": "https://erran.eus",
+    "territory": "Mendialdea",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7368,
+    "name": "Kanaldude",
+    "slug": "kanaldude",
+    "feed_url": "https://kanaldude.eus/feed/bideoak.rss",
+    "feed_type": "rss",
+    "website_url": "https://www.kanaldude.eus",
+    "territory": "Iparralde",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "cultura"
+    ],
+    "medium_type": "tv_station",
+    "broadcast_format": [
+      "web",
+      "streaming"
+    ],
+    "content_license": "all-rights-reserved",
+    "legal_note": "Telebista parte-hartzailea / TV participativa de Iparralde, íntegramente en euskera.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7369,
     "name": "Verdegaia",
     "slug": "verdegaia",
     "feed_url": "https://www.verdegaia.org/wp/feed/",
@@ -3316,10 +4692,11 @@
       "ecologismo",
       "derechos-civiles"
     ],
+    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras",
     "es_movimiento": true
   },
   {
-    "id": 7357,
+    "id": 7370,
     "name": "Iniciativa pol Asturianu",
     "slug": "iniciativa-pol-asturianu",
     "feed_url": "https://iniciativapolasturianu.org/feed/",
@@ -3338,7 +4715,7 @@
     "support_url": "https://iniciativapolasturianu.org/ventayes-pa-socios/"
   },
   {
-    "id": 7358,
+    "id": 7371,
     "name": "Apudepa",
     "slug": "apudepa",
     "feed_url": "https://apudepa.blogia.com/feed.xml",
@@ -3352,11 +4729,10 @@
       "cultura",
       "derechos-civiles"
     ],
-    "support_url": "https://sustatu.eus/harpidetza/",
     "es_movimiento": true
   },
   {
-    "id": 7359,
+    "id": 7372,
     "name": "Per l'Horta",
     "slug": "per-l-horta",
     "feed_url": "https://perlhorta.info/feed/",
@@ -3373,7 +4749,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7360,
+    "id": 7373,
     "name": "Acció Ecologista Agró",
     "slug": "accio-ecologista-agro",
     "feed_url": "https://accioecologista-agro.org/feed/",
@@ -3386,11 +4762,10 @@
     "topics": [
       "ecologismo"
     ],
-    "support_url": "https://anboto.org/harpidetza/",
     "es_movimiento": true
   },
   {
-    "id": 7361,
+    "id": 7374,
     "name": "Òmnium Cultural",
     "slug": "omnium-cultural",
     "feed_url": "https://www.omnium.cat/ca/feed/",
@@ -3404,11 +4779,11 @@
       "cultura",
       "derechos-civiles"
     ],
-    "support_url": "https://geuria.eus/harpidetza/",
+    "support_url": "https://omnium.cat/donatius/",
     "es_movimiento": true
   },
   {
-    "id": 7362,
+    "id": 7375,
     "name": "Som Mobilitat",
     "slug": "som-mobilitat",
     "feed_url": "https://sommobilitat.coop/feed/",
@@ -3426,7 +4801,7 @@
     "support_url": "https://sommobilitat.coop/formulari-fes-te-soci/"
   },
   {
-    "id": 7363,
+    "id": 7376,
     "name": "Sindicato de Inquilinas de Madrid",
     "slug": "sindicato-inquilinas-madrid",
     "feed_url": "https://inquilinato.org/feed/",
@@ -3443,7 +4818,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7364,
+    "id": 7377,
     "name": "Ecologistas en Acción Cantabria",
     "slug": "ecologistas-accion-cantabria",
     "feed_url": "https://www.ecologistasenaccion.org/feed/",
@@ -3456,11 +4831,11 @@
     "topics": [
       "ecologismo"
     ],
-    "support_url": "https://www.mediabask.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Fwww.mediabask.eus%2F",
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/",
     "es_movimiento": true
   },
   {
-    "id": 7365,
+    "id": 7378,
     "name": "Madres de Plaza de Mayo",
     "slug": "madres-plaza-mayo",
     "feed_url": "https://madres.org/feed/",
@@ -3477,7 +4852,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7366,
+    "id": 7379,
     "name": "Movimiento de Trabajadores Excluidos",
     "slug": "mte-argentina",
     "feed_url": "https://mteargentina.org.ar/feed/",
@@ -3494,7 +4869,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7367,
+    "id": 7380,
     "name": "MST · Movimento dos Trabalhadores Rurais Sem Terra",
     "slug": "mst-brasil",
     "feed_url": "https://mst.org.br/feed/",
@@ -3511,7 +4886,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7368,
+    "id": 7381,
     "name": "MTST · Movimento dos Trabalhadores Sem Teto",
     "slug": "mtst-brasil",
     "feed_url": "https://mtst.org/home/feed/",
@@ -3528,7 +4903,7 @@
     "support_url": "https://www.catarse.me/colabore_mtst"
   },
   {
-    "id": 7369,
+    "id": 7382,
     "name": "APIB · Articulação dos Povos Indígenas do Brasil",
     "slug": "apib-brasil",
     "feed_url": "https://apiboficial.org/feed/",
@@ -3542,11 +4917,10 @@
       "derechos-civiles",
       "ecologismo"
     ],
-    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras",
     "es_movimiento": true
   },
   {
-    "id": 7370,
+    "id": 7383,
     "name": "Mujeres Creando",
     "slug": "mujeres-creando",
     "feed_url": "https://mujerescreando.org/feed/",
@@ -3562,7 +4936,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7371,
+    "id": 7384,
     "name": "Coordinadora Feminista 8M",
     "slug": "coordinadora-feminista-8m",
     "feed_url": "https://cf8m.cl/feed/",
@@ -3578,7 +4952,7 @@
     "es_movimiento": true
   },
   {
-    "id": 7373,
+    "id": 7386,
     "name": "COPINH",
     "slug": "copinh",
     "feed_url": "https://copinh.org/feed/",
@@ -3592,10 +4966,11 @@
       "derechos-civiles",
       "ecologismo"
     ],
+    "support_url": "https://copinh.org/colabora/",
     "es_movimiento": true
   },
   {
-    "id": 7375,
+    "id": 7388,
     "name": "La Vía Campesina",
     "slug": "la-via-campesina",
     "feed_url": "https://viacampesina.org/en/feed/",

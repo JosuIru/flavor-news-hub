@@ -1,0 +1,36 @@
+name: Seeds sync check
+
+# Comprueba que `app/assets/seed/*.json` es espejo de `backend/seed/*.json`.
+# Sin esta validación las dos copias acaban divergiendo: el backend recibe
+# fuentes nuevas pero el seed offline de la app móvil se queda atrás, y los
+# usuarios sin red ven menos catálogo del que hay disponible.
+#
+# Si este job falla, ejecuta localmente:
+#   python3 scripts/sync-seeds.py
+# y commitea los cambios resultantes.
+
+on:
+  pull_request:
+    paths:
+      - 'backend/seed/**'
+      - 'app/assets/seed/**'
+      - 'scripts/sync-seeds.py'
+      - '.github/workflows/seeds-sync-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/seed/**'
+      - 'app/assets/seed/**'
+
+jobs:
+  check:
+    name: Verifica seeds sincronizados
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run sync check
+        run: python3 scripts/sync-seeds.py --check

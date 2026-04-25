@@ -127,7 +127,7 @@
   "feedLoading": "Cargando titulares…",
   "feedError": "Non se puido cargar a canle.",
   "filtersTitle": "Filtros",
-  "filterTopicsOffline": "Offline: topics not available. Try again when you have signal.",
+  "filterTopicsOffline": "Sen conexión co servidor: as temáticas non están dispoñibles. Téntao de novo cando teñas cobertura.",
   "filterByTopic": "Por temática",
   "filterByTerritory": "Por territorio",
   "filterByLanguage": "Por idioma",

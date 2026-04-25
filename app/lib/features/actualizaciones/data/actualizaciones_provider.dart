@@ -95,7 +95,11 @@ final actualizacionProvider =
     );
     return _parsear(respuesta.body, prefs) ??
         EstadoActualizacion.sinActualizacion;
-  } catch (_) {
+  } catch (error) {
+    // Check transitorio en background: no avisamos al usuario, pero
+    // dejamos rastro para poder debuggear si todos los usuarios dejan
+    // de ver actualizaciones de golpe.
+    debugPrint('[Actualizaciones] check falló: $error');
     return EstadoActualizacion.sinActualizacion;
   }
 });
@@ -120,7 +124,8 @@ EstadoActualizacion? _parsear(String raw, SharedPreferences prefs) {
       changelog: (data['changelog'] ?? '').toString(),
       esObligatoria: data['is_mandatory'] == true,
     );
-  } catch (_) {
+  } catch (error) {
+    debugPrint('[Actualizaciones] parseo falló: $error');
     return null;
   }
 }

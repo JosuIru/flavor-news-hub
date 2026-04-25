@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/api_exception.dart';
 import '../../../core/models/collective.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
@@ -41,10 +41,12 @@ class ResultadosBusqueda {
 /// Dispara 4 peticiones paralelas a /items, /sources, /radios y /collectives
 /// con el mismo parámetro `s`. Cada una trae pocos resultados (10 máx).
 ///
-/// Fallback offline: si la API da error de red (backend caído), buscamos
-/// en los datos locales — cache SQLite de items y seed de sources/radios
-/// /colectivos. Búsqueda naive case-insensitive `contains` sobre nombre
-/// y título; suficiente para que el buscador no aparezca roto offline.
+/// Fallback offline: si la API falla (red caída, 5xx, JSON corrupto…) caemos
+/// al cache local — items en SQLite y seeds bundleados de sources/radios/
+/// colectivos. Búsqueda naive case-insensitive `contains` sobre nombre y
+/// título. Antes filtrábamos sólo errores de red; eso dejaba al usuario sin
+/// resultados cuando el backend devolvía 500 (falso "no hay nada"). Ahora
+/// cualquier excepción cae al fallback y dejamos rastro en `debugPrint`.
 final resultadosBusquedaProvider =
     FutureProvider.autoDispose<ResultadosBusqueda>((ref) async {
   final consulta = ref.watch(consultaBusquedaProvider).trim();
@@ -54,18 +56,12 @@ final resultadosBusquedaProvider =
   final api = ref.watch(flavorNewsApiProvider);
   final minuscula = consulta.toLowerCase();
 
-  bool esError(dynamic e) => e is FlavorNewsApiException && e.esProblemaRed;
-
   Future<List<Item>> buscarItems() async {
     try {
       final pag = await api.fetchItems(perPage: 10, search: consulta);
       return pag.items;
-    } catch (e) {
-      if (!esError(e)) return const [];
-      // Fallback offline: buscamos en el cache SQLite (lo que ya se
-      // había visto) y también en el stream del seed RSS en vivo
-      // (titulares frescos del minuto, si el dispositivo tiene red
-      // aunque el backend esté caído). Los unimos deduplicando por id.
+    } catch (error) {
+      debugPrint('[Buscador] /items falló, fallback local: $error');
       final dao = await ref.watch(itemsLocalesDaoProvider.future);
       final cache = await dao.obtenerCache(limite: 500);
       final estadoSeed = ref.watch(itemsDesdeSeedProvider);
@@ -88,8 +84,8 @@ final resultadosBusquedaProvider =
     try {
       final pag = await api.fetchSources(perPage: 10, search: consulta);
       return pag.items;
-    } catch (e) {
-      if (!esError(e)) return const [];
+    } catch (error) {
+      debugPrint('[Buscador] /sources falló, fallback seed: $error');
       final fuentesSeed = await ref.watch(sourcesSeedProvider.future);
       // Alineado con `s=` del backend: nombre + descripción (post_content).
       // Añadimos también territorio como desempate útil ("¿qué medios
@@ -107,8 +103,8 @@ final resultadosBusquedaProvider =
   Future<List<modelo_radio.Radio>> buscarRadios() async {
     try {
       return await api.fetchRadios(search: consulta);
-    } catch (e) {
-      if (!esError(e)) return const [];
+    } catch (error) {
+      debugPrint('[Buscador] /radios falló, fallback seed: $error');
       final radios = await ref.watch(radiosSeedProvider.future);
       return radios
           .where((r) =>
@@ -124,8 +120,8 @@ final resultadosBusquedaProvider =
     try {
       final pag = await api.fetchCollectives(perPage: 10, search: consulta);
       return pag.items;
-    } catch (e) {
-      if (!esError(e)) return const [];
+    } catch (error) {
+      debugPrint('[Buscador] /collectives falló, fallback seed: $error');
       final colectivos = await ref.watch(colectivosSeedProvider.future);
       return colectivos
           .where((c) =>

@@ -162,11 +162,21 @@ final class FeedIngester
         $maximoItemsPorEjecucion = (int) apply_filters('fnh_max_items_per_ingest', 50);
         $itemsDelFeed = $feedDescargado->get_items(0, $maximoItemsPorEjecucion);
 
+        // Errores de parseo: contamos cuántos items malformados saltamos
+        // y guardamos los primeros 3 mensajes para que el log dé pista
+        // sobre por qué se descartaron. Antes el catch silenciaba todo
+        // y un feed con 49/50 items malos parecía "ingesta exitosa, 1
+        // item nuevo" sin avisar al admin.
+        $contadorErroresParseo = 0;
+        $muestraErroresParseo = [];
         foreach ($itemsDelFeed as $itemFeed) {
             try {
                 $datosNormalizados = FeedItemParser::parsear($itemFeed);
             } catch (\Throwable $errorParseo) {
-                // Un item malformado no debe romper la ingesta completa.
+                $contadorErroresParseo++;
+                if (count($muestraErroresParseo) < 3) {
+                    $muestraErroresParseo[] = $errorParseo->getMessage();
+                }
                 continue;
             }
             if ($datosNormalizados['title'] === '' || $datosNormalizados['permalink'] === '') {
@@ -182,8 +192,16 @@ final class FeedIngester
             }
         }
 
-        self::cerrarLog($idLog, 'success', $contadorNuevos, $contadorDescartados, '');
-        return self::resumenFuente($contadorNuevos, $contadorDescartados, '', $idLog);
+        $mensajeAviso = '';
+        if ($contadorErroresParseo > 0) {
+            $mensajeAviso = sprintf(
+                'Items con error de parseo: %d. Muestra: %s',
+                $contadorErroresParseo,
+                implode(' | ', $muestraErroresParseo)
+            );
+        }
+        self::cerrarLog($idLog, 'success', $contadorNuevos, $contadorDescartados, $mensajeAviso);
+        return self::resumenFuente($contadorNuevos, $contadorDescartados, $mensajeAviso, $idLog);
     }
 
     /** @return array{items_new:int,items_skipped:int,error:string,log_id:int} */

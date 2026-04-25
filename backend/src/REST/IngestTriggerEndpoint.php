@@ -66,8 +66,13 @@ final class IngestTriggerEndpoint
 
         // Agendamos una ejecución inmediata del hook de ingesta. Usamos
         // time()-1 para forzar que ya esté "pendiente" cuando spawn_cron
-        // arranque el runner.
-        wp_schedule_single_event($ahora - 1, Scheduler::HOOK_CRON);
+        // arranque el runner. Si ya hay un evento de ingesta pendiente
+        // próximo a dispararse (recurrente o single), no agendamos otro
+        // — wp-cron correrá el existente y duplicarlo no aporta nada.
+        $proximoYaAgendado = wp_next_scheduled(Scheduler::HOOK_CRON);
+        if ($proximoYaAgendado === false || $proximoYaAgendado > $ahora + 30) {
+            wp_schedule_single_event($ahora - 1, Scheduler::HOOK_CRON);
+        }
         spawn_cron($ahora);
 
         set_transient(self::TRANSIENT_ULTIMA_EJECUCION, $ahora, $segundosCooldown + MINUTE_IN_SECONDS);
