@@ -21,6 +21,7 @@ final class Deactivator
     {
         Scheduler::desagendar();
         Scheduler::desagendarLimpiezaLogs();
+        Scheduler::desagendarInformeSemanal();
         flush_rewrite_rules();
     }
 }

@@ -20,6 +20,7 @@ use FlavorNewsHub\Admin\AdminController;
 use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\Database\LogsCleanup;
 use FlavorNewsHub\Database\ItemsCleanup;
+use FlavorNewsHub\Notifications\WeeklyReport;
 use FlavorNewsHub\Integration\FlavorPlatformAddon;
 use FlavorNewsHub\Shortcodes\Shortcodes;
 use FlavorNewsHub\Templates\TemplateRouter;
@@ -96,6 +97,17 @@ final class Plugin
         // mismo hook diario para no duplicar eventos de wp-cron.
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [LogsCleanup::class, 'ejecutar']);
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [ItemsCleanup::class, 'ejecutar']);
+
+        // Job semanal: informe con stats de feeds (top activos, muertos,
+        // errores, propuestas pendientes). Enganchado siempre — la propia
+        // tarea decide si enviar según `weekly_report_enabled`.
+        add_action(Scheduler::HOOK_WEEKLY_REPORT, [WeeklyReport::class, 'ejecutar']);
+        // Asegura que el evento existe en wp-cron (idempotente). Útil
+        // para usuarios que ya tienen el plugin instalado y han hecho
+        // upgrade sin reactivar — el `Activator::activate` no corre en
+        // este escenario, así que sin esta llamada el informe nunca
+        // queda agendado.
+        add_action('init', [Scheduler::class, 'agendarInformeSemanal'], 9);
 
         // Admin (menú, metaboxes, acciones, settings). Los hooks admin_*
         // sólo disparan en backend; registrar siempre es inofensivo.

@@ -6,6 +6,7 @@ namespace FlavorNewsHub\REST;
 use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Support\TerritoryNormalizer;
+use FlavorNewsHub\Notifications\SubmitNotifier;
 
 /**
  * Endpoint público para alta de colectivos:
@@ -147,6 +148,10 @@ final class CollectiveSubmitEndpoint
                 wp_set_object_terms($idColectivoNuevo, $idsTerminoAceptados, Topic::SLUG, false);
             }
         }
+
+        // 7. Aviso por email al admin (silencioso si está desactivado en
+        // ajustes o si wp_mail no funciona).
+        SubmitNotifier::notificar(SubmitNotifier::TIPO_COLLECTIVE, (int) $idColectivoNuevo, $emailContacto);
 
         return new \WP_REST_Response([
             'success' => true,

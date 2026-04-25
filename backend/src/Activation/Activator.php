@@ -58,6 +58,7 @@ final class Activator
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
         Scheduler::agendarSiHaceFalta();
         Scheduler::agendarLimpiezaLogs();
+        Scheduler::agendarInformeSemanal();
 
         flush_rewrite_rules();
     }

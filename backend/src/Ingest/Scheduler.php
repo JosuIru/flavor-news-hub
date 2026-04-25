@@ -19,6 +19,7 @@ final class Scheduler
 {
     public const HOOK_CRON = 'fnh_ingest_all';
     public const HOOK_CLEANUP_LOGS = 'fnh_cleanup_logs';
+    public const HOOK_WEEKLY_REPORT = 'fnh_weekly_report';
     public const RECURRENCE_SLUG = 'fnh_ingest_interval';
 
     /**
@@ -91,5 +92,72 @@ final class Scheduler
             wp_unschedule_event($timestampProximo, self::HOOK_CLEANUP_LOGS);
         }
         wp_clear_scheduled_hook(self::HOOK_CLEANUP_LOGS);
+    }
+
+    /**
+     * Agenda el envío semanal del informe. Si ya está agendado y el día
+     * coincide con el configurado, no hace nada. Si no coincide, reagenda
+     * apuntando al próximo día configurado a las 09:00 hora del sitio.
+     *
+     * El día se lee de `OptionsRepository`, donde 0=domingo … 6=sábado
+     * (compatible con PHP `date('w')`).
+     */
+    public static function agendarInformeSemanal(): void
+    {
+        $opciones = OptionsRepository::todas();
+        if (empty($opciones['weekly_report_enabled'])) {
+            self::desagendarInformeSemanal();
+            return;
+        }
+        $diaSemanaConfigurado = (int) ($opciones['weekly_report_weekday'] ?? 1);
+        $proximoTimestamp = self::calcularProximoDisparoSemanal($diaSemanaConfigurado);
+
+        $existente = wp_next_scheduled(self::HOOK_WEEKLY_REPORT);
+        if ($existente !== false) {
+            // Si el evento existente coincide con el día configurado y
+            // está en el futuro, lo respetamos. Si no, lo reagendamos.
+            $diaExistente = (int) wp_date('w', (int) $existente);
+            if ($diaExistente === $diaSemanaConfigurado && (int) $existente > time()) {
+                return;
+            }
+            wp_unschedule_event((int) $existente, self::HOOK_WEEKLY_REPORT);
+            wp_clear_scheduled_hook(self::HOOK_WEEKLY_REPORT);
+        }
+        wp_schedule_event($proximoTimestamp, 'weekly', self::HOOK_WEEKLY_REPORT);
+    }
+
+    /** Cancela completamente el informe semanal. */
+    public static function desagendarInformeSemanal(): void
+    {
+        $timestampProximo = wp_next_scheduled(self::HOOK_WEEKLY_REPORT);
+        if ($timestampProximo !== false) {
+            wp_unschedule_event($timestampProximo, self::HOOK_WEEKLY_REPORT);
+        }
+        wp_clear_scheduled_hook(self::HOOK_WEEKLY_REPORT);
+    }
+
+    /**
+     * Calcula el próximo timestamp UTC en el que debe dispararse el
+     * informe semanal: el próximo día de la semana indicado a las 09:00
+     * hora local del sitio.
+     */
+    private static function calcularProximoDisparoSemanal(int $diaSemanaObjetivo): int
+    {
+        $diaSemanaObjetivo = max(0, min(6, $diaSemanaObjetivo));
+        $zonaHoraria = wp_timezone();
+        $ahora = new \DateTimeImmutable('now', $zonaHoraria);
+        $diaSemanaActual = (int) $ahora->format('w');
+        $diasParaObjetivo = ($diaSemanaObjetivo - $diaSemanaActual + 7) % 7;
+        if ($diasParaObjetivo === 0) {
+            // Si es hoy y todavía no son las 09:00, lanzamos hoy; si ya
+            // pasó la hora, esperamos una semana entera.
+            $horaCorte = $ahora->setTime(9, 0);
+            if ($ahora < $horaCorte) {
+                return $horaCorte->getTimestamp();
+            }
+            $diasParaObjetivo = 7;
+        }
+        $proximo = $ahora->modify('+' . $diasParaObjetivo . ' days')->setTime(9, 0);
+        return $proximo->getTimestamp();
     }
 }

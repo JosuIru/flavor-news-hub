@@ -43,6 +43,15 @@ final class OptionsRepository
             'item_retention_days'       => 90,
             'delete_on_uninstall'       => false,
             'donation_url'              => self::DONATION_URL_DEFAULT,
+            // Avisos por email al admin cuando llega una propuesta nueva
+            // de medio o colectivo. El email destino, si está vacío, cae
+            // a `admin_email` de WP.
+            'notify_email_on_submit'    => true,
+            'notify_email_target'       => '',
+            // Informe semanal con estadísticas de feeds (más activos,
+            // muertos, errores, propuestas pendientes). 0=domingo, 1=lunes…
+            'weekly_report_enabled'     => true,
+            'weekly_report_weekday'     => 1,
         ];
     }
 
@@ -84,6 +93,13 @@ final class OptionsRepository
         $fusion['delete_on_uninstall'] = (bool) $fusion['delete_on_uninstall'];
         $urlSaneada = esc_url_raw((string) ($fusion['donation_url'] ?? ''));
         $fusion['donation_url'] = $urlSaneada !== '' ? $urlSaneada : self::DONATION_URL_DEFAULT;
+
+        $fusion['notify_email_on_submit'] = (bool) ($fusion['notify_email_on_submit'] ?? true);
+        $emailDestino = sanitize_email((string) ($fusion['notify_email_target'] ?? ''));
+        $fusion['notify_email_target'] = $emailDestino;
+        $fusion['weekly_report_enabled'] = (bool) ($fusion['weekly_report_enabled'] ?? true);
+        $diaSemana = (int) ($fusion['weekly_report_weekday'] ?? 1);
+        $fusion['weekly_report_weekday'] = ($diaSemana >= 0 && $diaSemana <= 6) ? $diaSemana : 1;
 
         update_option(self::NOMBRE_OPCION, $fusion);
     }

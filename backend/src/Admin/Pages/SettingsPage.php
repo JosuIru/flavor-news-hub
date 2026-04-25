@@ -18,6 +18,7 @@ final class SettingsPage
 {
     public const GRUPO_OPCIONES = 'fnh_settings_group';
     public const SECCION_GENERAL = 'fnh_settings_seccion_general';
+    public const SECCION_NOTIFICACIONES = 'fnh_settings_seccion_notificaciones';
     public const SECCION_PRIVACIDAD = 'fnh_settings_seccion_privacidad';
 
     public static function registrarAjustes(): void
@@ -69,6 +70,45 @@ final class SettingsPage
             [self::class, 'campoUrlDonaciones'],
             'fnh-settings',
             self::SECCION_GENERAL
+        );
+
+        add_settings_section(
+            self::SECCION_NOTIFICACIONES,
+            __('Notificaciones por email', 'flavor-news-hub'),
+            static fn() => print '<p>' . esc_html__('Avisos al admin cuando llega una propuesta nueva e informe semanal con estadísticas de feeds.', 'flavor-news-hub') . '</p>',
+            'fnh-settings'
+        );
+
+        add_settings_field(
+            'notify_email_target',
+            __('Email destino', 'flavor-news-hub'),
+            [self::class, 'campoEmailDestino'],
+            'fnh-settings',
+            self::SECCION_NOTIFICACIONES
+        );
+
+        add_settings_field(
+            'notify_email_on_submit',
+            __('Avisar de propuestas nuevas', 'flavor-news-hub'),
+            [self::class, 'campoAvisarSubmits'],
+            'fnh-settings',
+            self::SECCION_NOTIFICACIONES
+        );
+
+        add_settings_field(
+            'weekly_report_enabled',
+            __('Informe semanal', 'flavor-news-hub'),
+            [self::class, 'campoInformeSemanal'],
+            'fnh-settings',
+            self::SECCION_NOTIFICACIONES
+        );
+
+        add_settings_field(
+            'weekly_report_weekday',
+            __('Día del informe', 'flavor-news-hub'),
+            [self::class, 'campoDiaInformeSemanal'],
+            'fnh-settings',
+            self::SECCION_NOTIFICACIONES
         );
 
         add_settings_section(
@@ -207,6 +247,75 @@ final class SettingsPage
         );
     }
 
+    public static function campoEmailDestino(): void
+    {
+        $valor = (string) (OptionsRepository::todas()['notify_email_target'] ?? '');
+        $emailAdminWp = (string) get_option('admin_email');
+        printf(
+            '<input type="email" name="%1$s[notify_email_target]" value="%2$s" class="regular-text" placeholder="%3$s" /> <p class="description">%4$s</p>',
+            esc_attr(OptionsRepository::NOMBRE_OPCION),
+            esc_attr($valor),
+            esc_attr($emailAdminWp),
+            esc_html(sprintf(
+                /* translators: %s email del admin de WP */
+                __('Si lo dejas vacío usará el email del admin de WordPress (%s).', 'flavor-news-hub'),
+                $emailAdminWp
+            ))
+        );
+    }
+
+    public static function campoAvisarSubmits(): void
+    {
+        $activo = (bool) (OptionsRepository::todas()['notify_email_on_submit'] ?? true);
+        printf(
+            '<label><input type="checkbox" name="%1$s[notify_email_on_submit]" value="1" %2$s /> %3$s</label>',
+            esc_attr(OptionsRepository::NOMBRE_OPCION),
+            checked($activo, true, false),
+            esc_html__('Enviar email cuando llegue una propuesta nueva de medio o colectivo.', 'flavor-news-hub')
+        );
+    }
+
+    public static function campoInformeSemanal(): void
+    {
+        $activo = (bool) (OptionsRepository::todas()['weekly_report_enabled'] ?? true);
+        printf(
+            '<label><input type="checkbox" name="%1$s[weekly_report_enabled]" value="1" %2$s /> %3$s</label> <p class="description">%4$s</p>',
+            esc_attr(OptionsRepository::NOMBRE_OPCION),
+            checked($activo, true, false),
+            esc_html__('Enviar informe semanal con feeds más activos, muertos, errores y propuestas pendientes.', 'flavor-news-hub'),
+            esc_html__('Recordatorio: wp-cron es oportunista (depende del tráfico). Si necesitas garantía de envío puntual, configura un cron del sistema.', 'flavor-news-hub')
+        );
+    }
+
+    public static function campoDiaInformeSemanal(): void
+    {
+        $valor = (int) (OptionsRepository::todas()['weekly_report_weekday'] ?? 1);
+        $dias = [
+            0 => __('Domingo', 'flavor-news-hub'),
+            1 => __('Lunes', 'flavor-news-hub'),
+            2 => __('Martes', 'flavor-news-hub'),
+            3 => __('Miércoles', 'flavor-news-hub'),
+            4 => __('Jueves', 'flavor-news-hub'),
+            5 => __('Viernes', 'flavor-news-hub'),
+            6 => __('Sábado', 'flavor-news-hub'),
+        ];
+        $opciones = '';
+        foreach ($dias as $clave => $etiqueta) {
+            $opciones .= sprintf(
+                '<option value="%1$d" %2$s>%3$s</option>',
+                (int) $clave,
+                selected($valor, $clave, false),
+                esc_html($etiqueta)
+            );
+        }
+        printf(
+            '<select name="%1$s[weekly_report_weekday]">%2$s</select> <p class="description">%3$s</p>',
+            esc_attr(OptionsRepository::NOMBRE_OPCION),
+            $opciones,
+            esc_html__('Se envía a las 09:00 hora del sitio.', 'flavor-news-hub')
+        );
+    }
+
     public static function campoBorrarAlDesinstalar(): void
     {
         $activo = (bool) OptionsRepository::todas()['delete_on_uninstall'];
@@ -240,6 +349,16 @@ final class SettingsPage
             ? (int) $valorBruto['item_retention_days']
             : (int) ($actuales['item_retention_days'] ?? 90);
 
+        $emailDestinoBruto = isset($valorBruto['notify_email_target'])
+            ? trim((string) $valorBruto['notify_email_target'])
+            : (string) ($actuales['notify_email_target'] ?? '');
+        $emailDestinoSaneado = $emailDestinoBruto === '' ? '' : sanitize_email($emailDestinoBruto);
+
+        $diaInformeBruto = isset($valorBruto['weekly_report_weekday'])
+            ? (int) $valorBruto['weekly_report_weekday']
+            : (int) ($actuales['weekly_report_weekday'] ?? 1);
+        $diaInformeSaneado = ($diaInformeBruto >= 0 && $diaInformeBruto <= 6) ? $diaInformeBruto : 1;
+
         $nuevos = [
             'cron_interval_minutes'     => isset($valorBruto['cron_interval_minutes'])
                 ? (int) $valorBruto['cron_interval_minutes']
@@ -254,6 +373,10 @@ final class SettingsPage
             'donation_url'              => $urlDonacionesSaneada !== ''
                 ? $urlDonacionesSaneada
                 : OptionsRepository::DONATION_URL_DEFAULT,
+            'notify_email_on_submit'    => !empty($valorBruto['notify_email_on_submit']),
+            'notify_email_target'       => $emailDestinoSaneado,
+            'weekly_report_enabled'     => !empty($valorBruto['weekly_report_enabled']),
+            'weekly_report_weekday'     => $diaInformeSaneado,
         ];
 
         if ($nuevos['cron_interval_minutes'] < OptionsRepository::INTERVALO_MINIMO_MINUTOS) {
@@ -271,6 +394,22 @@ final class SettingsPage
                 'update_option_' . OptionsRepository::NOMBRE_OPCION,
                 static function () {
                     Scheduler::reagendar();
+                },
+                10,
+                0
+            );
+        }
+
+        // Si cambian el toggle del informe semanal o el día elegido,
+        // reagendamos el evento `fnh_weekly_report` con los valores
+        // nuevos. Mismo patrón que el reagendado del cron de ingesta.
+        $cambioInformeActivo = (bool) ($actuales['weekly_report_enabled'] ?? true) !== $nuevos['weekly_report_enabled'];
+        $cambioDiaInforme = (int) ($actuales['weekly_report_weekday'] ?? 1) !== $nuevos['weekly_report_weekday'];
+        if ($cambioInformeActivo || $cambioDiaInforme) {
+            add_action(
+                'update_option_' . OptionsRepository::NOMBRE_OPCION,
+                static function () {
+                    Scheduler::agendarInformeSemanal();
                 },
                 10,
                 0

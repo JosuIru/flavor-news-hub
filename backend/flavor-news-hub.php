@@ -3,7 +3,7 @@
  * Plugin Name:       Flavor News Hub
  * Plugin URI:        https://github.com/JosuIru/flavor-news-hub
  * Description:       Backend headless para agregar medios alternativos y listar colectivos organizados. CPTs, ingesta RSS, REST pública y admin de verificación. Complementario a Flavor Platform.
- * Version:           0.9.64
+ * Version:           0.9.65
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Flavor News Hub contributors
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Constantes básicas del plugin, referenciadas por el resto de clases.
-define('FNH_VERSION', '0.9.64');
+define('FNH_VERSION', '0.9.65');
 define('FNH_PLUGIN_VERSION', FNH_VERSION);
 define('FNH_PLUGIN_FILE', __FILE__);
 define('FNH_PLUGIN_DIR', plugin_dir_path(__FILE__));
