@@ -173,7 +173,22 @@ class _CuerpoSource extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _BotonVerContenido(source: source, textos: textos, ref: ref),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _BotonVerContenido(source: source, textos: textos, ref: ref),
+              if (source.supportUrl.isNotEmpty)
+                FilledButton.icon(
+                  onPressed: () => launchUrl(
+                    Uri.parse(source.supportUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  icon: const Icon(Icons.favorite),
+                  label: Text(textos.supportEntity),
+                ),
+            ],
+          ),
         ],
       ),
     );

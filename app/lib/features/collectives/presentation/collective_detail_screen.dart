@@ -144,6 +144,15 @@ class _CuerpoColectivo extends ConsumerWidget {
                   icon: const Icon(Icons.open_in_new),
                   label: Text(textos.collectiveVisitWebsite),
                 ),
+              if (colectivo.supportUrl.isNotEmpty)
+                FilledButton.icon(
+                  onPressed: () => launchUrl(
+                    Uri.parse(colectivo.supportUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  icon: const Icon(Icons.favorite),
+                  label: Text(textos.supportEntity),
+                ),
               if (colectivo.flavorUrl.isNotEmpty)
                 FilledButton.icon(
                   onPressed: () => launchUrl(

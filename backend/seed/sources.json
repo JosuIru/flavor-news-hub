@@ -82,7 +82,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://arainfo.org/donaciones/"
   },
   {
     "id": 6464,
@@ -95,7 +96,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://ballenablanca.es/producto/suscripcion-anual/"
   },
   {
     "id": 6414,
@@ -108,7 +110,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://www.berria.eus/babestu-berria.html"
   },
   {
     "id": 6133,
@@ -183,7 +186,8 @@
       "ecologismo",
       "internacional",
       "cultura"
-    ]
+    ],
+    "support_url": "https://agora.ctxt.es/donaciones/"
   },
   {
     "id": 6132,
@@ -196,7 +200,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
   },
   {
     "id": 6752,
@@ -240,7 +245,8 @@
     "languages": [
       "es"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://eltopo.org/suscribete/"
   },
   {
     "id": 7100,
@@ -253,7 +259,8 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://supporters.eff.org/donate/join-eff-today"
   },
   {
     "id": 7101,
@@ -266,7 +273,8 @@
     "languages": [
       "en"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://my.fsfe.org/donate?referrer=https://fsfe.org/index.html"
   },
   {
     "id": 6608,
@@ -297,7 +305,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "support_url": "https://patreon.com/FurorTV"
   },
   {
     "id": 6416,
@@ -329,7 +338,8 @@
     "topics": [
       "cultura",
       "educacion"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/HomoDeusES"
   },
   {
     "id": 6612,
@@ -376,7 +386,8 @@
     "topics": [
       "memoria-historica",
       "internacional"
-    ]
+    ],
+    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=EBLYKADFLBBKA&amp;source=url"
   },
   {
     "id": 6284,
@@ -402,7 +413,8 @@
     "languages": [
       "ca"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://directa.cat/donar-vides/"
   },
   {
     "id": 6751,
@@ -417,7 +429,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/Filmoteca"
   },
   {
     "id": 6124,
@@ -434,7 +447,8 @@
       "feminismos",
       "ecologismo",
       "cultura"
-    ]
+    ],
+    "support_url": "https://kiosco.lamarea.com/donaciones-2/"
   },
   {
     "id": 7099,
@@ -450,7 +464,8 @@
     "topics": [
       "ecologismo",
       "tecnologia-soberana"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/lowtechmagazine"
   },
   {
     "id": 6613,
@@ -467,7 +482,8 @@
     ],
     "topics": [
       "tecnologia-soberana"
-    ]
+    ],
+    "support_url": "https://liberapay.com/MakerTube\\\\n-"
   },
   {
     "id": 6748,
@@ -483,7 +499,8 @@
     "topics": [
       "politica",
       "internacional"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/miguelcharisteas"
   },
   {
     "id": 6607,
@@ -516,7 +533,8 @@
       "ecologismo",
       "internacional",
       "rural"
-    ]
+    ],
+    "support_url": "https://mongabay.org/donate"
   },
   {
     "id": 7107,
@@ -580,7 +598,8 @@
     "topics": [
       "feminismos",
       "cuidados"
-    ]
+    ],
+    "support_url": "https://www.pikaramagazine.com/apoyanos/suscribete-pikara/"
   },
   {
     "id": 6754,
@@ -627,7 +646,8 @@
     "topics": [
       "internacional",
       "tecnologia-soberana"
-    ]
+    ],
+    "support_url": "https://restofworld.org/donate/"
   },
   {
     "id": 6749,
@@ -657,7 +677,8 @@
     ],
     "topics": [
       "politica"
-    ]
+    ],
+    "support_url": "https://donorbox.org/aliadas"
   },
   {
     "id": 6465,
@@ -672,7 +693,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "support_url": "https://donate.theconversation.com/es?utm_source=theconversation.com&amp;utm_medium=website&amp;utm_campaign=mobile-menu"
   },
   {
     "id": 6750,
@@ -735,7 +757,8 @@
     "topics": [
       "politica",
       "internacional"
-    ]
+    ],
+    "support_url": "https://www.paypal.com/paypalme/tuprofederi"
   },
   {
     "id": 6610,
@@ -1117,7 +1140,8 @@
     ],
     "topics": [
       "educacion"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/cdeciencia"
   },
   {
     "id": 7139,
@@ -1147,7 +1171,8 @@
     ],
     "topics": [
       "educacion"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/robotitus"
   },
   {
     "id": 7141,
@@ -1222,7 +1247,8 @@
     ],
     "topics": [
       "educacion"
-    ]
+    ],
+    "support_url": "https://donorbox.org/swtg"
   },
   {
     "id": 7146,
@@ -1237,7 +1263,8 @@
     ],
     "topics": [
       "educacion"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/pbsspacetime"
   },
   {
     "id": 7147,
@@ -1283,7 +1310,8 @@
     ],
     "topics": [
       "ecologismo"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/OurChangingCl..."
   },
   {
     "id": 7150,
@@ -1298,7 +1326,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/foldablehuman"
   },
   {
     "id": 7151,
@@ -1345,7 +1374,8 @@
     ],
     "topics": [
       "educacion"
-    ]
+    ],
+    "support_url": "https://www.patreon.com/teded"
   },
   {
     "id": 7154,
@@ -1405,7 +1435,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://97irratia.info/colabora/"
   },
   {
     "id": 7158,
@@ -1493,7 +1524,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "support_url": "https://cuacfm.org/asociate-a-cuac-fm/"
   },
   {
     "id": 7164,
@@ -1540,7 +1572,8 @@
     ],
     "topics": [
       "cultura"
-    ]
+    ],
+    "support_url": "https://radioenlace.org/colabora-con-radio-enlace/"
   },
   {
     "id": 7167,
@@ -1692,7 +1725,8 @@
     "content_license": "cc-by-nc-nd-3.0-us",
     "legal_note": "Licencia Creative Commons BY-NC-ND 3.0 US. Archivo completo desde 1996 disponible bajo esa licencia.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.democracynow.org/donate?campaign=web-nav"
   },
   {
     "id": 7275,
@@ -1740,7 +1774,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "TV comunitaria sin ánimo de lucro. Emite sin licencia de TDT porque el Estado español lleva desde 2010 incumpliendo la Ley General de Comunicación Audiovisual al no convocar el concurso de frecuencias para medios comunitarios. La ONU ha investigado al Estado español por esto tras denuncia de la Red de Medios Comunitarios. Su actividad online es plenamente legal.",
     "has_live_stream": true,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.goteo.org/project/la-veinal-tv1"
   },
   {
     "id": 7277,
@@ -1912,7 +1947,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://donate.novaramedia.com"
   },
   {
     "id": 7284,
@@ -1936,7 +1972,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.patreon.com/BreakThroughNews"
   },
   {
     "id": 7285,
@@ -2012,7 +2049,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.paypal.com/donate/?hosted_button_id=QYAX3B8342XG2"
   },
   {
     "id": 7288,
@@ -2038,7 +2076,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=YXNB7TGY954HE&amp;source=url"
   },
   {
     "id": 7289,
@@ -2115,7 +2154,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.eldiario.es/socios"
   },
   {
     "id": 7292,
@@ -2321,7 +2361,8 @@
     "content_license": "cc-by-nc-sa-4.0",
     "legal_note": "Publica bajo CC BY-NC-SA 4.0 en su web; el uso del feed debe respetar esa licencia y la atribución exigida.",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.paypal.com/cgi-bin/webscr"
   },
   {
     "id": 7300,
@@ -2451,7 +2492,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://www.radiosudaca.org/asociate/"
   },
   {
     "id": 7305,
@@ -2503,7 +2545,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://fmchalet.org/donaciones-donations-dons-spenden-%e6%8d%90%e6%ac%be/"
   },
   {
     "id": 7307,
@@ -2530,7 +2573,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://radiokurruf.org/apoyo/"
   },
   {
     "id": 7308,
@@ -2693,7 +2737,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "support_url": "https://radiolavozindigena.org/apoyanos"
   },
   {
     "id": 7314,
@@ -4472,7 +4517,8 @@
     "topics": [
       "cultura",
       "educacion"
-    ]
+    ],
+    "support_url": "https://sustatu.eus/harpidetza/"
   },
   {
     "id": 7359,
@@ -4498,7 +4544,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://anboto.org/harpidetza/"
   },
   {
     "id": 7361,
@@ -4511,7 +4558,8 @@
     "languages": [
       "eu"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://geuria.eus/harpidetza/"
   },
   {
     "id": 7362,
@@ -4551,7 +4599,8 @@
       "eu",
       "fr"
     ],
-    "topics": []
+    "topics": [],
+    "support_url": "https://www.mediabask.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Fwww.mediabask.eus%2F"
   },
   {
     "id": 7365,
@@ -4634,7 +4683,8 @@
     "topics": [
       "ecologismo",
       "derechos-civiles"
-    ]
+    ],
+    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras"
   },
   {
     "id": 7370,
@@ -4714,7 +4764,8 @@
     "topics": [
       "cultura",
       "derechos-civiles"
-    ]
+    ],
+    "support_url": "https://omnium.cat/donatius/"
   },
   {
     "id": 7375,
@@ -4761,7 +4812,8 @@
     ],
     "topics": [
       "ecologismo"
-    ]
+    ],
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
   },
   {
     "id": 7378,
@@ -4901,7 +4953,8 @@
     "topics": [
       "derechos-civiles",
       "ecologismo"
-    ]
+    ],
+    "support_url": "https://copinh.org/colabora/"
   },
   {
     "id": 7387,

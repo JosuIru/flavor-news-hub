@@ -20,6 +20,7 @@ class Collective with _$Collective {
     @Default('') String url,
     @Default('') String websiteUrl,
     @Default('') String flavorUrl,
+    @Default('') String supportUrl,
     @Default('') String territory,
     @Default('') String country,
     @Default('') String region,

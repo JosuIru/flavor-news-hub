@@ -19,6 +19,7 @@ class Radio with _$Radio {
     @Default('') String streamUrl,
     @Default('') String websiteUrl,
     @Default('') String rssUrl,
+    @Default('') String supportUrl,
     @Default('') String territory,
     @Default('') String country,
     @Default('') String region,

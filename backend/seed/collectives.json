@@ -59,7 +59,8 @@
         "name": "Alimentación",
         "slug": "alimentacion"
       }
-    ]
+    ],
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
   },
   {
     "id": 6203,
@@ -320,7 +321,8 @@
         "name": "Economía social",
         "slug": "economia-social"
       }
-    ]
+    ],
+    "support_url": "https://afectadosporlahipoteca.com/donaciones/"
   },
   {
     "id": 6212,
@@ -402,7 +404,8 @@
         "name": "Derechos civiles",
         "slug": "derechos-civiles"
       }
-    ]
+    ],
+    "support_url": "https://sodepaz.org/socias-alta/"
   },
   {
     "id": 6215,
@@ -489,7 +492,8 @@
         "name": "Antirracismo",
         "slug": "antirracismo"
       }
-    ]
+    ],
+    "support_url": "https://redacoge.org/colabora/"
   },
   {
     "id": 6218,
@@ -537,7 +541,8 @@
         "name": "Alimentación",
         "slug": "alimentacion"
       }
-    ]
+    ],
+    "support_url": "https://es.greenpeace.org/es/que-puedes-hacer-tu/hazte-socio/"
   },
   {
     "id": 6220,
@@ -561,7 +566,8 @@
         "name": "Alimentación",
         "slug": "alimentacion"
       }
-    ]
+    ],
+    "support_url": "http://www.tierra.org/hazte-socio-de-amigos-de-la-tierra/"
   },
   {
     "id": 6221,
@@ -590,7 +596,8 @@
         "name": "Derechos civiles",
         "slug": "derechos-civiles"
       }
-    ]
+    ],
+    "support_url": "https://www.paypal.com/cgi-bin/webscr"
   },
   {
     "id": 6222,
@@ -735,7 +742,8 @@
         "name": "Derechos civiles",
         "slug": "derechos-civiles"
       }
-    ]
+    ],
+    "support_url": "https://www.goteo.org/project/con-vosotras-si-campana-de-financiacion-duque-de-a"
   },
   {
     "id": 6227,
@@ -817,7 +825,8 @@
         "name": "Derechos civiles",
         "slug": "derechos-civiles"
       }
-    ]
+    ],
+    "support_url": "https://lainvisible.net/colabora-con-la-invisible/"
   },
   {
     "id": 6230,
@@ -841,7 +850,8 @@
         "name": "Educación",
         "slug": "educacion"
       }
-    ]
+    ],
+    "support_url": "https://traficantes.net/nlr/suscripcion"
   },
   {
     "id": 6231,
@@ -894,7 +904,8 @@
         "name": "Alimentación",
         "slug": "alimentacion"
       }
-    ]
+    ],
+    "support_url": "https://feministasdepueblo.org/quienes-somos/organigrama/socias-os"
   },
   {
     "id": 6233,
@@ -1033,7 +1044,8 @@
         "name": "Cultura",
         "slug": "cultura"
       }
-    ]
+    ],
+    "support_url": "https://www.euskalmemoria.eus/eu/Babestu"
   },
   {
     "id": 6239,
@@ -1177,7 +1189,8 @@
         "name": "Laboral",
         "slug": "laboral"
       }
-    ]
+    ],
+    "support_url": "https://www.ehnebizkaia.eus/suscripcion-etxalde"
   },
   {
     "id": 6245,
@@ -1316,7 +1329,8 @@
         "name": "Rural",
         "slug": "rural"
       }
-    ]
+    ],
+    "support_url": "https://ekologistakmartxan.org/eu/participa/asociate/"
   },
   {
     "id": 6251,
@@ -1460,7 +1474,8 @@
         "name": "Educación",
         "slug": "educacion"
       }
-    ]
+    ],
+    "support_url": "https://www.hegoa.ehu.eus/es/membership/new"
   },
   {
     "id": 6257,
@@ -1489,7 +1504,8 @@
         "name": "Feminismos",
         "slug": "feminismos"
       }
-    ]
+    ],
+    "support_url": "https://www.mundubat.org/suscribete-a-nuestro-boletin-2/"
   },
   {
     "id": 6258,
@@ -1687,7 +1703,8 @@
     "verified": true,
     "source_slugs": [
       "verdegaia"
-    ]
+    ],
+    "support_url": "https://www.teaming.net/brigadasdeseucaliptizadoras"
   },
   {
     "id": 6266,
@@ -1784,7 +1801,8 @@
     "verified": true,
     "source_slugs": [
       "omnium-cultural"
-    ]
+    ],
+    "support_url": "https://omnium.cat/donatius/"
   },
   {
     "id": 6271,
@@ -1841,7 +1859,8 @@
     "verified": true,
     "source_slugs": [
       "ecologistas-accion-cantabria"
-    ]
+    ],
+    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
   },
   {
     "id": 6274,
@@ -2009,7 +2028,8 @@
     "verified": true,
     "source_slugs": [
       "copinh"
-    ]
+    ],
+    "support_url": "https://copinh.org/colabora/"
   },
   {
     "id": 6283,
@@ -2066,7 +2086,8 @@
         "slug": "derechos-civiles"
       }
     ],
-    "verified": true
+    "verified": true,
+    "support_url": "https://www.plataforma-llengua.cat/col-labora/donatius/"
   },
   {
     "id": 6286,
@@ -2097,7 +2118,8 @@
         "slug": "feminismos"
       }
     ],
-    "verified": true
+    "verified": true,
+    "support_url": "https://www.casmujer.com/index.php/donaciones/"
   },
   {
     "id": 6288,
@@ -2111,6 +2133,7 @@
         "slug": "derechos-civiles"
       }
     ],
-    "verified": true
+    "verified": true,
+    "support_url": "https://donorbox.org/install-popup-button.js"
   }
 ]

@@ -97,6 +97,7 @@ final class SourceTransformer
             'region'             => $ubicacion['region'],
             'city'               => $ubicacion['city'],
             'network'            => $ubicacion['network'],
+            'support_url'        => (string) get_post_meta($idSource, '_fnh_support_url', true),
             'ownership'          => (string) get_post_meta($idSource, '_fnh_ownership', true),
             'editorial_note'     => (string) get_post_meta($idSource, '_fnh_editorial_note', true),
             'active'             => (bool) get_post_meta($idSource, '_fnh_active', true),

@@ -333,6 +333,7 @@ class _FilaRadio extends StatelessWidget {
 
     final tieneWeb = radio.websiteUrl.isNotEmpty;
     final tieneRss = radio.rssUrl.isNotEmpty;
+    final tieneApoyo = radio.supportUrl.isNotEmpty;
 
     return ListTile(
       leading: IconButton(
@@ -388,7 +389,7 @@ class _FilaRadio extends StatelessWidget {
               textos.radiosStreamError,
               style: TextStyle(color: esquema.error, fontSize: 12),
             ),
-          if (tieneWeb || tieneRss)
+          if (tieneWeb || tieneRss || tieneApoyo)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Wrap(
@@ -406,13 +407,24 @@ class _FilaRadio extends StatelessWidget {
                       etiqueta: textos.radioPrograms,
                       onTap: () => _verProgramas(context),
                     ),
+                  if (tieneApoyo)
+                    _ChipAccion(
+                      icono: Icons.favorite,
+                      etiqueta: textos.supportEntity,
+                      onTap: () async {
+                        final uri = Uri.tryParse(radio.supportUrl);
+                        if (uri != null) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                    ),
                 ],
               ),
             ),
         ],
       ),
       onTap: onToggle,
-      isThreeLine: tieneWeb || tieneRss,
+      isThreeLine: tieneWeb || tieneRss || tieneApoyo,
     );
   }
 }

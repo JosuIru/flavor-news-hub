@@ -304,7 +304,8 @@
     "territory": "Wallmapu",
     "languages": [
       "es"
-    ]
+    ],
+    "support_url": "https://radiokurruf.org/apoyo/"
   },
   {
     "id": 6928,
@@ -568,7 +569,8 @@
     "territory": "Euskal Herria",
     "languages": [
       "eu"
-    ]
+    ],
+    "support_url": "https://irratia.naiz.eus/eu/suscripcion/entrar?return_path=https%3A%2F%2Firratia.naiz.eus%2Feu"
   },
   {
     "id": 7017,
@@ -604,7 +606,8 @@
     "territory": "Bizkaia",
     "languages": [
       "eu"
-    ]
+    ],
+    "support_url": "https://97irratia.info/colabora/"
   },
   {
     "id": 7020,

@@ -43,6 +43,7 @@ final class RadioMetaBox
         $urlStream = (string) get_post_meta($post->ID, '_fnh_stream_url', true);
         $urlSitio = (string) get_post_meta($post->ID, '_fnh_website_url', true);
         $urlRss = (string) get_post_meta($post->ID, '_fnh_rss_url', true);
+        $urlApoyo = (string) get_post_meta($post->ID, '_fnh_support_url', true);
         $idiomas = get_post_meta($post->ID, '_fnh_languages', true);
         if (!is_array($idiomas)) {
             $idiomas = [];
@@ -63,6 +64,13 @@ final class RadioMetaBox
             <tr>
                 <th><label for="fnh_website_url"><?php esc_html_e('Web de la emisora', 'flavor-news-hub'); ?></label></th>
                 <td><input type="url" id="fnh_website_url" name="fnh_website_url" value="<?php echo esc_attr($urlSitio); ?>" class="large-text" /></td>
+            </tr>
+            <tr>
+                <th><label for="fnh_support_url"><?php esc_html_e('URL de apoyo (opcional)', 'flavor-news-hub'); ?></label></th>
+                <td>
+                    <input type="url" id="fnh_support_url" name="fnh_support_url" value="<?php echo esc_attr($urlApoyo); ?>" class="large-text" />
+                    <p class="description"><?php esc_html_e('Página de socios/donaciones de la emisora (Ko-fi, Patreon, /donar…). Aparece como botón "♥ Apoyar" en la app.', 'flavor-news-hub'); ?></p>
+                </td>
             </tr>
             <tr>
                 <th><label for="fnh_rss_url"><?php esc_html_e('RSS de programas (opcional)', 'flavor-news-hub'); ?></label></th>
@@ -127,6 +135,7 @@ final class RadioMetaBox
         $urlStream = isset($_POST['fnh_stream_url']) ? esc_url_raw((string) wp_unslash($_POST['fnh_stream_url'])) : '';
         $urlSitio = isset($_POST['fnh_website_url']) ? esc_url_raw((string) wp_unslash($_POST['fnh_website_url'])) : '';
         $urlRss = isset($_POST['fnh_rss_url']) ? esc_url_raw((string) wp_unslash($_POST['fnh_rss_url'])) : '';
+        $urlApoyo = isset($_POST['fnh_support_url']) ? esc_url_raw((string) wp_unslash($_POST['fnh_support_url'])) : '';
         $cadenaIdiomas = isset($_POST['fnh_languages']) ? sanitize_text_field((string) wp_unslash($_POST['fnh_languages'])) : '';
         $listaIdiomas = array_values(array_filter(array_map(
             static fn(string $pieza): string => sanitize_key(trim($pieza)),
@@ -139,6 +148,7 @@ final class RadioMetaBox
         update_post_meta($idPost, '_fnh_stream_url', $urlStream);
         update_post_meta($idPost, '_fnh_website_url', $urlSitio);
         update_post_meta($idPost, '_fnh_rss_url', $urlRss);
+        update_post_meta($idPost, '_fnh_support_url', $urlApoyo);
         update_post_meta($idPost, '_fnh_languages', $listaIdiomas);
         update_post_meta($idPost, '_fnh_territory', $territorio);
         update_post_meta($idPost, '_fnh_ownership', $propiedad);

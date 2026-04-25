@@ -38,6 +38,7 @@ class Source with _$Source {
     @Default('') String region,
     @Default('') String city,
     @Default('') String network,
+    @Default('') String supportUrl,
     @Default('') String ownership,
     @Default('') String editorialNote,
     @Default(true) bool active,

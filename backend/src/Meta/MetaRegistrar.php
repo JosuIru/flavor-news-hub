@@ -122,6 +122,19 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        // URL externa de apoyo (socias / donaciones / Ko-fi / Patreon
+        // del propio medio). La app la pinta como botón "♥ Apoyar a
+        // este medio" en la ficha. Cero tracking: sólo redirige al
+        // propio medio para que el usuario decida.
+        register_post_meta($tipoPostSource, '_fnh_support_url', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'esc_url_raw',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         register_post_meta($tipoPostSource, '_fnh_ownership', [
             'type'              => 'string',
             'single'            => true,
@@ -353,6 +366,16 @@ final class MetaRegistrar
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
 
+        // Misma semántica que en source: URL externa de apoyo.
+        register_post_meta($tipoPostCollective, '_fnh_support_url', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'esc_url_raw',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
         register_post_meta($tipoPostCollective, '_fnh_flavor_url', [
             'type'              => 'string',
             'single'            => true,
@@ -416,6 +439,16 @@ final class MetaRegistrar
         ]);
 
         register_post_meta($tipoPost, '_fnh_website_url', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'default'           => '',
+            'sanitize_callback' => 'esc_url_raw',
+            'auth_callback'     => [self::class, 'puedeEditarPosts'],
+        ]);
+
+        // Misma semántica que en source y collective.
+        register_post_meta($tipoPost, '_fnh_support_url', [
             'type'              => 'string',
             'single'            => true,
             'show_in_rest'      => true,

@@ -48,6 +48,7 @@ final class CollectiveTransformer
             'url'         => (string) get_permalink($post),
             'website_url' => $websiteUrl,
             'flavor_url'  => $flavorUrl,
+            'support_url' => (string) get_post_meta($idColectivo, '_fnh_support_url', true),
             'territory'   => $territorio,
             'country'     => $ubicacion['country'],
             'region'      => $ubicacion['region'],

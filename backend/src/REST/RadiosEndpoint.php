@@ -164,6 +164,7 @@ final class RadiosEndpoint
             'stream_url'  => (string) get_post_meta($idRadio, '_fnh_stream_url', true),
             'website_url' => (string) get_post_meta($idRadio, '_fnh_website_url', true),
             'rss_url'     => (string) get_post_meta($idRadio, '_fnh_rss_url', true),
+            'support_url' => (string) get_post_meta($idRadio, '_fnh_support_url', true),
             'territory'   => $territorio,
             'country'     => $ubicacion['country'],
             'region'      => $ubicacion['region'],

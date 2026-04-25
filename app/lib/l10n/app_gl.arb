@@ -222,6 +222,7 @@
   "settingsContentLanguageManual": "Escoller varios manualmente",
   "settingsContentLanguageOff": "Amosar todos os idiomas",
   "settingsContentLanguageManualHint": "Marca os idiomas que queres. Baleiro = sen filtro.",
+  "supportEntity": "Apoiar",
   "shareAppMessage": "Flavor News Hub — Medios alternativos e colectivos que se organizan\n\nApp de novas federada, sen algoritmo nin publicidade. Agrega medios alternativos e directorio de colectivos nun só sitio.\n\n📥 Descarga o APK (Android):\nhttps://github.com/JosuIru/flavor-news-hub/releases/latest\n\nComo instalar:\n1. Toca a ligazón e baixa o APK máis recente.\n2. En Axustes de Android, permite ao teu navegador instalar aplicacións de orixes descoñecidas.\n3. Abre o APK descargado e preme Instalar.\n\nCódigo aberto · AGPL-3.0 · Sen publicidade nin seguimento.",
   "onboardingTerritoryTitle": "Do local ao global",
   "onboardingTerritoryBody": "Escolle o teu territorio para que o próximo apareza primeiro. O resto segue visible debaixo — non se agocha nada. Podes cambialo sempre en Axustes.",
