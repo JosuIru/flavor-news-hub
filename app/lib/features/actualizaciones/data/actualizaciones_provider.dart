@@ -33,30 +33,36 @@ class EstadoActualizacion {
 }
 
 /// Comprueba contra `GET {instancia}/apps/check-update` si hay una
-/// versión nueva del APK. El resultado se cachea 6 horas en
-/// SharedPreferences para no preguntar en cada arranque.
+/// versión nueva del APK.
 ///
-/// El usuario puede descartar una versión con `descartar()` y no se le
-/// volverá a ofrecer hasta que salga una posterior a la descartada.
+/// Param `forzar`:
+///  - false (default): respeta cache cliente (30 min). El backend
+///    también puede devolver respuesta cacheada (1h).
+///  - true: salta cache cliente Y pide al backend `refresh=1` para
+///    que también ignore su transient. Lo usa el botón
+///    "Comprobar actualizaciones" de Ajustes — sin esto, el usuario
+///    pulsaba el botón y seguía recibiendo la versión vieja del
+///    transient backend hasta que expirase.
 final actualizacionProvider =
-    FutureProvider<EstadoActualizacion>((ref) async {
+    FutureProvider.family<EstadoActualizacion, bool>((ref, forzar) async {
   final prefs = ref.watch(sharedPreferencesProvider);
   final ahora = DateTime.now().toUtc();
 
-  // Cache duro: si preguntamos hace menos de 6h usamos la respuesta.
-  final cacheadoRaw = prefs.getString(_ClavesPref.ultimoResultado);
-  final cacheadoTs = prefs.getInt(_ClavesPref.ultimoTimestamp) ?? 0;
-  final tieneCacheValido =
-      cacheadoRaw != null && ahora.millisecondsSinceEpoch - cacheadoTs < _ttlMs;
-  if (tieneCacheValido) {
-    final desdeCache = _parsear(cacheadoRaw, prefs);
-    if (desdeCache != null) return desdeCache;
+  // Cache cliente: respetamos a no ser que se haya pedido `forzar`.
+  if (!forzar) {
+    final cacheadoRaw = prefs.getString(_ClavesPref.ultimoResultado);
+    final cacheadoTs = prefs.getInt(_ClavesPref.ultimoTimestamp) ?? 0;
+    final tieneCacheValido =
+        cacheadoRaw != null && ahora.millisecondsSinceEpoch - cacheadoTs < _ttlMs;
+    if (tieneCacheValido) {
+      final desdeCache = _parsear(cacheadoRaw, prefs);
+      if (desdeCache != null) return desdeCache;
+    }
   }
 
   final info = await PackageInfo.fromPlatform();
   final http.Client cliente = ref.watch(httpClientProvider);
   final api = ref.watch(flavorNewsApiProvider);
-  // Construimos `{baseUrl}/apps/check-update` evitando doble slash.
   var pathBase = api.baseUrl.path;
   while (pathBase.endsWith('/')) {
     pathBase = pathBase.substring(0, pathBase.length - 1);
@@ -67,6 +73,7 @@ final actualizacionProvider =
       'version': info.version,
       'platform': 'android',
       'channel': 'stable',
+      if (forzar) 'refresh': '1',
     },
   );
 

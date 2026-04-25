@@ -40,7 +40,7 @@ class _EstadoAvisoActualizacion extends ConsumerState<AvisoActualizacion> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<EstadoActualizacion>>(actualizacionProvider,
+    ref.listen<AsyncValue<EstadoActualizacion>>(actualizacionProvider(false),
         (prev, next) {
       next.whenData((estado) {
         if (!estado.hayActualizacion || _mostrado || !mounted) return;

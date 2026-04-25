@@ -51,6 +51,12 @@ final class AppUpdateEndpoint
                     'default'     => 'stable',
                     'enum'        => ['stable', 'beta'],
                 ],
+                'refresh'  => [
+                    'type'        => 'boolean',
+                    'required'    => false,
+                    'default'     => false,
+                    'description' => 'Si true, ignora el transient cacheado y vuelve a leer GitHub.',
+                ],
             ],
         ]);
     }
@@ -59,8 +65,9 @@ final class AppUpdateEndpoint
     {
         $versionInstalada = (string) $request->get_param('version');
         $incluyePrereleases = $request->get_param('channel') === 'beta';
+        $forzarRefresh = (bool) $request->get_param('refresh');
 
-        $ultima = self::obtenerUltimaRelease($incluyePrereleases);
+        $ultima = self::obtenerUltimaRelease($incluyePrereleases, $forzarRefresh);
         if ($ultima === null) {
             return new \WP_REST_Response([
                 'update_available' => false,
@@ -90,12 +97,21 @@ final class AppUpdateEndpoint
     /**
      * @return array{version:string,download_url:string,release_url:string,changelog:string,published_at:string}|null
      */
-    private static function obtenerUltimaRelease(bool $incluyePrereleases): ?array
+    private static function obtenerUltimaRelease(bool $incluyePrereleases, bool $forzarRefresh = false): ?array
     {
         $claveCache = self::TRANSIENT_CACHE . ($incluyePrereleases ? '_beta' : '');
-        $cache = get_transient($claveCache);
-        if (is_array($cache)) {
-            return $cache;
+        if ($forzarRefresh) {
+            // El cliente pidió saltar el cache (botón "Comprobar
+            // actualizaciones"). Borramos el transient para que la
+            // siguiente lectura — esta misma — vuelva a consultar
+            // GitHub. Evita el caso "release nueva en GitHub pero
+            // el backend devuelve la anterior durante 1h".
+            delete_transient($claveCache);
+        } else {
+            $cache = get_transient($claveCache);
+            if (is_array($cache)) {
+                return $cache;
+            }
         }
 
         // Pedimos un listado en vez de `/releases/latest` porque podemos

@@ -195,13 +195,18 @@ class SettingsScreen extends ConsumerWidget {
     await prefs.remove('fnh.pref.actualizacion.respuesta');
     await prefs.remove('fnh.pref.actualizacion.ts');
     await prefs.remove('fnh.pref.actualizacion.descartada');
+    // Invalidamos ambas variantes (forzar=true y =false) por si el
+    // usuario había chequeado pasivo antes — así Aviso y Comprobar
+    // re-piden tras esta acción.
     ref.invalidate(actualizacionProvider);
     messenger.showSnackBar(SnackBar(
       content: Text(textos.settingsCheckUpdateChecking),
       duration: const Duration(seconds: 2),
     ));
     try {
-      final estado = await ref.read(actualizacionProvider.future);
+      // forzar=true → la app salta su cache local Y le pasa
+      // refresh=1 al backend para que también ignore el transient.
+      final estado = await ref.read(actualizacionProvider(true).future);
       if (!context.mounted) return;
       if (!estado.hayActualizacion) {
         messenger.hideCurrentSnackBar();
