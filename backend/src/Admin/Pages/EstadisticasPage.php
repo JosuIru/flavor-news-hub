@@ -30,16 +30,19 @@ final class EstadisticasPage
             return;
         }
 
-        // Botón "Refrescar ya": borra el transient y volvemos a la
-        // misma URL para forzar la siguiente lectura.
-        if (
-            isset($_GET['refrescar'])
-            && check_admin_referer('fnh_stats_refrescar', '_wpnonce')
-        ) {
+        // Botón "Refrescar ya": borra el transient y refresca en línea.
+        // Antes redirigíamos con `wp_safe_redirect` para limpiar la URL,
+        // pero si cualquier plugin/tema imprime output antes de que
+        // EstadisticasPage::render se ejecute (espacios, BOM…), los
+        // headers ya están enviados y el redirect deja la pantalla en
+        // blanco. Refrescar inline siempre funciona aunque los headers
+        // ya hayan salido — el coste es que la URL sigue mostrando
+        // `&refrescar=1&_wpnonce=…` hasta que el usuario navegue.
+        $refrescoForzado = false;
+        if (isset($_GET['refrescar'])) {
+            check_admin_referer('fnh_stats_refrescar', '_wpnonce');
             delete_transient(self::TRANSIENT_CACHE);
-            $urlLimpia = remove_query_arg(['refrescar', '_wpnonce']);
-            wp_safe_redirect($urlLimpia);
-            exit;
+            $refrescoForzado = true;
         }
 
         $datos = self::obtenerDatos();
@@ -50,6 +53,12 @@ final class EstadisticasPage
             <p class="description">
                 <?php esc_html_e('Contadores leídos de GitHub Releases. La app y el plugin no envían telemetría — sólo se cuenta lo que GitHub registra al servir el asset.', 'flavor-news-hub'); ?>
             </p>
+
+            <?php if ($refrescoForzado && !isset($datos['error'])) : ?>
+                <div class="notice notice-success is-dismissible"><p>
+                    <?php esc_html_e('Datos refrescados desde GitHub.', 'flavor-news-hub'); ?>
+                </p></div>
+            <?php endif; ?>
 
             <?php if (isset($datos['error'])) : ?>
                 <div class="notice notice-error"><p><?php echo esc_html($datos['error']); ?></p></div>
