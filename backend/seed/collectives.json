@@ -1456,7 +1456,8 @@
         "name": "Feminismos",
         "slug": "feminismos"
       }
-    ]
+    ],
+    "support_url": "https://www.gehitu.org/colabora-asociate/"
   },
   {
     "id": 6256,
@@ -2138,5 +2139,310 @@
     ],
     "verified": true,
     "support_url": "https://donorbox.org/install-popup-button.js"
+  },
+  {
+    "id": 6289,
+    "name": "A Mesa pola Normalización Lingüística",
+    "slug": "a-mesa",
+    "description": "Plataforma cidadá galega en defensa do uso público da lingua galega e dos dereitos lingüísticos da poboación galegofalante. Activa desde 1986.",
+    "website_url": "https://www.amesa.gal",
+    "territory": "Galicia",
+    "topics": [
+      {
+        "slug": "cultura"
+      },
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true,
+    "support_url": "https://www.amesa.gal/colabora/"
+  },
+  {
+    "id": 6290,
+    "name": "Adega",
+    "slug": "adega",
+    "description": "Asociación para a Defensa Ecolóxica de Galiza. Referente histórico do ecoloxismo galego: defensa do territorio, biodiversidade e modelo enerxético.",
+    "website_url": "https://adega.gal",
+    "territory": "Galicia",
+    "topics": [
+      {
+        "slug": "ecologismo"
+      },
+      {
+        "slug": "rural"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6291,
+    "name": "CIG - Confederación Intersindical Galega",
+    "slug": "cig",
+    "description": "Sindicato nacionalista galego, central maioritaria na Galiza; defende a soberanía sindical e un modelo galego de relacións laborais.",
+    "website_url": "https://www.cig.gal",
+    "territory": "Galicia",
+    "topics": [
+      {
+        "slug": "laboral"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6292,
+    "name": "Galiza Nova",
+    "slug": "galiza-nova",
+    "description": "Organización xuvenil nacionalista galega, vinculada ao BNG, en defensa dos dereitos da mocidade galega.",
+    "website_url": "https://www.galizanova.gal",
+    "territory": "Galicia",
+    "topics": [
+      {
+        "slug": "juventud"
+      },
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6293,
+    "name": "Assemblea Nacional Catalana",
+    "slug": "anc",
+    "description": "Organització cívica que treballa per la independència de Catalunya per la via democràtica i pacífica.",
+    "website_url": "https://assemblea.cat",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "derechos-civiles"
+      },
+      {
+        "slug": "cultura"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6294,
+    "name": "Casal Lambda",
+    "slug": "casal-lambda",
+    "description": "Associació LGTBI+ degana de Catalunya, amb seu a Barcelona. Centre de documentació, formació i acompanyament a la diversitat sexual i de gènere.",
+    "website_url": "https://lambda.cat",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "derechos-civiles"
+      },
+      {
+        "slug": "feminismos"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6295,
+    "name": "Iridia",
+    "slug": "iridia",
+    "description": "Centre per la Defensa dels Drets Humans amb seu a Barcelona. Litigació estratègica, denúncia i acompanyament en casos de tortures i abusos institucionals.",
+    "website_url": "https://iridia.cat",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6296,
+    "name": "Justícia Alimentària",
+    "slug": "justicia-alimentaria",
+    "description": "ONG amb seu a Barcelona, treballa per la sobirania alimentària, denúncia del model agroindustrial i defensa de drets camperols al Sud i al Nord.",
+    "website_url": "https://justiciaalimentaria.org",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "alimentacion"
+      },
+      {
+        "slug": "internacional"
+      },
+      {
+        "slug": "rural"
+      }
+    ],
+    "verified": true,
+    "support_url": "https://justiciaalimentaria.org/hazte-socia-o/"
+  },
+  {
+    "id": 6297,
+    "name": "Federació d'Ateneus de Catalunya",
+    "slug": "federacio-ateneus-catalunya",
+    "description": "Federació que agrupa ateneus, casals i entitats culturals populars de Catalunya. Espais de socialització, cultura i autoorganització veïnal.",
+    "website_url": "https://ateneus.cat",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "cultura"
+      },
+      {
+        "slug": "educacion"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6298,
+    "name": "Arran",
+    "slug": "arran",
+    "description": "Organització juvenil de l'esquerra independentista dels Països Catalans.",
+    "website_url": "https://arran.cat",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "juventud"
+      },
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6299,
+    "name": "Endavant OSAN",
+    "slug": "endavant",
+    "description": "Organització Socialista d'Alliberament Nacional, agrupació política de l'esquerra independentista dels Països Catalans.",
+    "website_url": "https://endavant.org",
+    "territory": "Catalunya",
+    "topics": [
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6300,
+    "name": "Acció Cultural del País Valencià",
+    "slug": "acpv",
+    "description": "Entitat referent en la defensa de la llengua i cultura catalanes al País Valencià. Promotora de campanyes lingüístiques, educatives i d'incidència política.",
+    "website_url": "https://acpv.cat",
+    "territory": "País Valencià",
+    "topics": [
+      {
+        "slug": "cultura"
+      },
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true,
+    "support_url": "https://acpv.cat/fes-te-dacpv/"
+  },
+  {
+    "id": 6301,
+    "name": "Escola Valenciana",
+    "slug": "escola-valenciana",
+    "description": "Federació d'associacions per la llengua que treballa per l'ensenyament en valencià i la normalització lingüística a l'escola pública.",
+    "website_url": "https://escolavalenciana.org",
+    "territory": "País Valencià",
+    "topics": [
+      {
+        "slug": "educacion"
+      },
+      {
+        "slug": "cultura"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6302,
+    "name": "GOB Mallorca",
+    "slug": "gob-mallorca",
+    "description": "Grup Balear d'Ornitologia i Defensa de la Naturalesa. Entitat ecologista degana de Mallorca; defensa el territori, biodiversitat i model insular.",
+    "website_url": "https://www.gobmallorca.com",
+    "territory": "Illes Balears",
+    "topics": [
+      {
+        "slug": "ecologismo"
+      },
+      {
+        "slug": "rural"
+      }
+    ],
+    "verified": true,
+    "support_url": "https://www.gobmallorca.com/donar/"
+  },
+  {
+    "id": 6303,
+    "name": "Obra Cultural Balear",
+    "slug": "ocb",
+    "description": "Entitat cívica fundada el 1962 per la defensa de la llengua catalana, la cultura i la identitat de les Illes Balears.",
+    "website_url": "https://ocb.cat",
+    "territory": "Illes Balears",
+    "topics": [
+      {
+        "slug": "cultura"
+      },
+      {
+        "slug": "derechos-civiles"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6304,
+    "name": "Andecha Astur",
+    "slug": "andecha-astur",
+    "description": "Organización política asturianista d'esquierdes, defende la oficialidá del asturianu y l'autodeterminación d'Asturies.",
+    "website_url": "https://andecha.org",
+    "territory": "Asturies",
+    "topics": [
+      {
+        "slug": "derechos-civiles"
+      },
+      {
+        "slug": "cultura"
+      }
+    ],
+    "verified": true
+  },
+  {
+    "id": 6305,
+    "name": "APDHA - Asociación Pro Derechos Humanos de Andalucía",
+    "slug": "apdha",
+    "description": "Asociación andaluza por los derechos humanos: cárceles, fronteras sur, infancia, mujeres y libertades civiles. Activa desde 1990.",
+    "website_url": "https://www.apdha.org",
+    "territory": "Andalucía",
+    "topics": [
+      {
+        "slug": "derechos-civiles"
+      },
+      {
+        "slug": "migraciones"
+      }
+    ],
+    "verified": true,
+    "support_url": "https://www.apdha.org/hazte-socioa/"
+  },
+  {
+    "id": 6306,
+    "name": "USTEA",
+    "slug": "ustea",
+    "description": "Unión de Sindicatos de Trabajadores y Trabajadoras de la Enseñanza de Andalucía. Sindicato asambleario de la escuela pública andaluza.",
+    "website_url": "https://ustea.org",
+    "territory": "Andalucía",
+    "topics": [
+      {
+        "slug": "laboral"
+      },
+      {
+        "slug": "educacion"
+      }
+    ],
+    "verified": true
   }
 ]

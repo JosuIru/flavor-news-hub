@@ -623,5 +623,29 @@
     "languages": [
       "eu"
     ]
+  },
+  {
+    "id": 7021,
+    "name": "Radio Filispim",
+    "slug": "radio-filispim",
+    "stream_url": "https://streaming.cuacfm.org/filispim.mp3",
+    "website_url": "https://opaii.blogspot.com",
+    "rss_url": "",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ]
+  },
+  {
+    "id": 7022,
+    "name": "CUAC FM",
+    "slug": "cuac-fm",
+    "stream_url": "https://streaming.cuacfm.org/cuacfm.mp3",
+    "website_url": "https://cuacfm.org",
+    "rss_url": "",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ]
   }
 ]

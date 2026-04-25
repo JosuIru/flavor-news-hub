@@ -144,7 +144,8 @@
       "ca"
     ],
     "topics": [],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "support_url": "https://www.elcritic.cat/donar/"
   },
   {
     "id": 6931,
@@ -388,7 +389,8 @@
       "es"
     ],
     "topics": [],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "support_url": "https://www.infolibre.es/donar/"
   },
   {
     "id": 6280,
@@ -2744,7 +2746,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "support_url": "https://mixteco.org/donate/"
   },
   {
     "id": 7313,
@@ -2959,7 +2962,8 @@
       "alimentacion"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "support_url": "https://www.ecologistasenaccion.org/8000/colabora/"
   },
   {
     "slug": "col-pah-barcelona",
@@ -3143,7 +3147,8 @@
       "antirracismo"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "support_url": "https://redacoge.org/colabora/"
   },
   {
     "slug": "col-greenpeace-espana",
@@ -3160,7 +3165,8 @@
       "alimentacion"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "support_url": "https://es.greenpeace.org/es/que-puedes-hacer-tu/colabora/"
   },
   {
     "slug": "col-amigas-de-la-tierra",
@@ -3195,7 +3201,8 @@
       "derechos-civiles"
     ],
     "medium_type": "news",
-    "content_license": ""
+    "content_license": "",
+    "support_url": "https://sosracismo.eu/colabora/"
   },
   {
     "slug": "col-juventud-por-el-clima",
@@ -4985,6 +4992,338 @@
     "topics": [
       "rural",
       "laboral"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7389,
+    "name": "Praza.gal",
+    "slug": "praza",
+    "feed_url": "https://praza.gal/rss/novas",
+    "feed_type": "rss",
+    "website_url": "https://praza.gal",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7390,
+    "name": "Galicia Confidencial",
+    "slug": "galicia-confidencial",
+    "feed_url": "https://www.galiciaconfidencial.com/feed/all",
+    "feed_type": "rss",
+    "website_url": "https://www.galiciaconfidencial.com",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7391,
+    "name": "Diario Liberdade Galiza",
+    "slug": "diario-liberdade",
+    "feed_url": "https://gz.diarioliberdade.org/?format=feed&type=rss",
+    "feed_type": "rss",
+    "website_url": "https://gz.diarioliberdade.org",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "memoria-historica"
+    ]
+  },
+  {
+    "id": 7392,
+    "name": "Nació Digital",
+    "slug": "nacio-digital",
+    "feed_url": "https://www.naciodigital.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.naciodigital.cat",
+    "territory": "Catalunya",
+    "languages": [
+      "ca"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7393,
+    "name": "El Món",
+    "slug": "el-mon",
+    "feed_url": "https://elmon.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://elmon.cat",
+    "territory": "Catalunya",
+    "languages": [
+      "ca"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7394,
+    "name": "Catalunya Plural",
+    "slug": "catalunya-plural",
+    "feed_url": "https://catalunyaplural.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://catalunyaplural.cat",
+    "territory": "Catalunya",
+    "languages": [
+      "ca",
+      "es"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7395,
+    "name": "L'Independent de Gràcia",
+    "slug": "independent-gracia",
+    "feed_url": "https://www.independent.cat/rss",
+    "feed_type": "rss",
+    "website_url": "https://www.independent.cat",
+    "territory": "Barcelona",
+    "languages": [
+      "ca"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7396,
+    "name": "Saó",
+    "slug": "sao",
+    "feed_url": "https://revistasao.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://revistasao.cat",
+    "territory": "País Valencià",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "cultura"
+    ]
+  },
+  {
+    "id": 7397,
+    "name": "Acció Cultural del País Valencià",
+    "slug": "acpv",
+    "feed_url": "https://acpv.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://acpv.cat",
+    "territory": "País Valencià",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "cultura",
+      "derechos-civiles"
+    ],
+    "es_movimiento": true,
+    "support_url": "https://acpv.cat/fes-te-dacpv/"
+  },
+  {
+    "id": 7398,
+    "name": "Escola Valenciana",
+    "slug": "escola-valenciana",
+    "feed_url": "https://escolavalenciana.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://escolavalenciana.org",
+    "territory": "País Valencià",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "educacion",
+      "cultura"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7399,
+    "name": "GOB Mallorca",
+    "slug": "gob-mallorca",
+    "feed_url": "https://www.gobmallorca.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.gobmallorca.com",
+    "territory": "Illes Balears",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "ecologismo",
+      "rural"
+    ],
+    "es_movimiento": true,
+    "support_url": "https://www.gobmallorca.com/donar/"
+  },
+  {
+    "id": 7400,
+    "name": "Obra Cultural Balear",
+    "slug": "ocb",
+    "feed_url": "https://ocb.cat/feed/",
+    "feed_type": "rss",
+    "website_url": "https://ocb.cat",
+    "territory": "Illes Balears",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "cultura",
+      "derechos-civiles"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7401,
+    "name": "Andecha Astur",
+    "slug": "andecha-astur",
+    "feed_url": "https://andecha.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://andecha.org",
+    "territory": "Asturies",
+    "languages": [
+      "ast"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "cultura"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7402,
+    "name": "Nortes",
+    "slug": "nortes",
+    "feed_url": "https://www.nortes.me/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.nortes.me",
+    "territory": "Asturies",
+    "languages": [
+      "es",
+      "ast"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7403,
+    "name": "Ara Balears",
+    "slug": "ara-balears",
+    "feed_url": "https://www.arabalears.cat/rss/latest/",
+    "feed_type": "rss",
+    "website_url": "https://www.arabalears.cat",
+    "territory": "Illes Balears",
+    "languages": [
+      "ca"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7404,
+    "name": "El Temps",
+    "slug": "el-temps",
+    "feed_url": "https://www.eltemps.cat/sindica",
+    "feed_type": "rss",
+    "website_url": "https://www.eltemps.cat",
+    "territory": "Països Catalans",
+    "languages": [
+      "ca"
+    ],
+    "topics": [
+      "cultura"
+    ]
+  },
+  {
+    "id": 7405,
+    "name": "La Voz del Sur",
+    "slug": "la-voz-del-sur",
+    "feed_url": "https://lavozdelsur.es/uploads/feeds/feed_lavozdelsur_es.xml",
+    "feed_type": "rss",
+    "website_url": "https://lavozdelsur.es",
+    "territory": "Andalucía",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "support_url": "https://www.lavozdelsur.es/donar/"
+  },
+  {
+    "id": 7406,
+    "name": "Tamaimos",
+    "slug": "tamaimos",
+    "feed_url": "https://tamaimos.com/feed/",
+    "feed_type": "rss",
+    "website_url": "https://tamaimos.com",
+    "territory": "Canarias",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "memoria-historica"
+    ]
+  },
+  {
+    "id": 7407,
+    "name": "Luzes",
+    "slug": "luzes",
+    "feed_url": "https://luzes.gal/feed/",
+    "feed_type": "rss",
+    "website_url": "https://luzes.gal",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ],
+    "topics": [
+      "cultura"
+    ]
+  },
+  {
+    "id": 7408,
+    "name": "Adiante.gal",
+    "slug": "adiante",
+    "feed_url": "https://adiante.gal/feed/",
+    "feed_type": "rss",
+    "website_url": "https://adiante.gal",
+    "territory": "Galicia",
+    "languages": [
+      "gl"
+    ],
+    "topics": []
+  },
+  {
+    "id": 7409,
+    "name": "APDHA",
+    "slug": "apdha",
+    "feed_url": "https://www.apdha.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.apdha.org",
+    "territory": "Andalucía",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "derechos-civiles",
+      "migraciones"
+    ],
+    "es_movimiento": true,
+    "support_url": "https://www.apdha.org/hazte-socioa/"
+  },
+  {
+    "id": 7410,
+    "name": "USTEA",
+    "slug": "ustea",
+    "feed_url": "https://ustea.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://ustea.org",
+    "territory": "Andalucía",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "laboral",
+      "educacion"
     ],
     "es_movimiento": true
   }
