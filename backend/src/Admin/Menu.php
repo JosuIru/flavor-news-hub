@@ -9,6 +9,7 @@ use FlavorNewsHub\Admin\Pages\IngestLogPage;
 use FlavorNewsHub\Admin\Pages\DashboardPage;
 use FlavorNewsHub\Admin\Pages\CatalogoPage;
 use FlavorNewsHub\Admin\Pages\EstadoFuentesPage;
+use FlavorNewsHub\Admin\Pages\EstadisticasPage;
 
 /**
  * Menú principal del plugin en el admin de WordPress.
@@ -78,6 +79,15 @@ final class Menu
             'edit_posts',
             'fnh-ingest-log',
             [IngestLogPage::class, 'render']
+        );
+
+        add_submenu_page(
+            self::SLUG_MENU,
+            __('Estadísticas', 'flavor-news-hub'),
+            __('Estadísticas', 'flavor-news-hub'),
+            'edit_posts',
+            EstadisticasPage::SLUG,
+            [EstadisticasPage::class, 'render']
         );
 
         add_submenu_page(
