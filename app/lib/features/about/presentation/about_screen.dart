@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// URL pública del repositorio del proyecto. Si el proyecto se mueve, se
@@ -66,6 +67,21 @@ class AboutScreen extends ConsumerWidget {
 
           const SizedBox(height: 24),
           _Seccion(titulo: 'Proyecto', children: [
+            // Botón "Compartir app": abre el chooser nativo con un
+            // mensaje completo (descripción + URL de releases/latest +
+            // pasos de instalación). El usuario natural llega a
+            // "Acerca de" cuando ha decidido recomendar el proyecto;
+            // tener el share aquí ahorra una visita a Ajustes.
+            OutlinedButton.icon(
+              onPressed: () => Share.share(textos.shareAppMessage),
+              icon: const Icon(Icons.ios_share),
+              label: Text(textos.settingsShareApp),
+              style: OutlinedButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 8),
             _BotonEnlaceExterno(
               icono: Icons.code,
               etiqueta: textos.aboutRepository,

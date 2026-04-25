@@ -324,12 +324,11 @@ class _SeccionCompartir extends StatelessWidget {
           child: FilledButton.icon(
             icon: const Icon(Icons.share),
             label: Text(textos.donationsShareAction),
-            onPressed: () {
-              Share.share(
-                '${textos.donationsShareMessage}\n'
-                'https://github.com/JosuIru/flavor-news-hub',
-              );
-            },
+            // Reutilizamos el mensaje completo de "Compartir app" (con
+            // descripción + URL de releases/latest + pasos de
+            // instalación). Antes el sheet de donaciones compartía un
+            // texto distinto y mucho más escueto que el de Ajustes.
+            onPressed: () => Share.share(textos.shareAppMessage),
           ),
         ),
       ],

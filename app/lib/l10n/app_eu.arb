@@ -222,6 +222,7 @@
   "settingsContentLanguageManual": "Hainbat eskuz aukeratu",
   "settingsContentLanguageOff": "Hizkuntza guztiak erakutsi",
   "settingsContentLanguageManualHint": "Markatu nahi dituzun hizkuntzak. Hutsik = iragazkirik gabe.",
+  "shareAppMessage": "Flavor News Hub — Komunikabide alternatiboak eta antolatutako kolektiboak\n\nAlbiste aplikazio federatua, algoritmorik eta publizitaterik gabe. Hedabide alternatiboak eta kolektiboen direktorioa toki bakarrean.\n\n📥 APK-a deskargatu (Android):\nhttps://github.com/JosuIru/flavor-news-hub/releases/latest\n\nNola instalatu:\n1. Sakatu esteka eta deskargatu azken APK-a.\n2. Android-eko Ezarpenetan, baimendu zure nabigatzaileari iturri ezezagunetatik aplikazioak instalatzea.\n3. Ireki deskargatutako APK-a eta sakatu Instalatu.\n\nKode irekia · AGPL-3.0 · Iragarkirik eta jarraipenik gabe.",
   "onboardingTerritoryTitle": "Lokaletik globalera",
   "onboardingTerritoryBody": "Aukeratu zure lurraldea, gertukoa lehenengo ager dadin. Gainerakoa azpian ikusgai segitzen du — ez da ezer ezkutatzen. Ezarpenetatik alda dezakezu edonoiz.",
   "onboardingTerritorySkip": "Saltatu",

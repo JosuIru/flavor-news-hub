@@ -135,9 +135,7 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.ios_share),
             title: Text(textos.settingsShareApp),
             subtitle: Text(textos.settingsShareAppSubtitle),
-            onTap: () => Share.share(
-              '${textos.appName} — ${textos.appTagline}\nhttps://github.com/JosuIru/flavor-news-hub',
-            ),
+            onTap: () => Share.share(textos.shareAppMessage),
           ),
           ListTile(
             leading: const Icon(Icons.system_update_alt_outlined),
