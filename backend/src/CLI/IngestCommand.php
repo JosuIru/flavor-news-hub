@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace FlavorNewsHub\CLI;
 
 use FlavorNewsHub\Ingest\FeedIngester;
+use FlavorNewsHub\Ingest\FeedItemParser;
 use FlavorNewsHub\CPT\Source;
 
 /**
@@ -177,6 +178,169 @@ final class IngestCommand
         } else {
             \WP_CLI::log('');
             \WP_CLI::log('Vuelve a ejecutar con --desactivar para desactivar las duplicadas.');
+        }
+    }
+
+    /**
+     * Diagnostica por qué una fuente no aporta items: descarga el feed
+     * en vivo, muestra status HTTP/size/content-type y clasifica cada
+     * item del feed en NUEVO / DEDUPE / INVÁLIDO. Útil para entender
+     * fuentes "muertas" (sin items en 30d) que no tienen error explícito
+     * — pueden estar dándonos siempre los mismos items viejos
+     * (descartados por dedupe) o items sin pubDate / title.
+     *
+     * ## OPTIONS
+     *
+     * <source>
+     * : ID de la fuente a diagnosticar.
+     *
+     * ## EXAMPLES
+     *
+     *     wp flavor-news diagnose --source=42
+     *
+     * @param array<int,string>    $argumentosPosicionales
+     * @param array<string,string> $argumentosConNombre
+     */
+    public function diagnose($argumentosPosicionales, $argumentosConNombre): void
+    {
+        $idSource = isset($argumentosConNombre['source']) ? (int) $argumentosConNombre['source'] : 0;
+        if ($idSource <= 0) {
+            \WP_CLI::error('--source=ID es obligatorio.');
+        }
+        $post = get_post($idSource);
+        if (!$post || $post->post_type !== Source::SLUG) {
+            \WP_CLI::error("La fuente #{$idSource} no existe.");
+        }
+        $urlFeed = (string) get_post_meta($idSource, '_fnh_feed_url', true);
+        if ($urlFeed === '') {
+            \WP_CLI::error('La fuente no tiene feed_url configurado.');
+        }
+
+        \WP_CLI::log('Fuente #' . $idSource . ': ' . $post->post_title);
+        \WP_CLI::log('Feed URL: ' . $urlFeed);
+        \WP_CLI::log('');
+
+        // Petición HTTP cruda — sin pasar por SimplePie — para ver
+        // exactamente qué devuelve el servidor.
+        $respuesta = wp_remote_get($urlFeed, [
+            'timeout' => 25,
+            'user-agent' => 'FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)',
+            'sslverify' => true,
+        ]);
+        if (is_wp_error($respuesta)) {
+            \WP_CLI::warning('HTTP error: ' . $respuesta->get_error_message());
+            \WP_CLI::log('Reintentando con sslverify=false…');
+            $respuesta = wp_remote_get($urlFeed, [
+                'timeout' => 25,
+                'user-agent' => 'FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)',
+                'sslverify' => false,
+            ]);
+            if (is_wp_error($respuesta)) {
+                \WP_CLI::error('Tampoco con sslverify=false: ' . $respuesta->get_error_message());
+            }
+            \WP_CLI::log('  ✓ Funciona sin verificar SSL — añade el dominio a DOMINIOS_SSL_BYPASS.');
+        }
+        $codigoHttp = (int) wp_remote_retrieve_response_code($respuesta);
+        $contentType = wp_remote_retrieve_header($respuesta, 'content-type');
+        $cuerpo = (string) wp_remote_retrieve_body($respuesta);
+        \WP_CLI::log('HTTP status:  ' . $codigoHttp);
+        \WP_CLI::log('Content-type: ' . (is_string($contentType) ? $contentType : '(no header)'));
+        \WP_CLI::log('Body size:    ' . strlen($cuerpo) . ' bytes');
+        \WP_CLI::log('');
+
+        if ($codigoHttp !== 200) {
+            \WP_CLI::error('El servidor no devuelve 200 — el feed está caído o la URL es incorrecta.');
+        }
+        if (stripos((string) $contentType, 'html') !== false && stripos($cuerpo, '<rss') === false && stripos($cuerpo, '<feed') === false) {
+            \WP_CLI::warning('El servidor devuelve HTML, no XML. El feed se ha movido o ya no existe.');
+            \WP_CLI::log('Busca <link rel="alternate" type="application/rss+xml"> en el HTML para encontrar la URL nueva.');
+            return;
+        }
+
+        // Ahora pedimos el feed con SimplePie igual que hace la ingesta.
+        require_once ABSPATH . WPINC . '/feed.php';
+        $hashFeed = md5($urlFeed);
+        delete_transient('feed_' . $hashFeed);
+        delete_transient('feed_mod_' . $hashFeed);
+        $filtroUa = static function (\SimplePie $feed): void {
+            $feed->set_useragent('FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)');
+            $feed->set_timeout(25);
+        };
+        add_action('wp_feed_options', $filtroUa);
+        $feed = fetch_feed($urlFeed);
+        remove_action('wp_feed_options', $filtroUa);
+
+        if (is_wp_error($feed)) {
+            \WP_CLI::error('SimplePie no parseó el feed: ' . $feed->get_error_message());
+        }
+
+        $items = $feed->get_items(0, 50);
+        \WP_CLI::log(sprintf('Items parseados por SimplePie: %d', count($items)));
+        \WP_CLI::log('');
+
+        $contadores = ['nuevo' => 0, 'dedupe' => 0, 'invalido' => 0];
+        $detalles = [];
+        foreach ($items as $itemFeed) {
+            try {
+                $datos = FeedItemParser::parsear($itemFeed);
+            } catch (\Throwable $error) {
+                $contadores['invalido']++;
+                $detalles[] = ['estado' => 'INVÁLIDO (parse error)', 'titulo' => '(error: ' . $error->getMessage() . ')', 'fecha' => '-'];
+                continue;
+            }
+            if ($datos['title'] === '' || $datos['permalink'] === '') {
+                $contadores['invalido']++;
+                $detalles[] = [
+                    'estado' => 'INVÁLIDO',
+                    'titulo' => $datos['title'] !== '' ? $datos['title'] : '(sin title)',
+                    'fecha'  => $datos['published_at'] ?: '(sin fecha)',
+                ];
+                continue;
+            }
+            $existe = FeedIngester::yaExisteItem($datos['guid'], $datos['permalink']);
+            if ($existe) {
+                $contadores['dedupe']++;
+                $detalles[] = [
+                    'estado' => 'DEDUPE',
+                    'titulo' => $datos['title'],
+                    'fecha'  => $datos['published_at'] ?: '(sin fecha)',
+                ];
+            } else {
+                $contadores['nuevo']++;
+                $detalles[] = [
+                    'estado' => 'NUEVO',
+                    'titulo' => $datos['title'],
+                    'fecha'  => $datos['published_at'] ?: '(sin fecha)',
+                ];
+            }
+        }
+
+        foreach ($detalles as $detalle) {
+            \WP_CLI::log(sprintf(
+                '  [%-9s] %s · %s',
+                $detalle['estado'],
+                substr($detalle['fecha'], 0, 19),
+                substr($detalle['titulo'], 0, 80)
+            ));
+        }
+        \WP_CLI::log('');
+        \WP_CLI::log(sprintf(
+            'Resumen: %d nuevos · %d dedupe · %d inválidos',
+            $contadores['nuevo'], $contadores['dedupe'], $contadores['invalido']
+        ));
+
+        if ($contadores['nuevo'] === 0 && $contadores['dedupe'] > 0) {
+            \WP_CLI::log('');
+            \WP_CLI::log('Diagnóstico: el feed nos da SIEMPRE los mismos items que ya tenemos.');
+            \WP_CLI::log('Posibles causas: el medio dejó de publicar, o el feed sólo expone un');
+            \WP_CLI::log('histórico fijo y los items nuevos viven en otra URL. Mira manualmente');
+            \WP_CLI::log('la web del medio para ver si publica y compara con el contenido del RSS.');
+        }
+        if ($contadores['invalido'] > 0) {
+            \WP_CLI::log('');
+            \WP_CLI::log('Hay items INVÁLIDOS (sin title/permalink). Probable: el feed devuelve');
+            \WP_CLI::log('XML mal formado o entradas vacías. Si todos los items son inválidos, el');
+            \WP_CLI::log('feed está roto del lado del medio aunque devuelva 200.');
         }
     }
 }

@@ -7,11 +7,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONArray
 import java.net.URLEncoder
+import kotlin.random.Random
 
 /**
  * Widget "Sintonizador" — radio antigua de madera con cuatro botones
@@ -33,7 +35,26 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         const val ACCION_SIGUIENTE = "org.flavornewshub.flavor_news_hub.SINTONIZADOR_SIGUIENTE"
         const val CLAVE_INDICE = "sintonizador_indice_actual"
         const val CLAVE_RADIOS = "sintonizador_radios"
+        const val CLAVE_REPRODUCIENDO = "sintonizador_reproduciendo_id"
+        const val CLAVE_ESTADO = "sintonizador_estado"
         const val NUM_LEDS = 10
+        const val LARGO_VU = 9
+
+        // Paleta del dial: dos estados (apagado / encendido) — los aplica
+        // el provider con setTextColor en runtime.
+        private const val COLOR_LEDS_APAGADOS = 0xFF8A6634.toInt()
+        private const val COLOR_LEDS_ENCENDIDOS = 0xFFFFC870.toInt()
+        private const val COLOR_AGUJA_APAGADA = 0xFF7A2A2A.toInt()
+        private const val COLOR_AGUJA_ENCENDIDA = 0xFFFF3838.toInt()
+
+        // Glifos para el botón ▶: cambia a `…` mientras carga el stream.
+        private const val GLIFO_PLAY = "▶"
+        private const val GLIFO_CARGANDO = "…"
+
+        // Bloques Unicode para el VU falso. Mezcla picos altos y bajos
+        // en cada redibujado para que parezca señal viva — no hay
+        // animación porque RemoteViews no la permite, sólo re-pintado.
+        private val BARRAS_VU = charArrayOf('▁', '▂', '▃', '▄', '▅', '▆', '▇')
     }
 
     override fun onUpdate(
@@ -124,6 +145,9 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.sintonizador_nombre, IdiomaWidget.recursos(context).getString(R.string.widget_sintonizador_sin_radios))
             views.setTextViewText(R.id.sintonizador_territorio, "")
             views.setTextViewText(R.id.sintonizador_leds, repeatCompat("· ", NUM_LEDS).trim())
+            views.setTextViewText(R.id.sintonizador_aguja, "")
+            views.setTextColor(R.id.sintonizador_leds, COLOR_LEDS_APAGADOS)
+            views.setTextColor(R.id.sintonizador_aguja, COLOR_AGUJA_APAGADA)
             appWidgetManager.updateAppWidget(widgetId, views)
             return
         }
@@ -131,9 +155,24 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val indice = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
         val radio = radios[indice]
         val idRadio = radio.id
+        // Encendido: hay una radio sonando (la marca la pone el callback
+        // Dart en `sintonizador_reproduciendo_id`). El dial cambia de
+        // tono apagado-marrón → ámbar brillante / aguja roja viva.
+        val sonando = (prefs.getString(CLAVE_REPRODUCIENDO, "") ?: "").isNotEmpty()
+        val posicionLed = if (radios.size <= 1) 0
+            else (indice.toDouble() * (NUM_LEDS - 1) / (radios.size - 1)).toInt()
         views.setTextViewText(R.id.sintonizador_nombre, radio.nombre)
         views.setTextViewText(R.id.sintonizador_territorio, radio.territorio.ifEmpty { "·" })
-        views.setTextViewText(R.id.sintonizador_leds, construirLeds(indice, radios.size))
+        views.setTextViewText(R.id.sintonizador_leds, construirLeds(posicionLed))
+        views.setTextViewText(R.id.sintonizador_aguja, construirAguja(posicionLed))
+        views.setTextColor(
+            R.id.sintonizador_leds,
+            if (sonando) COLOR_LEDS_ENCENDIDOS else COLOR_LEDS_APAGADOS,
+        )
+        views.setTextColor(
+            R.id.sintonizador_aguja,
+            if (sonando) COLOR_AGUJA_ENCENDIDA else COLOR_AGUJA_APAGADA,
+        )
 
         // Botón anterior → broadcast ACCION_ANTERIOR.
         val intentAnt = Intent(context, SintonizadorWidgetProvider::class.java).apply { action = ACCION_ANTERIOR }
@@ -185,13 +224,30 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
     }
 
     /**
-     * Construye la hilera de LEDs: 10 puntos con el activo en posición
-     * proporcional al índice. Si hay menos de 10 radios, la posición
-     * del activo se mapea linealmente.
+     * Construye la hilera de 10 LEDs con el activo (en posición ya
+     * mapeada al rango 0-9) marcado con `◉`, los demás `·`.
      */
-    private fun construirLeds(indice: Int, total: Int): String {
-        val activo = if (total <= 1) 0 else (indice.toDouble() * (NUM_LEDS - 1) / (total - 1)).toInt()
-        return (0 until NUM_LEDS).joinToString(" ") { if (it == activo) "◉" else "·" }
+    private fun construirLeds(posicionLed: Int): String {
+        return (0 until NUM_LEDS).joinToString(" ") { if (it == posicionLed) "◉" else "·" }
+    }
+
+    /**
+     * String de la aguja: misma anchura que la hilera de LEDs (los dos
+     * TextView se solapan en un FrameLayout), con `│` exactamente sobre
+     * el LED activo y espacios en el resto. Como ambos comparten
+     * monospace + letterSpacing="0.3", la barra cae alineada.
+     *
+     * La hilera de LEDs es `· · · · · · · · · ·` → posición N ocupa el
+     * carácter 2*N (LED) o 2*N+1 (espacio entre LEDs). Ponemos la
+     * aguja en el carácter del LED activo.
+     */
+    private fun construirAguja(posicionLed: Int): String {
+        val total = 2 * NUM_LEDS - 1
+        return buildString {
+            repeat(total) { i ->
+                append(if (i == posicionLed * 2) '│' else ' ')
+            }
+        }
     }
 
     private fun repeatCompat(s: String, n: Int): String = buildString { repeat(n) { append(s) } }

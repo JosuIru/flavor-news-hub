@@ -24,6 +24,20 @@
         android:letterSpacing="0.15"
         android:paddingBottom="8dp" />
 
+    <!-- Barra de "buscando emisora": visible sólo durante el buffereo
+         del stream (estado = "cargando"). RemoteViews permite alternar
+         su visibilidad pero no controlar la animación; el sistema la
+         pinta indeterminada. -->
+    <ProgressBar
+        android:id="@+id/sintonizador_cargando"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:indeterminate="true"
+        android:indeterminateTint="#ff8800"
+        android:visibility="gone"
+        android:layout_marginBottom="4dp" />
+
     <!-- Display del dial: fondo oscuro + nombre radio en ámbar.
          Es tappable → abre /audio en la app para escuchar. -->
     <LinearLayout
@@ -64,24 +78,63 @@
             android:fontFamily="monospace"
             android:paddingTop="2dp" />
 
+        <!-- VU "decorativo": aparece sólo en reproducción, distinto en
+             cada redibujado (cambio de emisora, pulsación de ◄/►).
+             RemoteViews no permite animación continua; nos vale el
+             feedback de cambio en cada acción. -->
+        <TextView
+            android:id="@+id/sintonizador_vu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#c89e5a"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.1"
+            android:paddingTop="2dp"
+            android:visibility="gone"
+            android:text="▁▃▅▇▅▃▁" />
+
     </LinearLayout>
 
-    <!-- LEDs de posición: 8 puntos horizontales, el activo brilla. -->
-    <TextView
-        android:id="@+id/sintonizador_leds"
+    <!-- Dial mecánico: LEDs (estado de cada posición) + aguja roja
+         encima, alineadas en monospace con la misma letterSpacing para
+         que el carácter `│` de la aguja caiga exactamente sobre el LED
+         activo. Color de LEDs y aguja se modifican en runtime según
+         si hay radio sonando o no. -->
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:paddingTop="6dp"
-        android:paddingBottom="4dp"
-        android:textColor="#8a6634"
-        android:textSize="13sp"
-        android:fontFamily="monospace"
-        android:letterSpacing="0.3"
-        android:text="· · · · · · · · · ·" />
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/sintonizador_leds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#8a6634"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.3"
+            android:text="· · · · · · · · · ·" />
+
+        <TextView
+            android:id="@+id/sintonizador_aguja"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#7a2a2a"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.3"
+            android:text=" " />
+    </FrameLayout>
 
     <!-- Botones: anterior / stop / play / siguiente.
-         Cada uno con padding generoso para cumplir el mínimo de 48dp. -->
+         TextView con glifos Unicode media (⏮ ⏹ ▶ ⏭) en lugar de los
+         iconos legacy `android.R.drawable.ic_media_*` — encajan mejor
+         con la estética cobre/madera. RemoteViews acepta
+         setOnClickPendingIntent sobre TextView igual que ImageButton. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -89,44 +142,52 @@
         android:gravity="center_horizontal"
         android:paddingTop="6dp">
 
-        <ImageButton
+        <TextView
             android:id="@+id/sintonizador_btn_anterior"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginHorizontal="4dp"
             android:background="@drawable/sintonizador_boton"
-            android:src="@android:drawable/ic_media_rew"
-            android:scaleType="center"
+            android:gravity="center"
+            android:text="⏮"
+            android:textSize="20sp"
+            android:textColor="#2a1a08"
             android:contentDescription="@string/widget_sintonizador_anterior" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/sintonizador_btn_stop"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginHorizontal="4dp"
             android:background="@drawable/sintonizador_boton"
-            android:src="@android:drawable/ic_lock_power_off"
-            android:scaleType="center"
+            android:gravity="center"
+            android:text="⏹"
+            android:textSize="20sp"
+            android:textColor="#2a1a08"
             android:contentDescription="@string/widget_sintonizador_stop" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/sintonizador_btn_play"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginHorizontal="4dp"
             android:background="@drawable/sintonizador_boton"
-            android:src="@android:drawable/ic_media_play"
-            android:scaleType="center"
+            android:gravity="center"
+            android:text="▶"
+            android:textSize="20sp"
+            android:textColor="#2a1a08"
             android:contentDescription="@string/widget_sintonizador_play" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/sintonizador_btn_siguiente"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginHorizontal="4dp"
             android:background="@drawable/sintonizador_boton"
-            android:src="@android:drawable/ic_media_ff"
-            android:scaleType="center"
+            android:gravity="center"
+            android:text="⏭"
+            android:textSize="20sp"
+            android:textColor="#2a1a08"
             android:contentDescription="@string/widget_sintonizador_siguiente" />
 
     </LinearLayout>

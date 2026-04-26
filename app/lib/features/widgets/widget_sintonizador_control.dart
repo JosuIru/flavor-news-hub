@@ -78,8 +78,13 @@ Future<void> _arrancar(String url, String titulo, String idRadio) async {
   await _playerFondo!.play();
   // Marcamos qué estamos reproduciendo en el almacén compartido del
   // widget (HomeWidgetPlugin). Lo lee el provider Kotlin para saber
-  // si ◄/► debe también cambiar el playback, no sólo el dial.
+  // si ◄/► debe también cambiar el playback, no sólo el dial — y
+  // para alternar la paleta del dial (LEDs apagados ↔ ámbar brillante).
   await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', idRadio);
+  await HomeWidget.updateWidget(
+    name: 'SintonizadorWidgetProvider',
+    androidName: 'SintonizadorWidgetProvider',
+  );
 }
 
 Future<void> _detener() async {
@@ -87,4 +92,8 @@ Future<void> _detener() async {
   await _playerFondo?.dispose();
   _playerFondo = null;
   await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', '');
+  await HomeWidget.updateWidget(
+    name: 'SintonizadorWidgetProvider',
+    androidName: 'SintonizadorWidgetProvider',
+  );
 }
