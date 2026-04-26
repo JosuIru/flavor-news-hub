@@ -25,6 +25,7 @@ final class EstadoFuentesActions
     public const HOOK_APLICAR_URLS         = 'admin_post_fnh_aplicar_urls_conocidas';
     public const HOOK_DETECTAR_FEEDS       = 'admin_post_fnh_detectar_feeds';
     public const HOOK_APLICAR_FEED_UNICO   = 'admin_post_fnh_aplicar_feed_detectado';
+    public const HOOK_ELIMINAR_DUPLICADOS  = 'admin_post_fnh_eliminar_duplicados';
 
     /** Clave del transient donde se guardan las propuestas tras escanear. */
     public const TRANSIENT_PROPUESTAS = 'fnh_feeds_detectados_propuestas';
@@ -309,6 +310,60 @@ final class EstadoFuentesActions
         exit;
     }
 
+    /**
+     * Manda a papelera los duplicados de fuentes detectados —
+     * mantiene el ID más bajo de cada par (el original) y manda a
+     * papelera los demás. Considera duplicado:
+     *   - Mismo `_fnh_feed_url` no vacío.
+     * No usamos "mismo título" como criterio de borrado porque puede
+     * haber medios homónimos legítimos en territorios distintos. La
+     * sección de admin sí los muestra como aviso, pero el botón
+     * automático sólo actúa sobre la condición fuerte (feed_url).
+     *
+     * Movemos a papelera, NO `wp_delete_post(force=true)`: por si la
+     * heurística falla y un duplicado era legítimo, el admin puede
+     * recuperarlo desde la papelera. SeedExcluidos también detecta el
+     * trash y evita que el sync los recree.
+     */
+    public static function manejarEliminarDuplicados(): void
+    {
+        self::comprobarPermisos();
+        $nonce = isset($_POST['_wpnonce']) ? (string) wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'fnh_eliminar_duplicados')) {
+            wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
+        }
+
+        global $wpdb;
+        $paresDuplicados = $wpdb->get_results($wpdb->prepare(
+            "SELECT pm.meta_value AS feed_url, GROUP_CONCAT(p.ID ORDER BY p.ID ASC) AS ids
+             FROM {$wpdb->postmeta} pm
+             INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+             WHERE pm.meta_key = '_fnh_feed_url'
+               AND pm.meta_value != ''
+               AND p.post_type = %s AND p.post_status = 'publish'
+             GROUP BY pm.meta_value
+             HAVING COUNT(*) > 1",
+            Source::SLUG
+        ), ARRAY_A);
+
+        $cuentaPapelera = 0;
+        foreach (is_array($paresDuplicados) ? $paresDuplicados : [] as $par) {
+            $idsDelPar = array_filter(array_map('intval', explode(',', (string) $par['ids'])));
+            if (count($idsDelPar) < 2) continue;
+            // Mantenemos el primer ID (el más bajo, el original) y
+            // mandamos a papelera el resto.
+            array_shift($idsDelPar);
+            foreach ($idsDelPar as $idAEliminar) {
+                if (wp_trash_post((int) $idAEliminar)) {
+                    $cuentaPapelera++;
+                }
+            }
+        }
+
+        wp_safe_redirect(self::urlRedireccion(['fnh_duplicados_papelera' => $cuentaPapelera]));
+        exit;
+    }
+
     public static function mostrarAviso(): void
     {
         $pantallaActual = isset($_GET['page']) ? sanitize_key((string) wp_unslash($_GET['page'])) : '';
@@ -330,6 +385,24 @@ final class EstadoFuentesActions
                 printf(
                     '<div class="notice notice-info is-dismissible"><p>%s</p></div>',
                     esc_html__('No había fuentes caídas que desactivar.', 'flavor-news-hub')
+                );
+            }
+        }
+        if (isset($_GET['fnh_duplicados_papelera'])) {
+            $cuentaPapelera = (int) $_GET['fnh_duplicados_papelera'];
+            if ($cuentaPapelera > 0) {
+                printf(
+                    '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                    esc_html(sprintf(
+                        /* translators: %d duplicados enviados a papelera */
+                        _n('%d fuente duplicada enviada a la papelera.', '%d fuentes duplicadas enviadas a la papelera.', $cuentaPapelera, 'flavor-news-hub'),
+                        $cuentaPapelera
+                    ))
+                );
+            } else {
+                printf(
+                    '<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+                    esc_html__('No había duplicados por feed_url para eliminar.', 'flavor-news-hub')
                 );
             }
         }

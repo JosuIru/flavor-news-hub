@@ -2894,24 +2894,6 @@
     "es_movimiento": true
   },
   {
-    "slug": "col-ecologistas-en-accion",
-    "name": "Ecologistas en Acción",
-    "feed_url": "https://www.ecologistasenaccion.org/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.ecologistasenaccion.org/",
-    "territory": "Estado español",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "ecologismo",
-      "alimentacion"
-    ],
-    "medium_type": "news",
-    "content_license": "",
-    "support_url": "https://www.ecologistasenaccion.org/8000/colabora/"
-  },
-  {
     "slug": "col-pah-barcelona",
     "name": "PAH Barcelona",
     "feed_url": "https://pahbarcelona.org/ca/feed/",
@@ -4768,23 +4750,6 @@
       "vivienda",
       "laboral"
     ],
-    "es_movimiento": true
-  },
-  {
-    "id": 7377,
-    "name": "Ecologistas en Acción Cantabria",
-    "slug": "ecologistas-accion-cantabria",
-    "feed_url": "https://www.ecologistasenaccion.org/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.ecologistasenaccion.org/cantabria/",
-    "territory": "Cantabria",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "ecologismo"
-    ],
-    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/",
     "es_movimiento": true
   },
   {

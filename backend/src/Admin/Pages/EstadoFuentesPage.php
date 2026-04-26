@@ -378,8 +378,17 @@ final class EstadoFuentesPage
             <?php esc_html_e('Duplicados detectados', 'flavor-news-hub'); ?>
         </h2>
         <p class="description" style="max-width:800px">
-            <?php esc_html_e('Estas fuentes están registradas dos o más veces — lo que duplica la ingesta y los items en el feed. Borra una de cada par editando el post (los IDs te llevan a la página de edición).', 'flavor-news-hub'); ?>
+            <?php esc_html_e('Estas fuentes están registradas dos o más veces — lo que duplica la ingesta y los items en el feed.', 'flavor-news-hub'); ?>
         </p>
+
+        <?php if ($duplicadosPorUrl !== []) : ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:8px 0 16px"
+                  onsubmit="return confirm('<?php echo esc_js(__('Se mandarán a papelera los duplicados con misma feed_url, manteniendo el más antiguo de cada par. ¿Continuar?', 'flavor-news-hub')); ?>');">
+                <input type="hidden" name="action" value="fnh_eliminar_duplicados" />
+                <?php wp_nonce_field('fnh_eliminar_duplicados'); ?>
+                <?php submit_button(__('Eliminar duplicados (mantener el más antiguo)', 'flavor-news-hub'), 'delete', 'submit', false); ?>
+            </form>
+        <?php endif; ?>
 
         <?php if ($duplicadosPorUrl !== []) : ?>
             <h3 style="margin-top:1.5em"><?php esc_html_e('Mismo feed_url', 'flavor-news-hub'); ?></h3>

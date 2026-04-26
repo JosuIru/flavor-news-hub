@@ -67,6 +67,39 @@ final class ImportadorCatalogo
                 continue;
             }
 
+            // Defensivo contra duplicados por feed_url: si otro source ya
+            // existe con esta misma feed_url y no es el mismo post,
+            // saltamos. Antes el importador creaba un post nuevo cuando
+            // el seed traía dos slugs apuntando al mismo feed (caso
+            // observado: 3 entradas distintas para Ecologistas en Acción
+            // — el "ecologistas-en-accion-2" + "col-…" + "…-cantabria").
+            // El resultado era 3 posts ingestando el mismo feed y el
+            // dedupe por GUID dejaba 2 de ellos sin items propios.
+            $urlFeedSeed = trim((string) ($raw['feed_url'] ?? ''));
+            if ($urlFeedSeed !== '') {
+                $idsConMismaUrl = get_posts([
+                    'post_type'      => Source::SLUG,
+                    'post_status'    => ['publish', 'pending', 'draft'],
+                    'fields'         => 'ids',
+                    'posts_per_page' => 2,
+                    'meta_key'       => '_fnh_feed_url',
+                    'meta_value'     => $urlFeedSeed,
+                    'no_found_rows'  => true,
+                ]);
+                $hayOtroPostConEsaUrl = false;
+                foreach ($idsConMismaUrl as $idEnUso) {
+                    if (!$existente || (int) $idEnUso !== (int) $existente->ID) {
+                        $hayOtroPostConEsaUrl = true;
+                        break;
+                    }
+                }
+                if ($hayOtroPostConEsaUrl) {
+                    $errores[] = "Slug '$slug' saltado: feed_url ya en uso por otro source ($urlFeedSeed).";
+                    $saltados++;
+                    continue;
+                }
+            }
+
             $idPost = $existente
                 ? (int) $existente->ID
                 : (int) wp_insert_post([
@@ -81,7 +114,7 @@ final class ImportadorCatalogo
                 continue;
             }
 
-            update_post_meta($idPost, '_fnh_feed_url', (string) ($raw['feed_url'] ?? ''));
+            update_post_meta($idPost, '_fnh_feed_url', $urlFeedSeed);
             update_post_meta($idPost, '_fnh_feed_type', (string) ($raw['feed_type'] ?? 'rss'));
             update_post_meta($idPost, '_fnh_website_url', (string) ($raw['website_url'] ?? ''));
             update_post_meta($idPost, '_fnh_support_url', (string) ($raw['support_url'] ?? ''));
