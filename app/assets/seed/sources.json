@@ -493,22 +493,6 @@
     "support_url": "https://www.patreon.com/lowtechmagazine"
   },
   {
-    "id": 6613,
-    "name": "MakerTube",
-    "slug": "makertube",
-    "feed_url": "https://makertube.net/feeds/videos.xml",
-    "feed_type": "video",
-    "website_url": "https://makertube.net",
-    "territory": "Internacional",
-    "languages": [
-      "en"
-    ],
-    "topics": [
-      "tecnologia-soberana"
-    ],
-    "support_url": "https://liberapay.com/MakerTube\\\\n-"
-  },
-  {
     "id": 6748,
     "name": "Miguel Charisteas",
     "slug": "miguel-charisteas",
