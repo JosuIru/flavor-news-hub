@@ -2525,34 +2525,6 @@
     "es_movimiento": true
   },
   {
-    "id": 7306,
-    "name": "FM Chalet",
-    "slug": "fm-chalet",
-    "feed_url": "https://fmchalet.org/feed/",
-    "feed_type": "rss",
-    "website_url": "https://fmchalet.org/",
-    "territory": "Santa Fe",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "derechos-civiles",
-      "cultura",
-      "memoria-historica"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none",
-    "support_url": "https://fmchalet.org/donaciones-donations-dons-spenden-%e6%8d%90%e6%ac%be/",
-    "es_movimiento": true
-  },
-  {
     "id": 7307,
     "name": "Radio Kurruf",
     "slug": "radio-kurruf",
