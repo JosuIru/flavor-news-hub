@@ -35,6 +35,10 @@ final class EstadoFuentesActions
         // Carne Cruda dejó carnecruda.es y vive ahora dentro de
         // elDiario.es. Su feed está en /rss/carnecruda/ (no /feed/).
         'carne-cruda'   => 'https://www.eldiario.es/rss/carnecruda/',
+        // News Minute: la URL del seed (/topic/rss) devuelve HTML; el
+        // feed real es /feed (con content-type application/octet-stream
+        // pero contenido XML válido).
+        'the-news-minute' => 'https://www.thenewsminute.com/feed',
     ];
 
     public static function manejarDesactivarUna(): void

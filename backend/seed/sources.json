@@ -2472,7 +2472,7 @@
     "id": 7303,
     "name": "The News Minute",
     "slug": "the-news-minute",
-    "feed_url": "https://www.thenewsminute.com/topic/rss",
+    "feed_url": "https://www.thenewsminute.com/feed",
     "feed_type": "rss",
     "website_url": "https://www.thenewsminute.com/videos",
     "territory": "India",
