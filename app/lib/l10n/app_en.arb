@@ -210,6 +210,7 @@
   "notifFreq6h": "Every 6 hours",
   "notifFreq12h": "Every 12 hours",
   "notifFreq24h": "Once a day",
+  "notifPermissionDenied": "You denied the notifications permission. The app will keep checking in background but can't notify until you grant it in system Settings.",
   "settingsMap": "Map",
   "settingsMapSubtitle": "Radios and collectives by territory.",
   "settingsSourcesPrefs": "Curated sources",

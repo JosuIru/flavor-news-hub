@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../../../core/providers/preferences_provider.dart';
 import 'preferencias_notif.dart';
 
 /// Nombre único del trabajo periódico en WorkManager.
@@ -36,8 +37,16 @@ void ejecutorWorker() {
 /// Comprueba si hay contenido nuevo (titulares, vídeos, podcasts) desde la
 /// última comprobación y dispara una notificación combinada.
 Future<void> _comprobarYNotificar(SharedPreferences sp) async {
-  final urlBackend = sp.getString('fnh.pref.backendUrl');
-  if (urlBackend == null || urlBackend.isEmpty) return;
+  // Antes salíamos si no había URL persistida — pero `preferences_provider`
+  // sólo persiste cuando el usuario cambia la URL manualmente. Si el
+  // usuario nunca tocó Ajustes → URL del backend, el SharedPref estaba
+  // vacío y el worker corría en silencio sin notificar nada nunca.
+  // Caemos al default oficial (mismo fallback que usa el cliente HTTP
+  // de la app cuando no hay valor explícito).
+  final urlBackendBruta = sp.getString('fnh.pref.backendUrl');
+  final urlBackend = (urlBackendBruta == null || urlBackendBruta.isEmpty)
+      ? urlInstanciaOficialDefault
+      : urlBackendBruta;
 
   // Desde: la última comprobación guardada, o las últimas 24h si no hay.
   final ultimaRaw = sp.getString('fnh.pref.notifUltimaComprobacion');
@@ -147,17 +156,36 @@ Future<void> _asegurarInicializado() async {
   await _plugin.initialize(
     const InitializationSettings(android: androidInit),
   );
-  // Crea el canal de notificación explícitamente — Android 8+ lo requiere.
+  // Crea el canal de notificación explícitamente — Android 8+ lo
+  // requiere y la importancia del canal manda sobre la del show().
+  // `high` para que aparezca como heads-up; `defaultImportance` deja
+  // la notificación silenciosa en muchos lanzadores y el usuario
+  // creía que no llegaban.
   const canal = AndroidNotificationChannel(
     _canalAndroidId,
     _canalAndroidNombre,
     description: 'Avisos de nuevos titulares en Flavor News Hub',
-    importance: Importance.defaultImportance,
+    importance: Importance.high,
   );
   await _plugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(canal);
   _inicializado = true;
+}
+
+/// Pide al usuario el permiso `POST_NOTIFICATIONS` (Android 13+). En
+/// versiones anteriores el plugin lo concede automáticamente y este
+/// método devuelve `true`. Llamar desde la UI cuando el usuario active
+/// el switch de notificaciones — antes la app sólo declaraba el
+/// permiso en el manifest, que en Android 13+ no basta: hay que
+/// solicitarlo explícitamente o las notificaciones nunca aparecen.
+Future<bool> pedirPermisoNotificaciones() async {
+  await _asegurarInicializado();
+  final implAndroid = _plugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  if (implAndroid == null) return true;
+  final concedido = await implAndroid.requestNotificationsPermission();
+  return concedido ?? true;
 }
 
 Future<void> _mostrarNotificacionContenidoNuevo({
@@ -194,8 +222,8 @@ Future<void> _mostrarNotificacionContenidoNuevo({
     _canalAndroidId,
     _canalAndroidNombre,
     channelDescription: 'Avisos de nuevo contenido en Flavor News Hub',
-    importance: Importance.defaultImportance,
-    priority: Priority.defaultPriority,
+    importance: Importance.high,
+    priority: Priority.high,
   );
   await _plugin.show(
     100,

@@ -209,6 +209,7 @@
   "notifFreq6h": "Cada 6 horas",
   "notifFreq12h": "Cada 12 horas",
   "notifFreq24h": "Una vez al día",
+  "notifPermissionDenied": "Has denegado el permiso de notificaciones. La app comprobará en background pero no podrá avisarte hasta que lo concedas en Ajustes del sistema.",
   "settingsMap": "Mapa",
   "settingsMapSubtitle": "Radios y colectivos por territorio.",
   "settingsSourcesPrefs": "Mis medios del directorio",

@@ -210,6 +210,7 @@
   "notifFreq6h": "Cada 6 hores",
   "notifFreq12h": "Cada 12 hores",
   "notifFreq24h": "Un cop al dia",
+  "notifPermissionDenied": "Has denegat el permís de notificacions. L'app continuarà comprovant en background però no podrà avisar-te fins que el concedeixis a Ajustes del sistema.",
   "settingsMap": "Mapa",
   "settingsMapSubtitle": "Ràdios i col·lectius per territori.",
   "settingsSourcesPrefs": "Els meus mitjans del directori",

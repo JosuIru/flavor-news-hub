@@ -34,6 +34,20 @@ class NotificacionesScreen extends ConsumerWidget {
               title: Text(_etiqueta(textos, opcion)),
               onChanged: (valor) async {
                 if (valor == null) return;
+                // Si el usuario activa notificaciones (no "nunca"), pedimos
+                // primero el permiso POST_NOTIFICATIONS — Android 13+ no
+                // las muestra sin esa solicitud explícita aunque el manifest
+                // declare el permiso. Si el usuario lo deniega, le
+                // mostramos un aviso y dejamos que el cron del worker
+                // siga corriendo (refresca el widget) pero sin popups.
+                if (valor.esActiva) {
+                  final concedido = await pedirPermisoNotificaciones();
+                  if (!concedido && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(textos.notifPermissionDenied),
+                    ));
+                  }
+                }
                 await ref
                     .read(preferenciasNotifProvider.notifier)
                     .establecerFrecuencia(valor);

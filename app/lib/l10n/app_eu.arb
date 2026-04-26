@@ -32,6 +32,7 @@
   "notifFreq6h": "6 orduz behin",
   "notifFreq12h": "12 orduz behin",
   "notifFreq24h": "Egunean behin",
+  "notifPermissionDenied": "Jakinarazpenen baimena ukatu duzu. Aplikazioak bigarren mailan egiaztatzen jarraituko du, baina ezin izango zaitu jakinarazi sistemaren Ezarpenetan baimena ematen ez duzun arte.",
   "settingsMap": "Mapa",
   "settingsMapSubtitle": "Irratiak eta kolektiboak lurraldeka.",
   "settingsSourcesPrefs": "Direktorioko nire hedabideak",
