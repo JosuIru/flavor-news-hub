@@ -175,29 +175,71 @@ class _EstadoMusicaBody extends ConsumerState<MusicaBody> {
           ),
         ),
         Expanded(
-          child: asyncResultados.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text(e.toString())),
-            data: (pistas) {
-              final hayConsulta = ref.watch(consultaMusicaProvider).trim().length >= 2;
-              if (!hayConsulta) {
-                return _InicioRapido(
-                  onGeneroSeleccionado: _buscarGenero,
-                  onReproducirNovedad: _reproducirPista,
-                );
-              }
-              if (pistas.isEmpty) {
-                return _MensajeCentro(icono: Icons.inbox_outlined, texto: textos.searchNoResults);
-              }
-              return ListView.separated(
-                itemCount: pistas.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, i) => _TilePista(
-                  pista: pistas[i],
-                  onReproducir: () => _reproducirPista(pistas, i),
-                ),
-              );
+          child: RefreshIndicator(
+            // La música depende de servicios externos (Archive.org,
+            // Audius, Funkwhale, Jamendo) que pueden estar caídos
+            // momentáneamente. Pull-to-refresh permite reintentar sin
+            // tocar la consulta.
+            onRefresh: () async {
+              ref.invalidate(resultadosMusicaProvider);
+              await ref.read(resultadosMusicaProvider.future);
             },
+            child: asyncResultados.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              // Patrón consistente con feed/mapa: icono + mensaje + retry.
+              error: (e, _) => ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  const SizedBox(height: 80),
+                  Icon(Icons.cloud_off,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(e.toString(), textAlign: TextAlign.center),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => ref.invalidate(resultadosMusicaProvider),
+                      icon: const Icon(Icons.refresh),
+                      label: Text(textos.commonRetry),
+                    ),
+                  ),
+                ],
+              ),
+              data: (pistas) {
+                final hayConsulta = ref.watch(consultaMusicaProvider).trim().length >= 2;
+                if (!hayConsulta) {
+                  return _InicioRapido(
+                    onGeneroSeleccionado: _buscarGenero,
+                    onReproducirNovedad: _reproducirPista,
+                  );
+                }
+                if (pistas.isEmpty) {
+                  // ListView vacío para que pull-to-refresh siga funcionando.
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      const SizedBox(height: 120),
+                      _MensajeCentro(
+                        icono: Icons.inbox_outlined,
+                        texto: textos.searchNoResults,
+                      ),
+                    ],
+                  );
+                }
+                return ListView.separated(
+                  itemCount: pistas.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, i) => _TilePista(
+                    pista: pistas[i],
+                    onReproducir: () => _reproducirPista(pistas, i),
+                  ),
+                );
+              },
+            ),
           ),
         ),
         _BarraInstancias(

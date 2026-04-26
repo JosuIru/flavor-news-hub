@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -99,8 +100,14 @@ class ArchiveOrgClient {
       );
       return resultados.whereType<PistaFunkwhale>().toList(growable: false);
     } on TimeoutException {
+      // No re-lanzamos: la búsqueda combina varios servicios y queremos
+      // que los demás contribuyan aunque Archive.org tarde. El log nos
+      // ayuda en debug si el usuario reporta resultados anormalmente
+      // pobres en una sesión.
+      debugPrint('[ArchiveOrg] timeout');
       return const [];
-    } catch (_) {
+    } catch (error) {
+      debugPrint('[ArchiveOrg] error: $error');
       return const [];
     }
   }
