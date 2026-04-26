@@ -39,6 +39,10 @@ final class EstadoFuentesActions
         // feed real es /feed (con content-type application/octet-stream
         // pero contenido XML válido).
         'the-news-minute' => 'https://www.thenewsminute.com/feed',
+        // El Temps: el feed canónico está en /sindica (declarado en el
+        // <link rel="alternate" type="application/rss+xml"> del HTML),
+        // no en /feed/ — Cloudflare devolvía 404 con la URL antigua.
+        'el-temps'        => 'https://www.eltemps.cat/sindica',
         // HispanTV: dejaron FeedBurner y publican feeds por categoría
         // (sección) en su servicio interno news.asmx. La página de
         // /rss expone una URL distinta por sección. Combinamos las

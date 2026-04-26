@@ -131,17 +131,22 @@ final class FeedIngester
 
         require_once ABSPATH . WPINC . '/feed.php';
 
-        // SimplePie por defecto envía un UA genérico que servicios como EFF
-        // bloquean con HTTP 400. Ponemos uno identificable mientras corre
-        // fetch_feed y lo retiramos justo después para no afectar a otros
-        // plugins que también usen `fetch_feed` durante la misma request.
+        // User-Agent: usábamos `FlavorNewsHubBot/0.2 (+url)` por
+        // transparencia, pero Cloudflare y servicios similares en muchos
+        // medios (CEAR, NDTV, Cuarto Poder…) detectan la subcadena "Bot"
+        // y devuelven 403 con un challenge HTML. Cambiamos a un UA de
+        // Chrome moderno — es lo que hacen Feedly, Inoreader y otros
+        // lectores RSS comerciales. Mantenemos identificación del
+        // proyecto en el header `From:` para que un admin curioso pueda
+        // ver de dónde viene el tráfico.
         // Timeout 25s (antes 15s): muchos servidores latinoamericanos y
         // de webs autohospedadas tardan más de 10s en handshake TLS y
         // caían sistemáticamente con "cURL error 28" antes de que diera
         // tiempo a leer el feed. 25s sigue siendo razonable para no
         // bloquear la ingesta global cuando un dominio está caído.
-        $filtroAjustesFeed = static function (\SimplePie $feed): void {
-            $feed->set_useragent('FlavorNewsHubBot/0.2 (+https://flavor.gailu.it)');
+        $uaNavegador = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+        $filtroAjustesFeed = static function (\SimplePie $feed) use ($uaNavegador): void {
+            $feed->set_useragent($uaNavegador);
             $feed->set_timeout(25);
         };
         // Algunas rutas internas de SimplePie / WordPress usan `WP_Http`
@@ -149,10 +154,19 @@ final class FeedIngester
         // que esas también respeten el límite generoso, subimos el
         // timeout de `WP_Http` durante la ingesta y lo restauramos
         // después en el `finally`.
-        $filtroTimeoutHttp = static function (array $args): array {
+        $filtroTimeoutHttp = static function (array $args) use ($uaNavegador): array {
             if (!isset($args['timeout']) || (int) $args['timeout'] < 25) {
                 $args['timeout'] = 25;
             }
+            // Aplicamos el mismo UA navegador a todas las peticiones HTTP
+            // de WP que pasen por el ingester — algunas rutas internas
+            // de SimplePie usan `wp_remote_get` con el UA de WP por
+            // defecto ("WordPress/X") que también es vetado por algunos
+            // servicios. Header `From:` para transparencia.
+            $args['user-agent'] = $uaNavegador;
+            $args['headers'] = isset($args['headers']) && is_array($args['headers'])
+                ? $args['headers'] : [];
+            $args['headers']['From'] = 'flavor.gailu.it (Flavor News Hub agregator)';
             return $args;
         };
         // SSL bypass por dominio: si el feed actual está en la lista de
