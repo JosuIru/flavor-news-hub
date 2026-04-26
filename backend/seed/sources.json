@@ -2155,7 +2155,7 @@
     "id": 7290,
     "name": "HispanTV",
     "slug": "hispantv",
-    "feed_url": "https://feeds.feedburner.com/hispantv",
+    "feed_url": "https://www.hispantv.com/services/news.asmx/Rss?category=1,2,4,5,6,11,12,14,18,44,53,61,69,80,84,103,104,105,106,107,108,109,125,130,131",
     "feed_type": "rss",
     "website_url": "https://www.hispantv.com",
     "territory": "Internacional",

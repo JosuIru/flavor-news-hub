@@ -39,6 +39,20 @@ final class EstadoFuentesActions
         // feed real es /feed (con content-type application/octet-stream
         // pero contenido XML válido).
         'the-news-minute' => 'https://www.thenewsminute.com/feed',
+        // HispanTV: dejaron FeedBurner y publican feeds por categoría
+        // (sección) en su servicio interno news.asmx. La página de
+        // /rss expone una URL distinta por sección. Combinamos las
+        // de mayor interés editorial para una audiencia hispana:
+        //   1,2,11,12       → portada / titulares destacados
+        //   4,5,6,14        → Irán
+        //   18              → Asia Occidental
+        //   44,53,130,131   → Europa
+        //   61,69           → Centroamérica
+        //   103-109         → Sudamérica
+        //   80              → Opinión
+        //   84              → Sociedad
+        //   125             → Reportajes
+        'hispantv'        => 'https://www.hispantv.com/services/news.asmx/Rss?category=1,2,4,5,6,11,12,14,18,44,53,61,69,80,84,103,104,105,106,107,108,109,125,130,131',
     ];
 
     public static function manejarDesactivarUna(): void
