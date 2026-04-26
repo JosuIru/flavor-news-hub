@@ -60,19 +60,60 @@ class MapaScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: asyncRadios.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(e.toString())),
-        data: (radios) {
-          final colectivos = asyncColectivos.valueOrNull?.items ?? const <Collective>[];
-          return _Mapa(
-            radios: radios,
-            colectivos: colectivos,
-            centroInicial: centroInicial,
-            zoomInicial: zoomInicial,
-            territorioBase: territorioBase,
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Invalidamos ambos providers; el `when` siguiente va a
+          // recargar tanto radios como colectivos. await ambos para que
+          // el spinner del RefreshIndicator se mantenga hasta que los
+          // datos nuevos estén listos.
+          ref.invalidate(radiosProvider);
+          ref.invalidate(colectivosDirectorioProvider);
+          await Future.wait([
+            ref.read(radiosProvider.future),
+            ref.read(colectivosDirectorioProvider.future),
+          ]);
         },
+        child: asyncRadios.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          // Antes el error mostraba sólo `Text(e.toString())` plano sin
+          // icono ni reintento — UX inconsistente con feed/vídeos. Ahora
+          // patrón estándar de la app: icono, mensaje, botón retry.
+          error: (e, _) => ListView(
+            // ListView para que RefreshIndicator funcione aunque haya error.
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              const SizedBox(height: 80),
+              Icon(Icons.cloud_off, size: 48,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(e.toString(), textAlign: TextAlign.center),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: FilledButton.tonalIcon(
+                  onPressed: () {
+                    ref.invalidate(radiosProvider);
+                    ref.invalidate(colectivosDirectorioProvider);
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: Text(textos.commonRetry),
+                ),
+              ),
+            ],
+          ),
+          data: (radios) {
+            final colectivos = asyncColectivos.valueOrNull?.items ?? const <Collective>[];
+            return _Mapa(
+              radios: radios,
+              colectivos: colectivos,
+              centroInicial: centroInicial,
+              zoomInicial: zoomInicial,
+              territorioBase: territorioBase,
+            );
+          },
+        ),
       ),
     );
   }

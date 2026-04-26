@@ -72,6 +72,14 @@ class MovimientosScreen extends ConsumerWidget {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
+                        const SizedBox(height: 12),
+                        Text(
+                          textos.movimientosEmptyHint,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
                       ],
                     ),
                   ),

@@ -6,6 +6,7 @@ import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/utils/normalizacion_texto.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
@@ -54,7 +55,12 @@ final resultadosBusquedaProvider =
     return ResultadosBusqueda.vacio;
   }
   final api = ref.watch(flavorNewsApiProvider);
-  final minuscula = consulta.toLowerCase();
+  // Normalizamos sin diacríticos para que el fallback offline encuentre
+  // "Cataluña" buscando "cataluna" y "Bilbó" buscando "bilbo". El
+  // online (`search:` al backend) sigue su propia política de WP.
+  final consultaNormalizada = normalizarParaBusqueda(consulta);
+  bool coincide(String texto) =>
+      normalizarParaBusqueda(texto).contains(consultaNormalizada);
 
   Future<List<Item>> buscarItems() async {
     try {
@@ -72,9 +78,7 @@ final resultadosBusquedaProvider =
         ...cache.where((i) => !idsSeed.contains(i.id)),
       ];
       return unidos
-          .where((it) =>
-              it.title.toLowerCase().contains(minuscula) ||
-              it.excerpt.toLowerCase().contains(minuscula))
+          .where((it) => coincide(it.title) || coincide(it.excerpt))
           .take(20)
           .toList();
     }
@@ -92,9 +96,9 @@ final resultadosBusquedaProvider =
       // hay en Bizkaia?" se resuelve sin red).
       return fuentesSeed
           .where((s) =>
-              s.name.toLowerCase().contains(minuscula) ||
-              s.description.toLowerCase().contains(minuscula) ||
-              s.territory.toLowerCase().contains(minuscula))
+              coincide(s.name) ||
+              coincide(s.description) ||
+              coincide(s.territory))
           .take(10)
           .toList();
     }
@@ -108,9 +112,9 @@ final resultadosBusquedaProvider =
       final radios = await ref.watch(radiosSeedProvider.future);
       return radios
           .where((r) =>
-              r.name.toLowerCase().contains(minuscula) ||
-              r.description.toLowerCase().contains(minuscula) ||
-              r.territory.toLowerCase().contains(minuscula))
+              coincide(r.name) ||
+              coincide(r.description) ||
+              coincide(r.territory))
           .take(10)
           .toList();
     }
@@ -124,9 +128,7 @@ final resultadosBusquedaProvider =
       debugPrint('[Buscador] /collectives falló, fallback seed: $error');
       final colectivos = await ref.watch(colectivosSeedProvider.future);
       return colectivos
-          .where((c) =>
-              c.name.toLowerCase().contains(minuscula) ||
-              c.description.toLowerCase().contains(minuscula))
+          .where((c) => coincide(c.name) || coincide(c.description))
           .take(10)
           .toList();
     }
