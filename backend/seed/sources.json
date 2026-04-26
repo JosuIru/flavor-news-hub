@@ -2182,9 +2182,9 @@
     "id": 7291,
     "name": "Carne Cruda",
     "slug": "carne-cruda",
-    "feed_url": "https://www.carnecruda.es/feed/",
+    "feed_url": "https://www.eldiario.es/rss/carnecruda/",
     "feed_type": "rss",
-    "website_url": "https://www.carnecruda.es",
+    "website_url": "https://www.eldiario.es/carnecruda/",
     "territory": "Estado español",
     "languages": [
       "es"

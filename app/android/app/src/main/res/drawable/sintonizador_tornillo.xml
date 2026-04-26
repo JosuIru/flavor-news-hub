@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tornillo decorativo de las cuatro esquinas: oval con gradiente
+     radial latón-oscuro para que parezca una pieza metálica con luz
+     desplazada del centro (efecto cabeza de tornillo Phillips). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <size android:width="8dp" android:height="8dp" />
+    <gradient
+        android:type="radial"
+        android:gradientRadius="6dp"
+        android:centerX="0.4"
+        android:centerY="0.35"
+        android:startColor="#c69b58"
+        android:endColor="#3a2410" />
+    <stroke android:width="0.5dp" android:color="#1a0f04" />
+</shape>

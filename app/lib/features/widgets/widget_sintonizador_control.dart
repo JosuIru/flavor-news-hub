@@ -69,6 +69,14 @@ Future<void> _arrancar(String url, String titulo, String idRadio) async {
     }
   }
   _playerFondo ??= AudioPlayer();
+  // Estado "cargando" antes del setAudioSource para que el widget
+  // muestre la barra de progreso y el botón ▶ → `…` durante el
+  // buffereo (1-3 s típico en radios libres).
+  await HomeWidget.saveWidgetData<String>('sintonizador_estado', 'cargando');
+  await HomeWidget.updateWidget(
+    name: 'SintonizadorWidgetProvider',
+    androidName: 'SintonizadorWidgetProvider',
+  );
   await _playerFondo!.setAudioSource(
     AudioSource.uri(
       Uri.parse(url),
@@ -81,6 +89,7 @@ Future<void> _arrancar(String url, String titulo, String idRadio) async {
   // si ◄/► debe también cambiar el playback, no sólo el dial — y
   // para alternar la paleta del dial (LEDs apagados ↔ ámbar brillante).
   await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', idRadio);
+  await HomeWidget.saveWidgetData<String>('sintonizador_estado', 'reproduciendo');
   await HomeWidget.updateWidget(
     name: 'SintonizadorWidgetProvider',
     androidName: 'SintonizadorWidgetProvider',
@@ -92,6 +101,7 @@ Future<void> _detener() async {
   await _playerFondo?.dispose();
   _playerFondo = null;
   await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', '');
+  await HomeWidget.saveWidgetData<String>('sintonizador_estado', '');
   await HomeWidget.updateWidget(
     name: 'SintonizadorWidgetProvider',
     androidName: 'SintonizadorWidgetProvider',

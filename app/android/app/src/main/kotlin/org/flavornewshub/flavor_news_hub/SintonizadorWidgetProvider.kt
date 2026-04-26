@@ -148,6 +148,9 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.sintonizador_aguja, "")
             views.setTextColor(R.id.sintonizador_leds, COLOR_LEDS_APAGADOS)
             views.setTextColor(R.id.sintonizador_aguja, COLOR_AGUJA_APAGADA)
+            views.setViewVisibility(R.id.sintonizador_cargando, View.GONE)
+            views.setViewVisibility(R.id.sintonizador_vu, View.GONE)
+            views.setTextViewText(R.id.sintonizador_btn_play, GLIFO_PLAY)
             appWidgetManager.updateAppWidget(widgetId, views)
             return
         }
@@ -155,10 +158,14 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val indice = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
         val radio = radios[indice]
         val idRadio = radio.id
-        // Encendido: hay una radio sonando (la marca la pone el callback
-        // Dart en `sintonizador_reproduciendo_id`). El dial cambia de
-        // tono apagado-marrón → ámbar brillante / aguja roja viva.
-        val sonando = (prefs.getString(CLAVE_REPRODUCIENDO, "") ?: "").isNotEmpty()
+        // Estado del playback (lo escribe el callback Dart). Tres valores:
+        //   "cargando"     → buffereando; barra de progreso visible,
+        //                     botón ▶ → `…`, dial todavía apagado.
+        //   "reproduciendo"→ stream sonando; LEDs ámbar, VU falso visible.
+        //   ""             → parado; todo apagado, botón ▶ normal.
+        val estado = prefs.getString(CLAVE_ESTADO, "") ?: ""
+        val sonando = estado == "reproduciendo"
+        val cargando = estado == "cargando"
         val posicionLed = if (radios.size <= 1) 0
             else (indice.toDouble() * (NUM_LEDS - 1) / (radios.size - 1)).toInt()
         views.setTextViewText(R.id.sintonizador_nombre, radio.nombre)
@@ -172,6 +179,21 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         views.setTextColor(
             R.id.sintonizador_aguja,
             if (sonando) COLOR_AGUJA_ENCENDIDA else COLOR_AGUJA_APAGADA,
+        )
+        views.setViewVisibility(
+            R.id.sintonizador_cargando,
+            if (cargando) View.VISIBLE else View.GONE,
+        )
+        views.setViewVisibility(
+            R.id.sintonizador_vu,
+            if (sonando) View.VISIBLE else View.GONE,
+        )
+        if (sonando) {
+            views.setTextViewText(R.id.sintonizador_vu, construirVu(idRadio))
+        }
+        views.setTextViewText(
+            R.id.sintonizador_btn_play,
+            if (cargando) GLIFO_CARGANDO else GLIFO_PLAY,
         )
 
         // Botón anterior → broadcast ACCION_ANTERIOR.
@@ -246,6 +268,24 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         return buildString {
             repeat(total) { i ->
                 append(if (i == posicionLed * 2) '│' else ' ')
+            }
+        }
+    }
+
+    /**
+     * VU "decorativo": hilera de bloques Unicode de altura variable.
+     * Como semilla usamos `idRadio` mezclado con el minuto del reloj
+     * (`System.currentTimeMillis() / 60_000`) — así dos emisoras
+     * distintas dan VUs distintos, y la misma emisora cambia su VU
+     * con el tiempo aunque el usuario no toque nada (cuando Android
+     * vuelva a llamar `onUpdate`). RemoteViews no permite animación
+     * continua; este es el sucedáneo barato.
+     */
+    private fun construirVu(idRadio: Int): String {
+        val rng = Random(idRadio.toLong() * 31 + (System.currentTimeMillis() / 60_000))
+        return buildString {
+            repeat(LARGO_VU) {
+                append(BARRAS_VU[rng.nextInt(BARRAS_VU.size)])
             }
         }
     }

@@ -32,6 +32,9 @@ final class EstadoFuentesActions
     private const URLS_CONOCIDAS = [
         'ctxt'          => 'https://ctxt.es/es/rss',
         'cuarto-poder'  => 'https://www.cuartopoder.es/rss',
+        // Carne Cruda dejó carnecruda.es y vive ahora dentro de
+        // elDiario.es. Su feed está en /rss/carnecruda/ (no /feed/).
+        'carne-cruda'   => 'https://www.eldiario.es/rss/carnecruda/',
     ];
 
     public static function manejarDesactivarUna(): void

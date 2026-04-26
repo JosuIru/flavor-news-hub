@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Antena telescópica vintage: línea diagonal desde la zona superior
+     derecha del marco hacia arriba, con una bolita en la punta.
+     Vector drawable estático (RemoteViews no permite rotación), todo
+     en cobre con sombra ligera para integrarse con los botones. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="44dp"
+    android:viewportWidth="32"
+    android:viewportHeight="44">
+
+    <!-- Base de la antena (anclaje al chasis) -->
+    <path
+        android:fillColor="#3a2410"
+        android:pathData="M6,38 L14,38 L13,44 L7,44 Z" />
+
+    <!-- Cuerpo telescópico, dos tramos: más grueso abajo, más fino
+         arriba para sugerir tramos extensibles. -->
+    <path
+        android:strokeColor="#c69b58"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M10,38 L18,18" />
+
+    <path
+        android:strokeColor="#d4a86a"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M18,18 L26,4" />
+
+    <!-- Bolita en la punta -->
+    <path
+        android:fillColor="#f0d89a"
+        android:strokeColor="#3a2410"
+        android:strokeWidth="0.5"
+        android:pathData="M26,4 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0" />
+</vector>
