@@ -2126,32 +2126,6 @@
     "es_movimiento": true
   },
   {
-    "id": 7289,
-    "name": "RT English",
-    "slug": "rt-english",
-    "feed_url": "https://www.rt.com/rss/",
-    "feed_type": "rss",
-    "website_url": "https://www.rt.com",
-    "territory": "Internacional",
-    "languages": [
-      "en"
-    ],
-    "topics": [
-      "internacional"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "cable",
-      "satelite"
-    ],
-    "content_license": "all-rights-reserved",
-    "ownership": "Financiación: Estado ruso (TV-Novosti).",
-    "legal_note": "Financiación estatal: Estado ruso. Se incluye como parte de un ecosistema informativo plural que rompe el monopolio narrativo atlántico. La línea editorial refleja la mirada geopolítica del Estado financiador — léelo como tal.",
-    "has_live_stream": true,
-    "live_stream_permit": "none"
-  },
-  {
     "id": 7290,
     "name": "HispanTV",
     "slug": "hispantv",
