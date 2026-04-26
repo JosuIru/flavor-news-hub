@@ -10,6 +10,7 @@ import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../history/data/historial_provider.dart';
 import '../data/canales_favoritos_notifier.dart';
 import '../data/videos_provider.dart';
@@ -96,7 +97,24 @@ class VideosScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
+      body: Column(children: [
+        BarraChipsFiltrosActivos(
+          slugsTopics: filtros.slugsTopics,
+          codigosIdiomas: filtros.codigosIdiomas,
+          nombreFuente: nombreCanal,
+          onQuitarTopic: (slug) => ref
+              .read(filtrosVideosProvider.notifier)
+              .update((f) => f.alternarTopic(slug)),
+          onQuitarIdioma: (cod) => ref
+              .read(filtrosVideosProvider.notifier)
+              .update((f) => f.alternarIdioma(cod)),
+          onQuitarFuente: () => ref
+              .read(filtrosVideosProvider.notifier)
+              .update((f) => f.conSource(null)),
+          onLimpiarTodo: () => ref.read(filtrosVideosProvider.notifier).state =
+              FiltrosVideos.vacios,
+        ),
+        Expanded(child: RefreshIndicator(
         onRefresh: () async {
           unawaited(dispararIngestaBackend(ref.read(sharedPreferencesProvider)));
           ref.invalidate(videosProvider);
@@ -180,7 +198,8 @@ class VideosScreen extends ConsumerWidget {
             );
           },
         ),
-      ),
+      )),
+      ]),
     );
   }
 }

@@ -11,6 +11,7 @@ import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import 'audio_filters_header.dart';
@@ -152,6 +153,18 @@ class PodcastsBody extends ConsumerWidget {
           onClearFilters: () {
             ref.read(filtrosPodcastsProvider.notifier).state = FiltrosPodcasts.vacios;
           },
+        ),
+        BarraChipsFiltrosActivos(
+          slugsTopics: filtros.slugsTopics,
+          codigosIdiomas: filtros.codigosIdiomas,
+          onQuitarTopic: (slug) => ref
+              .read(filtrosPodcastsProvider.notifier)
+              .update((f) => f.alternarTopic(slug)),
+          onQuitarIdioma: (cod) => ref
+              .read(filtrosPodcastsProvider.notifier)
+              .update((f) => f.alternarIdioma(cod)),
+          onLimpiarTodo: () => ref.read(filtrosPodcastsProvider.notifier).state =
+              FiltrosPodcasts.vacios,
         ),
         Expanded(
           child: asyncItems.when(

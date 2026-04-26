@@ -12,6 +12,7 @@ import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/services/ingest_trigger.dart';
+import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../audio/presentation/audio_filters_header.dart';
 import '../../videos/data/videos_provider.dart';
 import '../data/tv_provider.dart';
@@ -63,12 +64,26 @@ class TvScreen extends ConsumerWidget {
             ],
           ),
         ),
-        body: const TabBarView(
-          children: [
-            _MediosTvBody(),
-            _UltimasEmisionesBody(),
-          ],
-        ),
+        body: Column(children: [
+          BarraChipsFiltrosActivos(
+            slugsTopics: filtros.slugsTopics,
+            codigosIdiomas: filtros.codigosIdiomas,
+            onQuitarTopic: (slug) => ref
+                .read(filtrosTvProvider.notifier)
+                .update((f) => f.alternarTopic(slug)),
+            onQuitarIdioma: (cod) => ref
+                .read(filtrosTvProvider.notifier)
+                .update((f) => f.alternarIdioma(cod)),
+            onLimpiarTodo: () => ref.read(filtrosTvProvider.notifier).state =
+                FiltrosTv.vacios,
+          ),
+          const Expanded(child: TabBarView(
+            children: [
+              _MediosTvBody(),
+              _UltimasEmisionesBody(),
+            ],
+          )),
+        ]),
       ),
     );
   }

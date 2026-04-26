@@ -18,6 +18,11 @@ import '../data/reproductor_radio_notifier.dart';
 /// Estado local del chip "sólo favoritas" en la pantalla de radios.
 final soloRadiosFavoritasProvider = StateProvider<bool>((_) => false);
 
+/// Filtro complementario: "sólo radios de mi territorio". Se basa en
+/// el `territorioBase` del usuario (Ajustes → Territorio). Si no
+/// tiene territorio fijado, este filtro no se ofrece.
+final soloRadiosMiTerritorioProvider = StateProvider<bool>((_) => false);
+
 /// Directorio de radios libres. Cada fila con play/pause. Sólo una suena
 /// a la vez — al pulsar play en otra, la anterior se detiene.
 ///
@@ -73,9 +78,25 @@ class RadiosBody extends ConsumerWidget {
             );
         }
         final soloFavoritas = ref.watch(soloRadiosFavoritasProvider);
-        final radiosVisibles = soloFavoritas
-            ? radios.where((radio) => favoritas.contains(radio.id)).toList()
-            : [...radios];
+        final soloMiTerritorio = ref.watch(soloRadiosMiTerritorioProvider);
+        // Filtramos en cliente porque el listado completo cabe (~80
+        // radios). Hacerlo en backend nos forzaría una segunda query
+        // por cada toggle del chip.
+        Iterable<modelo_radio.Radio> visiblesIter = radios;
+        if (soloFavoritas) {
+          visiblesIter = visiblesIter.where((r) => favoritas.contains(r.id));
+        }
+        if (soloMiTerritorio && territorioBase.isNotEmpty) {
+          final territorioBuscado = territorioBase.toLowerCase();
+          visiblesIter = visiblesIter.where((r) {
+            // Match laxo: cualquier campo territorial puede contener el
+            // nombre del territorio del usuario. Cubre tanto "Euskal
+            // Herria" en `network` como "Bilbo" en `city`.
+            final huellaTerritorial = '${r.territory} ${r.country} ${r.region} ${r.city}'.toLowerCase();
+            return huellaTerritorial.contains(territorioBuscado);
+          });
+        }
+        final radiosVisibles = visiblesIter.toList();
         // Orden: favoritas arriba (preferencia explícita del usuario) →
         // dentro de cada bloque, prioridad local si hay territorio base
         // fijado → alfabético como desempate estable.
@@ -95,6 +116,7 @@ class RadiosBody extends ConsumerWidget {
             if (diffPrio != 0) return diffPrio;
             return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           });
+        final tieneTerritorio = territorioBase.isNotEmpty;
         return Column(
           children: [
             Padding(
@@ -109,6 +131,25 @@ class RadiosBody extends ConsumerWidget {
                     : null,
               ),
             ),
+            if (tieneTerritorio)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+                child: Row(
+                  children: [
+                    FilterChip(
+                      avatar: Icon(
+                        soloMiTerritorio ? Icons.place : Icons.place_outlined,
+                        size: 16,
+                      ),
+                      label: Text(territorioBase),
+                      selected: soloMiTerritorio,
+                      onSelected: (v) => ref
+                          .read(soloRadiosMiTerritorioProvider.notifier)
+                          .state = v,
+                    ),
+                  ],
+                ),
+              ),
             Expanded(
                 child: radiosVisibles.isEmpty
                   ? ListView(
