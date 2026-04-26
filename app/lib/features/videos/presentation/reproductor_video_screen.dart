@@ -84,6 +84,23 @@ class _EstadoReproductorVideo extends ConsumerState<ReproductorVideoScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant ReproductorVideoScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Cuando el botón "siguiente" hace pushReplacement a un nuevo
+    // /videos/play/N, go_router reutiliza el mismo State (mismo
+    // widget type, sin key explícita). El `_controller ??= …` de
+    // `_construirCuerpo` no se reinicializa porque ya no es null —
+    // resultado: el reproductor seguía pegado al video viejo. Aquí
+    // detectamos el cambio de idItem y reseteamos el controller +
+    // el flag de error para que el siguiente build cree el WebView
+    // del video nuevo.
+    if (widget.idItem != oldWidget.idItem) {
+      _controller = null;
+      _codigoErrorPlayer = null;
+    }
+  }
+
+  @override
   void dispose() {
     _suscripcionPip?.cancel();
     PipService.activar(false);
@@ -112,6 +129,21 @@ class _EstadoReproductorVideo extends ConsumerState<ReproductorVideoScreen> {
                     final utiles = ref.watch(utilesProvider).valueOrNull ??
                         const <int>{};
                     final esUtil = utiles.contains(item.id);
+                    // Watcheamos el provider de videos para mantenerlo
+                    // vivo mientras estamos en el reproductor — antes
+                    // hacíamos `read` y como `videosProvider` es
+                    // autoDispose se disponía al entrar aquí. El
+                    // botón "siguiente" entonces leía null y salía
+                    // silencioso sin navegar a ningún sitio.
+                    final asyncLista = ref.watch(videosProvider);
+                    final lista = asyncLista.valueOrNull;
+                    final indiceActual = lista == null
+                        ? -1
+                        : lista.indexWhere((i) => i.id == item.id);
+                    final haySiguiente = lista != null &&
+                        indiceActual >= 0 &&
+                        indiceActual < lista.length - 1 &&
+                        lista[indiceActual + 1].id > 0;
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -129,7 +161,13 @@ class _EstadoReproductorVideo extends ConsumerState<ReproductorVideoScreen> {
                         IconButton(
                           icon: const Icon(Icons.skip_next),
                           tooltip: textos.videosPlayNext,
-                          onPressed: () => _saltarAlSiguiente(item),
+                          // Sin lista cargada o sin siguiente válido,
+                          // dejamos el botón visiblemente desactivado
+                          // (gris) para que el usuario no piense que
+                          // está roto cuando pulsa y no pasa nada.
+                          onPressed: haySiguiente
+                              ? () => _saltarAlSiguiente(item)
+                              : null,
                         ),
                       ],
                     );
