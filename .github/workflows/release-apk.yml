@@ -84,11 +84,15 @@ jobs:
         run: flutter build apk --release
 
       - name: Rename APK with tag
-        # El APK sale como `app-release.apk`; le ponemos el nombre de
-        # la release para que el asset descargable sea identificable.
+        # El APK sale como `app-release.apk`; lo renombramos a
+        # `flavor-news-hub-app-vX.Y.Z.apk`. El sufijo `-app-` distingue
+        # el binario de Android del ZIP del plugin para que la página
+        # de releases en GitHub no induzca a confusión: antes el APK
+        # se llamaba igual que el repo y costaba diferenciarlo del
+        # source-code zip que GitHub añade automáticamente.
         run: |
           mv build/app/outputs/flutter-apk/app-release.apk \
-             build/app/outputs/flutter-apk/flavor-news-hub-${GITHUB_REF_NAME}.apk
+             build/app/outputs/flutter-apk/flavor-news-hub-app-${GITHUB_REF_NAME}.apk
 
       - name: Setup PHP
         # Necesario para `composer install` del plugin WordPress.
@@ -127,10 +131,24 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
-          # GitHub genera automáticamente las notas a partir de los
-          # commits desde la release anterior — suficiente hasta que
-          # queramos un changelog editorial por tanda.
+          # `body:` se inserta al principio. `generate_release_notes:
+          # true` mantiene el changelog automático debajo a partir de
+          # los commits desde la release anterior. La sección custom
+          # arriba aclara qué descargar — antes los visitantes veían
+          # 4 assets (APK, ZIP, source.zip, source.tar.gz) sin pista
+          # de cuál era para qué.
+          body: |
+            ### ¿Qué descargo?
+
+            | Para… | Asset | Cómo se usa |
+            |-------|-------|-------------|
+            | 📱 **Instalar la app en Android** | `flavor-news-hub-app-${{ github.ref_name }}.apk` | Bájalo al móvil y ábrelo: el sistema te pedirá permiso para instalar. |
+            | 🔌 **Añadir el plugin a tu WordPress** | `flavor-news-hub-plugin-${{ github.ref_name }}.zip` | wp-admin → Plugins → Añadir nuevo → Subir → Activar. |
+            | 🛠️ **Compilar tú mismo o leer el código** | `Source code (zip / tar.gz)` | Es el repo entero. La mayoría de la gente no necesita esto. |
+
+            ---
+
           generate_release_notes: true
           files: |
-            app/build/app/outputs/flutter-apk/flavor-news-hub-${{ github.ref_name }}.apk
+            app/build/app/outputs/flutter-apk/flavor-news-hub-app-${{ github.ref_name }}.apk
             plugin_build/flavor-news-hub-plugin-${{ github.ref_name }}.zip
