@@ -115,6 +115,17 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
   /// una radio asociada. Cubre todos los `ProcessingState` para que el
   /// icono no se quede congelado en transiciones (ej. usuario pulsa stop
   /// y el player emite `ready+!playing` antes de `idle+!playing`).
+  ///
+  /// Nota importante sobre suspensión: `ready+!playing` puede ser una
+  /// pausa **transitoria** del SO (Doze mode, throttle, foco de audio
+  /// cedido un instante) cuando la pantalla se apaga. Antes esto
+  /// marcaba `detenido` y borraba `radioActual` — el resultado era que
+  /// la radio dejaba de sonar tras un rato suspendido y la app volvía
+  /// como si nunca hubiera reproducido. Ahora sólo marcamos `detenido`
+  /// con el estado terminal `idle+!playing` (resultado de `stop()`
+  /// real). Si la pausa fue transitoria, el siguiente evento traerá
+  /// `ready+playing=true` y nos sincronizaremos sin haber perdido la
+  /// sesión.
   void _sincronizarEstadoConPlayer() {
     final actual = state.radioActual;
     if (actual == null) return;
@@ -130,15 +141,12 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
       }
       return;
     }
-    // ready o completed.
-    if (reproduciendo) {
-      if (state.estado != EstadoPlayback.reproduciendo) {
-        state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
-      }
-    } else {
-      // Player pausado externamente (foco de audio cedido a otra app o
-      // notificación pause). En streams en directo equivale a parar.
-      state = EstadoReproductor.detenido;
+    // `ready` o `completed`. Sólo cambiamos a `reproduciendo` cuando
+    // sí está sonando; en otro caso (pausa transitoria del SO o pausa
+    // explícita por el usuario desde la notificación) mantenemos el
+    // estado actual hasta que llegue un `idle` real.
+    if (reproduciendo && state.estado != EstadoPlayback.reproduciendo) {
+      state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
     }
   }
 
