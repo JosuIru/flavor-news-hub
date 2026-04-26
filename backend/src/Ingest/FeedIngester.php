@@ -7,6 +7,7 @@ use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Database\IngestLogTable;
+use FlavorNewsHub\Support\Transients;
 
 /**
  * Ingesta de feeds: recorre fuentes activas, descarga sus feeds con
@@ -19,7 +20,6 @@ use FlavorNewsHub\Database\IngestLogTable;
 final class FeedIngester
 {
     private const NOMBRE_LOCK_TRANSIENT = 'fnh_ingest_lock';
-    private const DURACION_LOCK_SEGUNDOS = 5 * MINUTE_IN_SECONDS;
 
     /**
      * Dominios cuyo certificado TLS está mal configurado del lado del
@@ -178,14 +178,10 @@ final class FeedIngester
             ? static fn(bool $verificar, string $urlSolicitada): bool => false
             : null;
         // WordPress cachea los feeds 12h por defecto (vía
-        // wp_feed_cache_transient_lifetime), lo que para un agregador de
-        // noticias en vivo es inaceptable: aunque el cron dispare cada
-        // 30 min, fetch_feed devuelve el mismo contenido cacheado 12h,
-        // y no vemos publicaciones nuevas hasta que expira. Reducimos
-        // a 10 min — suficientemente fresco para captar novedades del
-        // día, suficientemente largo para no machacar los servidores
-        // de los medios si dos ingestas se solapan por cualquier razón.
-        $filtroTtlCache = static fn(int $segundos): int => 10 * MINUTE_IN_SECONDS;
+        // wp_feed_cache_transient_lifetime). Inaceptable para un
+        // agregador en vivo: el TTL canónico está en
+        // Transients::CACHE_FEEDS_INGESTA con la justificación.
+        $filtroTtlCache = static fn(int $segundos): int => Transients::CACHE_FEEDS_INGESTA;
         add_action('wp_feed_options', $filtroAjustesFeed);
         add_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
         add_filter('http_request_args', $filtroTimeoutHttp);
@@ -534,7 +530,7 @@ final class FeedIngester
         }
         // Ya existe. Comprobamos si está stale.
         $previo = (int) get_option(self::NOMBRE_LOCK_TRANSIENT, '0');
-        if ($previo > 0 && ($ahora - $previo) < self::DURACION_LOCK_SEGUNDOS) {
+        if ($previo > 0 && ($ahora - $previo) < Transients::LOCK_INGESTA_FEED) {
             return false;
         }
         // Stale: lo robamos. Es un race residual mínimo (dos procesos

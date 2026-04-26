@@ -7,6 +7,7 @@ use FlavorNewsHub\Admin\Pages\EstadoFuentesPage;
 use FlavorNewsHub\Catalog\AutodescubrirFeeds;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
+use FlavorNewsHub\Support\Transients;
 
 /**
  * Acciones admin ligadas a la pantalla "Estado de fuentes":
@@ -254,9 +255,7 @@ final class EstadoFuentesActions
             ];
         }
 
-        // Guardamos durante 1h: tiempo razonable para que el admin revise y
-        // aplique sin que la lista quede colgada eternamente si se olvida.
-        set_transient(self::TRANSIENT_PROPUESTAS, $propuestasDetectadas, HOUR_IN_SECONDS);
+        set_transient(self::TRANSIENT_PROPUESTAS, $propuestasDetectadas, Transients::PROPUESTAS_AUTODESCUBRIR);
 
         wp_safe_redirect(self::urlRedireccion([
             'fnh_feeds_escaneadas' => $cuentaEscaneadas,
@@ -304,7 +303,7 @@ final class EstadoFuentesActions
         // Quitamos la propuesta aplicada del transient — así la lista en
         // pantalla decrece y se ve el progreso.
         unset($propuestasGuardadas[$idSource]);
-        set_transient(self::TRANSIENT_PROPUESTAS, $propuestasGuardadas, HOUR_IN_SECONDS);
+        set_transient(self::TRANSIENT_PROPUESTAS, $propuestasGuardadas, Transients::PROPUESTAS_AUTODESCUBRIR);
 
         wp_safe_redirect(self::urlRedireccion(['fnh_feed_aplicado' => 1]));
         exit;

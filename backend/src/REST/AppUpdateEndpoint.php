@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\REST;
 
+use FlavorNewsHub\Support\Transients;
+
 /**
  * Endpoint público que la app Flutter consulta al arrancar para saber si
  * hay una versión nueva del APK. Responde con metadatos mínimos (versión,
@@ -22,10 +24,6 @@ final class AppUpdateEndpoint
 {
     private const REPO_GITHUB = 'JosuIru/flavor-news-hub';
     private const TRANSIENT_CACHE = 'fnh_app_update_cache';
-    // TTL corto: 1 hora. GitHub permite 60 req/h por IP sin token, y
-    // sólo el endpoint /apps/check-update dispara estas peticiones —
-    // muy por debajo del límite aun con tráfico agregado.
-    private const TTL_CACHE_SEGUNDOS = 1 * HOUR_IN_SECONDS;
 
     public static function registrarRutas(): void
     {
@@ -164,7 +162,7 @@ final class AppUpdateEndpoint
                 'changelog'    => (string) ($release['body'] ?? ''),
                 'published_at' => (string) ($release['published_at'] ?? ''),
             ];
-            set_transient($claveCache, $datos, self::TTL_CACHE_SEGUNDOS);
+            set_transient($claveCache, $datos, Transients::CACHE_RELEASE_GITHUB);
             return $datos;
         }
 

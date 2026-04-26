@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace FlavorNewsHub\Admin\Pages;
 
 use FlavorNewsHub\Stats\Recopilador;
+use FlavorNewsHub\Support\Transients;
 
 /**
  * Pantalla "Estadísticas" del menú admin.
@@ -24,7 +25,6 @@ final class EstadisticasPage
     public const SLUG = 'flavor-news-hub-stats';
     private const REPO_GITHUB = 'JosuIru/flavor-news-hub';
     private const TRANSIENT_CACHE = 'fnh_stats_descargas';
-    private const TTL_CACHE_SEGUNDOS = 1 * HOUR_IN_SECONDS;
 
     public static function render(): void
     {
@@ -196,7 +196,7 @@ final class EstadisticasPage
             'filas'          => $filas,
             'ts_lectura'     => time(),
         ];
-        set_transient(self::TRANSIENT_CACHE, $datos, self::TTL_CACHE_SEGUNDOS);
+        set_transient(self::TRANSIENT_CACHE, $datos, Transients::CACHE_ESTADISTICAS);
         return $datos;
     }
 

@@ -62,7 +62,7 @@ class ArchiveOrgClient {
   }) async {
     // Dart `queryParameters` no duplica claves; construimos la URL a mano
     // para los múltiples `fl[]` y `sort[]`.
-    final base = 'https://archive.org/advancedsearch.php';
+    const base = 'https://archive.org/advancedsearch.php';
     final params = <String>[
       'q=${Uri.encodeQueryComponent(q)}',
       'output=json',

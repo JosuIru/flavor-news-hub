@@ -6,6 +6,7 @@ namespace FlavorNewsHub\REST;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Support\TerritoryNormalizer;
+use FlavorNewsHub\Support\Transients;
 use FlavorNewsHub\Notifications\SubmitNotifier;
 
 /**
@@ -78,7 +79,7 @@ final class SourceSubmitEndpoint
             $ipCliente,
             self::NOMBRE_ZONA_RATELIMIT,
             self::MAX_ALTAS_POR_VENTANA,
-            HOUR_IN_SECONDS
+            Transients::RATE_LIMIT_SUBMITS_PUBLICOS
         );
         if (!$permitido) {
             return new \WP_REST_Response([

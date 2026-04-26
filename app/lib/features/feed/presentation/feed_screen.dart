@@ -3,7 +3,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../donations/presentation/donaciones_sheet.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
