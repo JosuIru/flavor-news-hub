@@ -11,6 +11,7 @@ use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Meta\MetaRegistrar;
 use FlavorNewsHub\Catalog\CatalogoPorDefecto;
 use FlavorNewsHub\Catalog\ImportadorCatalogo;
+use FlavorNewsHub\Catalog\SeedExcluidos;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\CLI\IngestCommand;
@@ -108,6 +109,11 @@ final class Plugin
         // este escenario, así que sin esta llamada el informe nunca
         // queda agendado.
         add_action('init', [Scheduler::class, 'agendarInformeSemanal'], 9);
+
+        // Lista de slugs excluidos del seed: cuando el admin borra una
+        // source/radio/collective desde wp-admin, la marcamos para que
+        // el sync del catálogo en futuros upgrades NO la vuelva a crear.
+        SeedExcluidos::registrarHooks();
 
         // Admin (menú, metaboxes, acciones, settings). Los hooks admin_*
         // sólo disparan en backend; registrar siempre es inofensivo.

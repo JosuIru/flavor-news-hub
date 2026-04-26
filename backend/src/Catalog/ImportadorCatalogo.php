@@ -49,6 +49,17 @@ final class ImportadorCatalogo
             $nombre = (string) ($raw['name'] ?? '');
             if ($slug === '' || $nombre === '') continue;
             if ($filtroSlug !== null && !isset($filtroSlug[$slug])) continue;
+            // Si el admin borró este slug deliberadamente desde
+            // wp-admin (lo movió a la papelera), NO lo recreamos en
+            // el siguiente upgrade del plugin aunque siga en el seed.
+            // Sin esta comprobación, fuentes/colectivos/radios borrados
+            // reaparecían tras cada actualización porque
+            // `get_page_by_path` no encuentra posts en papelera, el
+            // slug parece libre y `wp_insert_post` lo recreaba.
+            if (SeedExcluidos::contiene($slug)) {
+                $saltados++;
+                continue;
+            }
 
             $existente = get_page_by_path($slug, OBJECT, Source::SLUG);
             if ($existente && !$actualizar) {
@@ -262,6 +273,17 @@ final class ImportadorCatalogo
             $nombre = (string) ($raw['name'] ?? '');
             if ($slug === '' || $nombre === '') continue;
             if ($filtroSlug !== null && !isset($filtroSlug[$slug])) continue;
+            // Si el admin borró este slug deliberadamente desde
+            // wp-admin (lo movió a la papelera), NO lo recreamos en
+            // el siguiente upgrade del plugin aunque siga en el seed.
+            // Sin esta comprobación, fuentes/colectivos/radios borrados
+            // reaparecían tras cada actualización porque
+            // `get_page_by_path` no encuentra posts en papelera, el
+            // slug parece libre y `wp_insert_post` lo recreaba.
+            if (SeedExcluidos::contiene($slug)) {
+                $saltados++;
+                continue;
+            }
 
             $existente = get_page_by_path($slug, OBJECT, Collective::SLUG);
             if ($existente && !$actualizar) {

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\CLI;
 
+use FlavorNewsHub\Catalog\SeedExcluidos;
 use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\Ingest\FeedItemParser;
 use FlavorNewsHub\CPT\Source;
@@ -341,6 +342,61 @@ final class IngestCommand
             \WP_CLI::log('Hay items INVÁLIDOS (sin title/permalink). Probable: el feed devuelve');
             \WP_CLI::log('XML mal formado o entradas vacías. Si todos los items son inválidos, el');
             \WP_CLI::log('feed está roto del lado del medio aunque devuelva 200.');
+        }
+    }
+
+    /**
+     * Gestiona la lista de slugs excluidos del seed. Esos slugs no se
+     * recrean en upgrades del plugin aunque sigan en el catálogo
+     * bundleado. Auto-mantenida cuando el admin borra una source desde
+     * wp-admin; este comando permite ajustarla a mano (rescates o
+     * exclusiones manuales).
+     *
+     * ## OPTIONS
+     *
+     * [<accion>]
+     * : `list` (defecto) | `add` | `remove`.
+     *
+     * [<slug>]
+     * : Slug a añadir/quitar (sólo para `add` y `remove`).
+     *
+     * ## EXAMPLES
+     *
+     *     wp flavor-news exclude
+     *     wp flavor-news exclude add fm-chalet
+     *     wp flavor-news exclude remove rt-english
+     *
+     * @param array<int,string>    $argumentosPosicionales
+     * @param array<string,string> $argumentosConNombre
+     */
+    public function exclude($argumentosPosicionales, $argumentosConNombre): void
+    {
+        $accion = $argumentosPosicionales[0] ?? 'list';
+        $slug = $argumentosPosicionales[1] ?? '';
+        switch ($accion) {
+            case 'list':
+                $lista = SeedExcluidos::obtener();
+                if ($lista === []) {
+                    \WP_CLI::log('No hay slugs excluidos. El seed se importa íntegro.');
+                    return;
+                }
+                \WP_CLI::log(sprintf('Slugs excluidos del seed (%d):', count($lista)));
+                foreach ($lista as $s) {
+                    \WP_CLI::log('  - ' . $s);
+                }
+                break;
+            case 'add':
+                if ($slug === '') \WP_CLI::error('Falta <slug>.');
+                SeedExcluidos::anadir($slug);
+                \WP_CLI::success("'$slug' añadido a la lista de excluidos.");
+                break;
+            case 'remove':
+                if ($slug === '') \WP_CLI::error('Falta <slug>.');
+                SeedExcluidos::eliminar($slug);
+                \WP_CLI::success("'$slug' quitado de la lista de excluidos.");
+                break;
+            default:
+                \WP_CLI::error("Acción desconocida: '$accion'. Usa list, add o remove.");
         }
     }
 }
