@@ -174,6 +174,11 @@ final class EstadoFuentesActions
             wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
         }
 
+        // Reset al re-escanear: si no, propuestas que el admin descartó
+        // (CTXT en inglés, Carne Cruda al dominio muerto) seguirían
+        // arrastrándose hasta que caduque el transient de 1h.
+        delete_transient(self::TRANSIENT_PROPUESTAS);
+
         global $wpdb;
         $tablaLogs = IngestLogTable::nombreCompleto();
 
@@ -233,17 +238,18 @@ final class EstadoFuentesActions
             if ($deteccion === null) {
                 continue;
             }
-            [$urlFeedDetectado, $tipoFeedDetectado] = $deteccion;
+            [$urlFeedDetectado, $tipoFeedDetectado, $timestampUltimoItem] = $deteccion;
             if ($urlFeedDetectado === $urlFeedActual) {
                 continue;
             }
 
             $propuestasDetectadas[$idCandidata] = [
-                'source_id'    => $idCandidata,
-                'nombre'       => get_the_title($idCandidata),
-                'url_actual'   => $urlFeedActual,
-                'url_detectada'=> $urlFeedDetectado,
-                'tipo_detectado' => $tipoFeedDetectado,
+                'source_id'         => $idCandidata,
+                'nombre'            => get_the_title($idCandidata),
+                'url_actual'        => $urlFeedActual,
+                'url_detectada'     => $urlFeedDetectado,
+                'tipo_detectado'    => $tipoFeedDetectado,
+                'ultimo_item_ts'    => $timestampUltimoItem,
             ];
         }
 

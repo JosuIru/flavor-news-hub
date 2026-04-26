@@ -29,7 +29,12 @@ final class AutodescubrirFeeds
      * Descarga `$urlPagina` y busca declaraciones `<link rel="alternate">`.
      * Devuelve URL absoluta del feed más probable, o null si no encuentra.
      *
-     * @return array{0: string, 1: string}|null Tupla [url_feed, tipo] (rss/atom), o null.
+     * Si encuentra feed candidato, también lo descarga y lee la fecha del
+     * primer item — sirve al admin para descartar a primera vista feeds
+     * "vivos pero abandonados" (medios que siguen declarando feed pero
+     * no publican desde hace años).
+     *
+     * @return array{0: string, 1: string, 2: ?int}|null Tupla [url_feed, tipo, timestamp_ultimo_item|null].
      */
     public static function detectarDesdeUrl(string $urlPagina): ?array
     {
@@ -67,11 +72,27 @@ final class AutodescubrirFeeds
         // hrefs relativos.
         $urlBaseResolucion = (string) (wp_remote_retrieve_header($respuesta, 'x-final-url') ?: $urlPagina);
 
-        return self::detectarDesdeHtml($cuerpoHtml, $urlBaseResolucion);
+        $resultadoDeteccion = self::detectarDesdeHtml($cuerpoHtml, $urlBaseResolucion);
+        if ($resultadoDeteccion === null) {
+            return null;
+        }
+        [$urlFeedDetectada, $tipoFeedDetectado] = $resultadoDeteccion;
+
+        // Probamos a leer el feed detectado para extraer la fecha del
+        // primer item. Si falla (404, timeout, XML malformado) no es
+        // crítico — devolvemos la propuesta sin fecha y el admin verá
+        // "fecha desconocida".
+        $timestampUltimoItem = self::obtenerTimestampUltimoItem($urlFeedDetectada);
+
+        return [$urlFeedDetectada, $tipoFeedDetectado, $timestampUltimoItem];
     }
 
     /**
      * Variante para tests / reusable: parsea el HTML ya descargado.
+     *
+     * Devuelve sólo [url, tipo] — sin frescura, porque esta variante no
+     * descarga el feed (sólo parsea HTML que se le pasa). Para frescura,
+     * usar `detectarDesdeUrl`.
      *
      * @return array{0: string, 1: string}|null
      */
@@ -132,6 +153,59 @@ final class AutodescubrirFeeds
             }
         }
         return $candidatosFeed[0];
+    }
+
+    /**
+     * Descarga el feed propuesto y devuelve el timestamp del primer item.
+     *
+     * Usamos regex sobre `<pubDate>` (RSS) y `<updated>` (Atom) en lugar
+     * de SimplePie para mantener la dependencia ligera y evitar tirar
+     * del cache de feeds de WP (12h por defecto) — aquí queremos
+     * **siempre** la lectura más reciente, sin cache.
+     *
+     * Devuelve null si el feed no responde, no parsea, o no encontramos
+     * fecha en el primer item.
+     */
+    private static function obtenerTimestampUltimoItem(string $urlFeed): ?int
+    {
+        $respuestaFeed = wp_safe_remote_get($urlFeed, [
+            'timeout'     => self::TIMEOUT_DESCARGA_SEGUNDOS,
+            'redirection' => 5,
+            'user-agent'  => self::USER_AGENT_NAVEGADOR,
+            'headers'     => ['Accept' => 'application/rss+xml, application/atom+xml, application/xml, text/xml'],
+        ]);
+        if (is_wp_error($respuestaFeed)) {
+            return null;
+        }
+        $codigoHttp = (int) wp_remote_retrieve_response_code($respuestaFeed);
+        if ($codigoHttp < 200 || $codigoHttp >= 400) {
+            return null;
+        }
+        $cuerpoFeed = (string) wp_remote_retrieve_body($respuestaFeed);
+        if ($cuerpoFeed === '') {
+            return null;
+        }
+
+        // RSS: primer <pubDate> dentro de <item> (el del canal mismo
+        // suele estar antes y daría una fecha menos representativa).
+        // Atom: primer <updated> de <entry>. Limitamos al primer
+        // item/entry encontrado y nos quedamos con su fecha.
+        $patrones = [
+            '#<item\b[^>]*>.*?<pubDate>([^<]+)</pubDate>#is',
+            '#<entry\b[^>]*>.*?<updated>([^<]+)</updated>#is',
+            // Fallback Dublin Core (algunos feeds RSS 1.0 / RDF):
+            '#<item\b[^>]*>.*?<dc:date>([^<]+)</dc:date>#is',
+        ];
+        foreach ($patrones as $patron) {
+            if (preg_match($patron, $cuerpoFeed, $coincidenciaFecha)) {
+                $textoFecha = trim($coincidenciaFecha[1]);
+                $timestamp = strtotime($textoFecha);
+                if ($timestamp !== false && $timestamp > 0) {
+                    return $timestamp;
+                }
+            }
+        }
+        return null;
     }
 
     /**

@@ -136,6 +136,7 @@ final class EstadoFuentesPage
             </div>
 
             <?php self::renderPropuestasFeedsDetectados(); ?>
+            <?php self::renderDuplicadosDetectados(); ?>
 
             <?php if ($conErrores !== []) : ?>
                 <h2 style="color:#dc3232; margin-top:2em"><?php esc_html_e('Con errores en la última ingesta', 'flavor-news-hub'); ?></h2>
@@ -257,6 +258,7 @@ final class EstadoFuentesPage
                     <th><?php esc_html_e('URL actual (rota)', 'flavor-news-hub'); ?></th>
                     <th><?php esc_html_e('URL detectada', 'flavor-news-hub'); ?></th>
                     <th style="width:60px"><?php esc_html_e('Tipo', 'flavor-news-hub'); ?></th>
+                    <th style="width:140px"><?php esc_html_e('Última publicación', 'flavor-news-hub'); ?></th>
                     <th style="width:120px"><?php esc_html_e('Acciones', 'flavor-news-hub'); ?></th>
                 </tr>
             </thead>
@@ -264,10 +266,36 @@ final class EstadoFuentesPage
                 <?php foreach ($propuestas as $propuesta) :
                     $idSource = (int) ($propuesta['source_id'] ?? 0);
                     if ($idSource <= 0) continue;
-                    $urlActual    = (string) ($propuesta['url_actual'] ?? '');
-                    $urlDetectada = (string) ($propuesta['url_detectada'] ?? '');
-                    $tipoFeed     = (string) ($propuesta['tipo_detectado'] ?? '');
-                    $nombre       = (string) ($propuesta['nombre'] ?? '');
+                    $urlActual         = (string) ($propuesta['url_actual'] ?? '');
+                    $urlDetectada      = (string) ($propuesta['url_detectada'] ?? '');
+                    $tipoFeed          = (string) ($propuesta['tipo_detectado'] ?? '');
+                    $nombre            = (string) ($propuesta['nombre'] ?? '');
+                    $timestampUltimoItem = isset($propuesta['ultimo_item_ts']) ? (int) $propuesta['ultimo_item_ts'] : 0;
+
+                    // Código de color por antigüedad: <30d verde, 30-180d
+                    // amarillo, >180d rojo, desconocido gris. La idea es que
+                    // el admin pueda barrer la columna y aplicar a ojo.
+                    $textoFrescura = '';
+                    $colorFondoFrescura = '';
+                    if ($timestampUltimoItem > 0) {
+                        $segundosDesdeUltimoItem = max(0, time() - $timestampUltimoItem);
+                        $diasDesdeUltimoItem = (int) floor($segundosDesdeUltimoItem / DAY_IN_SECONDS);
+                        $textoFrescura = sprintf(
+                            /* translators: %d días desde última publicación */
+                            _n('hace %d día', 'hace %d días', max(1, $diasDesdeUltimoItem), 'flavor-news-hub'),
+                            max(1, $diasDesdeUltimoItem)
+                        );
+                        if ($diasDesdeUltimoItem <= 30) {
+                            $colorFondoFrescura = '#d4edda; color:#155724';
+                        } elseif ($diasDesdeUltimoItem <= 180) {
+                            $colorFondoFrescura = '#fff3cd; color:#856404';
+                        } else {
+                            $colorFondoFrescura = '#f8d7da; color:#721c24';
+                        }
+                    } else {
+                        $textoFrescura = __('desconocida', 'flavor-news-hub');
+                        $colorFondoFrescura = '#e2e3e5; color:#6c757d';
+                    }
                 ?>
                 <tr>
                     <td><strong><?php echo esc_html($nombre); ?></strong></td>
@@ -281,6 +309,11 @@ final class EstadoFuentesPage
                     </td>
                     <td><code style="font-size:.75em"><?php echo esc_html($tipoFeed); ?></code></td>
                     <td>
+                        <span style="display:inline-block; padding:2px 8px; border-radius:3px; font-size:.85em; background:<?php echo esc_attr($colorFondoFrescura); ?>">
+                            <?php echo esc_html($textoFrescura); ?>
+                        </span>
+                    </td>
+                    <td>
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0">
                             <input type="hidden" name="action" value="fnh_aplicar_feed_detectado" />
                             <input type="hidden" name="source_id" value="<?php echo esc_attr((string) $idSource); ?>" />
@@ -292,6 +325,130 @@ final class EstadoFuentesPage
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <?php
+    }
+
+    /**
+     * Lista pares de fuentes que parecen duplicadas — mismo feed_url
+     * exacto o mismo título exacto. Sólo informa, no borra: el admin
+     * decide cuál de cada par eliminar manualmente.
+     *
+     * Bug observado en la pantalla: tras varias importaciones del seed
+     * algunas fuentes aparecen 2 veces como posts distintos, lo que
+     * dispara la ingesta dos veces para el mismo medio y duplica items.
+     */
+    private static function renderDuplicadosDetectados(): void
+    {
+        global $wpdb;
+
+        // Pares con mismo feed_url. Filtramos por feed_url no vacío y
+        // post_status publish para descartar borrados/borradores.
+        $duplicadosPorUrl = $wpdb->get_results($wpdb->prepare(
+            "SELECT pm.meta_value AS feed_url, GROUP_CONCAT(p.ID ORDER BY p.ID ASC) AS ids
+             FROM {$wpdb->postmeta} pm
+             INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+             WHERE pm.meta_key = '_fnh_feed_url'
+               AND pm.meta_value != ''
+               AND p.post_type = %s AND p.post_status = 'publish'
+             GROUP BY pm.meta_value
+             HAVING COUNT(*) > 1",
+            \FlavorNewsHub\CPT\Source::SLUG
+        ), ARRAY_A);
+
+        // Pares con mismo título — sirven para detectar duplicados que
+        // tengan feed_urls ligeramente distintos (con/sin www, http vs
+        // https) pero son el mismo medio.
+        $duplicadosPorTitulo = $wpdb->get_results($wpdb->prepare(
+            "SELECT post_title AS titulo, GROUP_CONCAT(ID ORDER BY ID ASC) AS ids
+             FROM {$wpdb->posts}
+             WHERE post_type = %s AND post_status = 'publish'
+             GROUP BY post_title
+             HAVING COUNT(*) > 1",
+            \FlavorNewsHub\CPT\Source::SLUG
+        ), ARRAY_A);
+
+        $duplicadosPorUrl = is_array($duplicadosPorUrl) ? $duplicadosPorUrl : [];
+        $duplicadosPorTitulo = is_array($duplicadosPorTitulo) ? $duplicadosPorTitulo : [];
+        if ($duplicadosPorUrl === [] && $duplicadosPorTitulo === []) {
+            return;
+        }
+
+        ?>
+        <h2 style="color:#dba617; margin-top:2em">
+            <?php esc_html_e('Duplicados detectados', 'flavor-news-hub'); ?>
+        </h2>
+        <p class="description" style="max-width:800px">
+            <?php esc_html_e('Estas fuentes están registradas dos o más veces — lo que duplica la ingesta y los items en el feed. Borra una de cada par editando el post (los IDs te llevan a la página de edición).', 'flavor-news-hub'); ?>
+        </p>
+
+        <?php if ($duplicadosPorUrl !== []) : ?>
+            <h3 style="margin-top:1.5em"><?php esc_html_e('Mismo feed_url', 'flavor-news-hub'); ?></h3>
+            <table class="widefat striped" style="max-width:1200px">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('feed_url compartida', 'flavor-news-hub'); ?></th>
+                        <th style="width:240px"><?php esc_html_e('Posts duplicados (clic para editar)', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($duplicadosPorUrl as $par) :
+                    $listaIds = array_filter(array_map('intval', explode(',', (string) $par['ids'])));
+                ?>
+                    <tr>
+                        <td style="font-family:monospace; font-size:.8em; word-break:break-all">
+                            <?php echo esc_html((string) $par['feed_url']); ?>
+                        </td>
+                        <td>
+                            <?php foreach ($listaIds as $idDuplicado) :
+                                $tituloDuplicado = get_the_title($idDuplicado);
+                                $urlEditar = get_edit_post_link($idDuplicado);
+                            ?>
+                                <a href="<?php echo $urlEditar ? esc_url($urlEditar) : '#'; ?>" style="display:inline-block; margin-right:8px">
+                                    #<?php echo esc_html((string) $idDuplicado); ?> <?php echo esc_html($tituloDuplicado); ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <?php if ($duplicadosPorTitulo !== []) : ?>
+            <h3 style="margin-top:1.5em"><?php esc_html_e('Mismo título', 'flavor-news-hub'); ?></h3>
+            <table class="widefat striped" style="max-width:1200px">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Título compartido', 'flavor-news-hub'); ?></th>
+                        <th style="width:240px"><?php esc_html_e('Posts duplicados (clic para editar)', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($duplicadosPorTitulo as $par) :
+                    $listaIds = array_filter(array_map('intval', explode(',', (string) $par['ids'])));
+                ?>
+                    <tr>
+                        <td><strong><?php echo esc_html((string) $par['titulo']); ?></strong></td>
+                        <td>
+                            <?php foreach ($listaIds as $idDuplicado) :
+                                $urlEditar = get_edit_post_link($idDuplicado);
+                                $urlFeed = (string) get_post_meta($idDuplicado, '_fnh_feed_url', true);
+                            ?>
+                                <div style="margin-bottom:4px">
+                                    <a href="<?php echo $urlEditar ? esc_url($urlEditar) : '#'; ?>">
+                                        #<?php echo esc_html((string) $idDuplicado); ?>
+                                    </a>
+                                    <span style="color:#888; font-size:.8em; margin-left:6px">
+                                        <?php echo esc_html($urlFeed); ?>
+                                    </span>
+                                </div>
+                            <?php endforeach; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
         <?php
     }
 }
