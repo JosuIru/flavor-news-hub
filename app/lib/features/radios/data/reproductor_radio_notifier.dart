@@ -111,40 +111,55 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     }
   }
 
-  /// Deriva el estado del player y lo aplica al state de Riverpod si hay
-  /// una radio asociada. Cubre todos los `ProcessingState` para que el
-  /// icono no se quede congelado en transiciones (ej. usuario pulsa stop
-  /// y el player emite `ready+!playing` antes de `idle+!playing`).
+  /// Deriva el estado del player y lo aplica al state de Riverpod.
+  /// Cubre los `ProcessingState` con dos reglas que han ido apareciendo
+  /// con la práctica:
   ///
-  /// Nota importante sobre suspensión: `ready+!playing` puede ser una
-  /// pausa **transitoria** del SO (Doze mode, throttle, foco de audio
-  /// cedido un instante) cuando la pantalla se apaga. Antes esto
-  /// marcaba `detenido` y borraba `radioActual` — el resultado era que
-  /// la radio dejaba de sonar tras un rato suspendido y la app volvía
-  /// como si nunca hubiera reproducido. Ahora sólo marcamos `detenido`
-  /// con el estado terminal `idle+!playing` (resultado de `stop()`
-  /// real). Si la pausa fue transitoria, el siguiente evento traerá
-  /// `ready+playing=true` y nos sincronizaremos sin haber perdido la
-  /// sesión.
+  ///  1. Suspensión del SO (Doze, foco transitorio): `ready+!playing`
+  ///     puede ser pausa momentánea, NO terminal. Sólo marcamos
+  ///     `detenido` con `idle+!playing` (resultado de `stop()` real).
+  ///     Si la pausa fue transitoria, el siguiente evento trae
+  ///     `ready+playing=true` y nos resincronizamos sin perder la
+  ///     sesión. Antes interpretábamos cualquier `!playing` como
+  ///     terminal y la radio se cortaba sola con la pantalla
+  ///     bloqueada (v0.9.81).
+  ///
+  ///  2. Carga en curso (`state.estado == cargando`): cuando
+  ///     `_reproducir` cambia la fuente del AudioPlayer, just_audio
+  ///     emite un `idle` transitorio entre la fuente vieja y la nueva.
+  ///     Si ese `idle` lo trataramos como `detenido` borraríamos
+  ///     `radioActual` a mitad de carga y el siguiente click del
+  ///     usuario sería el "que parece funcionar" — el clásico bug
+  ///     del "hay que darle dos veces". Por eso, mientras
+  ///     `state.estado == cargando`, sólo aceptamos transición a
+  ///     `reproduciendo` y descartamos cualquier evento intermedio.
   void _sincronizarEstadoConPlayer() {
     final actual = state.radioActual;
     if (actual == null) return;
-    final ps = _player.processingState;
     final reproduciendo = _player.playing;
+
+    // Regla 2: durante carga, sólo confirmamos `reproduciendo`. Los
+    // eventos intermedios (idle/loading/buffering/ready+!playing) son
+    // transitorios del cambio de source y no deben tocar el state.
+    if (state.estado == EstadoPlayback.cargando) {
+      if (reproduciendo) {
+        state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
+      }
+      return;
+    }
+
+    final ps = _player.processingState;
     if (ps == ProcessingState.idle) {
       state = EstadoReproductor.detenido;
       return;
     }
     if (ps == ProcessingState.loading || ps == ProcessingState.buffering) {
-      if (state.estado != EstadoPlayback.cargando) {
-        state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: actual);
-      }
+      state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: actual);
       return;
     }
-    // `ready` o `completed`. Sólo cambiamos a `reproduciendo` cuando
-    // sí está sonando; en otro caso (pausa transitoria del SO o pausa
-    // explícita por el usuario desde la notificación) mantenemos el
-    // estado actual hasta que llegue un `idle` real.
+    // Regla 1: `ready` o `completed`. Sólo cambiamos a `reproduciendo`
+    // cuando sí está sonando; otros casos los mantenemos para que la
+    // suspensión transitoria del SO no rompa la sesión.
     if (reproduciendo && state.estado != EstadoPlayback.reproduciendo) {
       state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
     }
