@@ -317,6 +317,7 @@
   "commonRetry": "Saiatu berriro",
   "commonClose": "Itxi",
   "commonCancel": "Utzi",
+  "commonOk": "Ados",
   "searchTooltip": "Bilatu",
   "searchHint": "Bilatu albisteetan, hedabideetan, irratietan…",
   "searchPromptHint": "Idatzi app osoan bilatzeko.",

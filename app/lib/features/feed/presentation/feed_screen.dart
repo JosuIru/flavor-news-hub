@@ -253,11 +253,16 @@ class _BarraFiltrosActivos extends ConsumerWidget {
       ));
     }
 
-    if (filtros.codigosIdiomas.isNotEmpty) {
+    // Un chip por idioma con su propia X — antes era un único chip
+    // agrupado con todos los idiomas y la X borraba toda la lista. Si
+    // tenías "es, ca, eu" seleccionados y querías quitar sólo eu,
+    // tenías que abrir la pantalla de filtros entera. Ahora consistente
+    // con cómo se gestionan topics.
+    for (final codigoIdioma in filtros.codigosIdiomas) {
       chips.add(InputChip(
         avatar: Icon(Icons.language, size: 18, color: esquema.primary),
-        label: Text(filtros.codigosIdiomas.map((c) => c.toUpperCase()).join(', ')),
-        onDeleted: notifier.limpiarIdiomas,
+        label: Text(codigoIdioma.toUpperCase()),
+        onDeleted: () => notifier.alternarIdioma(codigoIdioma),
         deleteIconColor: esquema.onSurfaceVariant,
       ));
     }
@@ -442,12 +447,13 @@ class _PiePaginado extends StatelessWidget {
       );
     }
     if (errorAlPaginar != null) {
+      final textos = AppLocalizations.of(context);
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         child: Column(
           children: [
             Text(errorAlPaginar!, textAlign: TextAlign.center),
-            TextButton(onPressed: onReintentar, child: const Text('Reintentar')),
+            TextButton(onPressed: onReintentar, child: Text(textos.commonRetry)),
           ],
         ),
       );

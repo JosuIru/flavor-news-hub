@@ -325,6 +325,7 @@
   "commonRetry": "Reintentar",
   "commonClose": "Cerrar",
   "commonCancel": "Cancelar",
+  "commonOk": "Aceptar",
 
   "searchTooltip": "Buscar",
   "searchHint": "Buscar en noticias, medios, radios…",

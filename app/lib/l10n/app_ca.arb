@@ -317,6 +317,7 @@
   "commonRetry": "Reintenta",
   "commonClose": "Tanca",
   "commonCancel": "Cancel·la",
+  "commonOk": "D'acord",
   "searchTooltip": "Cerca",
   "searchHint": "Cerca a notícies, mitjans, ràdios…",
   "searchPromptHint": "Escriu per cercar a tota l'app.",

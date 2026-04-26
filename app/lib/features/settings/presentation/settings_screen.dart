@@ -569,7 +569,7 @@ class _EstadoDialogoEditarUrl extends State<_DialogoEditarUrl> {
             }
             Navigator.of(context).pop(valor);
           },
-          child: const Text('OK'),
+          child: Text(widget.textos.commonOk),
         ),
       ],
     );

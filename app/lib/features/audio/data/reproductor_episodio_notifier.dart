@@ -91,7 +91,7 @@ class EstadoReproductorEpisodio {
 ///   más tracks (p. ej. "más del mismo artista") y extendemos.
 class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodio> {
   ReproductorEpisodioNotifier(this._ref) : super(EstadoReproductorEpisodio.detenido) {
-    _player.playbackEventStream.listen((_) {
+    _suscripcionPlayback = _player.playbackEventStream.listen((_) {
       final actual = state.episodioActual;
       if (actual == null) return;
       final nuevoEstado = _estadoDesdePlayer();
@@ -105,18 +105,23 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
         _alTerminarTrack();
       }
     }, onError: (Object error, StackTrace st) {
+      // Tras `parar()` borramos `episodioActual` — si el player emite
+      // un error en ese momento, no hay episodio sobre el que mostrar
+      // mensaje y la UI quedaría con error suspendido sin botones
+      // operables. Ignoramos errores que llegan en estado detenido.
+      if (state.episodioActual == null) return;
       state = state.copyWith(
         estado: EstadoEpisodio.error,
         mensajeError: error.toString(),
       );
     });
 
-    _player.positionStream.listen((posicion) {
+    _suscripcionPosicion = _player.positionStream.listen((posicion) {
       if (state.episodioActual == null) return;
       state = state.copyWith(posicion: posicion);
     });
 
-    _player.durationStream.listen((duracion) {
+    _suscripcionDuracion = _player.durationStream.listen((duracion) {
       if (duracion == null || state.episodioActual == null) return;
       state = state.copyWith(duracion: duracion);
     });
@@ -127,6 +132,14 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
   ProveedorSiguientes? _proveedorSiguientes;
   bool _extendiendoCola = false;
   Timer? _sleepTimer;
+  // Guardamos las suscripciones para cancelarlas en `dispose`. Sin esto,
+  // al disponer el notifier `_player.dispose()` cerraba los streams y
+  // los listeners aún activos intentaban escribir state sobre un
+  // notifier ya muerto → "Bad state: A StateNotifier was used after
+  // being disposed".
+  late final StreamSubscription<dynamic> _suscripcionPlayback;
+  late final StreamSubscription<Duration> _suscripcionPosicion;
+  late final StreamSubscription<Duration?> _suscripcionDuracion;
 
   EstadoEpisodio _estadoDesdePlayer() {
     if (_player.processingState == ProcessingState.loading ||
@@ -314,6 +327,12 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
   @override
   void dispose() {
     _sleepTimer?.cancel();
+    // Orden importa: cancelar los listeners ANTES de disponer el
+    // player evita errores de `state = ...` sobre notifier disposed
+    // cuando los streams emiten su evento final al cerrarse.
+    _suscripcionPlayback.cancel();
+    _suscripcionPosicion.cancel();
+    _suscripcionDuracion.cancel();
     _player.dispose();
     super.dispose();
   }

@@ -329,10 +329,10 @@ class _BotonSleepTimer extends ConsumerWidget {
           PopupMenuItem(
             value: 0,
             child: Row(
-              children: const [
-                Icon(Icons.cancel_outlined, size: 18),
-                SizedBox(width: 8),
-                Text('Cancelar'),
+              children: [
+                const Icon(Icons.cancel_outlined, size: 18),
+                const SizedBox(width: 8),
+                Text(textos.commonCancel),
               ],
             ),
           ),

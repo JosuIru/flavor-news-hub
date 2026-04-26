@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/api_exception.dart';
 import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
@@ -23,24 +22,24 @@ final feedMovimientosProvider =
     preferenciasProvider.select((p) => p.territorioBase),
   );
 
-  try {
-    final pagina = await api.fetchItems(
-      page: 1,
-      perPage: 50,
-      esMovimiento: true,
-      language: idiomasContenido.isEmpty ? null : idiomasContenido.join(','),
-      // El feed de titulares principal excluye vídeos/podcasts (van en
-      // sus pestañas dedicadas). Aquí también — la sección Movimientos
-      // es para texto principalmente. Si un colectivo hace YouTube o
-      // podcast, sus items aparecen en sus pestañas correspondientes.
-      excludeSourceType: 'video,youtube,podcast',
-    );
-    final items = [...pagina.items];
-    // Aplicamos los mismos saneos que el feed principal: ordenación
-    // local-primero y filtro defensivo de contenido no-latino.
-    ordenarItemsLocalPrimero(items, territorioBase);
-    return filtrarContenidoNoLatino(items, idiomasContenido);
-  } on FlavorNewsApiException {
-    return const <Item>[];
-  }
+  // No silenciamos `FlavorNewsApiException`: cuando el endpoint falla
+  // (timeout, 500, parse mal) la pantalla mostraba "no hay noticias"
+  // en lugar de un error real, dejando al usuario sin pista de qué va
+  // mal. Mejor que el AsyncValue.error fluya hasta la UI.
+  final pagina = await api.fetchItems(
+    page: 1,
+    perPage: 50,
+    esMovimiento: true,
+    language: idiomasContenido.isEmpty ? null : idiomasContenido.join(','),
+    // El feed de titulares principal excluye vídeos/podcasts (van en
+    // sus pestañas dedicadas). Aquí también — la sección Movimientos
+    // es para texto principalmente. Si un colectivo hace YouTube o
+    // podcast, sus items aparecen en sus pestañas correspondientes.
+    excludeSourceType: 'video,youtube,podcast',
+  );
+  final items = [...pagina.items];
+  // Aplicamos los mismos saneos que el feed principal: ordenación
+  // local-primero y filtro defensivo de contenido no-latino.
+  ordenarItemsLocalPrimero(items, territorioBase);
+  return filtrarContenidoNoLatino(items, idiomasContenido);
 });

@@ -317,6 +317,7 @@
   "commonRetry": "Retry",
   "commonClose": "Close",
   "commonCancel": "Cancel",
+  "commonOk": "OK",
   "searchTooltip": "Search",
   "searchHint": "Search news, sources, radios…",
   "searchPromptHint": "Type to search across the app.",

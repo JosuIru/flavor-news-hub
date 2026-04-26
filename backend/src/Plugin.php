@@ -223,7 +223,52 @@ final class Plugin
         // manualmente.
         self::asignarTopicsFaltantesDesdeSeed();
 
+        // Mismo razonamiento para el flag editorial `es_movimiento`:
+        // se introdujo después del lanzamiento, así que sources
+        // antiguas en BD no lo tienen aunque el seed actual sí. Sin
+        // este backfill, la sección "Voces de movimientos" del cliente
+        // sale vacía en instancias antiguas — el filtro
+        // `_fnh_es_movimiento='1'` no encuentra nada.
+        self::backfillFlagsEditorialesDesdeSeed();
+
         update_option('fnh_catalogo_sincronizado_version', FNH_VERSION);
+    }
+
+    /**
+     * Repone flags editoriales (es_movimiento) desde el seed para
+     * sources que ya existen pero no los tienen. Idempotente: si el
+     * meta ya está seteado a cualquier valor, no lo pisa. Si no está
+     * seteado (clave inexistente en post_meta), lo crea con el valor
+     * del seed.
+     *
+     * Por qué no incluir más campos: aquí queremos respetar al admin.
+     * Topics también respeta. Pero feed_url o territory los podría
+     * haber editado a mano y no queremos pisar — sólo flags
+     * declarativos del catálogo curado.
+     */
+    private static function backfillFlagsEditorialesDesdeSeed(): void
+    {
+        $entradasSeed = CatalogoPorDefecto::sources();
+        foreach ($entradasSeed as $raw) {
+            $slug = (string) ($raw['slug'] ?? '');
+            if ($slug === '' || !array_key_exists('es_movimiento', $raw)) {
+                continue;
+            }
+            $post = get_page_by_path($slug, OBJECT, \FlavorNewsHub\CPT\Source::SLUG);
+            if (!$post) {
+                continue;
+            }
+            $idPost = (int) $post->ID;
+            // Sólo aplicamos si el meta no existe aún. Si el admin lo
+            // puso a false a propósito, get_post_meta devuelve '' que
+            // es distinto de la cadena 'no-existe' — usamos
+            // metadata_exists para distinguir "no seteado" de
+            // "seteado a false".
+            if (metadata_exists('post', $idPost, '_fnh_es_movimiento')) {
+                continue;
+            }
+            update_post_meta($idPost, '_fnh_es_movimiento', (bool) $raw['es_movimiento']);
+        }
     }
 
     /**
