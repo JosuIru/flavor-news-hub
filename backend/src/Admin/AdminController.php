@@ -71,6 +71,8 @@ final class AdminController
         add_action(EstadoFuentesActions::HOOK_DESACTIVAR_UNA, [EstadoFuentesActions::class, 'manejarDesactivarUna']);
         add_action(EstadoFuentesActions::HOOK_DESACTIVAR_CAIDAS, [EstadoFuentesActions::class, 'manejarDesactivarCaidas']);
         add_action(EstadoFuentesActions::HOOK_APLICAR_URLS, [EstadoFuentesActions::class, 'manejarAplicarUrls']);
+        add_action(EstadoFuentesActions::HOOK_DETECTAR_FEEDS, [EstadoFuentesActions::class, 'manejarDetectarFeeds']);
+        add_action(EstadoFuentesActions::HOOK_APLICAR_FEED_UNICO, [EstadoFuentesActions::class, 'manejarAplicarFeedDetectado']);
         add_action('admin_notices', [EstadoFuentesActions::class, 'mostrarAviso']);
     }
 }

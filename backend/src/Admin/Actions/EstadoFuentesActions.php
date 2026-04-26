@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace FlavorNewsHub\Admin\Actions;
 
 use FlavorNewsHub\Admin\Pages\EstadoFuentesPage;
+use FlavorNewsHub\Catalog\AutodescubrirFeeds;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
 
@@ -19,9 +20,17 @@ use FlavorNewsHub\Database\IngestLogTable;
  */
 final class EstadoFuentesActions
 {
-    public const HOOK_DESACTIVAR_UNA    = 'admin_post_fnh_desactivar_fuente';
-    public const HOOK_DESACTIVAR_CAIDAS = 'admin_post_fnh_desactivar_caidas';
-    public const HOOK_APLICAR_URLS      = 'admin_post_fnh_aplicar_urls_conocidas';
+    public const HOOK_DESACTIVAR_UNA       = 'admin_post_fnh_desactivar_fuente';
+    public const HOOK_DESACTIVAR_CAIDAS    = 'admin_post_fnh_desactivar_caidas';
+    public const HOOK_APLICAR_URLS         = 'admin_post_fnh_aplicar_urls_conocidas';
+    public const HOOK_DETECTAR_FEEDS       = 'admin_post_fnh_detectar_feeds';
+    public const HOOK_APLICAR_FEED_UNICO   = 'admin_post_fnh_aplicar_feed_detectado';
+
+    /** Clave del transient donde se guardan las propuestas tras escanear. */
+    public const TRANSIENT_PROPUESTAS = 'fnh_feeds_detectados_propuestas';
+
+    /** Tope de fuentes a escanear por click — evita timeout en sitios con cientos de errores. */
+    private const MAX_FUENTES_POR_ESCANEO = 60;
 
     /**
      * Mapa de correcciones de URL conocidas: slug del source → feed_url
@@ -151,6 +160,149 @@ final class EstadoFuentesActions
         exit;
     }
 
+    /**
+     * Escanea las fuentes con error en la última ingesta o sin items en 30
+     * días, intenta encontrar el feed real desde la URL declarada (vía
+     * `<link rel="alternate">`) y guarda las propuestas en un transient
+     * para que la pantalla las renderice.
+     */
+    public static function manejarDetectarFeeds(): void
+    {
+        self::comprobarPermisos();
+        $nonce = isset($_POST['_wpnonce']) ? (string) wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'fnh_detectar_feeds')) {
+            wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
+        }
+
+        global $wpdb;
+        $tablaLogs = IngestLogTable::nombreCompleto();
+
+        // Candidatas: sources activas con último log = error, O sin items en
+        // los últimos 30 días. No tocamos sanas para no malgastar requests.
+        $idsCandidatas = $wpdb->get_col($wpdb->prepare(
+            "SELECT p.ID FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pma ON pma.post_id = p.ID
+                AND pma.meta_key = '_fnh_active' AND pma.meta_value = '1'
+             WHERE p.post_type = %s AND p.post_status = 'publish'
+               AND (
+                   EXISTS (
+                       SELECT 1 FROM {$tablaLogs} il
+                       WHERE il.source_id = p.ID AND il.status = 'error'
+                         AND il.started_at = (
+                             SELECT MAX(il2.started_at) FROM {$tablaLogs} il2
+                             WHERE il2.source_id = p.ID
+                         )
+                   )
+                   OR NOT EXISTS (
+                       SELECT 1 FROM {$wpdb->postmeta} pmi
+                       INNER JOIN {$wpdb->posts} pi ON pi.ID = pmi.post_id
+                       WHERE pmi.meta_key = '_fnh_source_id' AND pmi.meta_value = p.ID
+                         AND pi.post_type = %s AND pi.post_status = 'publish'
+                         AND pi.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)
+                       LIMIT 1
+                   )
+               )
+             ORDER BY p.ID ASC
+             LIMIT %d",
+            Source::SLUG,
+            \FlavorNewsHub\CPT\Item::SLUG,
+            self::MAX_FUENTES_POR_ESCANEO
+        ));
+
+        $propuestasDetectadas = [];
+        $cuentaEscaneadas = 0;
+        foreach ($idsCandidatas as $idCandidata) {
+            $idCandidata = (int) $idCandidata;
+            $cuentaEscaneadas++;
+            $urlFeedActual = (string) get_post_meta($idCandidata, '_fnh_feed_url', true);
+            if ($urlFeedActual === '') {
+                continue;
+            }
+
+            // Sólo proponemos si la nueva URL difiere de la actual.
+            $deteccion = AutodescubrirFeeds::detectarDesdeUrl($urlFeedActual);
+            if ($deteccion === null) {
+                // Si la URL del feed no devuelve link rel=alternate (puede ser
+                // que devuelva XML válido pero vacío, o un 404), probamos con
+                // la homepage del medio.
+                $urlSitioWeb = (string) get_post_meta($idCandidata, '_fnh_website_url', true);
+                if ($urlSitioWeb !== '' && $urlSitioWeb !== $urlFeedActual) {
+                    $deteccion = AutodescubrirFeeds::detectarDesdeUrl($urlSitioWeb);
+                }
+            }
+            if ($deteccion === null) {
+                continue;
+            }
+            [$urlFeedDetectado, $tipoFeedDetectado] = $deteccion;
+            if ($urlFeedDetectado === $urlFeedActual) {
+                continue;
+            }
+
+            $propuestasDetectadas[$idCandidata] = [
+                'source_id'    => $idCandidata,
+                'nombre'       => get_the_title($idCandidata),
+                'url_actual'   => $urlFeedActual,
+                'url_detectada'=> $urlFeedDetectado,
+                'tipo_detectado' => $tipoFeedDetectado,
+            ];
+        }
+
+        // Guardamos durante 1h: tiempo razonable para que el admin revise y
+        // aplique sin que la lista quede colgada eternamente si se olvida.
+        set_transient(self::TRANSIENT_PROPUESTAS, $propuestasDetectadas, HOUR_IN_SECONDS);
+
+        wp_safe_redirect(self::urlRedireccion([
+            'fnh_feeds_escaneadas' => $cuentaEscaneadas,
+            'fnh_feeds_detectados' => count($propuestasDetectadas),
+        ]));
+        exit;
+    }
+
+    /**
+     * Aplica una propuesta concreta: actualiza `_fnh_feed_url` (y
+     * opcionalmente `_fnh_feed_type`), reactiva la fuente y limpia esa
+     * entrada del transient de propuestas.
+     */
+    public static function manejarAplicarFeedDetectado(): void
+    {
+        self::comprobarPermisos();
+        $idSource = isset($_POST['source_id']) ? (int) $_POST['source_id'] : 0;
+        if ($idSource <= 0) {
+            wp_die(esc_html__('ID de medio inválido.', 'flavor-news-hub'), '', ['response' => 400]);
+        }
+        $nonce = isset($_POST['_wpnonce']) ? (string) wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'fnh_aplicar_feed_detectado_' . $idSource)) {
+            wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
+        }
+
+        $propuestasGuardadas = get_transient(self::TRANSIENT_PROPUESTAS);
+        if (!is_array($propuestasGuardadas) || !isset($propuestasGuardadas[$idSource])) {
+            wp_safe_redirect(self::urlRedireccion(['fnh_feed_aplicado' => 0]));
+            exit;
+        }
+        $propuestaSeleccionada = $propuestasGuardadas[$idSource];
+        $urlFeedNueva = (string) ($propuestaSeleccionada['url_detectada'] ?? '');
+        $tipoFeedNuevo = (string) ($propuestaSeleccionada['tipo_detectado'] ?? '');
+        if ($urlFeedNueva === '' || !filter_var($urlFeedNueva, FILTER_VALIDATE_URL)) {
+            wp_safe_redirect(self::urlRedireccion(['fnh_feed_aplicado' => 0]));
+            exit;
+        }
+
+        update_post_meta($idSource, '_fnh_feed_url', $urlFeedNueva);
+        if (in_array($tipoFeedNuevo, ['rss', 'atom'], true)) {
+            update_post_meta($idSource, '_fnh_feed_type', $tipoFeedNuevo);
+        }
+        update_post_meta($idSource, '_fnh_active', true);
+
+        // Quitamos la propuesta aplicada del transient — así la lista en
+        // pantalla decrece y se ve el progreso.
+        unset($propuestasGuardadas[$idSource]);
+        set_transient(self::TRANSIENT_PROPUESTAS, $propuestasGuardadas, HOUR_IN_SECONDS);
+
+        wp_safe_redirect(self::urlRedireccion(['fnh_feed_aplicado' => 1]));
+        exit;
+    }
+
     public static function mostrarAviso(): void
     {
         $pantallaActual = isset($_GET['page']) ? sanitize_key((string) wp_unslash($_GET['page'])) : '';
@@ -172,6 +324,33 @@ final class EstadoFuentesActions
                 printf(
                     '<div class="notice notice-info is-dismissible"><p>%s</p></div>',
                     esc_html__('No había fuentes caídas que desactivar.', 'flavor-news-hub')
+                );
+            }
+        }
+        if (isset($_GET['fnh_feeds_escaneadas'])) {
+            $cuentaEscaneadas = (int) $_GET['fnh_feeds_escaneadas'];
+            $cuentaDetectados = isset($_GET['fnh_feeds_detectados']) ? (int) $_GET['fnh_feeds_detectados'] : 0;
+            printf(
+                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                esc_html(sprintf(
+                    /* translators: %1$d fuentes escaneadas, %2$d feeds detectados */
+                    __('Escaneadas %1$d fuentes con error o muertas — detectados %2$d feeds nuevos. Revísalos abajo y aplica los que correspondan.', 'flavor-news-hub'),
+                    $cuentaEscaneadas,
+                    $cuentaDetectados
+                ))
+            );
+        }
+        if (isset($_GET['fnh_feed_aplicado'])) {
+            $aplicado = (int) $_GET['fnh_feed_aplicado'];
+            if ($aplicado > 0) {
+                printf(
+                    '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                    esc_html__('Feed actualizado y fuente reactivada. Lánzale ingesta para confirmar que funciona.', 'flavor-news-hub')
+                );
+            } else {
+                printf(
+                    '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+                    esc_html__('No se pudo aplicar el feed: la propuesta ha caducado o no es válida.', 'flavor-news-hub')
                 );
             }
         }

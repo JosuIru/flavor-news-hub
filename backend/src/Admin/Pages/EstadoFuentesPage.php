@@ -25,7 +25,11 @@ final class EstadoFuentesPage
 
     public static function render(): void
     {
-        if (!current_user_can('edit_posts')) {
+        // Esta pantalla muestra acciones de mutación (desactivar fuente,
+        // aplicar URLs, auto-descubrir feeds) que los handlers exigen con
+        // `manage_options`. Si dejáramos `edit_posts` aquí, un editor
+        // vería la pantalla pero al pulsar cualquier botón recibiría 403.
+        if (!current_user_can('manage_options')) {
             return;
         }
 
@@ -118,12 +122,20 @@ final class EstadoFuentesPage
                     <?php submit_button(__('Aplicar URLs corregidas (CTXT, Cuarto Poder)', 'flavor-news-hub'), 'secondary', 'submit', false); ?>
                 </form>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0"
+                      onsubmit="return confirm('<?php echo esc_js(__('Se descargará la URL de cada fuente con error o muerta para buscar &lt;link rel=&quot;alternate&quot;&gt;. Puede tardar 30-60s. ¿Continuar?', 'flavor-news-hub')); ?>');">
+                    <input type="hidden" name="action" value="fnh_detectar_feeds" />
+                    <?php wp_nonce_field('fnh_detectar_feeds'); ?>
+                    <?php submit_button(__('Auto-descubrir feeds rotos', 'flavor-news-hub'), 'primary', 'submit', false); ?>
+                </form>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0"
                       onsubmit="return confirm('<?php echo esc_js(__('Se desactivarán todas las fuentes con error y sin items históricos. ¿Continuar?', 'flavor-news-hub')); ?>');">
                     <input type="hidden" name="action" value="fnh_desactivar_caidas" />
                     <?php wp_nonce_field('fnh_desactivar_caidas'); ?>
                     <?php submit_button(__('Desactivar todas las caídas', 'flavor-news-hub'), 'delete', 'submit', false); ?>
                 </form>
             </div>
+
+            <?php self::renderPropuestasFeedsDetectados(); ?>
 
             <?php if ($conErrores !== []) : ?>
                 <h2 style="color:#dc3232; margin-top:2em"><?php esc_html_e('Con errores en la última ingesta', 'flavor-news-hub'); ?></h2>
@@ -203,6 +215,77 @@ final class EstadoFuentesPage
                             <input type="hidden" name="source_id" value="<?php echo esc_attr((string) $idSource); ?>" />
                             <?php wp_nonce_field('fnh_desactivar_fuente_' . $idSource); ?>
                             <button type="submit" class="button-link" style="color:#c33; padding:0"><?php esc_html_e('Desactivar', 'flavor-news-hub'); ?></button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    /**
+     * Renderiza la sección de "Feeds detectados automáticamente" si hay
+     * propuestas guardadas en transient. Cada fila propone una URL nueva
+     * extraída del `<link rel="alternate">` de la web del medio y permite
+     * aplicarla con un click (que también reactiva la fuente).
+     */
+    private static function renderPropuestasFeedsDetectados(): void
+    {
+        $propuestas = get_transient(EstadoFuentesActions::TRANSIENT_PROPUESTAS);
+        if (!is_array($propuestas) || $propuestas === []) {
+            return;
+        }
+        ?>
+        <h2 style="color:#2271b1; margin-top:2em">
+            <?php esc_html_e('Feeds detectados automáticamente', 'flavor-news-hub'); ?>
+            <span style="font-size:.6em; font-weight:normal; color:#666; margin-left:.5em">
+                <?php printf(
+                    /* translators: %d propuestas pendientes */
+                    esc_html(_n('%d propuesta pendiente', '%d propuestas pendientes', count($propuestas), 'flavor-news-hub')),
+                    count($propuestas)
+                ); ?>
+            </span>
+        </h2>
+        <p class="description" style="max-width:800px">
+            <?php esc_html_e('Estas URLs fueron detectadas leyendo la etiqueta <link rel="alternate" type="application/rss+xml"> de la página del medio. Antes de aplicar verifica que la URL nueva tiene sentido.', 'flavor-news-hub'); ?>
+        </p>
+        <table class="widefat striped" style="max-width:1200px">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e('Medio', 'flavor-news-hub'); ?></th>
+                    <th><?php esc_html_e('URL actual (rota)', 'flavor-news-hub'); ?></th>
+                    <th><?php esc_html_e('URL detectada', 'flavor-news-hub'); ?></th>
+                    <th style="width:60px"><?php esc_html_e('Tipo', 'flavor-news-hub'); ?></th>
+                    <th style="width:120px"><?php esc_html_e('Acciones', 'flavor-news-hub'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($propuestas as $propuesta) :
+                    $idSource = (int) ($propuesta['source_id'] ?? 0);
+                    if ($idSource <= 0) continue;
+                    $urlActual    = (string) ($propuesta['url_actual'] ?? '');
+                    $urlDetectada = (string) ($propuesta['url_detectada'] ?? '');
+                    $tipoFeed     = (string) ($propuesta['tipo_detectado'] ?? '');
+                    $nombre       = (string) ($propuesta['nombre'] ?? '');
+                ?>
+                <tr>
+                    <td><strong><?php echo esc_html($nombre); ?></strong></td>
+                    <td style="font-family:monospace; font-size:.8em; color:#888; word-break:break-all">
+                        <?php echo esc_html($urlActual); ?>
+                    </td>
+                    <td style="font-family:monospace; font-size:.8em; word-break:break-all">
+                        <a href="<?php echo esc_url($urlDetectada); ?>" target="_blank" rel="noopener">
+                            <?php echo esc_html($urlDetectada); ?>
+                        </a>
+                    </td>
+                    <td><code style="font-size:.75em"><?php echo esc_html($tipoFeed); ?></code></td>
+                    <td>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0">
+                            <input type="hidden" name="action" value="fnh_aplicar_feed_detectado" />
+                            <input type="hidden" name="source_id" value="<?php echo esc_attr((string) $idSource); ?>" />
+                            <?php wp_nonce_field('fnh_aplicar_feed_detectado_' . $idSource); ?>
+                            <button type="submit" class="button button-primary"><?php esc_html_e('Aplicar', 'flavor-news-hub'); ?></button>
                         </form>
                     </td>
                 </tr>
