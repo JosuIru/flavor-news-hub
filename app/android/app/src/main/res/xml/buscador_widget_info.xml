@@ -10,5 +10,5 @@
     android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
     android:previewLayout="@layout/buscador_widget"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@drawable/buscador_widget_preview"
     android:description="@string/widget_buscador_descripcion" />

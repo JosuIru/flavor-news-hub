@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/config/canal_distribucion.dart';
 import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/idioma_contenido/sheet_politica_idioma_contenido.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -146,12 +147,17 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: Text(textos.settingsShareAppSubtitle),
             onTap: () => Share.share(textos.shareAppMessage),
           ),
-          ListTile(
-            leading: const Icon(Icons.system_update_alt_outlined),
-            title: Text(textos.settingsCheckUpdate),
-            subtitle: Text(textos.settingsCheckUpdateSubtitle),
-            onTap: () => _comprobarActualizacion(context, ref, textos),
-          ),
+          // En el flavor `playstore` Google Play se encarga de las
+          // actualizaciones; ofrecer un botón propio de "comprobar
+          // actualización" sólo confunde, y la permission para
+          // auto-instalar APKs no está incluida en ese flavor.
+          if (soportaOtaInterna)
+            ListTile(
+              leading: const Icon(Icons.system_update_alt_outlined),
+              title: Text(textos.settingsCheckUpdate),
+              subtitle: Text(textos.settingsCheckUpdateSubtitle),
+              onTap: () => _comprobarActualizacion(context, ref, textos),
+            ),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(textos.settingsAbout),

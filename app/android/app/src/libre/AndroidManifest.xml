@@ -1,0 +1,34 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sólo el flavor `libre` (F-Droid/IzzyOnDroid/GitHub Releases/Obtainium)
+         lleva el flujo OTA: la app descarga el APK y lo pasa al instalador
+         del sistema. Play Store prohíbe `REQUEST_INSTALL_PACKAGES` para
+         apps cuya función principal no es instalar paquetes, así que el
+         flavor `playstore` no la incluye. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application>
+        <!-- FileProvider para pasar el APK descargado (en cacheDir) al
+             instalador de paquetes del sistema. Android exige que el
+             path venga de un content:// Uri gestionado por un
+             FileProvider propio; no se puede usar file:// desde N en
+             adelante. Sólo lo necesita el flujo OTA. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="org.flavornewshub.flavor_news_hub.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+    <queries>
+        <!-- Instalador de paquetes: necesario en Android 11+ para que
+             el intent VIEW sobre el MIME de APK pueda resolverse. Sólo
+             lo necesita el flujo OTA. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/vnd.android.package-archive" />
+        </intent>
+    </queries>
+</manifest>

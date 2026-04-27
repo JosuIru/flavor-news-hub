@@ -9,5 +9,5 @@
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:previewLayout="@layout/favoritos_widget_preview"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@drawable/favoritos_widget_preview"
     android:description="@string/widget_favoritos_descripcion" />

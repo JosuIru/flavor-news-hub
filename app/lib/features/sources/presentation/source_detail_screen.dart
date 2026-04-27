@@ -237,7 +237,9 @@ class _BotonVerContenido extends StatelessWidget {
     }
     if (esPodcast) {
       return FilledButton.icon(
-        onPressed: () => context.push('/audio'),
+        // `go` y no `push` por el mismo motivo que en el botón de
+        // texto de abajo: `/audio` está dentro del ShellRoute.
+        onPressed: () => context.go('/audio'),
         icon: const Icon(Icons.podcasts),
         label: Text(textos.sourceListAudio),
       );
@@ -245,7 +247,13 @@ class _BotonVerContenido extends StatelessWidget {
     return FilledButton.icon(
       onPressed: () async {
         await ref.read(filtrosFeedProvider.notifier).establecerSource(source.id);
-        if (context.mounted) context.push('/');
+        // `go('/')` y NO `push('/')`: el feed vive dentro del ShellRoute
+        // y empujarlo desde fuera del shell deja un Scaffold mal montado
+        // (sin AppBar, sin barra de filtros, lista que nunca aparece).
+        // Reemplazamos la ruta para entrar limpiamente al shell. Atrás
+        // ya no vuelve a la ficha del medio, pero el chip de filtro
+        // activo en el feed indica con qué medio se está filtrando.
+        if (context.mounted) context.go('/');
       },
       icon: const Icon(Icons.filter_list),
       label: Text(textos.sourceListNews),

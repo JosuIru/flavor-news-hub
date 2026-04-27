@@ -240,6 +240,136 @@ class TerritoryNormalizer {
     };
   }
 
+  /// Devuelve true si una entidad geolocalizada (radio, colectivo,
+  /// fuente) pertenece a la `claveTerritorial` dada. Si la clave es
+  /// una red/meta-territorio (Euskal Herria, Latinoamérica, etc.), se
+  /// expande a sus territorios miembros antes de comparar. Si es un
+  /// territorio concreto, basta con que cualquier campo de la entidad
+  /// coincida o contenga la clave (para tolerar "Donostia, Gipuzkoa"
+  /// o casos similares).
+  ///
+  /// Diseñada para reemplazar el `huella.contains(territorioBase)` que
+  /// fallaba con redes (ninguna radio lleva literalmente "Euskal
+  /// Herria" en sus campos: cada una tiene su provincia concreta).
+  ///
+  /// Si [claveTerritorial] está vacía, no hay filtro: devuelve true.
+  static bool pertenece({
+    required String claveTerritorial,
+    String country = '',
+    String region = '',
+    String city = '',
+    String territory = '',
+  }) {
+    final claveNormalizada = _normalizarCadena(claveTerritorial);
+    if (claveNormalizada.isEmpty) return true;
+    final clavesAceptadas = _expandirRed(claveNormalizada);
+    final camposNormalizados = <String>[country, region, city, territory]
+        .map(_normalizarCadena)
+        .where((cadena) => cadena.isNotEmpty)
+        .toList();
+    if (camposNormalizados.isEmpty) return false;
+    for (final claveAceptada in clavesAceptadas) {
+      for (final campo in camposNormalizados) {
+        if (campo == claveAceptada || campo.contains(claveAceptada)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /// Para redes/meta-territorios devuelve el conjunto de claves
+  /// (la propia red + sus territorios miembros, todos normalizados —
+  /// sin tildes, en minúsculas). Para territorios concretos devuelve
+  /// solo la clave normalizada que se le pasa.
+  static Set<String> _expandirRed(String claveNormalizada) {
+    switch (claveNormalizada) {
+      case 'euskal herria':
+        return const {
+          'euskal herria',
+          'bizkaia', 'vizcaya',
+          'gipuzkoa', 'guipuzcoa',
+          'araba', 'alava',
+          'nafarroa', 'navarra',
+          'pais vasco', 'euskadi',
+          'ipar euskal herria', 'iparralde',
+          'lapurdi', 'baxenabarre', 'zuberoa',
+        };
+      case 'ipar euskal herria':
+      case 'iparralde':
+        return const {
+          'ipar euskal herria', 'iparralde',
+          'lapurdi', 'baxenabarre', 'zuberoa',
+        };
+      case 'latinoamerica':
+        return const {
+          'latinoamerica',
+          'argentina', 'buenos aires', 'mendoza', 'santa fe', 'trelew',
+          'bolivia', 'la paz',
+          'brasil',
+          'chile', 'san felipe',
+          'colombia', 'suba',
+          'costa rica',
+          'ecuador', 'saraguro',
+          'el salvador',
+          'guatemala',
+          'honduras',
+          'mexico', 'oaxaca', 'guerrero',
+          'nicaragua', 'matagalpa',
+          'panama',
+          'paraguay',
+          'peru', 'piura',
+          'republica dominicana',
+          'uruguay',
+          'venezuela', 'caracas',
+          // Wallmapu (territorio mapuche) cae geográficamente dentro
+          // de Latinoamérica, así que un medio etiquetado "wallmapu"
+          // sale al filtrar por Latinoamérica. Al revés NO: filtrar por
+          // Wallmapu no debe traer radios de Buenos Aires o Caracas.
+          'wallmapu',
+        };
+      case 'mesoamerica':
+        return const {
+          'mesoamerica',
+          'mexico', 'oaxaca', 'guerrero',
+          'guatemala',
+          'honduras',
+          'el salvador',
+          'nicaragua', 'matagalpa',
+          'costa rica',
+          'panama',
+        };
+      case 'estado espanol':
+      case 'espana':
+        return const {
+          'espana', 'spain',
+          'bizkaia', 'vizcaya',
+          'gipuzkoa', 'guipuzcoa',
+          'araba', 'alava',
+          'nafarroa', 'navarra',
+          'pais vasco', 'euskadi',
+          'catalunya', 'cataluna',
+          'pais valencia', 'valencia',
+          'galicia', 'galiza',
+          'andalucia',
+          'madrid', 'comunidad de madrid',
+          'asturias', 'asturies',
+          'aragon',
+          'cantabria',
+          'castilla y leon', 'castilla la mancha',
+          'la rioja', 'rioja',
+          'murcia',
+          'canarias',
+          'balears', 'baleares',
+        };
+      // wallmapu e internacional no se expanden: sólo casan si la
+      // entidad lleva literalmente esa etiqueta. Expandirlos a "todo
+      // Chile/Argentina" o "todo el mundo" daría falsos positivos.
+      default:
+        return {claveNormalizada};
+    }
+  }
+
   static String _normalizarCadena(String value) {
     var out = value.trim().toLowerCase();
     out = out.replaceAll(RegExp(r'[-_]'), ' ');

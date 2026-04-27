@@ -57,6 +57,25 @@ android {
         versionName = flutter.versionName
     }
 
+    // Distribución dual:
+    //   - `libre`: F-Droid, IzzyOnDroid, GitHub Releases, Obtainium. Lleva
+    //     el flujo OTA (REQUEST_INSTALL_PACKAGES + FileProvider + queries
+    //     APK MIME, todo declarado en src/libre/AndroidManifest.xml).
+    //   - `playstore`: Google Play. Sin OTA — Play prohíbe esa permission.
+    // Ambos comparten applicationId; signing fragmentado (libre con
+    // keystore propia, playstore con Play App Signing) implica que un
+    // mismo dispositivo no puede tener los dos a la vez ni migrar entre
+    // canales sin desinstalar.
+    flavorDimensions += "canal"
+    productFlavors {
+        libre {
+            dimension = "canal"
+        }
+        playstore {
+            dimension = "canal"
+        }
+    }
+
     signingConfigs {
         release {
             if (hayFirmaRelease) {

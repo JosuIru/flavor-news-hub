@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/config/canal_distribucion.dart';
 import 'core/providers/preferences_provider.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -73,9 +74,16 @@ class FlavorNewsHubApp extends ConsumerWidget {
           data: mediaQueryOriginal.copyWith(textScaler: TextScaler.linear(escalaFinal)),
           child: ShareIntakeListener(
             child: DeepLinkListener(
-              child: AvisoActualizacion(
-                child: child ?? const SizedBox.shrink(),
-              ),
+              // En el flavor `playstore` no hay OTA interna: Google Play
+              // se encarga de actualizar y la permission para auto-
+              // instalar APKs no se incluye, así que no envolvemos con
+              // AvisoActualizacion (que sólo pinta el diálogo cuando
+              // hay nueva versión disponible para descargar).
+              child: soportaOtaInterna
+                  ? AvisoActualizacion(
+                      child: child ?? const SizedBox.shrink(),
+                    )
+                  : (child ?? const SizedBox.shrink()),
             ),
           ),
         );

@@ -5130,20 +5130,6 @@
     ]
   },
   {
-    "id": 7405,
-    "name": "La Voz del Sur",
-    "slug": "la-voz-del-sur",
-    "feed_url": "https://lavozdelsur.es/uploads/feeds/feed_lavozdelsur_es.xml",
-    "feed_type": "rss",
-    "website_url": "https://lavozdelsur.es",
-    "territory": "Andalucía",
-    "languages": [
-      "es"
-    ],
-    "topics": [],
-    "support_url": "https://www.lavozdelsur.es/donar/"
-  },
-  {
     "id": 7406,
     "name": "Tamaimos",
     "slug": "tamaimos",

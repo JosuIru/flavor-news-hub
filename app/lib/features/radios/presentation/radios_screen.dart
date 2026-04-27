@@ -9,6 +9,7 @@ import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/utils/territory_normalizer.dart';
 import '../../../core/utils/territory_scoring.dart';
 import '../../audio/presentation/reproductor_episodio_sheet.dart';
 import '../data/programas_radio_provider.dart';
@@ -87,14 +88,20 @@ class RadiosBody extends ConsumerWidget {
           visiblesIter = visiblesIter.where((r) => favoritas.contains(r.id));
         }
         if (soloMiTerritorio && territorioBase.isNotEmpty) {
-          final territorioBuscado = territorioBase.toLowerCase();
-          visiblesIter = visiblesIter.where((r) {
-            // Match laxo: cualquier campo territorial puede contener el
-            // nombre del territorio del usuario. Cubre tanto "Euskal
-            // Herria" en `network` como "Bilbo" en `city`.
-            final huellaTerritorial = '${r.territory} ${r.country} ${r.region} ${r.city}'.toLowerCase();
-            return huellaTerritorial.contains(territorioBuscado);
-          });
+          // `pertenece` expande redes meta (Euskal Herria → sus
+          // provincias, Latinoamérica → sus países…) antes de comparar.
+          // Sin esa expansión, ninguna radio lleva literalmente
+          // "Euskal Herria" en sus campos y el filtro devolvía 0
+          // resultados.
+          visiblesIter = visiblesIter.where(
+            (r) => TerritoryNormalizer.pertenece(
+              claveTerritorial: territorioBase,
+              country: r.country,
+              region: r.region,
+              city: r.city,
+              territory: r.territory,
+            ),
+          );
         }
         final radiosVisibles = visiblesIter.toList();
         // Orden: favoritas arriba (preferencia explícita del usuario) →
@@ -203,6 +210,11 @@ class _RadiosFavoritesHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final esquema = Theme.of(context).colorScheme;
+    final descripcionEstadoFavoritas = onlyFavorites
+        ? textos.radiosOnlyFavoritesActive
+        : hasFavorites
+            ? textos.radiosOnlyFavoritesHint
+            : textos.radiosOnlyFavoritesEmpty;
     return Material(
       color: esquema.surfaceContainerHighest,
       elevation: 0,
@@ -213,14 +225,15 @@ class _RadiosFavoritesHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(Icons.favorite, size: 18, color: esquema.primary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    textos.radiosOnlyFavorites,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+                    descripcionEstadoFavoritas,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: esquema.onSurfaceVariant,
                         ),
                   ),
                 ),
@@ -234,17 +247,6 @@ class _RadiosFavoritesHeader extends StatelessWidget {
                   onSelected: onToggle,
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              onlyFavorites
-                  ? textos.radiosOnlyFavoritesActive
-                  : hasFavorites
-                      ? textos.radiosOnlyFavoritesHint
-                      : textos.radiosOnlyFavoritesEmpty,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: esquema.onSurfaceVariant,
-                  ),
             ),
             if (onlyFavorites && onClear != null) ...[
               const SizedBox(height: 8),

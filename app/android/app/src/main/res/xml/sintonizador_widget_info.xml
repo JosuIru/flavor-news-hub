@@ -9,5 +9,5 @@
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:previewLayout="@layout/sintonizador_widget_preview"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@drawable/sintonizador_widget_preview"
     android:description="@string/widget_sintonizador_descripcion" />

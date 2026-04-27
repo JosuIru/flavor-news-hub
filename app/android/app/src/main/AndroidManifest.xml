@@ -9,8 +9,10 @@
          pide flutter_local_notifications al inicializar. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- Instalar el APK descargado desde la propia app (flujo OTA). -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- REQUEST_INSTALL_PACKAGES vive en src/libre/AndroidManifest.xml:
+         lo necesita el flujo OTA, que sólo existe en el flavor `libre`.
+         El flavor `playstore` se publica en Google Play y la política
+         prohíbe esa permission para apps que no son gestores de paquetes. -->
 
     <application
         android:label="Flavor News Hub"
@@ -201,20 +203,9 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false" />
 
-        <!-- FileProvider para pasar el APK descargado (en cacheDir) al
-             instalador de paquetes del sistema. Android exige que el
-             path venga de un content:// Uri gestionado por un
-             FileProvider propio; no se puede usar file:// desde
-             N en adelante. -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="org.flavornewshub.flavor_news_hub.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
+        <!-- El FileProvider del OTA vive en src/libre/AndroidManifest.xml:
+             sólo el flujo de auto-instalación lo usa, y ese flujo no
+             existe en el flavor `playstore`. -->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -240,11 +231,7 @@
             <action android:name="android.intent.action.SENDTO" />
             <data android:scheme="mailto" />
         </intent>
-        <!-- Instalador de paquetes: necesario en Android 11+ para que
-             el intent VIEW sobre el MIME de APK pueda resolverse. -->
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:mimeType="application/vnd.android.package-archive" />
-        </intent>
+        <!-- El query del MIME APK (instalador de paquetes) vive en
+             src/libre/AndroidManifest.xml: sólo lo necesita el OTA. -->
     </queries>
 </manifest>
