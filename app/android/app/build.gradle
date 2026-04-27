@@ -24,7 +24,15 @@ if (hayFirmaRelease) {
 android {
     namespace = "org.flavornewshub.flavor_news_hub"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // NDK pineado: el default `flutter.ndkVersion` cambia entre versiones
+    // del SDK Flutter (ahora trae 23.1.7779620) y 9 plugins del proyecto
+    // (audio_service, audio_session, just_audio, home_widget,
+    // flutter_local_notifications, open_filex, package_info_plus,
+    // path_provider_android, receive_sharing_intent) exigen ≥25.1.8937393.
+    // Sin pinear, los builds dependen de qué versión de Flutter haya
+    // instalada en cada máquina/CI — lo hacíamos antes y Gradle nos
+    // metía warnings en cada release. Pineamos a la que pide la mayoría.
+    ndkVersion = "25.1.8937393"
 
     compileOptions {
         // `flutter_local_notifications` 17+ exige core library desugaring

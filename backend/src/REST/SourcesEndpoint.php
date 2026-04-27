@@ -133,13 +133,19 @@ final class SourcesEndpoint
     {
         $idSource = (int) $request['id'];
         $post = get_post($idSource);
-        $esValido = $post
+        $estructuraValida = $post
             && $post->post_type === Source::SLUG
-            && $post->post_status === 'publish'
-            // Coherencia con el listado: un medio desactivado NO debe
-            // seguir accesible por `/sources/{id}` aunque el post siga
-            // "publish". El admin puede reactivarlo desde el metabox.
-            && (string) get_post_meta($post->ID, '_fnh_active', true) === '1';
+            && $post->post_status === 'publish';
+        // Misma semántica de "activo" que el listado: meta '1' Y/O meta
+        // ausente (legacy / fuentes creadas por vías que no persistieron
+        // el campo). Si el listado los muestra, el detalle también. La
+        // versión anterior exigía exactamente '1' y devolvía 404 sobre
+        // fuentes que sí aparecían en /sources.
+        $metaExiste = $estructuraValida
+            && metadata_exists('post', $post->ID, '_fnh_active');
+        $metaEsActiva = !$metaExiste
+            || (string) get_post_meta($post->ID, '_fnh_active', true) === '1';
+        $esValido = $estructuraValida && $metaEsActiva;
         if (!$esValido) {
             return new \WP_REST_Response([
                 'error'   => 'not_found',

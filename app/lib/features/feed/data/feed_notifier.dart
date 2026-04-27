@@ -336,10 +336,16 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
       final territorioBase = ref.read(
         preferenciasProvider.select((p) => p.territorioBase),
       );
-      final nuevosFiltrados = siguientePagina.items
+      final preFiltrados = siguientePagina.items
           .where(_noEsVideo)
           .where((it) => !_estaFuenteBloqueada(it, bloqueadas))
           .toList();
+      // Misma defensa que en `cargar` (primera página): items legacy
+      // de feeds mal etiquetados (source declara `es` pero contenido
+      // árabe/cirílico) tienen que filtrarse también al paginar, no
+      // sólo en la página inicial.
+      final nuevosFiltrados =
+          filtrarContenidoNoLatino(preFiltrados, idiomasEfectivos).toList();
       // Aplicamos scoring local-primero dentro de la página nueva.
       // No reordenamos lo ya mostrado: un item de la pág 2 que fuera
       // muy local no debe "saltar" a la pág 1 que el usuario ya vio.
