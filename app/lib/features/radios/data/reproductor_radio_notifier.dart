@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -39,11 +43,11 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
       _sincronizarEstadoConPlayer();
     }, onError: (Object error, StackTrace st) {
       final actual = state.radioActual;
-      state = EstadoReproductor(
+      _aplicarEstado(EstadoReproductor(
         estado: EstadoPlayback.error,
         radioActual: actual,
         mensajeError: error.toString(),
-      );
+      ));
     });
   }
 
@@ -69,14 +73,45 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     await _reproducir(radio);
   }
 
+  /// Arranca incondicionalmente (sin toggle). Usado por deep links del
+  /// widget Sintonizador, donde ▶/◄/► siempre significan "play esta
+  /// emisora", nunca "toggle". Si la misma radio ya está sonando,
+  /// re-arranca el stream — útil si el sistema lo silenció por
+  /// duplicado de MediaSession.
+  Future<void> reproducir(modelo_radio.Radio radio) async {
+    await _reproducir(radio);
+  }
+
   Future<void> parar() async {
     _epochActual++;
-    state = EstadoReproductor.detenido;
+    _aplicarEstado(EstadoReproductor.detenido);
     await _player.stop();
+  }
+
+  /// Canal con `MainActivity` para detener el `RadioService` nativo
+  /// (el que arranca el widget Sintonizador en background). Sin esto,
+  /// si el usuario tiene la radio sonando vía widget y abre la app y
+  /// arranca otra radio desde la UI, los dos streams suenan a la vez.
+  static const _canalServicioRadioNativo = MethodChannel('fnh/radio_service');
+
+  Future<void> _detenerServicioNativoSiActivo() async {
+    try {
+      await _canalServicioRadioNativo.invokeMethod('stop');
+    } catch (error) {
+      // En plataformas no Android (debug en desktop, tests) el canal no
+      // tiene handler; ignoramos. El log nos avisa si Android empezara
+      // a fallar de forma sistemática.
+      debugPrint('[ReproductorRadio] stop servicio nativo no disponible: $error');
+    }
   }
 
   Future<void> _reproducir(modelo_radio.Radio radio) async {
     final miEpoch = ++_epochActual;
+    // Antes de tocar el AudioPlayer de la app, paramos el RadioService
+    // nativo si estuviera sonando desde el widget. La parada es rápida
+    // (un broadcast intra-proceso) y evitamos dos streams a la vez.
+    await _detenerServicioNativoSiActivo();
+    if (miEpoch != _epochActual) return;
     // Sólo puede haber un AudioPlayer activo con la sesión de audio del
     // sistema (just_audio_background registra una única MediaSession).
     // Si el reproductor de música/podcast está sonando, lo paramos
@@ -84,7 +119,7 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     // falla con "Failed to set source".
     await _ref.read(reproductorEpisodioProvider.notifier).parar();
     if (miEpoch != _epochActual) return;
-    state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: radio);
+    _aplicarEstado(EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: radio));
     try {
       await _player.setAudioSource(
         AudioSource.uri(
@@ -100,14 +135,14 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
       if (miEpoch != _epochActual) return;
       await _player.play();
       if (miEpoch != _epochActual) return;
-      state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: radio);
+      _aplicarEstado(EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: radio));
     } catch (error) {
       if (miEpoch != _epochActual) return;
-      state = EstadoReproductor(
+      _aplicarEstado(EstadoReproductor(
         estado: EstadoPlayback.error,
         radioActual: radio,
         mensajeError: error.toString(),
-      );
+      ));
     }
   }
 
@@ -143,25 +178,67 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     // transitorios del cambio de source y no deben tocar el state.
     if (state.estado == EstadoPlayback.cargando) {
       if (reproduciendo) {
-        state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
+        _aplicarEstado(EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual));
       }
       return;
     }
 
     final ps = _player.processingState;
     if (ps == ProcessingState.idle) {
-      state = EstadoReproductor.detenido;
+      _aplicarEstado(EstadoReproductor.detenido);
       return;
     }
     if (ps == ProcessingState.loading || ps == ProcessingState.buffering) {
-      state = EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: actual);
+      _aplicarEstado(EstadoReproductor(estado: EstadoPlayback.cargando, radioActual: actual));
       return;
     }
     // Regla 1: `ready` o `completed`. Sólo cambiamos a `reproduciendo`
     // cuando sí está sonando; otros casos los mantenemos para que la
     // suspensión transitoria del SO no rompa la sesión.
     if (reproduciendo && state.estado != EstadoPlayback.reproduciendo) {
-      state = EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual);
+      _aplicarEstado(EstadoReproductor(estado: EstadoPlayback.reproduciendo, radioActual: actual));
+    }
+  }
+
+  /// Asigna el nuevo estado al StateNotifier y empuja el cambio al
+  /// widget Sintonizador. Centralizado aquí para que las claves del
+  /// widget (`sintonizador_estado`, `sintonizador_reproduciendo_id`)
+  /// queden siempre sincronizadas con el state real del player —
+  /// antes las escribía un callback aparte y se podía desincronizar
+  /// si el usuario abría la app y arrancaba la radio desde la UI.
+  void _aplicarEstado(EstadoReproductor nuevoEstado) {
+    state = nuevoEstado;
+    unawaited(_empujarEstadoAlWidget(nuevoEstado));
+  }
+
+  Future<void> _empujarEstadoAlWidget(EstadoReproductor nuevoEstado) async {
+    final claveEstado = switch (nuevoEstado.estado) {
+      EstadoPlayback.cargando => 'cargando',
+      EstadoPlayback.reproduciendo => 'reproduciendo',
+      EstadoPlayback.detenido || EstadoPlayback.error => '',
+    };
+    final idActual = nuevoEstado.estado == EstadoPlayback.reproduciendo ||
+            nuevoEstado.estado == EstadoPlayback.cargando
+        ? '${nuevoEstado.radioActual?.id ?? ''}'
+        : '';
+    // `fuente` sirve al widget para decidir si ◄/► debe arrancar el
+    // RadioService nativo o lanzar un deep link a la app: si la app
+    // está reproduciendo, los dos streams paralelos sonarían a la vez.
+    final fuente = claveEstado.isEmpty ? '' : 'app';
+    try {
+      await HomeWidget.saveWidgetData<String>('sintonizador_estado', claveEstado);
+      await HomeWidget.saveWidgetData<String>('sintonizador_reproduciendo_id', idActual);
+      await HomeWidget.saveWidgetData<String>('sintonizador_fuente', fuente);
+      await HomeWidget.updateWidget(
+        name: 'SintonizadorWidgetProvider',
+        androidName: 'SintonizadorWidgetProvider',
+      );
+    } catch (error) {
+      // No queremos romper el playback si fallar la actualización del
+      // widget (p. ej. en plataformas no-Android, donde home_widget
+      // lanza UnimplementedError). El log nos sirve para detectar
+      // si Android empieza a fallar de forma sistemática.
+      debugPrint('[ReproductorRadio] empujar widget falló: $error');
     }
   }
 

@@ -14,19 +14,22 @@ import es.antonborri.home_widget.HomeWidgetPlugin
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
-import java.util.Locale
 import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Widget de pantalla de inicio que pinta los 3 titulares más recientes
- * guardados por la app. Flutter escribe con `HomeWidget.saveWidgetData`
- * las claves `titular_1_*` / `titular_2_*` / `titular_3_*` — aquí las
- * leemos y las inyectamos en el RemoteViews.
+ * Widget de pantalla de inicio que pinta los titulares más recientes.
+ * Hasta v0.10.0 mostraba 3 slots fijos en el layout; ahora el contenido
+ * lo sirve un `RemoteViewsService` (`TitularesRemoteViewsService`) que
+ * provee filas en un `ListView` scrolleable, con miniatura opcional a
+ * la derecha. La fuente de datos sigue siendo SharedPreferences
+ * (claves `titular_{1..10}_*`), escritas tanto por la app (Flutter en
+ * `WidgetTitularesWriter`) como por el botón de refrescar del propio
+ * widget (`refrescarDesdeBackend` aquí abajo).
  *
- * Tap en un titular → abre la app en la URL del detalle (deep link
- * `flavornews://items/<id>`). Tap en el botón refrescar → abre la app
- * normal; la app refrescará el feed al arrancar.
+ * Tap en un titular → abre la app vía deep link `flavornews://items/<id>`.
+ * Configurado con `setPendingIntentTemplate` + `setOnClickFillInIntent`
+ * en la factory.
  */
 class TitularesWidgetProvider : AppWidgetProvider() {
 
@@ -38,110 +41,83 @@ class TitularesWidgetProvider : AppWidgetProvider() {
     private fun actualizarUno(
         context: Context,
         appWidgetManager: AppWidgetManager,
-        widgetId: Int
+        widgetId: Int,
     ) {
         val views = RemoteViews(context.packageName, R.layout.titulares_widget)
-        val prefs = HomeWidgetPlugin.getData(context)
 
-        var algunoPintado = false
-        for (i in 1..3) {
-            val titulo = prefs.getString("titular_${i}_titulo", null)
-            val fuente = prefs.getString("titular_${i}_fuente", null)
-            val idItem = prefs.getString("titular_${i}_id", null)
-
-            val idTxt = when (i) {
-                1 -> R.id.titular_1; 2 -> R.id.titular_2; else -> R.id.titular_3
-            }
-            val idFuente = when (i) {
-                1 -> R.id.titular_1_fuente; 2 -> R.id.titular_2_fuente; else -> R.id.titular_3_fuente
-            }
-            if (!titulo.isNullOrEmpty()) {
-                algunoPintado = true
-                views.setTextViewText(idTxt, titulo)
-                views.setTextViewText(idFuente, fuente ?: "")
-                // Deep link al detalle si hay id. Usamos PendingIntent
-                // directo con ACTION_VIEW en vez de HomeWidgetBackground-
-                // Intent porque éste requiere un callback Dart registrado
-                // y arranca un Service que el user no necesita.
-                // requestCode distinto por item (widgetId*10+i) — si
-                // todos compartieran 0, Android actualiza el primero y
-                // los demás se pierden.
-                if (!idItem.isNullOrEmpty()) {
-                    val deepLink = Uri.parse("flavornews://items/$idItem")
-                    val intent = Intent(Intent.ACTION_VIEW, deepLink).apply {
-                        setPackage(context.packageName)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    val pending = PendingIntent.getActivity(
-                        context,
-                        widgetId * 10 + i,
-                        intent,
-                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                    views.setOnClickPendingIntent(idTxt, pending)
-                    views.setOnClickPendingIntent(idFuente, pending)
-                } else {
-                    // Sin id (p. ej. items personales): el slot es
-                    // visible pero no navegable. Limpiamos cualquier
-                    // PendingIntent previo que tuviera asignado.
-                    views.setOnClickPendingIntent(idTxt, null)
-                    views.setOnClickPendingIntent(idFuente, null)
-                }
-            } else {
-                views.setTextViewText(idTxt, "")
-                views.setTextViewText(idFuente, "")
-                // Slot vacío: limpiamos el click para que un PendingIntent
-                // de un titular anterior (cacheado por Android) no siga
-                // abriendo esa noticia fantasma al tocar zona vacía.
-                views.setOnClickPendingIntent(idTxt, null)
-                views.setOnClickPendingIntent(idFuente, null)
-            }
+        // Configurar el adaptador remoto del ListView. Cada widget pone
+        // su propio extra `appWidgetId` para que la factory pueda
+        // diferenciarse si hay varios widgets a la vez (no usado hoy
+        // pero estándar). El sistema invoca `onGetViewFactory` del
+        // service y pinta cada fila vía la factory.
+        val intentAdapter = Intent(context, TitularesRemoteViewsService::class.java).apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            // setData con un URI único por widget — sin esto, cuando hay
+            // varios widgets el sistema reutiliza la factory y los
+            // datos de uno se cuelan en el otro.
+            data = Uri.parse("widget://titulares/$widgetId")
         }
+        views.setRemoteAdapter(R.id.titulares_lista, intentAdapter)
+        views.setEmptyView(R.id.titulares_lista, R.id.widget_vacio)
 
-        // Estado visual del refresh — orden por prioridad:
-        //  - actualizando → "Actualizando…"
-        //  - error no vacío → "No se pudo actualizar: <error>"
-        //    (gana al vacío: si no hay titulares por fallo de red, el
-        //    usuario debe ver el motivo, no un genérico "sin titulares")
-        //  - sin nada pintado y sin error → "no hay titulares"
-        // Antes el orden invertido enmascaraba el fallo cuando además
-        // no había contenido que mostrar.
+        // PendingIntent template — el sistema lo combina con el
+        // `fillInIntent` que la factory pone en cada fila para abrir el
+        // detalle del titular pulsado.
+        //
+        // CLAVE: el template NO debe traer `data` propia. `Intent.fillIn()`
+        // sólo sobreescribe el `data` del template si el template tiene ese
+        // campo en null (ó si pasas FILL_IN_DATA explícitamente, cosa que
+        // RemoteViews no hace al merger). Si dejamos un placeholder
+        // (p.ej. "flavornews://items/") el sistema entrega ese URI sin id
+        // y la app sólo se abre. Sin `data` aquí + `data` en el fillIn de
+        // la factory → llega `flavornews://items/<id>` correctamente.
+        val intentTemplate = Intent(Intent.ACTION_VIEW).apply {
+            setPackage(context.packageName)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        // `FLAG_MUTABLE` (no `FLAG_IMMUTABLE`) — el sistema necesita
+        // modificar el intent al combinarlo con el fillInIntent de cada
+        // fila. Mutables son la excepción a la norma "siempre immutable":
+        // los templates de RemoteViews exigen mutabilidad.
+        val pendingTemplate = PendingIntent.getActivity(
+            context, widgetId * 10 + 8, intentTemplate,
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        views.setPendingIntentTemplate(R.id.titulares_lista, pendingTemplate)
+
+        // Estado del refresh — repintamos en la cabecera o como hint.
+        // Para no inflar el layout, sustituimos el texto del empty view
+        // por el mensaje de error o "actualizando" cuando la lista esté
+        // vacía. Cuando hay items, el ListView gana visibilidad y el
+        // empty view queda oculto automáticamente.
+        val widgetPrefs = HomeWidgetPlugin.getData(context)
         val recursos = IdiomaWidget.recursos(context)
-        val actualizando = prefs.getBoolean("titulares_actualizando", false)
-        val ultimoError = prefs.getString("titulares_ultimo_error", "") ?: ""
-        val textoEstado = when {
+        val actualizando = widgetPrefs.getBoolean("titulares_actualizando", false)
+        val ultimoError = widgetPrefs.getString("titulares_ultimo_error", "") ?: ""
+        val textoEmpty = when {
             actualizando -> recursos.getString(R.string.widget_titulares_actualizando)
             ultimoError.isNotEmpty() -> recursos.getString(
                 R.string.widget_titulares_error, ultimoError
             )
-            !algunoPintado -> recursos.getString(R.string.widget_titulares_vacio)
-            else -> ""
+            else -> recursos.getString(R.string.widget_titulares_vacio)
         }
-        if (textoEstado.isNotEmpty()) {
-            views.setTextViewText(R.id.widget_vacio, textoEstado)
-            views.setViewVisibility(R.id.widget_vacio, View.VISIBLE)
-        } else {
-            views.setViewVisibility(R.id.widget_vacio, View.GONE)
-        }
+        views.setTextViewText(R.id.widget_vacio, textoEmpty)
 
-        // Tap refrescar → broadcast a nosotros mismos (sin abrir la app).
-        // `onReceive` detecta la acción y hace una petición HTTP directa
-        // al backend en un thread Kotlin. Si el backend no responde, no
-        // pasa nada visible (las radios/sources/seed RSS de Dart no se
-        // ejercitan aquí — es un refresh de "lo que ve el backend ahora").
+        // Tap refrescar → broadcast a nosotros mismos.
         val intentRefrescar = Intent(context, TitularesWidgetProvider::class.java).apply {
             action = ACCION_REFRESCAR
         }
         val pendingRefrescar = PendingIntent.getBroadcast(
             context, widgetId * 10 + 9, intentRefrescar,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         views.setOnClickPendingIntent(R.id.widget_refrescar, pendingRefrescar)
 
+        // Tap en la cabecera abre la app principal.
         val intentAbrir = Intent(context, MainActivity::class.java)
         val pendingAbrir = PendingIntent.getActivity(
             context, 0, intentAbrir,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         views.setOnClickPendingIntent(R.id.widget_titulo, pendingAbrir)
 
@@ -149,26 +125,16 @@ class TitularesWidgetProvider : AppWidgetProvider() {
             context,
             views,
             idFondo = R.id.widget_root,
-            idsTextoPrincipal = listOf(
-                R.id.widget_titulo,
-                R.id.titular_1, R.id.titular_2, R.id.titular_3,
-            ),
-            idsTextoSecundario = listOf(
-                R.id.titular_1_fuente, R.id.titular_2_fuente, R.id.titular_3_fuente,
-                R.id.widget_vacio,
-            ),
+            idsTextoPrincipal = listOf(R.id.widget_titulo),
+            idsTextoSecundario = listOf(R.id.widget_vacio),
         )
 
         appWidgetManager.updateAppWidget(widgetId, views)
+        // Notificar a la factory que sus datos pueden haber cambiado —
+        // sin esto el ListView no recarga aunque cambien las prefs.
+        appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.titulares_lista)
     }
 
-    /**
-     * Permite a Flutter forzar un redraw: `HomeWidget.updateWidget(...)`
-     * envía un broadcast que cae aquí y reejecuta `onUpdate`. El plugin
-     * home_widget no usa exactamente `ACTION_APPWIDGET_UPDATE` sino su
-     * propia acción, así que aceptamos cualquier broadcast dirigido a
-     * nuestro provider y forzamos re-render.
-     */
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("TitularesWidget", "onReceive action=${intent.action}")
         super.onReceive(context, intent)
@@ -184,7 +150,7 @@ class TitularesWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
+        appWidgetIds: IntArray,
     ) {
         Log.d("TitularesWidget", "onUpdate widgets=${appWidgetIds.size}")
         for (widgetId in appWidgetIds) {
@@ -225,15 +191,6 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                     return@Thread
                 }
                 val base = urlBase.trimEnd('/')
-                // Replicamos los filtros que la app aplica al feed:
-                //  - territory: "Mi territorio" del usuario.
-                //  - language: política central de idioma de contenido
-                //    (ver `politica_idioma_contenido.dart`). Sólo se
-                //    persisten las claves desde la app si el modo
-                //    elegido no es "desactivado".
-                // Sin esto, el widget refrescaba con feed crudo y podía
-                // mostrar titulares en idiomas/territorios distintos a
-                // los que el usuario ve dentro de la app.
                 val parametros = StringBuilder("per_page=20&exclude_source_type=video,youtube,podcast")
                 val territorioBase = prefs.getString("flutter.fnh.pref.territorioBase", "") ?: ""
                 if (territorioBase.isNotBlank()) {
@@ -267,17 +224,18 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                 ) ?: emptySet()
                 val bloqueadas: Set<Int> = bloqueadasRaw.mapNotNull { it.toIntOrNull() }.toSet()
 
+                val maximoSlots = 10
                 val filtrados = mutableListOf<JSONObject>()
                 for (i in 0 until items.length()) {
                     val it = items.getJSONObject(i)
                     val idSrc = it.optJSONObject("source")?.optInt("id") ?: 0
                     if (idSrc > 0 && bloqueadas.contains(idSrc)) continue
                     filtrados.add(it)
-                    if (filtrados.size >= 3) break
+                    if (filtrados.size >= maximoSlots) break
                 }
 
                 val editor = widgetPrefs.edit()
-                for (i in 0 until 3) {
+                for (i in 0 until maximoSlots) {
                     val slot = i + 1
                     if (i < filtrados.size) {
                         val item = filtrados[i]
@@ -287,10 +245,12 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                             item.optJSONObject("source")?.optString("name", "") ?: "",
                         )
                         editor.putString("titular_${slot}_id", item.optInt("id").toString())
+                        editor.putString("titular_${slot}_imagen", item.optString("media_url", ""))
                     } else {
                         editor.putString("titular_${slot}_titulo", "")
                         editor.putString("titular_${slot}_fuente", "")
                         editor.putString("titular_${slot}_id", "")
+                        editor.putString("titular_${slot}_imagen", "")
                     }
                 }
                 editor.apply()
@@ -298,9 +258,6 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                 errorMensaje = e.message ?: "error desconocido"
                 Log.w("TitularesWidget", "refresh fallo: $errorMensaje")
             } finally {
-                // Apagar flag "actualizando" y guardar último error (si
-                // hubo) para que el widget pueda pintar un indicador
-                // discreto sin sustituir el contenido anterior.
                 widgetPrefs.edit()
                     .putBoolean("titulares_actualizando", false)
                     .putString("titulares_ultimo_error", errorMensaje ?: "")
@@ -353,13 +310,10 @@ class TitularesWidgetProvider : AppWidgetProvider() {
             "desactivado" -> emptyList()
             "manual" -> manuales
             else -> {
-                val codigoUi = prefs.getString("flutter.fnh.pref.localeCode", null)
-                val efectivo = if (!codigoUi.isNullOrBlank()) {
-                    codigoUi
-                } else {
-                    Locale.getDefault().language
-                }
-                if (soportados.contains(efectivo)) listOf(efectivo) else emptyList()
+                val idiomaUi = prefs.getString("flutter.fnh.pref.localeCode", null)
+                val codigoEfectivo = idiomaUi?.takeIf { it.isNotBlank() && soportados.contains(it) }
+                    ?: java.util.Locale.getDefault().language.lowercase()
+                if (soportados.contains(codigoEfectivo)) listOf(codigoEfectivo) else emptyList()
             }
         }
     }

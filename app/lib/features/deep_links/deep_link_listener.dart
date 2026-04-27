@@ -11,7 +11,9 @@ import '../radios/data/reproductor_radio_notifier.dart';
 ///
 /// Patrones soportados:
 ///   flavornews://radios/play/<id>  → navega a /audio y arranca esa radio
+///   flavornews://radios/stop       → detiene la radio que esté sonando
 ///   flavornews://items/<id>        → abre el detalle de ese item
+///   flavornews://search            → abre el buscador
 ///
 /// Se registra una sola vez al arrancar la app. El canal nativo vive en
 /// `MainActivity.kt` y expone dos caminos: `getInitial` para cold-start y
@@ -60,7 +62,7 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
       return;
     }
 
-    // Ruta `radios/play/<id>`: uri.host == 'radios'; uri.path == '/play/<id>'
+    // Ruta `radios/play/<id>` o `radios/stop`: uri.host == 'radios'.
     if (uri.host == 'radios') {
       final segmentos = uri.pathSegments;
       if (segmentos.length == 2 && segmentos[0] == 'play') {
@@ -69,6 +71,10 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
           _lanzarRadio(idRadio);
           return;
         }
+      }
+      if (segmentos.length == 1 && segmentos[0] == 'stop') {
+        _detenerRadio();
+        return;
       }
     }
 
@@ -131,8 +137,17 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
       );
       if (radio.id != idRadio) return; // no existe en esta instancia.
       if (!mounted) return;
-      await ref.read(reproductorRadioProvider.notifier).alternar(radio);
+      // `reproducir` (no `alternar`) porque el deep link siempre
+      // significa "play esta emisora": el botón ▶ del widget no debería
+      // parar la reproducción si el usuario lo pulsa con la radio ya
+      // sonando — para parar tiene el botón ■ que dispara radios/stop.
+      await ref.read(reproductorRadioProvider.notifier).reproducir(radio);
     });
+  }
+
+  Future<void> _detenerRadio() async {
+    if (!mounted) return;
+    await ref.read(reproductorRadioProvider.notifier).parar();
   }
 
   @override

@@ -11,9 +11,9 @@ use FlavorNewsHub\Support\Transients;
  * URL de descarga, changelog, flag opcional de "obligatorio").
  *
  * Fuente de verdad: la última release del repo GitHub del proyecto.
- * Cacheado en un transient de 6h para no golpear la API de GitHub en
- * cada arranque de cada app. Si la release no expone un asset `.apk`,
- * respondemos `update_available: false`.
+ * Cacheado en un transient (TTL en `Transients::CACHE_RELEASE_GITHUB`)
+ * para no golpear la API de GitHub en cada arranque de cada app. Si la
+ * release no expone un asset `.apk`, respondemos `update_available: false`.
  *
  * Reutiliza `Flavor_GitHub_Release_API` si Flavor Platform está activo
  * (comparte cache, rate-limit y token opcional `FLAVOR_GH_TOKEN`).

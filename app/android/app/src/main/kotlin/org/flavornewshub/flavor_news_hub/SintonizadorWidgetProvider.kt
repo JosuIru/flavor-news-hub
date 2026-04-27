@@ -7,12 +7,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
-import es.antonborri.home_widget.HomeWidgetBackgroundIntent
+import androidx.core.content.ContextCompat
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONArray
-import java.net.URLEncoder
 import kotlin.random.Random
 
 /**
@@ -21,9 +21,20 @@ import kotlin.random.Random
  * actual vive en SharedPreferences del propio widget.
  *
  * ◄ / ► disparan broadcast al propio provider → cambia el índice y
- * redibuja. Play ejecuta deep link `flavornews://radios/play/<id>`
- * que abre la app y arranca la radio con el reproductor existente.
- * Stop abre la app con un link especial que detiene la radio.
+ * redibuja. Si hay reproducción activa, además relanza el play con la
+ * nueva emisora.
+ *
+ * ▶ / ■ usan `RadioService` (servicio Android nativo foreground tipo
+ * mediaPlayback). El servicio reproduce el stream con `MediaPlayer`
+ * directamente — sin pasar por Flutter — y vive indefinidamente
+ * mientras la radio suene. Antes usábamos un callback Dart en isolate
+ * background (`HomeWidgetBackgroundIntent`) y `just_audio_background`,
+ * pero el `JobService` que aloja al callback tiene tiempo limitado y
+ * Android terminaba matando el `FlutterEngine` background → el audio
+ * se cortaba al rato sin razón aparente.
+ *
+ * Tap en el dial abre la app en /audio (deep link clásico — para "ver
+ * más" de la emisora).
  *
  * Flutter empuja la lista de radios activas como JSON en la clave
  * `sintonizador_radios` (`WidgetSintonizadorWriter`).
@@ -37,15 +48,27 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         const val CLAVE_RADIOS = "sintonizador_radios"
         const val CLAVE_REPRODUCIENDO = "sintonizador_reproduciendo_id"
         const val CLAVE_ESTADO = "sintonizador_estado"
+        // StreamTitle ICY actual (lo escribe RadioService cuando recibe
+        // metadatos del servidor Icecast/Shoutcast). Vacío si la emisora
+        // no expone metadatos o todavía no han llegado.
+        const val CLAVE_PROGRAMA = "sintonizador_programa"
+        // "app" → reproduce el AudioPlayer principal (just_audio_background).
+        // "servicio" → reproduce RadioService nativo del widget.
+        // "" → nada sonando.
+        const val CLAVE_FUENTE = "sintonizador_fuente"
+        const val FUENTE_APP = "app"
+        const val FUENTE_SERVICIO = "servicio"
         const val NUM_LEDS = 10
         const val LARGO_VU = 9
 
         // Paleta del dial: dos estados (apagado / encendido) — los aplica
-        // el provider con setTextColor en runtime.
-        private const val COLOR_LEDS_APAGADOS = 0xFF8A6634.toInt()
+        // el provider con setTextColor en runtime. Tonos elegidos para que
+        // el estado apagado destaque sobre el fondo de madera oscura
+        // (#2a1a08 aprox.) sin competir con el ámbar/rojo encendidos.
+        private const val COLOR_LEDS_APAGADOS = 0xFFB58850.toInt()
         private const val COLOR_LEDS_ENCENDIDOS = 0xFFFFC870.toInt()
-        private const val COLOR_AGUJA_APAGADA = 0xFF7A2A2A.toInt()
-        private const val COLOR_AGUJA_ENCENDIDA = 0xFFFF3838.toInt()
+        private const val COLOR_AGUJA_APAGADA = 0xFFB54040.toInt()
+        private const val COLOR_AGUJA_ENCENDIDA = 0xFFFF4040.toInt()
 
         // Glifos para el botón ▶: cambia a `…` mientras carga el stream.
         private const val GLIFO_PLAY = "▶"
@@ -100,36 +123,76 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val radios = obtenerRadios(context)
         if (radios.isEmpty()) return
         val prefs = HomeWidgetPlugin.getData(context)
-        val actual = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
-        val nuevo = ((actual + delta) % radios.size + radios.size) % radios.size
-        prefs.edit().putInt(CLAVE_INDICE, nuevo).apply()
+        val indiceActual = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
+        val indiceNuevo = ((indiceActual + delta) % radios.size + radios.size) % radios.size
+        prefs.edit().putInt(CLAVE_INDICE, indiceNuevo).apply()
 
-        // Si ya hay radio sonando (marca escrita por el callback Dart
-        // al reproducir), disparar play de la nueva emisora — así ◄/►
-        // funciona como "cambiar de emisora en directo" sin pasar por
-        // el botón ▶. Si el widget está parado, sólo cambiamos el dial.
-        val reproduciendo = prefs.getString("sintonizador_reproduciendo_id", "") ?: ""
-        if (reproduciendo.isNotEmpty()) {
-            val nuevaRadio = radios[nuevo]
-            val urlCodificada = URLEncoder.encode(nuevaRadio.streamUrl, "UTF-8")
-            val tituloCodificado = URLEncoder.encode(nuevaRadio.nombre, "UTF-8")
-            val uriPlay = Uri.parse(
-                "flavornews://sintonizador/play?id=${nuevaRadio.id}&url=$urlCodificada&titulo=$tituloCodificado"
-            )
-            try {
-                HomeWidgetBackgroundIntent.getBroadcast(context, uriPlay).send()
-            } catch (_: Exception) {
-                // send() puede lanzar PendingIntent.CanceledException en
-                // race conditions — ignoramos y el usuario re-pulsa.
+        // Si hay reproducción activa, ◄/► funciona como "cambiar de
+        // emisora en directo". Cómo cambiar depende de quién está
+        // reproduciendo (la app principal o nuestro servicio nativo) —
+        // si delegáramos siempre al servicio cuando el dueño es la
+        // app, dispararíamos un segundo stream paralelo al que ya
+        // suena en just_audio_background.
+        val reproduciendoId = prefs.getString(CLAVE_REPRODUCIENDO, "") ?: ""
+        if (reproduciendoId.isNotEmpty()) {
+            val radioNueva = radios[indiceNuevo]
+            val fuenteActual = prefs.getString(CLAVE_FUENTE, "") ?: ""
+            if (fuenteActual == FUENTE_APP) {
+                // Delegamos en la app: deep link a /audio con la nueva
+                // emisora. La activity captura el URI por onNewIntent y
+                // su DeepLinkListener llama a `reproducir(radio)` en el
+                // AudioPlayer principal. Ningún stream paralelo.
+                cambiarEmisoraEnApp(context, radioNueva.id)
+            } else {
+                // No hay app reproduciendo (fuente vacía o "servicio"):
+                // arrancamos / relanzamos el servicio nativo con la
+                // nueva URL. Internamente para el stream anterior.
+                iniciarServicioPlay(context, radioNueva)
             }
         }
 
         // Forzar redibujado inmediato del widget.
-        val mgr = AppWidgetManager.getInstance(context)
-        val ids = mgr.getAppWidgetIds(
+        val gestorWidget = AppWidgetManager.getInstance(context)
+        val idsWidgets = gestorWidget.getAppWidgetIds(
             ComponentName(context, SintonizadorWidgetProvider::class.java)
         )
-        if (ids.isNotEmpty()) onUpdate(context, mgr, ids)
+        if (idsWidgets.isNotEmpty()) onUpdate(context, gestorWidget, idsWidgets)
+    }
+
+    /**
+     * Lanza un Intent al `RadioService` para que reproduzca la emisora
+     * indicada. Usa `startForegroundService` desde Android O en adelante
+     * (requisito del sistema; el servicio tiene 5 s para llamar
+     * `startForeground` o se mata).
+     */
+    private fun iniciarServicioPlay(context: Context, radio: Radio) {
+        val intent = Intent(context, RadioService::class.java).apply {
+            action = RadioService.ACCION_PLAY
+            putExtra(RadioService.EXTRA_URL, radio.streamUrl)
+            putExtra(RadioService.EXTRA_TITULO, radio.nombre)
+            putExtra(RadioService.EXTRA_ID_RADIO, radio.id.toString())
+        }
+        ContextCompat.startForegroundService(context, intent)
+    }
+
+    /**
+     * Cambia la emisora reproduciendo en el AudioPlayer principal de la
+     * app via deep link. Usado por ◄/► del widget cuando la fuente
+     * actual es `FUENTE_APP`. La activity ya está abierta en ese caso —
+     * el deep link sólo dispara `onNewIntent`, no abre nueva pantalla.
+     */
+    private fun cambiarEmisoraEnApp(context: Context, idRadio: Int) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("flavornews://radios/play/$idRadio")).apply {
+            setPackage(context.packageName)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        try {
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            // ActivityNotFound no debería pasar (paquete propio); si lo
+            // hace, no rompemos el widget — el dial se queda en el
+            // nuevo índice y el siguiente click puede recuperarse.
+        }
     }
 
     private fun actualizarUno(
@@ -144,12 +207,13 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         if (radios.isEmpty()) {
             views.setTextViewText(R.id.sintonizador_nombre, IdiomaWidget.recursos(context).getString(R.string.widget_sintonizador_sin_radios))
             views.setTextViewText(R.id.sintonizador_territorio, "")
-            views.setTextViewText(R.id.sintonizador_leds, repeatCompat("· ", NUM_LEDS).trim())
+            views.setTextViewText(R.id.sintonizador_leds, repetirCompat("· ", NUM_LEDS).trim())
             views.setTextViewText(R.id.sintonizador_aguja, "")
             views.setTextColor(R.id.sintonizador_leds, COLOR_LEDS_APAGADOS)
             views.setTextColor(R.id.sintonizador_aguja, COLOR_AGUJA_APAGADA)
             views.setViewVisibility(R.id.sintonizador_cargando, View.GONE)
             views.setViewVisibility(R.id.sintonizador_vu, View.GONE)
+            views.setViewVisibility(R.id.sintonizador_programa, View.GONE)
             views.setTextViewText(R.id.sintonizador_btn_play, GLIFO_PLAY)
             appWidgetManager.updateAppWidget(widgetId, views)
             return
@@ -158,7 +222,8 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val indice = prefs.getInt(CLAVE_INDICE, 0).coerceIn(0, radios.size - 1)
         val radio = radios[indice]
         val idRadio = radio.id
-        // Estado del playback (lo escribe el callback Dart). Tres valores:
+        // Estado del playback (lo escribe el RadioService al cambiar).
+        // Tres valores:
         //   "cargando"     → buffereando; barra de progreso visible,
         //                     botón ▶ → `…`, dial todavía apagado.
         //   "reproduciendo"→ stream sonando; LEDs ámbar, VU falso visible.
@@ -191,12 +256,24 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         if (sonando) {
             views.setTextViewText(R.id.sintonizador_vu, construirVu(idRadio))
         }
+
+        // Programa actual: visible sólo si está sonando Y el ICY del
+        // stream nos dio un título. Cuando la emisora no expone metadatos
+        // o todavía no han llegado, dejamos la línea oculta para no
+        // mover la maquetación con un hueco vacío.
+        val programa = (prefs.getString(CLAVE_PROGRAMA, "") ?: "").trim()
+        if (sonando && programa.isNotEmpty()) {
+            views.setTextViewText(R.id.sintonizador_programa, programa)
+            views.setViewVisibility(R.id.sintonizador_programa, View.VISIBLE)
+        } else {
+            views.setViewVisibility(R.id.sintonizador_programa, View.GONE)
+        }
         views.setTextViewText(
             R.id.sintonizador_btn_play,
             if (cargando) GLIFO_CARGANDO else GLIFO_PLAY,
         )
 
-        // Botón anterior → broadcast ACCION_ANTERIOR.
+        // Botón anterior → broadcast al propio provider.
         val intentAnt = Intent(context, SintonizadorWidgetProvider::class.java).apply { action = ACCION_ANTERIOR }
         val pAnt = PendingIntent.getBroadcast(
             context, widgetId * 10 + 1, intentAnt,
@@ -204,7 +281,7 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.sintonizador_btn_anterior, pAnt)
 
-        // Botón siguiente → broadcast ACCION_SIGUIENTE.
+        // Botón siguiente → broadcast al propio provider.
         val intentSig = Intent(context, SintonizadorWidgetProvider::class.java).apply { action = ACCION_SIGUIENTE }
         val pSig = PendingIntent.getBroadcast(
             context, widgetId * 10 + 2, intentSig,
@@ -212,20 +289,39 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.sintonizador_btn_siguiente, pSig)
 
-        // Botón play → HomeWidgetBackgroundIntent que dispara el
-        // callback Dart del widget (registrado en main.dart) en un
-        // isolate background, sin abrir la app. El callback arranca
-        // AudioPlayer con la URL del stream.
-        val urlCodificada = URLEncoder.encode(radio.streamUrl, "UTF-8")
-        val tituloCodificado = URLEncoder.encode(radio.nombre, "UTF-8")
-        val uriPlay = Uri.parse(
-            "flavornews://sintonizador/play?id=$idRadio&url=$urlCodificada&titulo=$tituloCodificado"
+        // Botón play → arranca RadioService en foreground con la URL del
+        // stream. El servicio vive independientemente y mantiene la radio
+        // sonando aunque el widget se redibuje o el sistema recicle el
+        // proceso de la app — sigue siendo "sin abrir la app".
+        val intentPlay = Intent(context, RadioService::class.java).apply {
+            action = RadioService.ACCION_PLAY
+            putExtra(RadioService.EXTRA_URL, radio.streamUrl)
+            putExtra(RadioService.EXTRA_TITULO, radio.nombre)
+            putExtra(RadioService.EXTRA_ID_RADIO, idRadio.toString())
+        }
+        val pPlay = pendingIntentForegroundService(
+            context,
+            // requestCode único por (widget, emisora) — sin esto Android
+            // reusa un PendingIntent cacheado de la emisora anterior y al
+            // pulsar ▶ con otra radio el sistema dispara el viejo Intent.
+            widgetId * 1_000_000 + idRadio,
+            intentPlay,
         )
-        val pPlay = HomeWidgetBackgroundIntent.getBroadcast(context, uriPlay)
         views.setOnClickPendingIntent(R.id.sintonizador_btn_play, pPlay)
 
-        // Tap en el display abre la app (comportamiento clásico:
-        // "ver más" lleva al sitio detallado). Mantenemos el deep link.
+        // Botón stop → manda ACCION_STOP al servicio. Si no hay servicio
+        // corriendo el Intent es no-op (Android lo entrega y el servicio
+        // se levanta sólo para procesarlo y morirse).
+        val intentStop = Intent(context, RadioService::class.java).apply {
+            action = RadioService.ACCION_STOP
+        }
+        val pStop = PendingIntent.getService(
+            context, widgetId * 10 + 4, intentStop,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        views.setOnClickPendingIntent(R.id.sintonizador_btn_stop, pStop)
+
+        // Tap en el display abre la app en /audio (deep link clásico).
         val intentDial = Intent(Intent.ACTION_VIEW, Uri.parse("flavornews://radios/play/$idRadio")).apply {
             setPackage(context.packageName)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -236,13 +332,25 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.sintonizador_dial, pDial)
 
-        // Botón stop → HomeWidgetBackgroundIntent → callback Dart
-        // detiene el AudioPlayer del widget. También sin abrir la app.
-        val uriStop = Uri.parse("flavornews://sintonizador/stop")
-        val pStop = HomeWidgetBackgroundIntent.getBroadcast(context, uriStop)
-        views.setOnClickPendingIntent(R.id.sintonizador_btn_stop, pStop)
-
         appWidgetManager.updateAppWidget(widgetId, views)
+    }
+
+    /**
+     * `PendingIntent.getForegroundService` sólo existe desde API 26. En
+     * versiones anteriores `getService` funciona porque el sistema no
+     * exige el flag de foreground en el Intent.
+     */
+    private fun pendingIntentForegroundService(
+        context: Context,
+        requestCode: Int,
+        intent: Intent,
+    ): PendingIntent {
+        val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            PendingIntent.getForegroundService(context, requestCode, intent, flags)
+        } else {
+            PendingIntent.getService(context, requestCode, intent, flags)
+        }
     }
 
     /**
@@ -290,5 +398,5 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private fun repeatCompat(s: String, n: Int): String = buildString { repeat(n) { append(s) } }
+    private fun repetirCompat(s: String, n: Int): String = buildString { repeat(n) { append(s) } }
 }

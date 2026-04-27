@@ -43,15 +43,24 @@ class EstadoActualizacion {
 ///    "Comprobar actualizaciones" de Ajustes — sin esto, el usuario
 ///    pulsaba el botón y seguía recibiendo la versión vieja del
 ///    transient backend hasta que expirase.
+/// Canal por defecto. Hoy no hay UI para conmutar a `beta`; cuando se
+/// añada, este valor saldrá de preferencias y el cache cliente se
+/// segmentará automáticamente porque las claves llevan el canal en su
+/// nombre.
+const String _canalActualPorDefecto = 'stable';
+
 final actualizacionProvider =
     FutureProvider.family<EstadoActualizacion, bool>((ref, forzar) async {
   final prefs = ref.watch(sharedPreferencesProvider);
   final ahora = DateTime.now().toUtc();
+  const canalActual = _canalActualPorDefecto;
+  final claveResultado = _ClavesPref.ultimoResultadoPorCanal(canalActual);
+  final claveTimestamp = _ClavesPref.ultimoTimestampPorCanal(canalActual);
 
   // Cache cliente: respetamos a no ser que se haya pedido `forzar`.
   if (!forzar) {
-    final cacheadoRaw = prefs.getString(_ClavesPref.ultimoResultado);
-    final cacheadoTs = prefs.getInt(_ClavesPref.ultimoTimestamp) ?? 0;
+    final cacheadoRaw = prefs.getString(claveResultado);
+    final cacheadoTs = prefs.getInt(claveTimestamp) ?? 0;
     final tieneCacheValido =
         cacheadoRaw != null && ahora.millisecondsSinceEpoch - cacheadoTs < _ttlMs;
     if (tieneCacheValido) {
@@ -72,7 +81,7 @@ final actualizacionProvider =
     queryParameters: {
       'version': info.version,
       'platform': 'android',
-      'channel': 'stable',
+      'channel': canalActual,
       if (forzar) 'refresh': '1',
     },
   );
@@ -88,11 +97,8 @@ final actualizacionProvider =
     if (cuerpo is! Map<String, dynamic>) {
       return EstadoActualizacion.sinActualizacion;
     }
-    await prefs.setString(_ClavesPref.ultimoResultado, respuesta.body);
-    await prefs.setInt(
-      _ClavesPref.ultimoTimestamp,
-      ahora.millisecondsSinceEpoch,
-    );
+    await prefs.setString(claveResultado, respuesta.body);
+    await prefs.setInt(claveTimestamp, ahora.millisecondsSinceEpoch);
     return _parsear(respuesta.body, prefs) ??
         EstadoActualizacion.sinActualizacion;
   } catch (error) {
@@ -116,10 +122,21 @@ EstadoActualizacion? _parsear(String raw, SharedPreferences prefs) {
       // El usuario ya dijo "no ahora" para esta versión exacta.
       return EstadoActualizacion.sinActualizacion;
     }
+    final urlDescarga = (data['download_url'] ?? '').toString();
+    // Defensa-en-profundidad: si el backend está comprometido (o un MITM
+    // en una conexión HTTP — el usuario puede haber configurado una
+    // instancia self-host sin TLS), la URL de descarga podría apuntar a
+    // un APK malicioso. Forzamos que sea HTTPS en github.com — el origen
+    // canónico de las releases. Quien fork-ee a otro host tendrá que
+    // modificar también esta lista.
+    if (!urlDescargaParecesegura(urlDescarga)) {
+      debugPrint('[Actualizaciones] URL descarga rechazada: $urlDescarga');
+      return EstadoActualizacion.sinActualizacion;
+    }
     return EstadoActualizacion(
       hayActualizacion: true,
       versionRemota: versionRemota,
-      urlDescarga: (data['download_url'] ?? '').toString(),
+      urlDescarga: urlDescarga,
       urlRelease: (data['release_url'] ?? '').toString(),
       changelog: (data['changelog'] ?? '').toString(),
       esObligatoria: data['is_mandatory'] == true,
@@ -128,6 +145,17 @@ EstadoActualizacion? _parsear(String raw, SharedPreferences prefs) {
     debugPrint('[Actualizaciones] parseo falló: $error');
     return null;
   }
+}
+
+/// Lista blanca mínima del origen del APK: HTTPS y dominio github.com.
+/// Pública para que `AvisoActualizacion` pueda re-validar antes de
+/// descargar — la respuesta del backend pudo cachearse antes de que
+/// añadiéramos esta validación.
+bool urlDescargaParecesegura(String url) {
+  final parsed = Uri.tryParse(url);
+  if (parsed == null) return false;
+  if (parsed.scheme != 'https') return false;
+  return parsed.host == 'github.com' || parsed.host.endsWith('.github.com');
 }
 
 /// Marca una versión como "descartada por el usuario". No se le volverá
@@ -142,8 +170,16 @@ Future<void> descartarActualizacion(
 }
 
 class _ClavesPref {
-  static const ultimoResultado = 'fnh.pref.actualizacion.respuesta';
-  static const ultimoTimestamp = 'fnh.pref.actualizacion.ts';
+  // El cache cliente se segmenta por canal — sin esto, conmutar entre
+  // stable y beta servía la respuesta cacheada del otro hasta 30 min.
+  // Hoy sólo se usa `stable` pero el sufijo está listo para cuando se
+  // añada UI de canal en preferencias.
+  static String ultimoResultadoPorCanal(String canal) =>
+      'fnh.pref.actualizacion.respuesta.$canal';
+  static String ultimoTimestampPorCanal(String canal) =>
+      'fnh.pref.actualizacion.ts.$canal';
+  // La versión descartada por el usuario es identificación absoluta
+  // (semver) — no varía por canal.
   static const versionDescartada = 'fnh.pref.actualizacion.descartada';
 }
 

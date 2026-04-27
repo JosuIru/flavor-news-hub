@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Layout de cada fila del ListView del widget de titulares.
+  Texto a la izquierda (título 2 líneas + fuente), miniatura cuadrada a
+  la derecha que se oculta si el item no trae imagen.
+
+  La altura mínima del root garantiza un área tappable cómoda aunque
+  el título sea de una sola línea.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/titular_item_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="10dp"
+    android:minHeight="64dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Sin `textColor` aquí: el atributo `?android:attr/textColor*`
+             resolvía contra el tema del launcher (no del widget), saliendo
+             negro sobre el fondo oscuro del widget. La factory aplica
+             el color en runtime según el modo claro/oscuro del sistema
+             vía `setTextColor`. -->
+        <TextView
+            android:id="@+id/titular_item_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/titular_item_fuente"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:paddingTop="2dp" />
+
+    </LinearLayout>
+
+    <!-- Miniatura: se oculta vía setViewVisibility(GONE) cuando el item
+         no tiene imagen o la descarga falló. ScaleType=centerCrop para
+         recortar al cuadrado sin deformar. -->
+    <ImageView
+        android:id="@+id/titular_item_imagen"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="10dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+</LinearLayout>

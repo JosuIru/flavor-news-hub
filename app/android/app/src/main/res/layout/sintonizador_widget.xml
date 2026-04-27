@@ -84,6 +84,24 @@
                 android:fontFamily="monospace"
                 android:paddingTop="2dp" />
 
+            <!-- Programa actual (ICY StreamTitle del stream Icecast). Se
+                 muestra sólo cuando el servidor expone metadatos y el
+                 RadioService los recibe. Ámbar más tenue que el nombre de
+                 emisora para no competir con él. -->
+            <TextView
+                android:id="@+id/sintonizador_programa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:textColor="#e8b870"
+                android:textSize="10sp"
+                android:fontFamily="monospace"
+                android:textStyle="italic"
+                android:visibility="gone"
+                android:paddingTop="2dp" />
+
             <!-- VU "decorativo": aparece sólo en reproducción, distinto en
                  cada redibujado (cambio de emisora, pulsación de ◄/►).
                  RemoteViews no permite animación continua; nos vale el
@@ -119,20 +137,30 @@
                 android:id="@+id/sintonizador_leds"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#8a6634"
-                android:textSize="13sp"
+                android:textColor="#b58850"
+                android:textSize="17sp"
+                android:textStyle="bold"
                 android:fontFamily="monospace"
                 android:letterSpacing="0.3"
+                android:shadowColor="#000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="2"
                 android:text="· · · · · · · · · ·" />
 
             <TextView
                 android:id="@+id/sintonizador_aguja"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#7a2a2a"
-                android:textSize="13sp"
+                android:textColor="#b54040"
+                android:textSize="17sp"
+                android:textStyle="bold"
                 android:fontFamily="monospace"
                 android:letterSpacing="0.3"
+                android:shadowColor="#3a0000"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="4"
                 android:text=" " />
         </FrameLayout>
 
@@ -204,47 +232,40 @@
          parezca tapa atornillada de mueble vintage. Cosmético — no
          tienen click ni cambian de estado. -->
     <ImageView
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
         android:layout_gravity="top|start"
-        android:layout_margin="5dp"
+        android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
 
     <ImageView
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
         android:layout_gravity="top|end"
-        android:layout_margin="5dp"
+        android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
 
     <ImageView
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
         android:layout_gravity="bottom|start"
-        android:layout_margin="5dp"
+        android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
 
     <ImageView
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
         android:layout_gravity="bottom|end"
-        android:layout_margin="5dp"
+        android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
 
-    <!-- Antena telescópica decorativa: vector estático en la esquina
-         superior derecha, ocupa la franja del marco y la zona de la
-         cabecera (que está centrada, así no chocan). -->
-    <ImageView
-        android:layout_width="24dp"
-        android:layout_height="36dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/sintonizador_antena"
-        android:contentDescription="@null" />
+    <!-- (La antena decorativa se quitó: en la mayoría de launchers se
+         salía del área visible del widget, y ampliar el bleed para que
+         entrera empujaba el dial al centro. Sin la antena el chasis se
+         lee mejor.) -->
 
 </FrameLayout>

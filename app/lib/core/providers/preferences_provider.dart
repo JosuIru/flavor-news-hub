@@ -94,7 +94,18 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 });
 
 class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
-  PreferenciasNotifier(this._sharedPrefs) : super(_leerEstadoInicial(_sharedPrefs));
+  PreferenciasNotifier(this._sharedPrefs) : super(_leerEstadoInicial(_sharedPrefs)) {
+    // Persistimos la URL del backend en disco si no estaba — los widgets
+    // Android (Titulares, Sintonizador, etc.) leen `flutter.fnh.pref.backendUrl`
+    // directamente de SharedPreferences desde Kotlin, sin pasar por
+    // Riverpod. Si el usuario no editó la URL nunca, la clave no
+    // existía y el widget mostraba "backend no configurado" aunque la
+    // app sí funcionaba con el default.
+    final urlPersistida = _sharedPrefs.getString(_Claves.backendUrl);
+    if (urlPersistida == null || urlPersistida.trim().isEmpty) {
+      _sharedPrefs.setString(_Claves.backendUrl, state.urlInstanciaBackend);
+    }
+  }
 
   final SharedPreferences _sharedPrefs;
 

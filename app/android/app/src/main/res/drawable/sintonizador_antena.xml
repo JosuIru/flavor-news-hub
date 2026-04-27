@@ -2,36 +2,53 @@
 <!-- Antena telescópica vintage: línea diagonal desde la zona superior
      derecha del marco hacia arriba, con una bolita en la punta.
      Vector drawable estático (RemoteViews no permite rotación), todo
-     en cobre con sombra ligera para integrarse con los botones. -->
+     en cobre con sombra ligera para integrarse con los botones.
+     Trazos engordados respecto a la versión inicial: con grosor fino
+     se camuflaba contra el fondo de madera. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="32dp"
-    android:height="44dp"
-    android:viewportWidth="32"
-    android:viewportHeight="44">
+    android:width="40dp"
+    android:height="60dp"
+    android:viewportWidth="40"
+    android:viewportHeight="60">
+
+    <!-- Sombra del cuerpo principal: trazo más oscuro debajo del cobre
+         para dar contraste contra fondos claros y oscuros por igual. -->
+    <path
+        android:strokeColor="#1a0f04"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M12,52 L24,24" />
+    <path
+        android:strokeColor="#1a0f04"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M24,24 L34,4" />
 
     <!-- Base de la antena (anclaje al chasis) -->
     <path
         android:fillColor="#3a2410"
-        android:pathData="M6,38 L14,38 L13,44 L7,44 Z" />
+        android:strokeColor="#1a0f04"
+        android:strokeWidth="0.5"
+        android:pathData="M8,52 L18,52 L17,60 L9,60 Z" />
 
     <!-- Cuerpo telescópico, dos tramos: más grueso abajo, más fino
          arriba para sugerir tramos extensibles. -->
     <path
-        android:strokeColor="#c69b58"
-        android:strokeWidth="2.5"
+        android:strokeColor="#e0b87a"
+        android:strokeWidth="3.5"
         android:strokeLineCap="round"
-        android:pathData="M10,38 L18,18" />
+        android:pathData="M12,52 L24,24" />
 
     <path
-        android:strokeColor="#d4a86a"
-        android:strokeWidth="1.6"
+        android:strokeColor="#f0d89a"
+        android:strokeWidth="2.2"
         android:strokeLineCap="round"
-        android:pathData="M18,18 L26,4" />
+        android:pathData="M24,24 L34,4" />
 
     <!-- Bolita en la punta -->
     <path
-        android:fillColor="#f0d89a"
-        android:strokeColor="#3a2410"
-        android:strokeWidth="0.5"
-        android:pathData="M26,4 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0" />
+        android:fillColor="#ffe6b5"
+        android:strokeColor="#1a0f04"
+        android:strokeWidth="0.8"
+        android:pathData="M34,4 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
 </vector>

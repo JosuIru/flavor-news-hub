@@ -117,7 +117,7 @@
     ],
     "topics": [],
     "support_url": "https://www.berria.eus/babestu-berria.html",
-    "es_movimiento": true
+    "es_movimiento": false
   },
   {
     "id": 6133,
@@ -2079,7 +2079,7 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "support_url": "https://www.paypal.com/donate/?hosted_button_id=QYAX3B8342XG2",
-    "es_movimiento": true
+    "es_movimiento": false
   },
   {
     "id": 7288,

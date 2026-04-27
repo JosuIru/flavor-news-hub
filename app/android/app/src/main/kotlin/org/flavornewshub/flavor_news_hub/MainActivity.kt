@@ -25,6 +25,7 @@ class MainActivity : AudioServiceActivity() {
     private var pendienteDeepLink: String? = null
     private var canalDeepLink: MethodChannel? = null
     private var canalPip: MethodChannel? = null
+    private var canalRadioService: MethodChannel? = null
     private var pipAutoActivo: Boolean = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -58,6 +59,33 @@ class MainActivity : AudioServiceActivity() {
                         result.success(null)
                     }
                     "entrarEnPip" -> result.success(entrarEnPip())
+                    else -> result.notImplemented()
+                }
+            }
+        }
+        // Canal para que la app principal pueda detener el RadioService
+        // nativo (que el widget Sintonizador puede haber arrancado en
+        // background). Lo llamamos antes de arrancar reproducción desde
+        // la UI para evitar dos streams sonando a la vez.
+        canalRadioService = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "fnh/radio_service",
+        ).also { canal ->
+            canal.setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "stop" -> {
+                        val intentParar = Intent(this, RadioService::class.java).apply {
+                            action = RadioService.ACCION_STOP
+                        }
+                        try {
+                            startService(intentParar)
+                        } catch (_: IllegalStateException) {
+                            // Sin servicio corriendo, startService devuelve
+                            // null o IllegalStateException según versión —
+                            // ignoramos, el efecto deseado ya está.
+                        }
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }

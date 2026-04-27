@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -210,6 +211,12 @@ class _EstadoAvisoActualizacion extends ConsumerState<AvisoActualizacion> {
     required String version,
     required void Function(int recibido, int total) onProgreso,
   }) async {
+    // Re-validamos la URL antes de descargar — la respuesta del backend
+    // pudo haberse cacheado en SharedPreferences antes de que la
+    // validación se introdujera, o un downgrade podría haber pasado.
+    if (!urlDescargaParecesegura(url)) {
+      throw Exception('URL descarga rechazada por validación: $url');
+    }
     final cliente = ref.read(httpClientProvider);
     final dirCache = await getTemporaryDirectory();
     // Versión en el nombre para que descargas antiguas no "se acumulen"
@@ -229,11 +236,30 @@ class _EstadoAvisoActualizacion extends ConsumerState<AvisoActualizacion> {
     final total = respuesta.contentLength ?? 0;
     int recibido = 0;
     final sink = archivo.openWrite();
-    await respuesta.stream.listen((chunk) {
-      recibido += chunk.length;
-      sink.add(chunk);
-      onProgreso(recibido, total);
-    }).asFuture<void>();
+    // Timeout total de la descarga: con conexión lenta (200 KB/s) un APK
+    // de 30 MB tarda ~2.5 min. Damos 5 min como margen razonable. Sin
+    // este límite, una conexión que se quedaba abierta pero sin tráfico
+    // mantenía el `listen` en flight indefinidamente — el usuario veía
+    // el diálogo de progreso congelado y los bytes descargados se iban
+    // acumulando en cacheDir sin terminar nunca.
+    const timeoutDescarga = Duration(minutes: 5);
+    try {
+      await respuesta.stream.listen((chunk) {
+        recibido += chunk.length;
+        sink.add(chunk);
+        onProgreso(recibido, total);
+      }).asFuture<void>().timeout(timeoutDescarga);
+    } on TimeoutException {
+      await sink.flush();
+      await sink.close();
+      // Borramos el archivo parcial: dejarlo en cacheDir confunde al
+      // siguiente intento (`exists` true → `delete` antes de descargar
+      // — funciona, pero el espacio queda ocupado mientras tanto).
+      try {
+        if (await archivo.exists()) await archivo.delete();
+      } catch (_) {}
+      throw Exception('Descarga del APK excedió ${timeoutDescarga.inMinutes} min');
+    }
     await sink.flush();
     await sink.close();
     return archivo;

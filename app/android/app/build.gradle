@@ -93,6 +93,14 @@ flutter {
 dependencies {
     // Desugaring runtime para java.time y APIs similares.
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+
+    // Media3/ExoPlayer para el RadioService nativo del widget Sintonizador.
+    // Necesitamos el reproductor + commonweb para leer streams Icecast/Shoutcast
+    // con extracción automática de metadatos ICY (StreamTitle del programa
+    // que se está emitiendo). MediaPlayer del SDK no expone ICY.
+    def versionMedia3 = "1.4.1"
+    implementation "androidx.media3:media3-exoplayer:$versionMedia3"
+    implementation "androidx.media3:media3-common:$versionMedia3"
 }
 
 // Evita clash entre work-runtime (flutter_local_notifications 17.x trae

@@ -1,0 +1,172 @@
+package org.flavornewshub.flavor_news_hub
+
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Log
+import android.view.View
+import android.widget.RemoteViews
+import android.widget.RemoteViewsService
+import es.antonborri.home_widget.HomeWidgetPlugin
+import java.net.HttpURLConnection
+import java.net.URL
+
+/**
+ * Service que provee la `RemoteViewsFactory` para el `ListView` del
+ * widget de titulares. Android lo invoca cuando el widget pide su
+ * adaptador remoto vía `RemoteViews.setRemoteAdapter`.
+ *
+ * Vive en el proceso de la app (no en SystemUI) — eso permite hacer
+ * red para descargar las miniaturas de cada titular sin restricciones
+ * de seguridad de RemoteViews.
+ */
+class TitularesRemoteViewsService : RemoteViewsService() {
+    override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
+        return TitularesRemoteViewsFactory(applicationContext)
+    }
+}
+
+/**
+ * Factory que sirve cada fila del ListView. La lista canónica vive en
+ * SharedPreferences (claves `titular_{1..10}_*` que escribe Flutter
+ * tras refrescar el feed); aquí la leemos en `onDataSetChanged` y
+ * decodificamos las miniaturas a bitmaps pequeños.
+ *
+ * Cache de bitmaps por URL para no re-descargar entre invocaciones de
+ * `getViewAt` durante el mismo refresco. Cuando llega un nuevo
+ * `onDataSetChanged` el cache se invalida — más simple que un LRU y
+ * suficiente: rara vez hay >10 imágenes únicas a la vez.
+ */
+class TitularesRemoteViewsFactory(
+    private val contexto: Context,
+) : RemoteViewsService.RemoteViewsFactory {
+
+    companion object {
+        private const val TAG = "TitularesFactory"
+        private const val MAX_ITEMS = 10
+        // Tamaño máximo del lado largo de la miniatura tras decodificar.
+        // Por encima de esto inSampleSize la divide entre 2/4/8 hasta
+        // entrar — evita meter bitmaps gigantes en RemoteViews.
+        private const val LIMITE_LADO_PX = 200
+    }
+
+    private data class Titular(
+        val titulo: String,
+        val fuente: String,
+        val idItem: String,
+        val urlImagen: String,
+        val miniatura: Bitmap?,
+    )
+
+    private val items = mutableListOf<Titular>()
+
+    override fun onCreate() {}
+
+    override fun onDataSetChanged() {
+        // Llamado por Android cada vez que el provider notifica un
+        // cambio de datos (`notifyAppWidgetViewDataChanged`). Bloquea
+        // este hilo hasta terminar — está pensado para hacer I/O.
+        items.clear()
+        val prefs = HomeWidgetPlugin.getData(contexto)
+        for (indice in 1..MAX_ITEMS) {
+            val titulo = prefs.getString("titular_${indice}_titulo", "") ?: ""
+            if (titulo.isEmpty()) continue
+            val fuente = prefs.getString("titular_${indice}_fuente", "") ?: ""
+            val idItem = prefs.getString("titular_${indice}_id", "") ?: ""
+            val urlImagen = prefs.getString("titular_${indice}_imagen", "") ?: ""
+            val miniatura = if (urlImagen.isNotEmpty()) descargarMiniatura(urlImagen) else null
+            items.add(Titular(titulo, fuente, idItem, urlImagen, miniatura))
+        }
+    }
+
+    override fun onDestroy() {
+        items.clear()
+    }
+
+    override fun getCount(): Int = items.size
+
+    override fun getViewAt(posicion: Int): RemoteViews {
+        val titular = items[posicion]
+        val vista = RemoteViews(contexto.packageName, R.layout.titulares_widget_item)
+        vista.setTextViewText(R.id.titular_item_titulo, titular.titulo)
+        vista.setTextViewText(R.id.titular_item_fuente, titular.fuente)
+        // Colores aplicados en runtime según el modo claro/oscuro del
+        // sistema. El XML no puede usar `?android:attr/textColor*` aquí
+        // porque resuelve contra el tema del launcher (no del widget),
+        // saliendo negro contra el fondo oscuro estándar.
+        val oscuro = TemaWidget.esOscuro(contexto)
+        val colorTitulo = if (oscuro) android.graphics.Color.WHITE
+            else android.graphics.Color.parseColor("#111111")
+        val colorFuente = if (oscuro) android.graphics.Color.parseColor("#CCE0E0E0")
+            else android.graphics.Color.parseColor("#66000000")
+        vista.setTextColor(R.id.titular_item_titulo, colorTitulo)
+        vista.setTextColor(R.id.titular_item_fuente, colorFuente)
+        if (titular.miniatura != null) {
+            vista.setImageViewBitmap(R.id.titular_item_imagen, titular.miniatura)
+            vista.setViewVisibility(R.id.titular_item_imagen, View.VISIBLE)
+        } else {
+            // Sin imagen o descarga falló: ocultamos el slot de miniatura
+            // para que el texto ocupe el ancho completo.
+            vista.setViewVisibility(R.id.titular_item_imagen, View.GONE)
+        }
+
+        // El tap del item se delega al `PendingIntentTemplate` que
+        // configura el provider — aquí sólo aportamos el "fillInIntent"
+        // con el URI específico de este titular.
+        if (titular.idItem.isNotEmpty()) {
+            val intentRelleno = Intent().apply {
+                data = Uri.parse("flavornews://items/${titular.idItem}")
+            }
+            vista.setOnClickFillInIntent(R.id.titular_item_root, intentRelleno)
+        }
+        return vista
+    }
+
+    override fun getLoadingView(): RemoteViews? = null
+    override fun getViewTypeCount(): Int = 1
+    override fun getItemId(posicion: Int): Long = posicion.toLong()
+    override fun hasStableIds(): Boolean = true
+
+    /**
+     * Descarga la miniatura de la URL y la decodifica con submuestreo
+     * para que no infle el bitmap en memoria. Devuelve null si la URL
+     * es inválida, la red falla o el cuerpo no es una imagen — el
+     * factory pinta esa fila sin imagen.
+     */
+    private fun descargarMiniatura(urlImagen: String): Bitmap? {
+        return try {
+            val url = URL(urlImagen)
+            val conexion = (url.openConnection() as HttpURLConnection).apply {
+                connectTimeout = 5_000
+                readTimeout = 5_000
+                requestMethod = "GET"
+                setRequestProperty("Accept", "image/*")
+                instanceFollowRedirects = true
+            }
+            if (conexion.responseCode !in 200..299) {
+                Log.d(TAG, "Miniatura HTTP ${conexion.responseCode}: $urlImagen")
+                return null
+            }
+            // Bajamos el cuerpo a un byte[] para poder decodificar dos
+            // veces (medir + decodificar definitivo) sin abrir dos
+            // conexiones. La mayoría de imágenes web pesan <200 KB —
+            // tenerlo en memoria un instante no es problemático.
+            val bytes = conexion.inputStream.use { it.readBytes() }
+            val opcionesMedida = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opcionesMedida)
+            val ladoMaximo = maxOf(opcionesMedida.outWidth, opcionesMedida.outHeight)
+            val muestreo = if (ladoMaximo <= LIMITE_LADO_PX) 1
+                else Integer.highestOneBit(ladoMaximo / LIMITE_LADO_PX)
+            val opcionesDecodificacion = BitmapFactory.Options().apply {
+                inSampleSize = muestreo.coerceAtLeast(1)
+                inPreferredConfig = Bitmap.Config.RGB_565
+            }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opcionesDecodificacion)
+        } catch (error: Exception) {
+            Log.d(TAG, "descargarMiniatura falló: $urlImagen — $error")
+            null
+        }
+    }
+}

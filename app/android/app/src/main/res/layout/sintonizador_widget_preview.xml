@@ -58,6 +58,18 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:gravity="center"
+                android:text="@string/widget_preview_radio_programa"
+                android:textColor="#e8b870"
+                android:textSize="10sp"
+                android:fontFamily="monospace"
+                android:textStyle="italic"
+                android:paddingTop="2dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:textColor="#c89e5a"
                 android:textSize="11sp"
@@ -79,18 +91,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#ffc870"
-                android:textSize="13sp"
+                android:textSize="17sp"
+                android:textStyle="bold"
                 android:fontFamily="monospace"
                 android:letterSpacing="0.3"
+                android:shadowColor="#000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="2"
                 android:text="· · · ◉ · · · · · ·" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#ff3838"
-                android:textSize="13sp"
+                android:textSize="17sp"
+                android:textStyle="bold"
                 android:fontFamily="monospace"
                 android:letterSpacing="0.3"
+                android:shadowColor="#3a0000"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="4"
                 android:text="      │            " />
         </FrameLayout>
 
@@ -129,27 +151,24 @@
 
     </LinearLayout>
 
-    <ImageView android:layout_width="8dp" android:layout_height="8dp"
-        android:layout_gravity="top|start" android:layout_margin="5dp"
+    <ImageView android:layout_width="11dp" android:layout_height="11dp"
+        android:layout_gravity="top|start" android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
-    <ImageView android:layout_width="8dp" android:layout_height="8dp"
-        android:layout_gravity="top|end" android:layout_margin="5dp"
+    <ImageView android:layout_width="11dp" android:layout_height="11dp"
+        android:layout_gravity="top|end" android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
-    <ImageView android:layout_width="8dp" android:layout_height="8dp"
-        android:layout_gravity="bottom|start" android:layout_margin="5dp"
+    <ImageView android:layout_width="11dp" android:layout_height="11dp"
+        android:layout_gravity="bottom|start" android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
-    <ImageView android:layout_width="8dp" android:layout_height="8dp"
-        android:layout_gravity="bottom|end" android:layout_margin="5dp"
+    <ImageView android:layout_width="11dp" android:layout_height="11dp"
+        android:layout_gravity="bottom|end" android:layout_margin="10dp"
         android:src="@drawable/sintonizador_tornillo"
         android:contentDescription="@null" />
 
-    <ImageView android:layout_width="24dp" android:layout_height="36dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="2dp" android:layout_marginEnd="16dp"
-        android:src="@drawable/sintonizador_antena"
-        android:contentDescription="@null" />
+    <!-- Antena retirada del widget — quedaba cortada por el clipping
+         de la mayoría de launchers. -->
 
 </FrameLayout>

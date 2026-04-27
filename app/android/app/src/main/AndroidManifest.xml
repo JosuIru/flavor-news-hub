@@ -74,6 +74,25 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+
+        <!-- RadioService propio: foreground service que reproduce streams
+             desde el widget Sintonizador sin abrir la app Flutter. Usa
+             MediaPlayer nativo, vive independiente del FlutterEngine
+             para que el playback dure indefinidamente (a diferencia de
+             un callback Dart background, que muere al rato). -->
+        <service
+            android:name=".RadioService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+
+        <!-- RemoteViewsService que provee el ListView del widget de
+             titulares. `BIND_REMOTEVIEWS` es la permission canónica que
+             declara que sólo el AppWidgetManager del sistema puede
+             vincularse a este servicio. -->
+        <service
+            android:name=".TitularesRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
         <receiver
             android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true">
