@@ -62,17 +62,19 @@ jobs:
       - name: Flutter test
         run: flutter test
 
-      - name: Build APK (debug)
+      - name: Build APK (debug, flavor libre)
         # APK debug en lugar de release porque no firmamos aún. La
         # validación real aquí es "compila limpio para Android"; la
         # firma + release APK llegará en una tarea específica cuando
-        # se publique la primera versión.
-        run: flutter build apk --debug
+        # se publique la primera versión. `--flavor libre` desde
+        # v0.11.0 (distribución dual): sin él, Gradle no puede elegir
+        # entre los flavors y la build falla.
+        run: flutter build apk --debug --flavor libre
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: flavor-news-hub-debug-apk
-          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          path: app/build/app/outputs/flutter-apk/app-libre-debug.apk
           if-no-files-found: error
           retention-days: 7

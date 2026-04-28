@@ -80,18 +80,25 @@ jobs:
           keyPassword=$KEY_PASSWORD
           EOF
 
-      - name: Build release APK
-        run: flutter build apk --release
+      - name: Build release APK (flavor libre)
+        # Distribución dual desde v0.11.0: flavor `libre` para
+        # F-Droid/IzzyOnDroid/GitHub/Obtainium (lleva OTA), y flavor
+        # `playstore` sin OTA. Para esta release publicamos el `libre`
+        # — el `playstore` se sube por separado al Console de Google.
+        # Sin --flavor, `flutter build apk --release` falla porque
+        # Gradle no puede decidir y no genera ningún APK.
+        run: flutter build apk --release --flavor libre
 
       - name: Rename APK with tag
-        # El APK sale como `app-release.apk`; lo renombramos a
-        # `flavor-news-hub-app-vX.Y.Z.apk`. El sufijo `-app-` distingue
-        # el binario de Android del ZIP del plugin para que la página
-        # de releases en GitHub no induzca a confusión: antes el APK
-        # se llamaba igual que el repo y costaba diferenciarlo del
-        # source-code zip que GitHub añade automáticamente.
+        # Con flavor el APK sale como `app-libre-release.apk`; lo
+        # renombramos a `flavor-news-hub-app-vX.Y.Z.apk`. El sufijo
+        # `-app-` distingue el binario de Android del ZIP del plugin
+        # para que la página de releases en GitHub no induzca a
+        # confusión: antes el APK se llamaba igual que el repo y
+        # costaba diferenciarlo del source-code zip que GitHub añade
+        # automáticamente.
         run: |
-          mv build/app/outputs/flutter-apk/app-release.apk \
+          mv build/app/outputs/flutter-apk/app-libre-release.apk \
              build/app/outputs/flutter-apk/flavor-news-hub-app-${GITHUB_REF_NAME}.apk
 
       - name: Setup PHP
