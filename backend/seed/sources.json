@@ -824,21 +824,6 @@
     "es_movimiento": true
   },
   {
-    "id": 7104,
-    "name": "Xataka Ciencia",
-    "slug": "xataka-ciencia",
-    "feed_url": "https://www.xatakaciencia.com/rss2.xml",
-    "feed_type": "rss",
-    "website_url": "https://www.xatakaciencia.com/",
-    "territory": "Estado español",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "tecnologia-soberana"
-    ]
-  },
-  {
     "id": 6415,
     "name": "Zuzeu",
     "slug": "zuzeu",
@@ -1065,52 +1050,6 @@
     "es_movimiento": true
   },
   {
-    "id": 7132,
-    "name": "QuantumFracture",
-    "slug": "yt-quantumfracture",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbdSYaPD-lr1kW27UJuk8Pw",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@QuantumFracture",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ]
-  },
-  {
-    "id": 7133,
-    "name": "Date un Voltio",
-    "slug": "yt-date-un-voltio",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCns-8DssCBba7M4nu7wk7Aw",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@dateunvoltio",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion",
-      "tecnologia-soberana"
-    ]
-  },
-  {
-    "id": 7134,
-    "name": "Date un Vlog",
-    "slug": "yt-date-un-vlog",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCQX_MZRCaluNKxkywkLEgfA",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@dateunvlog",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ]
-  },
-  {
     "id": 7135,
     "name": "La Gata de Schrödinger",
     "slug": "yt-la-gata-de-schrodinger",
@@ -1156,22 +1095,6 @@
     ]
   },
   {
-    "id": 7138,
-    "name": "C de Ciencia",
-    "slug": "yt-c-de-ciencia",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC65IX-jCCdgZcpklAguFFJA",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@CdeCiencia",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ],
-    "support_url": "https://www.patreon.com/cdeciencia"
-  },
-  {
     "id": 7139,
     "name": "DotCSV",
     "slug": "yt-dotcsv",
@@ -1187,22 +1110,6 @@
     ]
   },
   {
-    "id": 7140,
-    "name": "El Robot de Platón",
-    "slug": "yt-el-robot-de-platon",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCjZYt-dPU_H_O-hMx_yd5Ug",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@elrobotdeplaton",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ],
-    "support_url": "https://www.patreon.com/robotitus"
-  },
-  {
     "id": 7141,
     "name": "Jaime Altozano",
     "slug": "yt-jaime-altozano",
@@ -1215,21 +1122,6 @@
     ],
     "topics": [
       "cultura"
-    ]
-  },
-  {
-    "id": 7142,
-    "name": "Veritasium",
-    "slug": "yt-veritasium",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCin0m13qWv3-051xlWlHamA",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@veritasium",
-    "territory": "Internacional",
-    "languages": [
-      "en"
-    ],
-    "topics": [
-      "educacion"
     ]
   },
   {
@@ -1293,21 +1185,6 @@
       "educacion"
     ],
     "support_url": "https://www.patreon.com/pbsspacetime"
-  },
-  {
-    "id": 7147,
-    "name": "Quanta Magazine",
-    "slug": "yt-quanta-magazine",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCTpmmkp1E4nmZqWPS-dl5bg",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@QuantaScienceChannel",
-    "territory": "Internacional",
-    "languages": [
-      "en"
-    ],
-    "topics": [
-      "educacion"
-    ]
   },
   {
     "id": 7148,
