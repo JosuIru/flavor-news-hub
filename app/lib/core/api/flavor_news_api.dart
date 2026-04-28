@@ -40,6 +40,7 @@ class FlavorNewsApi {
     DateTime? since,
     String? sourceType,
     String? excludeSourceType,
+    String? mediumType,
     String? search,
     bool? esMovimiento,
   }) async {
@@ -56,6 +57,7 @@ class FlavorNewsApi {
         if (sourceType != null && sourceType.isNotEmpty) 'source_type': sourceType,
         if (excludeSourceType != null && excludeSourceType.isNotEmpty)
           'exclude_source_type': excludeSourceType,
+        if (mediumType != null && mediumType.isNotEmpty) 'medium_type': mediumType,
         if (search != null && search.isNotEmpty) 's': search,
         if (esMovimiento == true) 'es_movimiento': '1',
       },

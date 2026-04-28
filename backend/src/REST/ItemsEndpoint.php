@@ -60,6 +60,7 @@ final class ItemsEndpoint
             'since'        => ['type' => 'string', 'description' => 'Fecha ISO 8601 mínima.'],
             'source_type'         => ['type' => 'string', 'description' => 'Incluye sólo items de sources con estos feed_types (coma-separado).'],
             'exclude_source_type' => ['type' => 'string', 'description' => 'Excluye items de sources con estos feed_types (coma-separado). Útil para "solo texto" sin arrastrar vídeos o podcasts.'],
+            'medium_type'         => ['type' => 'string', 'description' => 'Incluye sólo items de sources con estos medium_types (coma-separado): news, video, tv_station, radio…'],
             's'                   => ['type' => 'string', 'description' => 'Búsqueda por texto libre en título y cuerpo.'],
             'es_movimiento'       => ['type' => 'boolean', 'description' => 'Si true, devuelve sólo items de sources marcadas como voz de movimiento.'],
         ];
@@ -135,14 +136,16 @@ final class ItemsEndpoint
         $idioma = (string) $request->get_param('language');
         $tiposSource = (string) $request->get_param('source_type');
         $tiposSourceExcluidos = (string) $request->get_param('exclude_source_type');
+        $tiposMedio = (string) $request->get_param('medium_type');
         $soloMovimiento = (bool) $request->get_param('es_movimiento');
-        if ($territorio !== '' || $idioma !== '' || $tiposSource !== '' || $tiposSourceExcluidos !== '' || $soloMovimiento) {
+        if ($territorio !== '' || $idioma !== '' || $tiposSource !== '' || $tiposSourceExcluidos !== '' || $tiposMedio !== '' || $soloMovimiento) {
             $idsSourceFiltrados = self::resolverSourcesPorFiltros(
                 $territorio,
                 $idioma,
                 $tiposSource,
                 $tiposSourceExcluidos,
                 $soloMovimiento,
+                $tiposMedio,
             );
             if ($idSourceDirecto > 0) {
                 $idsSourceFiltrados = in_array($idSourceDirecto, $idsSourceFiltrados, true)
@@ -229,7 +232,8 @@ final class ItemsEndpoint
         string $idioma,
         string $tiposSource = '',
         string $tiposSourceExcluidos = '',
-        bool $soloMovimiento = false
+        bool $soloMovimiento = false,
+        string $tiposMedio = ''
     ): array {
         $metaQuery = [];
         if ($soloMovimiento) {
@@ -265,6 +269,32 @@ final class ItemsEndpoint
                     'value'   => array_values($piezas),
                     'compare' => 'IN',
                 ];
+            }
+        }
+        if ($tiposMedio !== '') {
+            $piezasMedio = array_map('sanitize_key', array_filter(array_map('trim', explode(',', $tiposMedio))));
+            if (!empty($piezasMedio)) {
+                // Política permisiva igual que la de `_fnh_active`:
+                // matchea cuando el meta coincide *o* cuando 'news'
+                // está pedido y el meta no existe (default del schema).
+                // Sin la rama NOT EXISTS, sources legacy importadas
+                // antes de v0.9.x —que no tienen el meta— quedaban
+                // fuera al filtrar por `medium_type=news`.
+                $clausulaMedio = [
+                    'relation' => 'OR',
+                    [
+                        'key'     => '_fnh_medium_type',
+                        'value'   => array_values($piezasMedio),
+                        'compare' => 'IN',
+                    ],
+                ];
+                if (in_array('news', $piezasMedio, true)) {
+                    $clausulaMedio[] = [
+                        'key'     => '_fnh_medium_type',
+                        'compare' => 'NOT EXISTS',
+                    ];
+                }
+                $metaQuery[] = $clausulaMedio;
             }
         }
         if ($tiposSourceExcluidos !== '') {
