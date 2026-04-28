@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -14,10 +14,15 @@ import '../../../core/utils/territory_scoring.dart';
 ///
 /// Llama a `/items?es_movimiento=1`. El backend resuelve qué sources
 /// tienen `_fnh_es_movimiento=1` y filtra los items por su source_id.
+/// Aplica los filtros transversales (topics + territorio + idiomas)
+/// igual que el feed principal — antes ignoraba topics y territorio,
+/// lo que la dejaba como un feed "todo o nada" sin posibilidad de
+/// foco en una temática o geografía concreta.
 final feedMovimientosProvider =
     FutureProvider.autoDispose<List<Item>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
+  final transversal = ref.watch(filtrosTransversalesProvider);
+  final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
   final territorioBase = ref.watch(
     preferenciasProvider.select((p) => p.territorioBase),
   );
@@ -30,7 +35,9 @@ final feedMovimientosProvider =
     page: 1,
     perPage: 50,
     esMovimiento: true,
-    language: idiomasContenido.isEmpty ? null : idiomasContenido.join(','),
+    topic: transversal.topicsParaQueryParam,
+    territory: transversal.codigoTerritorio,
+    language: idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(','),
     // El feed de titulares principal excluye vídeos/podcasts (van en
     // sus pestañas dedicadas). Aquí también — la sección Movimientos
     // es para texto principalmente. Si un colectivo hace YouTube o
@@ -41,5 +48,5 @@ final feedMovimientosProvider =
   // Aplicamos los mismos saneos que el feed principal: ordenación
   // local-primero y filtro defensivo de contenido no-latino.
   ordenarItemsLocalPrimero(items, territorioBase);
-  return filtrarContenidoNoLatino(items, idiomasContenido);
+  return filtrarContenidoNoLatino(items, idiomasEfectivos);
 });

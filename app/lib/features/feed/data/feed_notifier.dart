@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -31,34 +31,32 @@ import 'filtros_feed.dart';
 class FeedNotifier extends AsyncNotifier<EstadoFeed> {
   @override
   Future<EstadoFeed> build() async {
-    final filtros = ref.watch(filtrosFeedProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final idSource = ref.watch(feedSourceFilterProvider);
     final api = ref.watch(flavorNewsApiProvider);
     final dao = await ref.watch(itemsLocalesDaoProvider.future);
     final fuentesBloqueadas = ref.watch(fuentesBloqueadasProvider);
     final territorioBase = ref.watch(
       preferenciasProvider.select((p) => p.territorioBase),
     );
-    // Idioma efectivo: si el usuario fijó idiomas en este filtro
-    // (override por pestaña vía bottom sheet), respetamos su elección.
-    // Si no, caemos a la política central — antes el filtro arrancaba
-    // pre-rellenado con el idioma de UI y producía resultados
-    // incoherentes entre pestañas.
-    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
-    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
-        ? filtros.codigosIdiomas
-        : idiomasContenido;
+    // Idioma efectivo: el provider derivado ya compone override
+    // transversal con la política central, así que aquí no hay que
+    // hacer fallback manual. Antes lo replicaba cada pestaña por su
+    // cuenta y se desincronizaba con facilidad.
+    final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
     final idiomasCsv = idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
 
-    final futuroPersonales = filtros.estaVacio
+    final filtroEstaVacio = transversal.estaVacio && idSource == null;
+    final futuroPersonales = filtroEstaVacio
         ? ref.watch(itemsDeFuentesPersonalesProvider.future)
         : Future.value(const <Item>[]);
 
     try {
       final primeraPaginaBackend = await api.fetchItems(
         page: 1,
-        topic: filtros.topicsParaQueryParam,
-        source: filtros.idSource,
-        territory: filtros.codigoTerritorio,
+        topic: transversal.topicsParaQueryParam,
+        source: idSource,
+        territory: transversal.codigoTerritorio,
         language: idiomasCsv,
         // Feed de titulares = sólo texto. Vídeos y podcasts viven en su
         // propia pestaña porque los canales YouTube publican mucho más
@@ -121,7 +119,8 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
                 cache: cache,
                 itemsPersonales: itemsPersonales,
                 fuentesBloqueadas: fuentesBloqueadas,
-                filtros: filtros,
+                transversal: transversal,
+                idSource: idSource,
                 idiomasPorIdSource: idiomasPorIdSource,
                 territorioPorIdSource: territorioPorIdSource,
                 territorioBase: territorioBase,
@@ -152,7 +151,8 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
               cache: cache,
               itemsPersonales: itemsPersonales,
               fuentesBloqueadas: fuentesBloqueadas,
-              filtros: filtros,
+              transversal: transversal,
+              idSource: idSource,
               idiomasPorIdSource: idiomasPorIdSource,
               territorioPorIdSource: territorioPorIdSource,
               territorioBase: territorioBase,
@@ -207,7 +207,8 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     required List<Item> cache,
     required List<Item> itemsPersonales,
     required Set<int> fuentesBloqueadas,
-    required FiltrosFeed filtros,
+    required FiltrosTransversales transversal,
+    required int? idSource,
     required Map<int, List<String>> idiomasPorIdSource,
     required Map<int, String> territorioPorIdSource,
     required String territorioBase,
@@ -216,12 +217,12 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     final idsSeed = desdeSeed.map((e) => e.id).toSet();
     final cacheNoSolapado = cache.where((i) => !idsSeed.contains(i.id));
 
-    final topicsActivos = filtros.slugsTopics.toSet();
-    final territorio = filtros.codigoTerritorio?.toLowerCase().trim();
+    final topicsActivos = transversal.slugsTopics.toSet();
+    final territorio = transversal.codigoTerritorio?.toLowerCase().trim();
     final filtroTerritorioActivo = territorio != null && territorio.isNotEmpty;
     final filtroIdiomaActivo = idiomasEfectivos.isNotEmpty;
     final codigosIdiomasSet = idiomasEfectivos.toSet();
-    final idSourceFiltrada = filtros.idSource;
+    final idSourceFiltrada = idSource;
 
     bool pasaTodosLosFiltros(Item it) {
       if (!_noEsVideo(it)) return false;
@@ -315,18 +316,16 @@ class FeedNotifier extends AsyncNotifier<EstadoFeed> {
     ));
 
     try {
-      final filtros = ref.read(filtrosFeedProvider);
+      final transversal = ref.read(filtrosTransversalesProvider);
+      final idSource = ref.read(feedSourceFilterProvider);
       final api = ref.read(flavorNewsApiProvider);
       final dao = await ref.read(itemsLocalesDaoProvider.future);
-      final idiomasContenido = ref.read(idiomasContenidoEfectivosProvider);
-      final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
-          ? filtros.codigosIdiomas
-          : idiomasContenido;
+      final idiomasEfectivos = ref.read(idiomasEfectivosConOverrideProvider);
       final siguientePagina = await api.fetchItems(
         page: estadoActual.paginaActual + 1,
-        topic: filtros.topicsParaQueryParam,
-        source: filtros.idSource,
-        territory: filtros.codigoTerritorio,
+        topic: transversal.topicsParaQueryParam,
+        source: idSource,
+        territory: transversal.codigoTerritorio,
         language: idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(','),
         excludeSourceType: 'video,youtube,podcast',
       );

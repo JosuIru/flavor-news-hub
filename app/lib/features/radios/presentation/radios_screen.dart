@@ -5,24 +5,23 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/territory_normalizer.dart';
 import '../../../core/utils/territory_scoring.dart';
+import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../audio/presentation/reproductor_episodio_sheet.dart';
 import '../data/programas_radio_provider.dart';
 import '../data/radios_favoritas_notifier.dart';
 import '../data/reproductor_radio_notifier.dart';
 
 /// Estado local del chip "sólo favoritas" en la pantalla de radios.
+/// No es transversal: filtrar por favoritas en Radios no debe afectar
+/// a Feed/Vídeos/etc.
 final soloRadiosFavoritasProvider = StateProvider<bool>((_) => false);
-
-/// Filtro complementario: "sólo radios de mi territorio". Se basa en
-/// el `territorioBase` del usuario (Ajustes → Territorio). Si no
-/// tiene territorio fijado, este filtro no se ofrece.
-final soloRadiosMiTerritorioProvider = StateProvider<bool>((_) => false);
 
 /// Directorio de radios libres. Cada fila con play/pause. Sólo una suena
 /// a la vez — al pulsar play en otra, la anterior se detiene.
@@ -43,6 +42,9 @@ class RadiosBody extends ConsumerWidget {
     final territorioBase = ref.watch(
       preferenciasProvider.select((p) => p.territorioBase),
     );
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
+    final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
 
     return asyncRadios.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -79,7 +81,16 @@ class RadiosBody extends ConsumerWidget {
             );
         }
         final soloFavoritas = ref.watch(soloRadiosFavoritasProvider);
-        final soloMiTerritorio = ref.watch(soloRadiosMiTerritorioProvider);
+        // El territorio activo viene del provider transversal (compartido
+        // con Feed, Colectivos…). Si el usuario lo fijó en otra
+        // pestaña, Radios lo respeta automáticamente. El chip "Mi
+        // territorio" se mantiene como atajo: cuando está marcado el
+        // global apunta a `territorioBase`.
+        final territorioActivo = transversal.codigoTerritorio;
+        final filtroTerritorioActivo =
+            territorioActivo != null && territorioActivo.isNotEmpty;
+        final usandoMiTerritorio =
+            filtroTerritorioActivo && territorioActivo == territorioBase;
         // Filtramos en cliente porque el listado completo cabe (~80
         // radios). Hacerlo en backend nos forzaría una segunda query
         // por cada toggle del chip.
@@ -87,7 +98,7 @@ class RadiosBody extends ConsumerWidget {
         if (soloFavoritas) {
           visiblesIter = visiblesIter.where((r) => favoritas.contains(r.id));
         }
-        if (soloMiTerritorio && territorioBase.isNotEmpty) {
+        if (filtroTerritorioActivo) {
           // `pertenece` expande redes meta (Euskal Herria → sus
           // provincias, Latinoamérica → sus países…) antes de comparar.
           // Sin esa expansión, ninguna radio lleva literalmente
@@ -95,13 +106,26 @@ class RadiosBody extends ConsumerWidget {
           // resultados.
           visiblesIter = visiblesIter.where(
             (r) => TerritoryNormalizer.pertenece(
-              claveTerritorial: territorioBase,
+              claveTerritorial: territorioActivo,
               country: r.country,
               region: r.region,
               city: r.city,
               territory: r.territory,
             ),
           );
+        }
+        if (idiomasEfectivos.isNotEmpty) {
+          // Match laxo: pasa si la radio declara al menos un idioma
+          // que coincida. Las radios sin idioma declarado (legacy,
+          // metadato incompleto) pasan el filtro — antes habrían
+          // quedado fuera por silencio del seed.
+          final idiomasSet = idiomasEfectivos.toSet();
+          visiblesIter = visiblesIter.where((r) {
+            if (r.languages.isEmpty) return true;
+            return r.languages
+                .map((e) => e.toLowerCase())
+                .any(idiomasSet.contains);
+          });
         }
         final radiosVisibles = visiblesIter.toList();
         // Orden: favoritas arriba (preferencia explícita del usuario) →
@@ -123,9 +147,25 @@ class RadiosBody extends ConsumerWidget {
             if (diffPrio != 0) return diffPrio;
             return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           });
-        final tieneTerritorio = territorioBase.isNotEmpty;
+        final tieneTerritorioBase = territorioBase.isNotEmpty;
         return Column(
           children: [
+            // Barra de chips transversales: muestra los ejes que Radios
+            // aplica (territorio + idiomas). No incluye topics — las
+            // radios no se taxonomizan por temática hoy. Si el usuario
+            // los fijó desde otra pestaña, los conserva intactos pero
+            // no los pinta aquí para no dar la impresión de que
+            // afectan a esta lista.
+            BarraChipsFiltrosActivos(
+              codigoTerritorio: territorioActivo,
+              codigosIdiomas: transversal.codigosIdiomasOverride,
+              onQuitarTerritorio: () => notifier.establecerTerritorio(null),
+              onQuitarIdioma: notifier.alternarIdioma,
+              onLimpiarTodo: () {
+                notifier.establecerTerritorio(null);
+                notifier.limpiarIdiomas();
+              },
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
               child: _RadiosFavoritesHeader(
@@ -138,21 +178,21 @@ class RadiosBody extends ConsumerWidget {
                     : null,
               ),
             ),
-            if (tieneTerritorio)
+            if (tieneTerritorioBase)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
                 child: Row(
                   children: [
                     FilterChip(
                       avatar: Icon(
-                        soloMiTerritorio ? Icons.place : Icons.place_outlined,
+                        usandoMiTerritorio ? Icons.place : Icons.place_outlined,
                         size: 16,
                       ),
                       label: Text(territorioBase),
-                      selected: soloMiTerritorio,
-                      onSelected: (v) => ref
-                          .read(soloRadiosMiTerritorioProvider.notifier)
-                          .state = v,
+                      selected: usandoMiTerritorio,
+                      onSelected: (marcado) => marcado
+                          ? notifier.establecerTerritorio(territorioBase)
+                          : notifier.establecerTerritorio(null),
                     ),
                   ],
                 ),

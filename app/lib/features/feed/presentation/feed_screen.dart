@@ -3,6 +3,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
+import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../donations/presentation/donaciones_sheet.dart';
 import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
@@ -49,7 +51,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final asyncEstadoFeed = ref.watch(feedProvider);
-    final filtros = ref.watch(filtrosFeedProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final idSource = ref.watch(feedSourceFilterProvider);
+    final hayFiltrosActivos = !transversal.estaVacio || idSource != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -72,7 +76,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           ),
           IconButton(
             icon: Badge(
-              isLabelVisible: !filtros.estaVacio,
+              isLabelVisible: hayFiltrosActivos,
               child: const Icon(Icons.tune),
             ),
             tooltip: textos.filtersTitle,
@@ -104,7 +108,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               // vacío venga de filtros que dejan fuera todo, que no de
               // "no hay contenido": ofrecemos botón directo para
               // limpiarlos en vez de dejar al usuario atrapado.
-              if (!filtros.estaVacio) {
+              if (hayFiltrosActivos) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
@@ -125,7 +129,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                           icon: const Icon(Icons.refresh),
                           label: Text(textos.filtersClear),
                           onPressed: () {
-                            ref.read(filtrosFeedProvider.notifier).limpiar();
+                            ref
+                                .read(filtrosTransversalesProvider.notifier)
+                                .limpiarTodo();
+                            ref.read(feedSourceFilterProvider.notifier).state =
+                                null;
                           },
                         ),
                       ],
@@ -166,7 +174,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   onTap: () => context.push('/items/${item.id}'),
                   onSourceTap: (idSource) => context.push('/sources/$idSource'),
                   onTopicTap: (slug) async {
-                    await ref.read(filtrosFeedProvider.notifier).alternarTopic(slug);
+                    await ref
+                        .read(filtrosTransversalesProvider.notifier)
+                        .alternarTopic(slug);
                   },
                   onGuardarAlternar: () =>
                       ref.read(guardadosProvider.notifier).alternar(item),
@@ -188,116 +198,52 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
 /// Barra horizontal de chips dismissables visible debajo del AppBar
 /// cuando hay filtros activos. Sin filtros, ocupa altura cero.
 ///
-/// Antes el usuario podía pulsar "Ver noticias de este medio" en la
-/// ficha de una source y volver al feed sin pista visual de que
-/// estaba filtrando — sólo el badge naranja en el icono "tune" del
-/// AppBar lo delataba, y mucha gente lo pasaba por alto. Esta barra
-/// hace explícito qué filtros están activos y permite quitarlos uno
-/// por uno con un toque sin abrir la pantalla de filtros.
+/// Adaptador delgado sobre `BarraChipsFiltrosActivos` (core): lee los
+/// campos transversales (`slugsTopics`/`codigoTerritorio`/idiomas
+/// override) más el filtro local de source, resuelve el nombre legible
+/// del medio desde el seed cuando hay source fijado, y conecta los
+/// callbacks a los notifiers correspondientes.
 class _BarraFiltrosActivos extends ConsumerWidget {
   const _BarraFiltrosActivos();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filtros = ref.watch(filtrosFeedProvider);
-    if (filtros.estaVacio) return const SizedBox.shrink();
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final idSource = ref.watch(feedSourceFilterProvider);
+    if (transversal.estaVacio && idSource == null) {
+      return const SizedBox.shrink();
+    }
 
-    final textos = AppLocalizations.of(context);
-    final notifier = ref.read(filtrosFeedProvider.notifier);
-    final esquema = Theme.of(context).colorScheme;
-
-    final chips = <Widget>[];
-
-    if (filtros.idSource != null) {
+    String? nombreFuente;
+    if (idSource != null) {
       // Resolvemos el nombre del medio desde el seed bundleado. Si no
       // está en seed (caso raro: medio recién añadido en una instancia
       // y aún no propagado al app), caemos a "Medio #N".
+      nombreFuente = 'Medio #$idSource';
       final fuentes = ref.watch(sourcesSeedProvider).valueOrNull ?? const [];
-      String nombre = 'Medio #${filtros.idSource}';
       for (final s in fuentes) {
-        if (s.id == filtros.idSource) {
-          nombre = s.name;
+        if (s.id == idSource) {
+          nombreFuente = s.name;
           break;
         }
       }
-      chips.add(InputChip(
-        avatar: Icon(Icons.podcasts, size: 18, color: esquema.primary),
-        label: Text(nombre),
-        onDeleted: () => notifier.establecerSource(null),
-        deleteIconColor: esquema.onSurfaceVariant,
-      ));
     }
 
-    for (final slug in filtros.slugsTopics) {
-      // Capitalizamos el slug para presentación; el `name` real del
-      // topic vendría de cargar el provider de topics, pero el slug
-      // capitalizado da una representación suficientemente clara y
-      // evita una segunda dependencia asíncrona.
-      final etiqueta = slug.isEmpty
-          ? slug
-          : '${slug[0].toUpperCase()}${slug.substring(1).replaceAll('-', ' ')}';
-      chips.add(InputChip(
-        label: Text(etiqueta),
-        onDeleted: () => notifier.alternarTopic(slug),
-        deleteIconColor: esquema.onSurfaceVariant,
-      ));
-    }
-
-    final territorio = filtros.codigoTerritorio;
-    if (territorio != null && territorio.isNotEmpty) {
-      chips.add(InputChip(
-        avatar: Icon(Icons.place_outlined, size: 18, color: esquema.primary),
-        label: Text(territorio),
-        onDeleted: () => notifier.establecerTerritorio(null),
-        deleteIconColor: esquema.onSurfaceVariant,
-      ));
-    }
-
-    // Un chip por idioma con su propia X — antes era un único chip
-    // agrupado con todos los idiomas y la X borraba toda la lista. Si
-    // tenías "es, ca, eu" seleccionados y querías quitar sólo eu,
-    // tenías que abrir la pantalla de filtros entera. Ahora consistente
-    // con cómo se gestionan topics.
-    for (final codigoIdioma in filtros.codigosIdiomas) {
-      chips.add(InputChip(
-        avatar: Icon(Icons.language, size: 18, color: esquema.primary),
-        label: Text(codigoIdioma.toUpperCase()),
-        onDeleted: () => notifier.alternarIdioma(codigoIdioma),
-        deleteIconColor: esquema.onSurfaceVariant,
-      ));
-    }
-
-    return Material(
-      color: esquema.surfaceContainerHighest,
-      child: SafeArea(
-        top: false,
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Row(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      for (int i = 0; i < chips.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 6),
-                        chips[i],
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              if (chips.length > 1)
-                TextButton(
-                  onPressed: notifier.limpiar,
-                  child: Text(textos.filtersClear),
-                ),
-            ],
-          ),
-        ),
-      ),
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
+    return BarraChipsFiltrosActivos(
+      slugsTopics: transversal.slugsTopics,
+      codigosIdiomas: transversal.codigosIdiomasOverride,
+      codigoTerritorio: transversal.codigoTerritorio,
+      nombreFuente: nombreFuente,
+      onQuitarTopic: notifier.alternarTopic,
+      onQuitarIdioma: notifier.alternarIdioma,
+      onQuitarTerritorio: () => notifier.establecerTerritorio(null),
+      onQuitarFuente: () =>
+          ref.read(feedSourceFilterProvider.notifier).state = null,
+      onLimpiarTodo: () {
+        notifier.limpiarTodo();
+        ref.read(feedSourceFilterProvider.notifier).state = null;
+      },
     );
   }
 }

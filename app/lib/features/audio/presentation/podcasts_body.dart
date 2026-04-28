@@ -1,12 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -16,61 +14,19 @@ import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import 'audio_filters_header.dart';
 
-@immutable
-class FiltrosPodcasts {
-  const FiltrosPodcasts({
-    this.slugsTopics = const [],
-    this.codigosIdiomas = const [],
-  });
-
-  final List<String> slugsTopics;
-  final List<String> codigosIdiomas;
-
-  static const vacios = FiltrosPodcasts();
-
-  bool get estaVacio => slugsTopics.isEmpty && codigosIdiomas.isEmpty;
-
-  FiltrosPodcasts alternarTopic(String slug) {
-    final nueva = slugsTopics.contains(slug)
-        ? slugsTopics.where((s) => s != slug).toList()
-        : [...slugsTopics, slug];
-    return FiltrosPodcasts(
-      slugsTopics: nueva,
-      codigosIdiomas: codigosIdiomas,
-    );
-  }
-
-  FiltrosPodcasts alternarIdioma(String codigo) {
-    final nueva = codigosIdiomas.contains(codigo)
-        ? codigosIdiomas.where((c) => c != codigo).toList()
-        : [...codigosIdiomas, codigo];
-    return FiltrosPodcasts(
-      slugsTopics: slugsTopics,
-      codigosIdiomas: nueva,
-    );
-  }
-}
-
-/// Filtros locales del bottom sheet — arrancan vacíos. El idioma de
-/// contenido por defecto se calcula desde
-/// `idiomasContenidoEfectivosProvider`. Marcar chips en el bottom
-/// sheet sirve como override por pestaña.
-final filtrosPodcastsProvider =
-    StateProvider<FiltrosPodcasts>((_) => FiltrosPodcasts.vacios);
-
 /// Episodios de podcast (items cuyo source tiene feed_type='podcast').
 /// Online pregunta al backend con `source_type=podcast`; offline filtra
-/// los items del seed RSS por el mismo marcador.
+/// los items del seed RSS por el mismo marcador. Los filtros de
+/// topics+idiomas se leen del provider transversal (compartidos con el
+/// resto de pestañas que los toleran).
 final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  final filtros = ref.watch(filtrosPodcastsProvider);
+  final transversal = ref.watch(filtrosTransversalesProvider);
+  final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
   try {
-    final topicCsv = filtros.slugsTopics.isEmpty ? null : filtros.slugsTopics.join(',');
-    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
-    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
-        ? filtros.codigosIdiomas
-        : idiomasContenido;
-    final idiomaCsv = idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
+    final topicCsv = transversal.topicsParaQueryParam;
+    final idiomaCsv =
+        idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
     final pagina = await api.fetchItems(
       page: 1,
       perPage: 50,
@@ -86,13 +42,8 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
       final items = seed
           .where((i) => i.source?.feedType == 'podcast')
           .toList();
-      final topicsActivos = filtros.slugsTopics.toSet();
-      // Mismo override: filtro local pisa la política central.
-      final idiomasContenidoOffline = ref.watch(idiomasContenidoEfectivosProvider);
-      final idiomasActivos = (filtros.codigosIdiomas.isNotEmpty
-              ? filtros.codigosIdiomas
-              : idiomasContenidoOffline)
-          .toSet();
+      final topicsActivos = transversal.slugsTopics.toSet();
+      final idiomasActivos = idiomasEfectivos.toSet();
       final idiomasPorFuente = <int, Set<String>>{};
       if (idiomasActivos.isNotEmpty) {
         try {
@@ -137,7 +88,8 @@ class PodcastsBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosPodcastsProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
     final asyncItems = ref.watch(_itemsPodcastProvider);
 
     return Column(
@@ -147,24 +99,23 @@ class PodcastsBody extends ConsumerWidget {
           topicLabel: textos.filterByTopic,
           languageLabel: textos.filterByLanguage,
           clearLabel: textos.filtersClear,
-          activeTopicsCount: filtros.slugsTopics.length,
-          activeLanguagesCount: filtros.codigosIdiomas.length,
+          activeTopicsCount: transversal.slugsTopics.length,
+          activeLanguagesCount: transversal.codigosIdiomasOverride.length,
           onOpenFilters: () => mostrarFiltrosPodcasts(context),
           onClearFilters: () {
-            ref.read(filtrosPodcastsProvider.notifier).state = FiltrosPodcasts.vacios;
+            notifier.limpiarTopics();
+            notifier.limpiarIdiomas();
           },
         ),
         BarraChipsFiltrosActivos(
-          slugsTopics: filtros.slugsTopics,
-          codigosIdiomas: filtros.codigosIdiomas,
-          onQuitarTopic: (slug) => ref
-              .read(filtrosPodcastsProvider.notifier)
-              .update((f) => f.alternarTopic(slug)),
-          onQuitarIdioma: (cod) => ref
-              .read(filtrosPodcastsProvider.notifier)
-              .update((f) => f.alternarIdioma(cod)),
-          onLimpiarTodo: () => ref.read(filtrosPodcastsProvider.notifier).state =
-              FiltrosPodcasts.vacios,
+          slugsTopics: transversal.slugsTopics,
+          codigosIdiomas: transversal.codigosIdiomasOverride,
+          onQuitarTopic: notifier.alternarTopic,
+          onQuitarIdioma: notifier.alternarIdioma,
+          onLimpiarTodo: () {
+            notifier.limpiarTopics();
+            notifier.limpiarIdiomas();
+          },
         ),
         Expanded(
           child: asyncItems.when(
@@ -230,7 +181,10 @@ class _BottomSheetFiltrosPodcasts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosPodcastsProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
+    final hayFiltrosLocales =
+        transversal.tieneTopics || transversal.tieneIdiomasOverride;
     final asyncTopics = ref.watch(topicsProvider);
 
     return SafeArea(
@@ -257,10 +211,12 @@ class _BottomSheetFiltrosPodcasts extends ConsumerWidget {
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
-                  if (!filtros.estaVacio)
+                  if (hayFiltrosLocales)
                     TextButton(
-                      onPressed: () => ref.read(filtrosPodcastsProvider.notifier).state =
-                          FiltrosPodcasts.vacios,
+                      onPressed: () {
+                        notifier.limpiarTopics();
+                        notifier.limpiarIdiomas();
+                      },
                       child: Text(textos.filtersClear),
                     ),
                 ],
@@ -295,12 +251,10 @@ class _BottomSheetFiltrosPodcasts extends ConsumerWidget {
                       for (final topic in topicsUtiles)
                         FilterChip(
                           label: Text(topic.name),
-                          selected: filtros.slugsTopics.contains(topic.slug),
-                          onSelected: (_) {
-                            final current = ref.read(filtrosPodcastsProvider);
-                            ref.read(filtrosPodcastsProvider.notifier).state =
-                                current.alternarTopic(topic.slug);
-                          },
+                          selected:
+                              transversal.slugsTopics.contains(topic.slug),
+                          onSelected: (_) =>
+                              notifier.alternarTopic(topic.slug),
                         ),
                     ],
                   );
@@ -322,12 +276,10 @@ class _BottomSheetFiltrosPodcasts extends ConsumerWidget {
                   for (final opcion in _opcionesIdioma)
                     FilterChip(
                       label: Text(opcion.etiqueta),
-                      selected: filtros.codigosIdiomas.contains(opcion.codigo),
-                      onSelected: (_) {
-                        final current = ref.read(filtrosPodcastsProvider);
-                        ref.read(filtrosPodcastsProvider.notifier).state =
-                            current.alternarIdioma(opcion.codigo);
-                      },
+                      selected: transversal.codigosIdiomasOverride
+                          .contains(opcion.codigo),
+                      onSelected: (_) =>
+                          notifier.alternarIdioma(opcion.codigo),
                     ),
                 ],
               ),

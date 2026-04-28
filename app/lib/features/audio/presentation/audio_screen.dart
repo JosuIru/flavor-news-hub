@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/idioma_contenido/sheet_politica_idioma_contenido.dart';
 import '../../music/presentation/musica_screen.dart';
 import '../../radios/presentation/radios_screen.dart';
@@ -46,7 +47,11 @@ class _AudioScreenState extends ConsumerState<AudioScreen>
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
-    final filtrosPodcasts = ref.watch(filtrosPodcastsProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    // Para el badge del botón de filtros mostramos el indicador cuando
+    // hay topics o idiomas globales activos (los que aplica Podcasts).
+    final hayFiltrosPodcasts =
+        transversal.tieneTopics || transversal.tieneIdiomasOverride;
     return Scaffold(
       appBar: AppBar(
         title: Text(textos.tabAudio),
@@ -70,7 +75,7 @@ class _AudioScreenState extends ConsumerState<AudioScreen>
             IconButton(
               icon: Badge(
                 isLabelVisible:
-                    _tabController.index == 1 && !filtrosPodcasts.estaVacio,
+                    _tabController.index == 1 && hayFiltrosPodcasts,
                 child: const Icon(Icons.tune),
               ),
               tooltip: textos.filtersTitle,

@@ -1,8 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
@@ -12,82 +11,31 @@ import '../../../core/utils/territory_scoring.dart';
 import '../../offline_seed/data/items_desde_seed_provider.dart';
 import '../../personal_sources/data/items_personales_provider.dart';
 
-/// Filtros locales para la pantalla de vídeos. No se persisten entre sesiones:
-/// es una exploración puntual, no un consumo recurrente.
-@immutable
-class FiltrosVideos {
-  const FiltrosVideos({
-    this.slugsTopics = const [],
-    this.codigosIdiomas = const [],
-    this.idSource,
-  });
-  final List<String> slugsTopics;
-  final List<String> codigosIdiomas;
-  final int? idSource;
+/// Filtro local de Vídeos para "ver sólo este canal". Topics e idiomas
+/// se leen del provider transversal (compartidos entre Feed/Vídeos/TV/
+/// Podcasts). El filtro de canal es propio porque conceptualmente es
+/// un atajo de navegación ("vídeos del canal X"), no un eje compartido.
+final videosSourceFilterProvider = StateProvider<int?>((_) => null);
 
-  static const vacios = FiltrosVideos();
-  bool get estaVacio =>
-      slugsTopics.isEmpty && codigosIdiomas.isEmpty && idSource == null;
-
-  FiltrosVideos alternarTopic(String slug) {
-    final nueva = slugsTopics.contains(slug)
-        ? slugsTopics.where((s) => s != slug).toList()
-        : [...slugsTopics, slug];
-    return FiltrosVideos(
-      slugsTopics: nueva,
-      codigosIdiomas: codigosIdiomas,
-      idSource: idSource,
-    );
-  }
-
-  FiltrosVideos alternarIdioma(String codigo) {
-    final nueva = codigosIdiomas.contains(codigo)
-        ? codigosIdiomas.where((c) => c != codigo).toList()
-        : [...codigosIdiomas, codigo];
-    return FiltrosVideos(
-      slugsTopics: slugsTopics,
-      codigosIdiomas: nueva,
-      idSource: idSource,
-    );
-  }
-
-  FiltrosVideos conSource(int? id) {
-    return FiltrosVideos(
-      slugsTopics: slugsTopics,
-      codigosIdiomas: codigosIdiomas,
-      idSource: id,
-    );
-  }
-}
-
-/// Filtros locales por pestaña — ahora arrancan vacíos. El idioma de
-/// contenido por defecto se calcula desde
-/// `idiomasContenidoEfectivosProvider`. Si el usuario marca chips en
-/// el bottom sheet de filtros, eso actúa como override por pestaña.
-final filtrosVideosProvider =
-    StateProvider<FiltrosVideos>((_) => FiltrosVideos.vacios);
-
-/// Items tipo "vídeo" filtrados por `filtrosVideosProvider`.
+/// Items tipo "vídeo" filtrados por el provider transversal y el
+/// `videosSourceFilterProvider` local.
 ///
 /// Una sola petición al backend con `source_type=video,youtube`.
 /// Fuentes personales tipo YouTube se añaden sólo si no hay filtros
 /// (las personales no tienen topics en BD).
 final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  final filtros = ref.watch(filtrosVideosProvider);
-  final slugCsv = filtros.slugsTopics.isEmpty ? null : filtros.slugsTopics.join(',');
+  final transversal = ref.watch(filtrosTransversalesProvider);
+  final idSource = ref.watch(videosSourceFilterProvider);
+  final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
+  final slugCsv = transversal.topicsParaQueryParam;
+  final idiomasCsv =
+      idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
 
   PaginatedList<Item>? paginaBackend;
   final itemsDelSeed = <Item>[];
   bool fallbackAlSeed = false;
   try {
-    // Override por pestaña > política central. Sin override, la
-    // política central decide si se filtra y por qué idiomas.
-    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
-    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
-        ? filtros.codigosIdiomas
-        : idiomasContenido;
-    final idiomasCsv = idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
     // Si el usuario pidió un canal concreto, no restringimos por
     // `source_type` — él ya eligió qué fuente ver y el tipo de feed
     // es irrelevante para "ver los últimos items de este medio". Sin
@@ -96,15 +44,15 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
     paginaBackend = await api.fetchItems(
       page: 1,
       perPage: 50,
-      sourceType: filtros.idSource == null ? 'video,youtube' : null,
+      sourceType: idSource == null ? 'video,youtube' : null,
       topic: slugCsv,
-      source: filtros.idSource,
+      source: idSource,
       language: idiomasCsv,
     );
     // Si el backend no conoce el source pedido (p. ej. canales YouTube
     // que sólo existen en el seed bundleado del APK), devuelve vacío —
     // en ese caso complementamos con los items del seed.
-    if (paginaBackend.items.isEmpty && filtros.idSource != null) {
+    if (paginaBackend.items.isEmpty && idSource != null) {
       fallbackAlSeed = true;
     }
   } on FlavorNewsApiException catch (e) {
@@ -124,11 +72,10 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   // Filtro offline: source + topic + idioma sobre los items del seed
   // (el backend ya los aplicó en su query; aquí replicamos para que el
   // comportamiento sea coherente cuando caemos al seed).
-  final idSourceFiltrada = filtros.idSource;
-  final topicsActivos = filtros.slugsTopics.toSet();
+  final topicsActivos = transversal.slugsTopics.toSet();
 
   bool passaFiltrosSeed(Item i) {
-    if (idSourceFiltrada != null && i.source?.id != idSourceFiltrada) {
+    if (idSource != null && i.source?.id != idSource) {
       return false;
     }
     // Topic: estricto si el item trae topics (heredados del source);
@@ -145,7 +92,9 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
     if (paginaBackend != null) ...paginaBackend.items,
     ...itemsDelSeed.where(passaFiltrosSeed),
   ];
-  if (filtros.estaVacio) {
+  // Sin filtros activos (transversal + source) añadimos también los
+  // canales personales tipo vídeo, igual que hacía el provider antiguo.
+  if (transversal.estaVacio && idSource == null) {
     final personales = await ref.watch(itemsDeFuentesPersonalesProvider.future);
     items.addAll(personales.where(_esItemDeVideo));
   }
@@ -162,8 +111,7 @@ final videosProvider = FutureProvider.autoDispose<List<Item>>((ref) async {
   ordenarItemsLocalPrimero(combinados, territorioBase);
   // Defensa contra contenido legacy de feeds mal etiquetados
   // (canales que decían `es` pero servían árabe/cirílico/etc).
-  final idiomasContenido = ref.read(idiomasContenidoEfectivosProvider);
-  return filtrarContenidoNoLatino(combinados, idiomasContenido);
+  return filtrarContenidoNoLatino(combinados, idiomasEfectivos);
 });
 
 bool _esItemDeVideo(Item item) {

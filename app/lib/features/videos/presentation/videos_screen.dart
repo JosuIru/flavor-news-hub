@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
@@ -38,17 +37,21 @@ class VideosScreen extends ConsumerWidget {
     final textos = AppLocalizations.of(context);
     final asyncVideos = ref.watch(videosProvider);
 
-    final filtros = ref.watch(filtrosVideosProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final idSource = ref.watch(videosSourceFilterProvider);
+    final hayFiltrosLocales =
+        transversal.tieneTopics || transversal.tieneIdiomasOverride;
+    final hayFiltrosActivos = hayFiltrosLocales || idSource != null;
     // Cuando llegamos con filtro de canal (desde la ficha del medio
     // o al encender un canal en TV), mostramos un back visible y el
     // nombre del canal en el título. Si no, mantenemos la pantalla
     // global sin leading — está dentro del shell con bottom nav.
-    final hayFiltroCanal = filtros.idSource != null;
+    final hayFiltroCanal = idSource != null;
     String? nombreCanal;
     if (hayFiltroCanal) {
       final cargados = ref.watch(videosProvider).valueOrNull;
       final primerVideoDelCanal = cargados?.firstWhere(
-        (v) => v.source?.id == filtros.idSource,
+        (v) => v.source?.id == idSource,
         orElse: () => cargados.first,
       );
       nombreCanal = primerVideoDelCanal?.source?.name;
@@ -60,18 +63,19 @@ class VideosScreen extends ConsumerWidget {
                 icon: const Icon(Icons.arrow_back),
                 tooltip: textos.commonBack,
                 onPressed: () {
-                  // Salimos del modo "vídeos del canal": limpiamos el
-                  // filtro y volvemos al detalle del canal si lo hay en
-                  // el stack, si no a la pestaña TV.
-                  final idSource = filtros.idSource;
-                  ref.read(filtrosVideosProvider.notifier).state =
-                      FiltrosVideos.vacios;
+                  // Salimos del modo "vídeos del canal": limpiamos sólo
+                  // el filtro local de canal (los demás filtros
+                  // transversales se mantienen — el usuario podría
+                  // querer seguir viendo vídeos en su idioma/temáticas
+                  // tras dejar el canal). Volvemos al detalle del canal
+                  // si lo hay en el stack, si no a la pestaña TV.
+                  ref.read(videosSourceFilterProvider.notifier).state = null;
                   if (context.canPop()) {
                     context.pop();
-                  } else if (idSource != null) {
-                    context.go('/sources/$idSource');
                   } else {
-                    context.go('/tv');
+                    // Sólo entramos aquí cuando `hayFiltroCanal=true`,
+                    // así que idSource es non-null por construcción.
+                    context.go('/sources/$idSource');
                   }
                 },
               )
@@ -89,7 +93,7 @@ class VideosScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: Badge(
-              isLabelVisible: !filtros.estaVacio,
+              isLabelVisible: hayFiltrosActivos,
               child: const Icon(Icons.tune),
             ),
             tooltip: textos.filtersTitle,
@@ -99,20 +103,22 @@ class VideosScreen extends ConsumerWidget {
       ),
       body: Column(children: [
         BarraChipsFiltrosActivos(
-          slugsTopics: filtros.slugsTopics,
-          codigosIdiomas: filtros.codigosIdiomas,
+          slugsTopics: transversal.slugsTopics,
+          codigosIdiomas: transversal.codigosIdiomasOverride,
           nombreFuente: nombreCanal,
           onQuitarTopic: (slug) => ref
-              .read(filtrosVideosProvider.notifier)
-              .update((f) => f.alternarTopic(slug)),
+              .read(filtrosTransversalesProvider.notifier)
+              .alternarTopic(slug),
           onQuitarIdioma: (cod) => ref
-              .read(filtrosVideosProvider.notifier)
-              .update((f) => f.alternarIdioma(cod)),
-          onQuitarFuente: () => ref
-              .read(filtrosVideosProvider.notifier)
-              .update((f) => f.conSource(null)),
-          onLimpiarTodo: () => ref.read(filtrosVideosProvider.notifier).state =
-              FiltrosVideos.vacios,
+              .read(filtrosTransversalesProvider.notifier)
+              .alternarIdioma(cod),
+          onQuitarFuente: () =>
+              ref.read(videosSourceFilterProvider.notifier).state = null,
+          onLimpiarTodo: () {
+            ref.read(filtrosTransversalesProvider.notifier).limpiarTopics();
+            ref.read(filtrosTransversalesProvider.notifier).limpiarIdiomas();
+            ref.read(videosSourceFilterProvider.notifier).state = null;
+          },
         ),
         Expanded(child: RefreshIndicator(
         onRefresh: () async {
@@ -210,8 +216,11 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosVideosProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
     final asyncTopics = ref.watch(topicsProvider);
+    final hayFiltrosLocales =
+        transversal.tieneTopics || transversal.tieneIdiomasOverride;
 
     return SafeArea(
       child: Padding(
@@ -232,9 +241,17 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
-                  if (!filtros.estaVacio)
+                  if (hayFiltrosLocales)
                     TextButton(
-                      onPressed: () => ref.read(filtrosVideosProvider.notifier).state = FiltrosVideos.vacios,
+                      // El "Limpiar" del bottom sheet sólo limpia los
+                      // ejes que esta pestaña edita (topics + idiomas).
+                      // El territorio se conserva — pertenece a otras
+                      // pestañas (Feed/Colectivos) y resetearlo desde
+                      // aquí sería confuso.
+                      onPressed: () {
+                        notifier.limpiarTopics();
+                        notifier.limpiarIdiomas();
+                      },
                       child: Text(textos.filtersClear),
                     ),
                 ],
@@ -266,11 +283,10 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
                       for (final topic in topicsUtiles)
                         FilterChip(
                           label: Text(topic.name),
-                          selected: filtros.slugsTopics.contains(topic.slug),
-                          onSelected: (_) {
-                            final current = ref.read(filtrosVideosProvider);
-                            ref.read(filtrosVideosProvider.notifier).state = current.alternarTopic(topic.slug);
-                          },
+                          selected:
+                              transversal.slugsTopics.contains(topic.slug),
+                          onSelected: (_) =>
+                              notifier.alternarTopic(topic.slug),
                         ),
                     ],
                   );
@@ -291,12 +307,10 @@ class _BottomSheetFiltrosVideos extends ConsumerWidget {
                   for (final locale in AppLocalizations.supportedLocales)
                     FilterChip(
                       label: Text(locale.languageCode.toUpperCase()),
-                      selected: filtros.codigosIdiomas.contains(locale.languageCode),
-                      onSelected: (_) {
-                        final current = ref.read(filtrosVideosProvider);
-                        ref.read(filtrosVideosProvider.notifier).state =
-                            current.alternarIdioma(locale.languageCode);
-                      },
+                      selected: transversal.codigosIdiomasOverride
+                          .contains(locale.languageCode),
+                      onSelected: (_) =>
+                          notifier.alternarIdioma(locale.languageCode),
                     ),
                 ],
               ),

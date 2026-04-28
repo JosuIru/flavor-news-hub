@@ -1,51 +1,13 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/filtro_idioma_contenido.dart';
 import '../../../core/utils/territory_scoring.dart';
-
-@immutable
-class FiltrosTv {
-  const FiltrosTv({
-    this.slugsTopics = const [],
-    this.codigosIdiomas = const [],
-  });
-
-  final List<String> slugsTopics;
-  final List<String> codigosIdiomas;
-
-  static const vacios = FiltrosTv();
-
-  bool get estaVacio => slugsTopics.isEmpty && codigosIdiomas.isEmpty;
-
-  FiltrosTv alternarTopic(String slug) {
-    final nueva = slugsTopics.contains(slug)
-        ? slugsTopics.where((s) => s != slug).toList()
-        : [...slugsTopics, slug];
-    return FiltrosTv(
-      slugsTopics: nueva,
-      codigosIdiomas: codigosIdiomas,
-    );
-  }
-
-  FiltrosTv alternarIdioma(String codigo) {
-    final nueva = codigosIdiomas.contains(codigo)
-        ? codigosIdiomas.where((c) => c != codigo).toList()
-        : [...codigosIdiomas, codigo];
-    return FiltrosTv(
-      slugsTopics: slugsTopics,
-      codigosIdiomas: nueva,
-    );
-  }
-}
-
-final filtrosTvProvider = StateProvider<FiltrosTv>((_) => FiltrosTv.vacios);
 
 /// Fuentes audiovisuales activas: TVs (tv_station) e instancias /
 /// canales de vídeo (video). Conceptualmente la pestaña "TV" de la
@@ -60,7 +22,8 @@ final filtrosTvProvider = StateProvider<FiltrosTv>((_) => FiltrosTv.vacios);
 /// versión previa al campo medium_type se crean con default 'news').
 final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  final filtros = ref.watch(filtrosTvProvider);
+  final transversal = ref.watch(filtrosTransversalesProvider);
+  final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
   // Misma corrección que sourcesProvider en v0.9.55: recorrer todas
   // las páginas para no truncar la lista alfabéticamente. Antes el
   // pestaña TV → Medios solo mostraba sources hasta "Jot Down" porque
@@ -83,16 +46,12 @@ final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
         feedTypesAudiovisuales.contains(s.feedType);
   }).toList();
   return fuentes.where((s) {
-    if (filtros.slugsTopics.isNotEmpty) {
+    if (transversal.tieneTopics) {
       final topics = s.topics.map((t) => t.slug).toSet();
-      if (!topics.any(filtros.slugsTopics.contains)) {
+      if (!topics.any(transversal.slugsTopics.contains)) {
         return false;
       }
     }
-    final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
-    final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
-        ? filtros.codigosIdiomas
-        : idiomasContenido;
     if (idiomasEfectivos.isNotEmpty) {
       final idiomas = s.languages.map((e) => e.toLowerCase()).toSet();
       if (!idiomas.any(idiomasEfectivos.contains)) {
@@ -117,15 +76,11 @@ final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
 final tvItemsRecientesProvider =
     FutureProvider.autoDispose<List<Item>>((ref) async {
   final api = ref.watch(flavorNewsApiProvider);
-  final filtros = ref.watch(filtrosTvProvider);
-  final idiomasContenido = ref.watch(idiomasContenidoEfectivosProvider);
-  final idiomasEfectivos = filtros.codigosIdiomas.isNotEmpty
-      ? filtros.codigosIdiomas
-      : idiomasContenido;
+  final transversal = ref.watch(filtrosTransversalesProvider);
+  final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
   final idiomasCsv =
       idiomasEfectivos.isEmpty ? null : idiomasEfectivos.join(',');
-  final topicsCsv =
-      filtros.slugsTopics.isEmpty ? null : filtros.slugsTopics.join(',');
+  final topicsCsv = transversal.topicsParaQueryParam;
 
   Future<List<Item>> pedir({String? sourceType, String? mediumType}) async {
     try {
@@ -166,7 +121,7 @@ final tvItemsRecientesProvider =
   // Al Mayadeen Español apuntando al canal árabe antes de v0.9.54;
   // los items ya ingestados quedan en BD bajo un source que ahora
   // declara `es` y se colaban en la pestaña TV).
-  final filtrados = filtrarContenidoNoLatino(todos, idiomasContenido);
+  final filtrados = filtrarContenidoNoLatino(todos, idiomasEfectivos);
   // Nos quedamos con los 30 más recientes agregados entre todas las
   // fuentes — suficiente para una pestaña sin paginado y manteniendo
   // señal editorial (no 200 entradas de la misma fuente).

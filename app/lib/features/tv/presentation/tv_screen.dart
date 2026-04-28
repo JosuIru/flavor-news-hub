@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
@@ -31,7 +32,10 @@ class TvScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosTvProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final hayFiltrosLocales =
+        transversal.tieneTopics || transversal.tieneIdiomasOverride;
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -45,7 +49,7 @@ class TvScreen extends ConsumerWidget {
             ),
             IconButton(
               icon: Badge(
-                isLabelVisible: !filtros.estaVacio,
+                isLabelVisible: hayFiltrosLocales,
                 child: const Icon(Icons.tune),
               ),
               tooltip: textos.filtersTitle,
@@ -66,16 +70,14 @@ class TvScreen extends ConsumerWidget {
         ),
         body: Column(children: [
           BarraChipsFiltrosActivos(
-            slugsTopics: filtros.slugsTopics,
-            codigosIdiomas: filtros.codigosIdiomas,
-            onQuitarTopic: (slug) => ref
-                .read(filtrosTvProvider.notifier)
-                .update((f) => f.alternarTopic(slug)),
-            onQuitarIdioma: (cod) => ref
-                .read(filtrosTvProvider.notifier)
-                .update((f) => f.alternarIdioma(cod)),
-            onLimpiarTodo: () => ref.read(filtrosTvProvider.notifier).state =
-                FiltrosTv.vacios,
+            slugsTopics: transversal.slugsTopics,
+            codigosIdiomas: transversal.codigosIdiomasOverride,
+            onQuitarTopic: notifier.alternarTopic,
+            onQuitarIdioma: notifier.alternarIdioma,
+            onLimpiarTodo: () {
+              notifier.limpiarTopics();
+              notifier.limpiarIdiomas();
+            },
           ),
           const Expanded(child: TabBarView(
             children: [
@@ -104,7 +106,10 @@ class _BottomSheetFiltrosTv extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosTvProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
+    final hayFiltrosLocales =
+        transversal.tieneTopics || transversal.tieneIdiomasOverride;
     final asyncTopics = ref.watch(topicsProvider);
 
     return SafeArea(
@@ -131,10 +136,16 @@ class _BottomSheetFiltrosTv extends ConsumerWidget {
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
-                  if (!filtros.estaVacio)
+                  if (hayFiltrosLocales)
                     TextButton(
-                      onPressed: () => ref.read(filtrosTvProvider.notifier).state =
-                          FiltrosTv.vacios,
+                      // El "Limpiar" del bottom sheet sólo limpia los
+                      // ejes que esta pestaña edita. El territorio se
+                      // conserva para que no se rompa el filtrado de
+                      // otras pestañas (Feed/Colectivos).
+                      onPressed: () {
+                        notifier.limpiarTopics();
+                        notifier.limpiarIdiomas();
+                      },
                       child: Text(textos.filtersClear),
                     ),
                 ],
@@ -169,12 +180,10 @@ class _BottomSheetFiltrosTv extends ConsumerWidget {
                       for (final topic in topicsUtiles)
                         FilterChip(
                           label: Text(topic.name),
-                          selected: filtros.slugsTopics.contains(topic.slug),
-                          onSelected: (_) {
-                            final current = ref.read(filtrosTvProvider);
-                            ref.read(filtrosTvProvider.notifier).state =
-                                current.alternarTopic(topic.slug);
-                          },
+                          selected:
+                              transversal.slugsTopics.contains(topic.slug),
+                          onSelected: (_) =>
+                              notifier.alternarTopic(topic.slug),
                         ),
                     ],
                   );
@@ -196,12 +205,10 @@ class _BottomSheetFiltrosTv extends ConsumerWidget {
                   for (final opcion in _opcionesIdioma)
                     FilterChip(
                       label: Text(opcion.etiqueta),
-                      selected: filtros.codigosIdiomas.contains(opcion.codigo),
-                      onSelected: (_) {
-                        final current = ref.read(filtrosTvProvider);
-                        ref.read(filtrosTvProvider.notifier).state =
-                            current.alternarIdioma(opcion.codigo);
-                      },
+                      selected: transversal.codigosIdiomasOverride
+                          .contains(opcion.codigo),
+                      onSelected: (_) =>
+                          notifier.alternarIdioma(opcion.codigo),
                     ),
                 ],
               ),
@@ -243,7 +250,8 @@ class _MediosTvBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncSources = ref.watch(tvSourcesProvider);
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosTvProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
 
     return Column(
       children: [
@@ -252,11 +260,12 @@ class _MediosTvBody extends ConsumerWidget {
           topicLabel: textos.filterByTopic,
           languageLabel: textos.filterByLanguage,
           clearLabel: textos.filtersClear,
-          activeTopicsCount: filtros.slugsTopics.length,
-          activeLanguagesCount: filtros.codigosIdiomas.length,
+          activeTopicsCount: transversal.slugsTopics.length,
+          activeLanguagesCount: transversal.codigosIdiomasOverride.length,
           onOpenFilters: () => mostrarFiltrosTv(context),
           onClearFilters: () {
-            ref.read(filtrosTvProvider.notifier).state = FiltrosTv.vacios;
+            notifier.limpiarTopics();
+            notifier.limpiarIdiomas();
           },
         ),
         Expanded(
@@ -327,8 +336,7 @@ class _TileTv extends ConsumerWidget {
     // Setear el filtro antes de navegar es esencial: el reproductor
     // al terminar un vídeo lee `videosProvider`, que usa estos
     // filtros, y así el "siguiente" es otro vídeo del mismo canal.
-    ref.read(filtrosVideosProvider.notifier).state =
-        FiltrosVideos.vacios.conSource(source.id);
+    ref.read(videosSourceFilterProvider.notifier).state = source.id;
 
     final api = ref.read(flavorNewsApiProvider);
     try {
@@ -360,7 +368,8 @@ class _UltimasEmisionesBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncItems = ref.watch(tvItemsRecientesProvider);
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosTvProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
 
     return Column(
       children: [
@@ -369,11 +378,12 @@ class _UltimasEmisionesBody extends ConsumerWidget {
           topicLabel: textos.filterByTopic,
           languageLabel: textos.filterByLanguage,
           clearLabel: textos.filtersClear,
-          activeTopicsCount: filtros.slugsTopics.length,
-          activeLanguagesCount: filtros.codigosIdiomas.length,
+          activeTopicsCount: transversal.slugsTopics.length,
+          activeLanguagesCount: transversal.codigosIdiomasOverride.length,
           onOpenFilters: () => mostrarFiltrosTv(context),
           onClearFilters: () {
-            ref.read(filtrosTvProvider.notifier).state = FiltrosTv.vacios;
+            notifier.limpiarTopics();
+            notifier.limpiarIdiomas();
           },
         ),
         Expanded(

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/models/item.dart';
-import '../../feed/data/filtros_feed.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../data/historial_provider.dart';
 
 /// Panel "Tus intereses": resume qué ha marcado el usuario como útil, sin
@@ -80,7 +80,7 @@ class TusInteresesScreen extends ConsumerWidget {
   }
 
   void _aplicarFiltroTopics(BuildContext context, WidgetRef ref, List<String> slugs) {
-    final notifier = ref.read(filtrosFeedProvider.notifier);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
     for (final slug in slugs) {
       notifier.alternarTopic(slug);
     }

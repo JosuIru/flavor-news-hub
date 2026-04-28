@@ -222,13 +222,11 @@ class _BotonVerContenido extends StatelessWidget {
     if (esVideo) {
       return FilledButton.icon(
         onPressed: () {
-          // Ajustamos `idSource` PRESERVANDO los demás filtros activos
-          // (idioma, topics). Antes hacíamos `FiltrosVideos.vacios.conSource(...)`
-          // que reseteaba todo, perdiendo el idioma de contenido que el
-          // usuario hubiera fijado en Ajustes o configurado a mano.
-          final filtroActual = ref.read(filtrosVideosProvider);
-          ref.read(filtrosVideosProvider.notifier).state =
-              filtroActual.conSource(source.id);
+          // Ajustamos sólo el filtro local de canal de Vídeos. Los
+          // ejes transversales (idioma, topics, territorio) los maneja
+          // el provider compartido y se preservan automáticamente —
+          // no hay que recomponerlos a mano.
+          ref.read(videosSourceFilterProvider.notifier).state = source.id;
           context.push('/videos');
         },
         icon: const Icon(Icons.play_circle_outline),
@@ -246,7 +244,7 @@ class _BotonVerContenido extends StatelessWidget {
     }
     return FilledButton.icon(
       onPressed: () async {
-        await ref.read(filtrosFeedProvider.notifier).establecerSource(source.id);
+        ref.read(feedSourceFilterProvider.notifier).state = source.id;
         // `go('/')` y NO `push('/')`: el feed vive dentro del ShellRoute
         // y empujarlo desde fuera del shell deja un Scaffold mal montado
         // (sin AppBar, sin barra de filtros, lista que nunca aparece).

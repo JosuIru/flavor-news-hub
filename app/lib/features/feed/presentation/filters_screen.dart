@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/providers/api_provider.dart';
 import '../data/filtros_feed.dart';
 
@@ -27,8 +28,9 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   @override
   void initState() {
     super.initState();
-    final estadoActual = ref.read(filtrosFeedProvider);
-    _controllerTerritorio = TextEditingController(text: estadoActual.codigoTerritorio ?? '');
+    final estadoActual = ref.read(filtrosTransversalesProvider);
+    _controllerTerritorio =
+        TextEditingController(text: estadoActual.codigoTerritorio ?? '');
   }
 
   @override
@@ -40,18 +42,21 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosFeedProvider);
-    final notifier = ref.read(filtrosFeedProvider.notifier);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final idSource = ref.watch(feedSourceFilterProvider);
+    final hayFiltrosActivos = !transversal.estaVacio || idSource != null;
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
     final asyncTopics = ref.watch(topicsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(textos.filtersTitle),
         actions: [
-          if (!filtros.estaVacio)
+          if (hayFiltrosActivos)
             TextButton(
               onPressed: () {
-                notifier.limpiar();
+                notifier.limpiarTodo();
+                ref.read(feedSourceFilterProvider.notifier).state = null;
                 _controllerTerritorio.clear();
               },
               child: Text(textos.filtersClear),
@@ -83,7 +88,8 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                   for (final topic in topicsUtiles)
                     FilterChip(
                       label: Text(topic.name),
-                      selected: filtros.slugsTopics.contains(topic.slug),
+                      selected:
+                          transversal.slugsTopics.contains(topic.slug),
                       onSelected: (_) => notifier.alternarTopic(topic.slug),
                     ),
                 ],
@@ -130,7 +136,8 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
               for (final opcion in _opcionesIdioma)
                 FilterChip(
                   label: Text(opcion.etiqueta),
-                  selected: filtros.codigosIdiomas.contains(opcion.codigo),
+                  selected: transversal.codigosIdiomasOverride
+                      .contains(opcion.codigo),
                   onSelected: (_) => notifier.alternarIdioma(opcion.codigo),
                 ),
             ],

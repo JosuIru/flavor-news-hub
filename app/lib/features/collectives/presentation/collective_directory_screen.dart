@@ -3,53 +3,154 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../movimientos/data/movimientos_provider.dart';
 import '../data/colectivos_directorio_notifier.dart';
-import '../data/filtros_colectivos.dart';
 import 'collective_card.dart';
 
-/// Pestaña "Colectivos" del shell. Tiene dos subsecciones:
-///  1. Noticias — items de fuentes marcadas como "voz de movimiento" y
-///     colectivos. Antes esta sección sólo era accesible desde Ajustes
-///     y la mayoría de usuarios no la descubría.
-///  2. Directorio — listado filtrable de colectivos verificados (lo
-///     que ocupaba toda esta pantalla antes).
+/// Pestaña "Colectivos" del shell con dos subsecciones:
+///  1. **Noticias** — items de fuentes marcadas como "voz de
+///     movimiento" y colectivos. Aplica los filtros transversales
+///     completos (topics + territorio + idiomas), igual que el feed
+///     general.
+///  2. **Directorio** — listado filtrable de colectivos verificados.
+///     Aplica topics + territorio (idioma no aplica: el directorio es
+///     content-agnostic).
 ///
-/// El `DefaultTabController` mantiene la sub-pestaña activa mientras
-/// el usuario navega dentro del shell; al salir y volver a la tab
-/// Colectivos resetea a la primera (Noticias).
+/// El AppBar es común a las dos subsecciones; el botón de filtros y la
+/// barra de chips se adaptan a la tab activa para mostrar sólo los
+/// ejes relevantes.
 class CollectiveDirectoryScreen extends StatelessWidget {
   const CollectiveDirectoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final textos = AppLocalizations.of(context);
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(textos.directoryTitle),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              tooltip: textos.searchTooltip,
-              onPressed: () => context.push('/search'),
-            ),
-          ],
-          bottom: TabBar(
-            tabs: [
-              Tab(text: textos.colectivosTabNoticias),
-              Tab(text: textos.colectivosTabDirectorio),
-            ],
+      child: _CuerpoColectivos(),
+    );
+  }
+}
+
+class _CuerpoColectivos extends ConsumerStatefulWidget {
+  const _CuerpoColectivos();
+
+  @override
+  ConsumerState<_CuerpoColectivos> createState() => _EstadoCuerpoColectivos();
+}
+
+class _EstadoCuerpoColectivos extends ConsumerState<_CuerpoColectivos> {
+  // Necesitamos saber qué tab está activa para que el badge del botón
+  // de filtros y la barra de chips muestren sólo los ejes relevantes.
+  late final TabController _tabController;
+  int _indiceTab = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = DefaultTabController.of(context);
+    _tabController = controller;
+    if (!_listenerRegistrado) {
+      _tabController.addListener(_alCambiarTab);
+      _listenerRegistrado = true;
+    }
+  }
+
+  bool _listenerRegistrado = false;
+
+  void _alCambiarTab() {
+    if (!mounted) return;
+    if (_indiceTab != _tabController.index) {
+      setState(() => _indiceTab = _tabController.index);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_listenerRegistrado) {
+      _tabController.removeListener(_alCambiarTab);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
+    final esTabNoticias = _indiceTab == 0;
+    // Noticias aplica los 3 ejes (topics + territorio + idioma);
+    // directorio aplica sólo topics + territorio.
+    final hayFiltrosTab = esTabNoticias
+        ? !transversal.estaVacio
+        : (transversal.tieneTopics || transversal.tieneTerritorio);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(textos.directoryTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: textos.searchTooltip,
+            onPressed: () => context.push('/search'),
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            _TabNoticiasMovimientos(),
-            _TabDirectorioColectivos(),
+          IconButton(
+            icon: Badge(
+              isLabelVisible: hayFiltrosTab,
+              child: const Icon(Icons.tune),
+            ),
+            tooltip: textos.filtersTitle,
+            onPressed: () => _abrirFiltros(context, esTabNoticias),
+          ),
+        ],
+        bottom: TabBar(
+          tabs: [
+            Tab(text: textos.colectivosTabNoticias),
+            Tab(text: textos.colectivosTabDirectorio),
           ],
         ),
+      ),
+      body: Column(
+        children: [
+          BarraChipsFiltrosActivos(
+            slugsTopics: transversal.slugsTopics,
+            codigoTerritorio: transversal.codigoTerritorio,
+            // Idiomas sólo en la tab Noticias — en Directorio no
+            // aplican y mostrarlos sería confuso ("¿por qué hay un chip
+            // que no afecta a esta lista?").
+            codigosIdiomas: esTabNoticias
+                ? transversal.codigosIdiomasOverride
+                : const [],
+            onQuitarTopic: notifier.alternarTopic,
+            onQuitarIdioma: esTabNoticias ? notifier.alternarIdioma : null,
+            onQuitarTerritorio: () => notifier.establecerTerritorio(null),
+            onLimpiarTodo: () {
+              notifier.limpiarTopics();
+              notifier.establecerTerritorio(null);
+              if (esTabNoticias) notifier.limpiarIdiomas();
+            },
+          ),
+          const Expanded(
+            child: TabBarView(
+              children: [
+                _TabNoticiasMovimientos(),
+                _TabDirectorioColectivos(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _abrirFiltros(BuildContext context, bool incluirIdiomas) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _BottomSheetFiltrosColectivos(
+        incluirIdiomas: incluirIdiomas,
       ),
     );
   }
@@ -57,7 +158,7 @@ class CollectiveDirectoryScreen extends StatelessWidget {
 
 /// Subpestaña "Noticias": items de fuentes marcadas como movimiento.
 /// Replica la pantalla `/movimientos` pero sin AppBar propio (vive
-/// dentro del Scaffold del Shell). Pull-to-refresh respeta el provider
+/// dentro del Scaffold compartido). Pull-to-refresh respeta el provider
 /// del feed de movimientos.
 class _TabNoticiasMovimientos extends ConsumerWidget {
   const _TabNoticiasMovimientos();
@@ -154,7 +255,7 @@ class _TabNoticiasMovimientos extends ConsumerWidget {
 
 /// Subpestaña "Directorio": listado filtrable de colectivos verificados.
 /// Mismo patrón que el feed principal — AsyncNotifier, scroll infinito,
-/// pull-to-refresh, bottom sheet con filtros.
+/// pull-to-refresh.
 class _TabDirectorioColectivos extends ConsumerStatefulWidget {
   const _TabDirectorioColectivos();
 
@@ -188,49 +289,21 @@ class _EstadoDirectorio extends ConsumerState<_TabDirectorioColectivos> {
   @override
   Widget build(BuildContext context) {
     final asyncEstado = ref.watch(colectivosDirectorioProvider);
-    final filtros = ref.watch(filtrosColectivosProvider);
 
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: () => ref.read(colectivosDirectorioProvider.notifier).refrescar(),
-          child: asyncEstado.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => _PantallaErrorDirectorio(
-              mensaje: error.toString(),
-              onReintentar: () =>
-                  ref.read(colectivosDirectorioProvider.notifier).refrescar(),
-            ),
-            data: (estado) => _ContenidoDirectorio(
-              estado: estado,
-              controller: _scrollController,
-            ),
-          ),
+    return RefreshIndicator(
+      onRefresh: () => ref.read(colectivosDirectorioProvider.notifier).refrescar(),
+      child: asyncEstado.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => _PantallaErrorDirectorio(
+          mensaje: error.toString(),
+          onReintentar: () =>
+              ref.read(colectivosDirectorioProvider.notifier).refrescar(),
         ),
-        // FAB pequeño bottom-right para abrir filtros: aparece sólo en
-        // esta tab, no contamina el AppBar global del Shell.
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton.small(
-            heroTag: 'fab-filtros-colectivos',
-            tooltip: AppLocalizations.of(context).filtersTitle,
-            onPressed: () => _abrirFiltros(context),
-            child: Badge(
-              isLabelVisible: !filtros.estaVacio,
-              child: const Icon(Icons.tune),
-            ),
-          ),
+        data: (estado) => _ContenidoDirectorio(
+          estado: estado,
+          controller: _scrollController,
         ),
-      ],
-    );
-  }
-
-  void _abrirFiltros(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const _BottomSheetFiltros(),
+      ),
     );
   }
 }
@@ -378,23 +451,29 @@ class _PantallaErrorDirectorio extends StatelessWidget {
   }
 }
 
-/// Bottom sheet de filtros del directorio. Más compacto que la pantalla
-/// de filtros del feed — aquí sólo hay dos ejes útiles (temática, territorio).
-class _BottomSheetFiltros extends ConsumerStatefulWidget {
-  const _BottomSheetFiltros();
+/// Bottom sheet de filtros de Colectivos. `incluirIdiomas=true` cuando
+/// se abre desde la tab Noticias (los items sí tienen idioma); `false`
+/// desde la tab Directorio (los colectivos son content-agnostic).
+class _BottomSheetFiltrosColectivos extends ConsumerStatefulWidget {
+  const _BottomSheetFiltrosColectivos({required this.incluirIdiomas});
+
+  final bool incluirIdiomas;
 
   @override
-  ConsumerState<_BottomSheetFiltros> createState() => _EstadoBottomSheetFiltros();
+  ConsumerState<_BottomSheetFiltrosColectivos> createState() =>
+      _EstadoBottomSheetFiltrosColectivos();
 }
 
-class _EstadoBottomSheetFiltros extends ConsumerState<_BottomSheetFiltros> {
+class _EstadoBottomSheetFiltrosColectivos
+    extends ConsumerState<_BottomSheetFiltrosColectivos> {
   late final TextEditingController _controllerTerritorio;
 
   @override
   void initState() {
     super.initState();
-    final actual = ref.read(filtrosColectivosProvider);
-    _controllerTerritorio = TextEditingController(text: actual.codigoTerritorio ?? '');
+    final actual = ref.read(filtrosTransversalesProvider);
+    _controllerTerritorio =
+        TextEditingController(text: actual.codigoTerritorio ?? '');
   }
 
   @override
@@ -406,9 +485,12 @@ class _EstadoBottomSheetFiltros extends ConsumerState<_BottomSheetFiltros> {
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
-    final filtros = ref.watch(filtrosColectivosProvider);
-    final notifier = ref.read(filtrosColectivosProvider.notifier);
+    final transversal = ref.watch(filtrosTransversalesProvider);
+    final notifier = ref.read(filtrosTransversalesProvider.notifier);
     final asyncTopics = ref.watch(topicsProvider);
+    final hayFiltrosTab = widget.incluirIdiomas
+        ? !transversal.estaVacio
+        : (transversal.tieneTopics || transversal.tieneTerritorio);
 
     return SafeArea(
       child: Padding(
@@ -433,10 +515,12 @@ class _EstadoBottomSheetFiltros extends ConsumerState<_BottomSheetFiltros> {
                           ),
                     ),
                   ),
-                  if (!filtros.estaVacio)
+                  if (hayFiltrosTab)
                     TextButton(
                       onPressed: () {
-                        notifier.limpiar();
+                        notifier.limpiarTopics();
+                        notifier.establecerTerritorio(null);
+                        if (widget.incluirIdiomas) notifier.limpiarIdiomas();
                         _controllerTerritorio.clear();
                       },
                       child: Text(textos.filtersClear),
@@ -462,7 +546,7 @@ class _EstadoBottomSheetFiltros extends ConsumerState<_BottomSheetFiltros> {
                     for (final topic in topics)
                       FilterChip(
                         label: Text(topic.name),
-                        selected: filtros.slugsTopics.contains(topic.slug),
+                        selected: transversal.slugsTopics.contains(topic.slug),
                         onSelected: (_) => notifier.alternarTopic(topic.slug),
                       ),
                   ],
@@ -482,6 +566,28 @@ class _EstadoBottomSheetFiltros extends ConsumerState<_BottomSheetFiltros> {
                 ),
                 onChanged: notifier.establecerTerritorio,
               ),
+              if (widget.incluirIdiomas) ...[
+                const SizedBox(height: 24),
+                Text(
+                  textos.filterByLanguage,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final opcion in _opcionesIdioma)
+                      FilterChip(
+                        label: Text(opcion.etiqueta),
+                        selected: transversal.codigosIdiomasOverride
+                            .contains(opcion.codigo),
+                        onSelected: (_) =>
+                            notifier.alternarIdioma(opcion.codigo),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerRight,
@@ -497,3 +603,17 @@ class _EstadoBottomSheetFiltros extends ConsumerState<_BottomSheetFiltros> {
     );
   }
 }
+
+class _OpcionIdiomaColectivo {
+  const _OpcionIdiomaColectivo({required this.codigo, required this.etiqueta});
+  final String codigo;
+  final String etiqueta;
+}
+
+const List<_OpcionIdiomaColectivo> _opcionesIdioma = [
+  _OpcionIdiomaColectivo(codigo: 'es', etiqueta: 'Castellano'),
+  _OpcionIdiomaColectivo(codigo: 'ca', etiqueta: 'Català'),
+  _OpcionIdiomaColectivo(codigo: 'eu', etiqueta: 'Euskara'),
+  _OpcionIdiomaColectivo(codigo: 'gl', etiqueta: 'Galego'),
+  _OpcionIdiomaColectivo(codigo: 'en', etiqueta: 'English'),
+];

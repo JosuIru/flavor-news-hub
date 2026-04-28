@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/collective.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../../core/providers/preferences_provider.dart';
 import '../../../core/utils/territory_scoring.dart';
 import '../../offline_seed/data/seed_cache.dart';
 import '../../offline_seed/data/seed_loader.dart';
-import 'filtros_colectivos.dart';
 
 @immutable
 class EstadoDirectorioColectivos {
@@ -53,20 +53,28 @@ class EstadoDirectorioColectivos {
 class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColectivos> {
   @override
   Future<EstadoDirectorioColectivos> build() async {
-    final filtros = ref.watch(filtrosColectivosProvider);
+    final transversal = ref.watch(filtrosTransversalesProvider);
     final api = ref.watch(flavorNewsApiProvider);
     final territorioBase = ref.watch(
       preferenciasProvider.select((p) => p.territorioBase),
     );
+    // El directorio es content-agnostic: no aplicamos `codigosIdiomas`
+    // porque un colectivo es la entidad, no un texto en un idioma. Sí
+    // aplicamos topics y territorio (los dos ejes que tienen sentido
+    // editorialmente: temática del colectivo y dónde opera).
+    final filtroTerritorio = transversal.codigoTerritorio;
+    final topicsCsv = transversal.topicsParaQueryParam;
+    final filtroSinTopicsNiTerritorio =
+        !transversal.tieneTopics && !transversal.tieneTerritorio;
     try {
       final primera = await api.fetchCollectives(
         page: 1,
-        topic: filtros.topicsParaQueryParam,
-        territory: filtros.codigoTerritorio,
+        topic: topicsCsv,
+        territory: filtroTerritorio,
       );
       // Snapshot sólo si la petición era sin filtros (es lo que queremos
       // como fallback completo; no queremos cachear una subsección).
-      if (filtros.estaVacio) {
+      if (filtroSinTopicsNiTerritorio) {
         guardarSnapshotSeed(
           'collectives.json',
           primera.items
@@ -99,7 +107,11 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
       // bundleado. Aplicamos los filtros de territorio/topic en cliente.
       if (!error.esProblemaRed) rethrow;
       final seed = await ref.watch(colectivosSeedProvider.future);
-      final filtrados = _aplicarFiltros(seed, filtros);
+      final filtrados = _aplicarFiltros(
+        seed,
+        slugsTopics: transversal.slugsTopics,
+        codigoTerritorio: filtroTerritorio,
+      );
       return EstadoDirectorioColectivos(
         items: _ordenarLocalPrimero(filtrados, territorioBase),
         paginaActual: 1,
@@ -142,18 +154,17 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
   }
 
   List<Collective> _aplicarFiltros(
-    List<Collective> todos,
-    FiltrosColectivos filtros,
-  ) {
+    List<Collective> todos, {
+    required List<String> slugsTopics,
+    String? codigoTerritorio,
+  }) {
     Iterable<Collective> iter = todos;
-    final terr = filtros.codigoTerritorio;
-    if (terr != null && terr.isNotEmpty) {
-      final needle = terr.toLowerCase();
+    if (codigoTerritorio != null && codigoTerritorio.isNotEmpty) {
+      final needle = codigoTerritorio.toLowerCase();
       iter = iter.where((c) => c.territory.toLowerCase().contains(needle));
     }
-    final slugs = filtros.topicsParaQueryParam;
-    if (slugs != null && slugs.isNotEmpty) {
-      final set = slugs.split(',').map((s) => s.trim()).toSet();
+    if (slugsTopics.isNotEmpty) {
+      final set = slugsTopics.toSet();
       iter = iter.where((c) => c.topics.any((t) => set.contains(t.slug)));
     }
     return iter.toList();
@@ -176,15 +187,15 @@ class ColectivosDirectorioNotifier extends AsyncNotifier<EstadoDirectorioColecti
     ));
 
     try {
-      final filtros = ref.read(filtrosColectivosProvider);
+      final transversal = ref.read(filtrosTransversalesProvider);
       final api = ref.read(flavorNewsApiProvider);
       final territorioBase = ref.read(
         preferenciasProvider.select((p) => p.territorioBase),
       );
       final siguiente = await api.fetchCollectives(
         page: estadoActual.paginaActual + 1,
-        topic: filtros.topicsParaQueryParam,
-        territory: filtros.codigoTerritorio,
+        topic: transversal.topicsParaQueryParam,
+        territory: transversal.codigoTerritorio,
       );
       // Ordenamos sólo los nuevos: reordenar los ya mostrados haría que
       // un colectivo "saltara" a una posición que el usuario ya había
