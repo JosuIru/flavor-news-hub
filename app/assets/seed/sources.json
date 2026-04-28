@@ -5207,5 +5207,240 @@
       "educacion"
     ],
     "es_movimiento": true
+  },
+  {
+    "id": 7411,
+    "name": "TVPTS",
+    "slug": "yt-tvpts",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCsTzM78dEUvL2p2VcuJIbew",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UCsTzM78dEUvL2p2VcuJIbew",
+    "territory": "Argentina",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7412,
+    "name": "Cubainformación TV",
+    "slug": "yt-cubainformacion-tv",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCLhFJ2A2Yx9Ro8dJPfBuFGw",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UCLhFJ2A2Yx9Ro8dJPfBuFGw",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional",
+      "memoria-historica"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7413,
+    "name": "Misión Verdad",
+    "slug": "yt-mision-verdad",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCtz_1k1t3Xdqa87zIYTqDQg",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UCtz_1k1t3Xdqa87zIYTqDQg",
+    "territory": "Venezuela",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7414,
+    "name": "CLACSO TV",
+    "slug": "yt-clacso-tv",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCcAFzGJh_KTNwel7-gCpDVQ",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UCcAFzGJh_KTNwel7-gCpDVQ",
+    "territory": "Latinoamérica",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional",
+      "educacion"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7415,
+    "name": "NODAL",
+    "slug": "yt-nodal",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC-qmVwrNHRUd-8oGJ6hbTfg",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UC-qmVwrNHRUd-8oGJ6hbTfg",
+    "territory": "Latinoamérica",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "es_movimiento": true
+  },
+  {
+    "id": 7416,
+    "name": "subMedia en español",
+    "slug": "submedia-en-espanol",
+    "feed_url": "https://kolektiva.media/feeds/videos.xml?videoChannelId=4818",
+    "feed_type": "rss",
+    "website_url": "https://kolektiva.media/c/submedia_en_espanol",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "politica",
+      "internacional"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Canal PeerTube en Kolektiva. Cada vídeo tiene su propia licencia.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7417,
+    "name": "España XR Tube",
+    "slug": "espana-xr-tube",
+    "feed_url": "https://kolektiva.media/feeds/videos.xml?videoChannelId=122",
+    "feed_type": "rss",
+    "website_url": "https://kolektiva.media/c/iberia@tube.rebellion.global",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "ecologismo",
+      "politica"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Canal Extinction Rebellion Iberia federado en Kolektiva.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7418,
+    "name": "Stuart Christie Archive",
+    "slug": "stuart-christie-archive",
+    "feed_url": "https://kolektiva.media/feeds/videos.xml?videoChannelId=2020",
+    "feed_type": "rss",
+    "website_url": "https://kolektiva.media/c/stuartchristiearchive",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "memoria-historica",
+      "politica"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Archivo Stuart Christie. Cada vídeo tiene su propia licencia.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7419,
+    "name": "escupamos.la.historia",
+    "slug": "escupamos-la-historia",
+    "feed_url": "https://kolektiva.media/feeds/videos.xml?videoChannelId=3019",
+    "feed_type": "rss",
+    "website_url": "https://kolektiva.media/c/escupamos.la.historia",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "memoria-historica",
+      "cultura"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Canal documental en Kolektiva. Cada vídeo tiene su propia licencia.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7420,
+    "name": "AnarcoHacking",
+    "slug": "anarcohacking",
+    "feed_url": "https://kolektiva.media/feeds/videos.xml?videoChannelId=3063",
+    "feed_type": "rss",
+    "website_url": "https://kolektiva.media/c/anarcho.hacking",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "tecnologia-soberana",
+      "politica"
+    ],
+    "medium_type": "video",
+    "broadcast_format": [
+      "peertube",
+      "web"
+    ],
+    "content_license": "mixed",
+    "legal_note": "Canal anarco-hacking en Kolektiva. Cada vídeo tiene su propia licencia.",
+    "has_live_stream": false,
+    "live_stream_permit": "none",
+    "es_movimiento": true
+  },
+  {
+    "id": 7421,
+    "name": "Café Kyoto",
+    "slug": "yt-cafe-kyoto",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC7ah60G8vVmj4S1bF3D5JlA",
+    "feed_type": "youtube",
+    "website_url": "https://www.youtube.com/channel/UC7ah60G8vVmj4S1bF3D5JlA",
+    "territory": "Internacional",
+    "languages": [
+      "es"
+    ],
+    "topics": [
+      "educacion",
+      "cultura",
+      "politica"
+    ],
+    "es_movimiento": true
   }
 ]
