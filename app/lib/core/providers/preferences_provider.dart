@@ -13,6 +13,7 @@ class PreferenciasUsuario {
     required this.modoTema,
     required this.codigoIdioma,
     required this.urlInstanciaBackend,
+    required this.nombreInstancia,
     required this.escalaTexto,
     required this.territorioBase,
     required this.onboardingCompleto,
@@ -27,6 +28,13 @@ class PreferenciasUsuario {
   /// URL de la instancia backend (namespace `flavor-news/v1`). Por defecto
   /// apunta a la instancia oficial; cualquier autohospedaje puede cambiarla.
   final String urlInstanciaBackend;
+
+  /// Nombre legible de la instancia actual (p. ej. "Flavor", "Mi
+  /// servidor", "Pruebas"). Cadena vacía = la UI cae al host de la URL
+  /// como fallback. Pre-pensado para el futuro selector de instancias:
+  /// cada instancia guardada llevará su propio nombre, y este campo
+  /// contiene el de la activa.
+  final String nombreInstancia;
 
   /// Factor de escalado de texto (0.8 – 1.4). 1.0 = default del sistema.
   final double escalaTexto;
@@ -49,6 +57,7 @@ class PreferenciasUsuario {
     String? codigoIdioma,
     bool borrarCodigoIdioma = false,
     String? urlInstanciaBackend,
+    String? nombreInstancia,
     double? escalaTexto,
     String? territorioBase,
     bool? onboardingCompleto,
@@ -57,6 +66,7 @@ class PreferenciasUsuario {
       modoTema: modoTema ?? this.modoTema,
       codigoIdioma: borrarCodigoIdioma ? null : (codigoIdioma ?? this.codigoIdioma),
       urlInstanciaBackend: urlInstanciaBackend ?? this.urlInstanciaBackend,
+      nombreInstancia: nombreInstancia ?? this.nombreInstancia,
       escalaTexto: escalaTexto ?? this.escalaTexto,
       territorioBase: territorioBase ?? this.territorioBase,
       onboardingCompleto: onboardingCompleto ?? this.onboardingCompleto,
@@ -69,6 +79,7 @@ class _Claves {
   static const themeMode = 'fnh.pref.themeMode';
   static const localeCode = 'fnh.pref.localeCode';
   static const backendUrl = 'fnh.pref.backendUrl';
+  static const backendName = 'fnh.pref.backendName';
   static const textScale = 'fnh.pref.textScale';
   static const territorioBase = 'fnh.pref.territorioBase';
   static const onboardingCompleto = 'fnh.pref.onboardingCompleto';
@@ -120,6 +131,7 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
       modoTema: modoTema,
       codigoIdioma: sp.getString(_Claves.localeCode),
       urlInstanciaBackend: _saneoUrlBackend(sp.getString(_Claves.backendUrl)),
+      nombreInstancia: (sp.getString(_Claves.backendName) ?? '').trim(),
       escalaTexto: _saneoEscalaTexto(sp.getDouble(_Claves.textScale)),
       territorioBase: sp.getString(_Claves.territorioBase) ?? '',
       onboardingCompleto: sp.getBool(_Claves.onboardingCompleto) ?? false,
@@ -170,6 +182,18 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
     final urlNormalizada = nuevaUrl.trim().isEmpty ? urlInstanciaOficialDefault : nuevaUrl.trim();
     state = state.copyWith(urlInstanciaBackend: urlNormalizada);
     await _sharedPrefs.setString(_Claves.backendUrl, urlNormalizada);
+  }
+
+  /// Persiste el nombre legible de la instancia activa. Cadena vacía
+  /// borra la clave y el ListTile vuelve al fallback (host de la URL).
+  Future<void> establecerNombreInstancia(String nuevoNombre) async {
+    final nombreLimpio = nuevoNombre.trim();
+    state = state.copyWith(nombreInstancia: nombreLimpio);
+    if (nombreLimpio.isEmpty) {
+      await _sharedPrefs.remove(_Claves.backendName);
+    } else {
+      await _sharedPrefs.setString(_Claves.backendName, nombreLimpio);
+    }
   }
 
   Future<void> establecerEscalaTexto(double escala) async {

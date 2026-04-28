@@ -9,6 +9,7 @@ import '../../../core/config/canal_distribucion.dart';
 import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/idioma_contenido/sheet_politica_idioma_contenido.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/settings_sync.dart';
 import '../../../core/utils/territory_normalizer.dart';
 import '../../actualizaciones/data/actualizaciones_provider.dart';
 import '../../widgets/widgets_refrescador.dart';
@@ -173,7 +174,7 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.cloud_outlined),
-                title: Text(textos.settingsBackendUrl),
+                title: Text(_etiquetaInstancia(preferencias)),
                 subtitle: Text(
                   preferencias.urlInstanciaBackend,
                   maxLines: 1,
@@ -183,6 +184,7 @@ class SettingsScreen extends ConsumerWidget {
                   context,
                   notifier,
                   preferencias.urlInstanciaBackend,
+                  preferencias.nombreInstancia,
                   textos,
                 ),
               ),
@@ -466,24 +468,53 @@ class SettingsScreen extends ConsumerWidget {
     BuildContext context,
     PreferenciasNotifier notifier,
     String urlActual,
+    String nombreActual,
     AppLocalizations textos,
   ) async {
-    final resultado = await showDialog<String?>(
+    final resultado = await showDialog<_ResultadoEditarInstancia?>(
       context: context,
       builder: (ctx) => _DialogoEditarUrl(
         urlInicial: urlActual,
+        nombreInicial: nombreActual,
         textos: textos,
       ),
     );
     if (resultado != null) {
-      await notifier.establecerUrlBackend(resultado);
+      await notifier.establecerUrlBackend(resultado.url);
+      await notifier.establecerNombreInstancia(resultado.nombre);
     }
   }
 }
 
+/// Etiqueta a mostrar como título del ListTile de la instancia: si el
+/// usuario fijó un nombre, ese; si no, el host de la URL como pista
+/// rápida ("flavor.gailu.it" en lugar de la URL completa que ya está en
+/// el subtítulo). Si la URL es inválida cae a la cadena por defecto.
+String _etiquetaInstancia(PreferenciasUsuario prefs) {
+  if (prefs.nombreInstancia.isNotEmpty) return prefs.nombreInstancia;
+  final uri = Uri.tryParse(prefs.urlInstanciaBackend);
+  if (uri != null && uri.host.isNotEmpty) return uri.host;
+  return prefs.urlInstanciaBackend;
+}
+
+/// Tupla devuelta por `_DialogoEditarUrl`. Se usa una clase explícita en
+/// lugar de un record `({String url, String nombre})` para que las
+/// llamadas a `Navigator.pop` sean inequívocas y `showDialog` infiera
+/// el genérico sin ambigüedades.
+class _ResultadoEditarInstancia {
+  const _ResultadoEditarInstancia({required this.url, required this.nombre});
+  final String url;
+  final String nombre;
+}
+
 class _DialogoEditarUrl extends StatefulWidget {
-  const _DialogoEditarUrl({required this.urlInicial, required this.textos});
+  const _DialogoEditarUrl({
+    required this.urlInicial,
+    required this.nombreInicial,
+    required this.textos,
+  });
   final String urlInicial;
+  final String nombreInicial;
   final AppLocalizations textos;
 
   @override
@@ -492,17 +523,21 @@ class _DialogoEditarUrl extends StatefulWidget {
 
 class _EstadoDialogoEditarUrl extends State<_DialogoEditarUrl> {
   late final TextEditingController _controllerUrl;
+  late final TextEditingController _controllerNombre;
   String? _mensajeErrorUrl;
+  bool _sugiriendoNombre = false;
 
   @override
   void initState() {
     super.initState();
     _controllerUrl = TextEditingController(text: widget.urlInicial);
+    _controllerNombre = TextEditingController(text: widget.nombreInicial);
   }
 
   @override
   void dispose() {
     _controllerUrl.dispose();
+    _controllerNombre.dispose();
     super.dispose();
   }
 
@@ -518,47 +553,98 @@ class _EstadoDialogoEditarUrl extends State<_DialogoEditarUrl> {
     return null;
   }
 
+  /// Pide a la URL escrita el `site_name` declarado por la instancia y
+  /// rellena el campo Nombre con la respuesta. Si la URL es inválida,
+  /// el backend no responde o no expone el campo (plugin viejo) muestra
+  /// un SnackBar y deja el campo como esté.
+  Future<void> _sugerirNombreDesdeInstancia() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final urlIntroducida = _controllerUrl.text.trim();
+    final errorUrl = _validar(urlIntroducida);
+    if (errorUrl != null || urlIntroducida.isEmpty) {
+      setState(() => _mensajeErrorUrl = errorUrl ?? 'Introduce primero la URL.');
+      return;
+    }
+    setState(() => _sugiriendoNombre = true);
+    final nombre = await obtenerNombreSitioRemoto(Uri.parse(urlIntroducida));
+    if (!mounted) return;
+    setState(() => _sugiriendoNombre = false);
+    if (nombre == null) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('No se pudo obtener el nombre desde la instancia.'),
+      ));
+      return;
+    }
+    setState(() => _controllerNombre.text = nombre);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.textos.settingsBackendUrl),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.textos.settingsBackendUrlDescription,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _controllerUrl,
-            autofocus: true,
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-            decoration: InputDecoration(
-              hintText: urlInstanciaOficialDefault,
-              errorText: _mensajeErrorUrl,
-              border: const OutlineInputBorder(),
-              suffixIcon: _controllerUrl.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _controllerUrl.clear();
-                        setState(() => _mensajeErrorUrl = null);
-                      },
-                    ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.textos.settingsBackendUrlDescription,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
-            onChanged: (valor) => setState(() => _mensajeErrorUrl = _validar(valor)),
-          ),
-        ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controllerUrl,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: 'URL',
+                hintText: urlInstanciaOficialDefault,
+                errorText: _mensajeErrorUrl,
+                border: const OutlineInputBorder(),
+                suffixIcon: _controllerUrl.text.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _controllerUrl.clear();
+                          setState(() => _mensajeErrorUrl = null);
+                        },
+                      ),
+              ),
+              onChanged: (valor) => setState(() => _mensajeErrorUrl = _validar(valor)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controllerNombre,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: 'Nombre (opcional)',
+                hintText: 'Mi instancia',
+                border: const OutlineInputBorder(),
+                suffixIcon: TextButton.icon(
+                  onPressed: _sugiriendoNombre ? null : _sugerirNombreDesdeInstancia,
+                  icon: _sugiriendoNombre
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_download_outlined),
+                  label: const Text('Sugerir'),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(urlInstanciaOficialDefault),
+          onPressed: () => Navigator.of(context).pop(
+            const _ResultadoEditarInstancia(url: urlInstanciaOficialDefault, nombre: ''),
+          ),
           child: const Text('Restaurar por defecto'),
         ),
         TextButton(
@@ -573,7 +659,10 @@ class _EstadoDialogoEditarUrl extends State<_DialogoEditarUrl> {
               setState(() => _mensajeErrorUrl = error);
               return;
             }
-            Navigator.of(context).pop(valor);
+            Navigator.of(context).pop(_ResultadoEditarInstancia(
+              url: valor,
+              nombre: _controllerNombre.text.trim(),
+            ));
           },
           child: Text(widget.textos.commonOk),
         ),
