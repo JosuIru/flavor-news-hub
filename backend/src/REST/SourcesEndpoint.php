@@ -31,6 +31,7 @@ final class SourcesEndpoint
                     'territory' => ['type' => 'string'],
                     'language'  => ['type' => 'string'],
                     's'         => ['type' => 'string', 'description' => 'Búsqueda por texto libre.'],
+                    'ids'       => ['type' => 'string', 'description' => 'Lista CSV de IDs para fetch batch (evita N+1 desde el cliente).'],
                 ],
             ],
         ]);
@@ -55,6 +56,52 @@ final class SourcesEndpoint
     {
         $pagina = max(1, (int) $request->get_param('page'));
         $porPagina = min(100, max(1, (int) $request->get_param('per_page')));
+
+        // Fetch batch por IDs explícitos: caso de uso típico es la
+        // ficha de colectivo, que tiene una lista de sourceIds y
+        // antes hacía N peticiones GET /sources/{id} en paralelo.
+        // Devolvemos exactamente la selección, saltándonos filtros
+        // de territorio/idioma/topic — el cliente ya ha decidido qué
+        // quiere ver. Mantenemos el filtro de "activos" por
+        // coherencia con la semántica del endpoint singular.
+        $csvIds = trim((string) $request->get_param('ids'));
+        if ($csvIds !== '') {
+            $idsSolicitados = array_values(array_unique(array_filter(array_map(
+                static fn(string $token): int => (int) trim($token),
+                explode(',', $csvIds)
+            ))));
+            if ($idsSolicitados === []) {
+                $respuesta = new \WP_REST_Response([]);
+                $respuesta->header('X-WP-Total', '0');
+                $respuesta->header('X-WP-TotalPages', '0');
+                return $respuesta;
+            }
+            // Cap defensivo: el cap natural de la URL impone su propio
+            // límite, pero rechazamos peticiones manifiestamente
+            // abusivas (un colectivo no debería tener cientos de
+            // medios; si los tiene, paginará vía /sources con filtros).
+            $idsSolicitados = array_slice($idsSolicitados, 0, 100);
+            $consultaPorIds = new \WP_Query([
+                'post_type'      => Source::SLUG,
+                'post_status'    => 'publish',
+                'post__in'       => $idsSolicitados,
+                'posts_per_page' => count($idsSolicitados),
+                'orderby'        => 'post__in',
+                'meta_query'     => [
+                    'relation' => 'OR',
+                    ['key' => '_fnh_active', 'value' => '1', 'compare' => '='],
+                    ['key' => '_fnh_active', 'compare' => 'NOT EXISTS'],
+                ],
+            ]);
+            $coleccionPorIds = [];
+            foreach ($consultaPorIds->posts as $postEncontrado) {
+                $coleccionPorIds[] = SourceTransformer::transformarCompleto($postEncontrado);
+            }
+            $respuesta = new \WP_REST_Response($coleccionPorIds);
+            $respuesta->header('X-WP-Total', (string) count($coleccionPorIds));
+            $respuesta->header('X-WP-TotalPages', '1');
+            return $respuesta;
+        }
 
         $argumentosQuery = [
             'post_type'      => Source::SLUG,

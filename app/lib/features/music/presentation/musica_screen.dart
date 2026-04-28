@@ -470,6 +470,8 @@ class _TilePista extends StatelessWidget {
                 width: 44,
                 height: 44,
                 fit: BoxFit.cover,
+                memCacheWidth: 88,
+                memCacheHeight: 88,
                 errorWidget: (_, __, ___) => const Icon(Icons.music_note),
               ),
             )

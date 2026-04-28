@@ -215,6 +215,12 @@ class _ImagenDestacada extends StatelessWidget {
       child: CachedNetworkImage(
         imageUrl: url,
         fit: BoxFit.cover,
+        // Cap el decode al doble del tamaño visual (~2x para densidades
+        // altas). Sin esto una thumbnail 1500×1500 del feed se decoded
+        // a tamaño completo y bloquea ~9 MB en memoria por tile, con
+        // jank al hacer scroll por el feed paginado.
+        memCacheWidth: 192,
+        memCacheHeight: 192,
         errorWidget: (_, __, ___) => const SizedBox.shrink(),
         placeholder: (ctx, _) => Container(
           color: Theme.of(ctx).colorScheme.surfaceContainerHighest,

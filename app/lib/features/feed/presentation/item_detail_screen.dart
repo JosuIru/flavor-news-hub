@@ -227,6 +227,10 @@ class _CuerpoDetalle extends ConsumerWidget {
               child: CachedNetworkImage(
                 imageUrl: item.mediaUrl,
                 fit: BoxFit.cover,
+                // Imagen destacada del detalle: cap a 1080px de ancho.
+                // Cubre pantallas xxxhdpi sin descomprimir originales
+                // de 4K que algunos medios sirven y consumen ~20+ MB.
+                memCacheWidth: 1080,
                 errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),

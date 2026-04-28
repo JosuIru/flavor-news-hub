@@ -255,59 +255,67 @@ class MisMediosScreen extends ConsumerWidget {
     FuentesPersonalesNotifier notifier,
     AppLocalizations textos,
   ) async {
+    // El controller vive sólo durante el diálogo. Sin try/finally se
+    // queda vivo si se lanza una excepción dentro del flujo (lectura
+    // del portapapeles, showDialog, importarOpml…) y Flutter avisa
+    // del leak en debug. dispose() es idempotente.
     final controller = TextEditingController();
-    // Pre-rellena con el portapapeles si parece OPML (empieza con `<?xml`
-    // o `<opml`) — ahorra un paso al usuario en el caso típico.
-    final clip = await Clipboard.getData('text/plain');
-    final clipTexto = (clip?.text ?? '').trim();
-    if (clipTexto.startsWith('<?xml') || clipTexto.startsWith('<opml')) {
-      controller.text = clipTexto;
-    }
-    if (!context.mounted) return;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(textos.opmlImport),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: TextField(
-            controller: controller,
-            maxLines: 10,
-            decoration: InputDecoration(
-              hintText: textos.opmlImportHint,
-              border: const OutlineInputBorder(),
+    try {
+      // Pre-rellena con el portapapeles si parece OPML (empieza con `<?xml`
+      // o `<opml`) — ahorra un paso al usuario en el caso típico.
+      final clip = await Clipboard.getData('text/plain');
+      final clipTexto = (clip?.text ?? '').trim();
+      if (clipTexto.startsWith('<?xml') || clipTexto.startsWith('<opml')) {
+        controller.text = clipTexto;
+      }
+      if (!context.mounted) return;
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(textos.opmlImport),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: TextField(
+              controller: controller,
+              maxLines: 10,
+              decoration: InputDecoration(
+                hintText: textos.opmlImportHint,
+                border: const OutlineInputBorder(),
+              ),
             ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(textos.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(textos.personalSourcesAddAction),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(textos.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(textos.personalSourcesAddAction),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    final texto = controller.text.trim();
-    if (texto.isEmpty) return;
-    final cuenta = await notifier.importarOpml(texto);
-    if (!context.mounted) return;
-    if (cuenta < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(textos.personalSourcesImportInvalid)),
       );
-    } else if (cuenta == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(textos.opmlImportEmpty)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(textos.opmlImportSuccess(cuenta))),
-      );
+      if (ok != true) return;
+      final texto = controller.text.trim();
+      if (texto.isEmpty) return;
+      final cuenta = await notifier.importarOpml(texto);
+      if (!context.mounted) return;
+      if (cuenta < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(textos.personalSourcesImportInvalid)),
+        );
+      } else if (cuenta == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(textos.opmlImportEmpty)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(textos.opmlImportSuccess(cuenta))),
+        );
+      }
+    } finally {
+      controller.dispose();
     }
   }
 }

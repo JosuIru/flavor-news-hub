@@ -359,6 +359,11 @@ class _TarjetaVideo extends ConsumerWidget {
                     CachedNetworkImage(
                       imageUrl: item.mediaUrl,
                       fit: BoxFit.cover,
+                      // Thumbnail 16:9 de un grid: 720px cubre el ancho
+                      // máximo razonable de una columna en xxxhdpi y
+                      // evita decodificar miniaturas de YouTube de
+                      // 1280×720 a tamaño completo.
+                      memCacheWidth: 720,
                       errorWidget: (_, __, ___) => Container(
                         color: esquema.surfaceContainerHighest,
                       ),

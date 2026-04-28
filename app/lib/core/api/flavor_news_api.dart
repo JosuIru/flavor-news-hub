@@ -113,6 +113,20 @@ class FlavorNewsApi {
     return Source.fromJson(_decodificarObjeto(respuesta.body));
   }
 
+  /// Resuelve N sources en una única petición. El backend devuelve los
+  /// que existen y están activos; los IDs no encontrados se omiten
+  /// silenciosamente (el cliente debe asumir que el resultado puede
+  /// ser más corto que la entrada).
+  Future<List<Source>> fetchSourcesByIds(List<int> ids) async {
+    if (ids.isEmpty) return const [];
+    final idsUnicos = ids.toSet().toList(growable: false);
+    final respuesta = await _get(
+      'sources',
+      query: {'ids': idsUnicos.join(',')},
+    );
+    return _parsearLista<Source>(respuesta.body, Source.fromJson);
+  }
+
   Future<SourceSubmissionResult> submitSource(SourceSubmission submission) async {
     final respuesta = await _post('sources/submit', body: submission.toJson());
     return SourceSubmissionResult.fromJson(_decodificarObjeto(respuesta.body));

@@ -18,22 +18,28 @@ final colectivoDetalleProvider =
 });
 
 /// Resuelve los `Source` vinculados a un colectivo a partir de la lista
-/// de `sourceIds`. Paralelizamos los fetches y toleramos fallos
-/// individuales: si un ID no existe en el backend (p. ej. catálogo
-/// desincronizado) se omite sin romper la pantalla.
+/// de `sourceIds`. Una única petición batch al backend
+/// (`/sources?ids=...`) en lugar de N peticiones paralelas; los IDs que
+/// el backend no encuentra (catálogo desincronizado) se omiten en
+/// origen sin romper la pantalla. Si el batch falla por completo
+/// (red, 5xx) re-elevamos para que el `.when` muestre el mensaje
+/// genérico.
 final mediosDeColectivoProvider =
     FutureProvider.autoDispose.family<List<Source>, List<int>>((ref, ids) async {
   if (ids.isEmpty) return const [];
   final api = ref.watch(flavorNewsApiProvider);
-  Future<Source?> resolver(int id) async {
-    try {
-      return await api.fetchSource(id);
-    } catch (_) {
-      return null;
-    }
+  final mediosResueltos = await api.fetchSourcesByIds(ids);
+  // El backend con `orderby=post__in` ya respeta el orden enviado, pero
+  // hacemos un sort defensivo por si añadimos algún caching intermedio
+  // que reordene.
+  final indicePorId = <int, int>{};
+  for (var i = 0; i < ids.length; i++) {
+    indicePorId[ids[i]] = i;
   }
-  final resueltos = await Future.wait(ids.map(resolver));
-  return resueltos.whereType<Source>().toList(growable: false);
+  final ordenados = [...mediosResueltos]..sort(
+      (a, b) => (indicePorId[a.id] ?? 1 << 30).compareTo(indicePorId[b.id] ?? 1 << 30),
+    );
+  return List.unmodifiable(ordenados);
 });
 
 class CollectiveDetailScreen extends ConsumerWidget {

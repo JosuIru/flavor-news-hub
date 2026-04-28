@@ -185,6 +185,12 @@ final class ItemsEndpoint
         // todos los items son del mismo medio y el interleave no aplica.
         $posts = $idSourceDirecto > 0 ? $consulta->posts : InterleaveSources::aplicar($consulta->posts);
 
+        // Precarga batch: una query para todas las metas de items + una
+        // para todas las metas de sources únicos + una para términos.
+        // Sin esto el foreach disparaba ~6 queries por item × 20 items
+        // = >120 queries de postmeta innecesarias.
+        ItemTransformer::precargarCachesParaListado($posts);
+
         $coleccion = [];
         foreach ($posts as $post) {
             $coleccion[] = ItemTransformer::transformar($post);

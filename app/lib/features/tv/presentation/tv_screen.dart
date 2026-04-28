@@ -432,6 +432,8 @@ class _ItemTile extends StatelessWidget {
                 width: 56,
                 height: 56,
                 fit: BoxFit.cover,
+                memCacheWidth: 112,
+                memCacheHeight: 112,
                 errorWidget: (_, __, ___) => Container(
                   width: 56,
                   height: 56,
