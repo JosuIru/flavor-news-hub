@@ -347,17 +347,12 @@ final class ItemsEndpoint
     }
 
     /**
-     * Lista completa de IDs de sources activos. Cacheada en memoria por
-     * request para no repetir la query desde los distintos callers.
+     * Lista completa de IDs de sources activos.
      *
      * @return list<int>
      */
     private static function idsDeSourcesActivos(): array
     {
-        static $cache = null;
-        if ($cache !== null) {
-            return $cache;
-        }
         // Política permisiva: una source se considera activa si tiene
         // `_fnh_active = '1'` *o* si no tiene la meta escrita (default
         // `true` del schema de register_post_meta). Antes filtrábamos
@@ -385,8 +380,7 @@ final class ItemsEndpoint
                 ],
             ],
         ]);
-        $cache = array_map('intval', $consulta->posts);
-        return $cache;
+        return array_map('intval', $consulta->posts);
     }
 
     private static function respuestaListaVacia(): \WP_REST_Response
