@@ -22,6 +22,30 @@ final class FeedIngester
     private const NOMBRE_LOCK_TRANSIENT = 'fnh_ingest_lock';
 
     /**
+     * Intervalo mínimo entre dos peticiones consecutivas al mismo host
+     * dentro de una ingesta global (microsegundos). Evita que servicios
+     * con anti-scraping (YouTube `feeds/videos.xml`, WAFs tipo Cloudflare
+     * o mod_security en hostings compartidos) respondan 404/403 a una
+     * ráfaga de peticiones desde la misma IP. Es una causa frecuente de
+     * errores espurios en el log: el feed_url está bien y el canal
+     * responde a peticiones individuales, pero la ingesta los pide tan
+     * seguidos que el servidor remoto los rechaza.
+     *
+     * 1.5 s funciona en YouTube; ajustable por host vía filtro
+     * `fnh_intervalo_minimo_host_microseg`.
+     */
+    private const INTERVALO_MINIMO_HOST_MICROSEG = 1_500_000;
+
+    /**
+     * Mapa host => micro-timestamp de la última petición. Vive durante
+     * la ingesta y se usa para el throttle reactivo. Reset al inicio de
+     * `ingestarTodasLasFuentesActivas()`.
+     *
+     * @var array<string, float>
+     */
+    private static array $ultimoRequestPorHost = [];
+
+    /**
      * Dominios cuyo certificado TLS está mal configurado del lado del
      * servidor (cadena incompleta, autofirmado, expirado…) y que
      * fallan con `cURL error 60: SSL certificate problem` aunque el
@@ -61,6 +85,11 @@ final class FeedIngester
         }
 
         try {
+            // Reset del registro de peticiones por host: cada ingesta
+            // global es una "ronda" independiente. Sin este reset, una
+            // segunda ingesta en el mismo proceso PHP heredaría
+            // timestamps obsoletos y aplicaría throttles innecesarios.
+            self::$ultimoRequestPorHost = [];
             $idsFuentesActivas = self::obtenerIdsFuentesActivas();
             $resumenGlobal = [
                 'sources_processed'   => 0,
@@ -201,6 +230,11 @@ final class FeedIngester
         // El sufijo _mod que había aquí nunca borraba nada.
         delete_transient('feed_' . $hashFeed);
         delete_transient('feed_mod_' . $hashFeed);
+        // Throttle reactivo por host: si ya pedimos al mismo host hace
+        // <1.5s, dormimos la diferencia. Evita que YouTube/WAFs
+        // devuelvan 404/403 espurios cuando hay 50+ canales seguidos en
+        // la cola. No pausa cuando el host es nuevo en la ronda actual.
+        self::aplicarThrottlePorHost($hostFeed);
         $feedDescargado = fetch_feed($urlFeed);
         if ($filtroSslVerify !== null) {
             remove_filter('https_ssl_verify', $filtroSslVerify, 10);
@@ -283,6 +317,44 @@ final class FeedIngester
      *
      * @return list<int>
      */
+    /**
+     * Throttle reactivo por host: si la última petición a este host se
+     * hizo dentro del intervalo mínimo configurado, duerme el resto.
+     * No registra timestamps de hosts vacíos (URLs malformadas) — esos
+     * fallan en otra capa.
+     *
+     * Filtro `fnh_intervalo_minimo_host_microseg` para ajustar por host
+     * (recibe `int $microseg` y `string $host`); devolver 0 desactiva
+     * el throttle (útil en tests, donde las peticiones están mockeadas
+     * y el sleep no aporta nada).
+     */
+    private static function aplicarThrottlePorHost(string $host): void
+    {
+        if ($host === '') {
+            return;
+        }
+        $intervaloMin = (int) apply_filters(
+            'fnh_intervalo_minimo_host_microseg',
+            self::INTERVALO_MINIMO_HOST_MICROSEG,
+            $host
+        );
+        if ($intervaloMin <= 0) {
+            self::$ultimoRequestPorHost[$host] = microtime(true);
+            return;
+        }
+        $ahoraMicro = microtime(true);
+        $ultimoMicro = self::$ultimoRequestPorHost[$host] ?? 0.0;
+        if ($ultimoMicro > 0.0) {
+            $transcurridoMicroseg = (int) (($ahoraMicro - $ultimoMicro) * 1_000_000);
+            $faltanMicroseg = $intervaloMin - $transcurridoMicroseg;
+            if ($faltanMicroseg > 0) {
+                usleep($faltanMicroseg);
+                $ahoraMicro = microtime(true);
+            }
+        }
+        self::$ultimoRequestPorHost[$host] = $ahoraMicro;
+    }
+
     /**
      * Decide si un host concreto debe saltarse la verificación TLS.
      * Match exacto o por sufijo (`.dominio`) — así un subdominio nuevo

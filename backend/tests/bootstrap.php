@@ -42,6 +42,11 @@ require_once $rutaTestsLib . '/includes/functions.php';
  */
 tests_add_filter('muplugins_loaded', static function (): void {
     require dirname(__DIR__) . '/flavor-news-hub.php';
+    // Neutraliza el throttle por host del FeedIngester: en tests las
+    // peticiones HTTP están mockeadas con `pre_http_request` y dormir
+    // 1.5s entre llamadas a un host imaginario solo ralentiza la suite
+    // sin aportar nada.
+    add_filter('fnh_intervalo_minimo_host_microseg', '__return_zero');
 });
 
 /**

@@ -50,12 +50,14 @@ final itemsDesdeSeedProvider = StreamProvider.autoDispose<List<Item>>((ref) asyn
   }
   debugPrint('[itemsDesdeSeed] fuentes totales=${fuentes.length}');
   final rsss = fuentes.where((f) {
-    // YouTube deprecó en 2026 su endpoint `/feeds/videos.xml?channel_id`:
-    // ahora devuelve 404 para todos los canales. Excluimos `youtube` en
-    // modo offline para no gastar timeouts — los canales siguen en el
-    // seed porque el backend sí los ingesta vía su propio pipeline.
-    // `video` (PeerTube) y `mastodon` exponen RSS nativo y funcionan.
-    const tiposSoportados = {'rss', 'atom', 'podcast', 'video', 'mastodon'};
+    // `youtube` (Atom con `media:thumbnail` y `media:description`),
+    // `video` (PeerTube, también Atom), y `mastodon` exponen feeds que
+    // `ParserFeedXml` ya entiende. Antes excluíamos `youtube` por
+    // hipótesis falsa de que el endpoint `/feeds/videos.xml?channel_id`
+    // estaba deprecado: en realidad el 404 que veíamos en el log venía
+    // del rate-limit del backend al pedir 50 canales seguidos. Con UA
+    // navegador y peticiones espaciadas el endpoint funciona.
+    const tiposSoportados = {'rss', 'atom', 'podcast', 'video', 'mastodon', 'youtube'};
     return tiposSoportados.contains(f.feedType);
   }).toList();
   debugPrint('[itemsDesdeSeed] fuentes XML soportadas=${rsss.length}');
