@@ -4,9 +4,10 @@ declare(strict_types=1);
 namespace FlavorNewsHub\CLI;
 
 use FlavorNewsHub\Catalog\SeedExcluidos;
+use FlavorNewsHub\CPT\Item;
+use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\Ingest\FeedItemParser;
-use FlavorNewsHub\CPT\Source;
 
 /**
  * Comandos WP-CLI del plugin. Registrado en Plugin::arrancar() únicamente
@@ -343,6 +344,129 @@ final class IngestCommand
             \WP_CLI::log('XML mal formado o entradas vacías. Si todos los items son inválidos, el');
             \WP_CLI::log('feed está roto del lado del medio aunque devuelva 200.');
         }
+    }
+
+    /**
+     * Borra todos los items asociados a una fuente. Útil cuando el
+     * `feed_url` de la fuente cambió (canal renombrado, URL corregida,
+     * redirección a otro origen) y quieres descartar el histórico
+     * ingestado del feed antiguo. Sin esto, los items viejos conviven
+     * con los nuevos porque la asociación item↔source es por
+     * `_fnh_source_id` (post ID de la fuente), no por feed_url, y el
+     * ingestor sólo añade — nunca purga.
+     *
+     * Caso real: `yt-almayadeen-espanol` apuntó al canal árabe (UC9Yb…)
+     * desde v0.9.52 hasta v0.9.54; corregir el feed_url no eliminó los
+     * items árabes ya ingestados, que seguían apareciendo en la app.
+     *
+     * Operaciones idempotentes: vuelve a ejecutarlo y dirá que no hay
+     * nada que purgar.
+     *
+     * ## OPTIONS
+     *
+     * --source=<id>
+     * : ID del fnh_source cuyos items se borrarán.
+     *
+     * [--dry-run]
+     * : Sólo cuenta los items que se borrarían, sin tocar nada.
+     *
+     * [--reingestar]
+     * : Tras purgar, ejecuta una ingesta con el feed_url actual de la
+     *   fuente para repoblar con el contenido correcto.
+     *
+     * [--yes]
+     * : Salta la confirmación interactiva (útil para scripts).
+     *
+     * ## EXAMPLES
+     *
+     *     wp flavor-news purge-items --source=42 --dry-run
+     *     wp flavor-news purge-items --source=42 --reingestar --yes
+     *
+     * @param array<int,string>    $argumentosPosicionales
+     * @param array<string,string> $argumentosConNombre
+     */
+    public function purge_items($argumentosPosicionales, $argumentosConNombre): void
+    {
+        $idSource = isset($argumentosConNombre['source']) ? (int) $argumentosConNombre['source'] : 0;
+        if ($idSource <= 0) {
+            \WP_CLI::error('--source=<id> es obligatorio.');
+        }
+        $postFuente = get_post($idSource);
+        if (!$postFuente || $postFuente->post_type !== Source::SLUG) {
+            \WP_CLI::error("La fuente #{$idSource} no existe.");
+        }
+
+        $modoDryRun = isset($argumentosConNombre['dry-run']);
+        $debeReingestar = isset($argumentosConNombre['reingestar']);
+
+        // Incluimos todos los estados (incluido `trash`) para que un
+        // segundo intento sobre items que ya pasaron por papelera —pero
+        // siguen consumiendo fila— los limpie también. `force=true` en
+        // wp_delete_post los elimina definitivamente sin pasar por
+        // papelera, igual que el cleanup periódico.
+        $idsItems = get_posts([
+            'post_type'      => Item::SLUG,
+            'post_status'    => ['publish', 'draft', 'pending', 'private', 'future', 'trash'],
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_key'       => '_fnh_source_id',
+            'meta_value'     => (string) $idSource,
+        ]);
+        $totalItems = is_array($idsItems) ? count($idsItems) : 0;
+
+        \WP_CLI::log(sprintf(
+            'Fuente #%d (%s) → %d items asociados.',
+            $idSource,
+            $postFuente->post_title,
+            $totalItems
+        ));
+
+        if ($totalItems === 0) {
+            \WP_CLI::success('Nada que purgar.');
+            if ($debeReingestar) {
+                $this->reingestarTrasPurga($idSource);
+            }
+            return;
+        }
+
+        if ($modoDryRun) {
+            \WP_CLI::log('--dry-run: no se ha borrado nada.');
+            return;
+        }
+
+        \WP_CLI::confirm(
+            sprintf('¿Borrar %d items de "%s"? La operación no se puede deshacer.', $totalItems, $postFuente->post_title),
+            $argumentosConNombre
+        );
+
+        $totalBorrados = 0;
+        foreach ($idsItems as $idItem) {
+            $resultado = wp_delete_post((int) $idItem, true);
+            if ($resultado !== false && $resultado !== null) {
+                $totalBorrados++;
+            }
+        }
+        \WP_CLI::success(sprintf('Borrados %d/%d items de la fuente #%d.', $totalBorrados, $totalItems, $idSource));
+
+        if ($debeReingestar) {
+            $this->reingestarTrasPurga($idSource);
+        }
+    }
+
+    private function reingestarTrasPurga(int $idSource): void
+    {
+        \WP_CLI::log('Reingestando con el feed_url actual…');
+        $resumen = FeedIngester::ingestarFuente($idSource);
+        if ($resumen['error'] !== '') {
+            \WP_CLI::warning('Reingesta con error: ' . $resumen['error']);
+            return;
+        }
+        \WP_CLI::success(sprintf(
+            'Reingesta OK. Nuevos: %d. Descartados por dedupe: %d.',
+            $resumen['items_new'],
+            $resumen['items_skipped']
+        ));
     }
 
     /**
