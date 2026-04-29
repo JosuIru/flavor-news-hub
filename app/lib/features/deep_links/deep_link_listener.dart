@@ -12,6 +12,8 @@ import '../radios/data/reproductor_radio_notifier.dart';
 /// Patrones soportados:
 ///   flavornews://radios/play/<id>  → navega a /audio y arranca esa radio
 ///   flavornews://radios/stop       → detiene la radio que esté sonando
+///   flavornews://audio             → abre /audio (tab Radios por defecto)
+///   flavornews://music             → abre /music (pantalla de búsqueda federada)
 ///   flavornews://items/<id>        → abre el detalle de ese item
 ///   flavornews://search            → abre el buscador
 ///
@@ -113,6 +115,38 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
           ref.read(enrutadorProvider).push('/search');
         } catch (error) {
           debugPrint('[DeepLink] push /search falló: $error');
+        }
+      });
+      return;
+    }
+
+    // Ruta `audio`: tap en el widget "Reproductor radio" o cabecera de
+    // Favoritos cuando no hay deep-link más específico. Navega al
+    // shell tab de Audio sin lanzar reproducción — el usuario ya tiene
+    // el control en la app.
+    if (uri.host == 'audio') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          ref.read(enrutadorProvider).go('/audio');
+        } catch (error) {
+          debugPrint('[DeepLink] go /audio falló: $error');
+        }
+      });
+      return;
+    }
+
+    // Ruta `music`: tap en el widget "Sonando" del reproductor de
+    // música federada. Lleva a la pantalla full-screen `/music` (la
+    // pestaña embebida `Audio→Música` también vale, pero la
+    // standalone tiene mejor relación con el reproductor activo).
+    if (uri.host == 'music') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          ref.read(enrutadorProvider).push('/music');
+        } catch (error) {
+          debugPrint('[DeepLink] push /music falló: $error');
         }
       });
       return;

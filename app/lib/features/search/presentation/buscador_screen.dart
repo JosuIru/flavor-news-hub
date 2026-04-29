@@ -10,6 +10,7 @@ import '../../../core/models/collective.dart';
 import '../../../core/models/item.dart';
 import '../../../core/models/radio.dart' as modelo_radio;
 import '../../../core/models/source.dart';
+import '../../radios/data/reproductor_radio_notifier.dart';
 import '../data/buscador_provider.dart';
 
 /// Buscador global. Una sola caja de texto y cuatro secciones en paralelo:
@@ -239,12 +240,12 @@ class _TileSource extends StatelessWidget {
   }
 }
 
-class _TileRadio extends StatelessWidget {
+class _TileRadio extends ConsumerWidget {
   const _TileRadio({required this.radio});
   final modelo_radio.Radio radio;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final subt = [
       if (radio.territory.isNotEmpty) radio.territory,
       if (radio.languages.isNotEmpty) radio.languages.join(', '),
@@ -265,7 +266,15 @@ class _TileRadio extends StatelessWidget {
               },
             )
           : null,
-      onTap: () => GoRouter.of(context).go('/radios'),
+      // Antes hacíamos `go('/radios')` sin más, así que el usuario
+      // pulsaba la radio y aparecía la lista entera sin pista de cuál
+      // había seleccionado. Ahora lanzamos su stream y navegamos a
+      // /audio (donde está el reproductor) — mismo comportamiento que
+      // el deep link `flavornews://radios/play/<id>` desde widgets.
+      onTap: () {
+        ref.read(reproductorRadioProvider.notifier).reproducir(radio);
+        GoRouter.of(context).go('/audio');
+      },
     );
   }
 }

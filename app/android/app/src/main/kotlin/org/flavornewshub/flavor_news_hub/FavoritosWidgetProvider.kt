@@ -72,9 +72,14 @@ class FavoritosWidgetProvider : AppWidgetProvider() {
 
         views.setViewVisibility(R.id.fav_vacio, if (algunaPintada) View.GONE else View.VISIBLE)
 
-        // Cabecera: tap → abre la app en /audio.
-        val intentApp = Intent(context, MainActivity::class.java)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        // Cabecera: tap → abre la app en /audio. Sin el deep link
+        // explícito, MainActivity caía a la ruta inicial (/) y el
+        // usuario terminaba en el feed en vez de en sus favoritas.
+        val intentApp = Intent(context, MainActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse("flavornews://audio")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
         val pendingApp = PendingIntent.getActivity(
             context, 99, intentApp,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,

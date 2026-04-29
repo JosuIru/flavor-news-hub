@@ -79,9 +79,14 @@ class ReproductorMusicaWidgetProvider : AppWidgetProvider() {
             )
         }
 
-        // Tap en todo el widget → abre la app.
-        val intent = Intent(context, MainActivity::class.java)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        // Tap en todo el widget → abre la app en /music (pantalla de
+        // música federada). Antes abría MainActivity sin URI y la app
+        // caía al feed de noticias.
+        val intent = Intent(context, MainActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse("flavornews://music")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
         val pending = PendingIntent.getActivity(
             context, 1, intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
