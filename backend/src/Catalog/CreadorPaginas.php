@@ -85,6 +85,14 @@ final class CreadorPaginas
             'secciones_vbp'=> ['hero'],
         ],
         [
+            'clave'        => 'musica',
+            'titulo'       => 'Música libre',
+            'slug'         => 'musica',
+            'shortcode'    => '[flavor_news_musica]',
+            'preset_vbp'   => 'community',
+            'secciones_vbp'=> ['hero'],
+        ],
+        [
             'clave'        => 'fuentes',
             'titulo'       => 'Fuentes',
             'slug'         => 'fuentes',

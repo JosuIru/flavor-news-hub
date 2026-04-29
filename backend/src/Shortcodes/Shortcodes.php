@@ -22,6 +22,7 @@ use FlavorNewsHub\Support\InterleaveSources;
  *  - [flavor_news_radios]    → tarjetas de radios activas
  *  - [flavor_news_videos]    → grid de vídeos recientes
  *  - [flavor_news_source]    → ficha editorial de un medio
+ *  - [flavor_news_musica]    → página de plataformas de música libre
  *
  * Todos respetan los filtros de territorio / idioma / topic del feed
  * principal. El markup es HTML semántico + clases CSS sencillas que el
@@ -41,6 +42,7 @@ final class Shortcodes
         add_shortcode('flavor_news_podcasts', [self::class, 'renderPodcasts']);
         add_shortcode('flavor_news_sources', [self::class, 'renderSources']);
         add_shortcode('flavor_news_collectives', [self::class, 'renderCollectives']);
+        add_shortcode('flavor_news_musica', [self::class, 'renderMusica']);
         add_shortcode('flavor_news_sobre', [self::class, 'renderSobre']);
         add_action('wp_enqueue_scripts', [self::class, 'cargarEstilos']);
         // Marca las páginas auto con clases específicas en el <body>
@@ -93,6 +95,7 @@ final class Shortcodes
             ['clave' => 'videos',     'titulo' => __('Vídeos', 'flavor-news-hub')],
             ['clave' => 'radios',     'titulo' => __('Radios', 'flavor-news-hub')],
             ['clave' => 'podcasts',   'titulo' => __('Podcasts', 'flavor-news-hub')],
+            ['clave' => 'musica',     'titulo' => __('Música libre', 'flavor-news-hub')],
             ['clave' => 'colectivos', 'titulo' => __('Colectivos', 'flavor-news-hub')],
             ['clave' => 'fuentes',    'titulo' => __('Fuentes', 'flavor-news-hub')],
             ['clave' => 'sobre',      'titulo' => __('Sobre', 'flavor-news-hub')],
@@ -2815,5 +2818,91 @@ JS;
             </section>
         </div><?php
         return self::envolverShortcode('sobre', (string) ob_get_clean());
+    }
+
+    /**
+     * Página estática "Música libre". Describe las cuatro plataformas
+     * que la app móvil indexa nativamente (Funkwhale, Audius, Jamendo,
+     * Archive.org) y enlaza a sus webs públicas. No hace llamadas a
+     * sus APIs desde el server-side: la música vive en la app, esta
+     * página sólo presenta el universo y dirige al usuario a instalarla.
+     *
+     * Si en el futuro se quiere mostrar tracks vivos en web, este
+     * shortcode evolucionaría a hacer wp_remote_get cacheado contra
+     * cada API — la URL pública y el slug se mantendrían iguales.
+     */
+    public static function renderMusica($atribs = [], $contenido = null): string
+    {
+        $plataformas = [
+            [
+                'nombre'      => 'Funkwhale',
+                'url'         => 'https://funkwhale.audio/',
+                'descripcion' => __('Red federada de servidores que comparten música y podcasts entre sí. Cada servidor lo gestiona una comunidad o un colectivo: la app indexa varios y los presenta como un único catálogo.', 'flavor-news-hub'),
+                'que_hace_la_app' => __('Búsqueda y reproducción de tracks de las instancias indexadas.', 'flavor-news-hub'),
+            ],
+            [
+                'nombre'      => 'Audius',
+                'url'         => 'https://audius.co/',
+                'descripcion' => __('Plataforma descentralizada de música independiente. Catálogo amplio en electrónica, hip-hop y producción experimental, con artistas que publican directamente sin intermediarios.', 'flavor-news-hub'),
+                'que_hace_la_app' => __('Búsqueda, exploración por género y reproducción.', 'flavor-news-hub'),
+            ],
+            [
+                'nombre'      => 'Jamendo',
+                'url'         => 'https://www.jamendo.com/',
+                'descripcion' => __('Comunidad histórica de música libre: artistas que publican bajo licencias Creative Commons. Buen catálogo para descubrir música indie y de producción no comercial.', 'flavor-news-hub'),
+                'que_hace_la_app' => __('Búsqueda, exploración por etiquetas y reproducción.', 'flavor-news-hub'),
+            ],
+            [
+                'nombre'      => 'Archive.org',
+                'url'         => 'https://archive.org/details/audio',
+                'descripcion' => __('Internet Archive: biblioteca pública de grabaciones bajo licencias abiertas — conciertos en vivo, música libre y archivos sonoros. Lo que indexa la app es la sección de audio open source (excluye podcasts y noticias, que viven en sus propias pestañas).', 'flavor-news-hub'),
+                'que_hace_la_app' => __('Búsqueda y reproducción del catálogo opensource_audio.', 'flavor-news-hub'),
+            ],
+        ];
+        ob_start();
+        ?><div class="fnh-musica">
+            <section class="fnh-musica-hero">
+                <h2><?php esc_html_e('Música libre, en una sola app', 'flavor-news-hub'); ?></h2>
+                <p><?php esc_html_e('La pestaña "Música" de la app reúne cuatro plataformas de música libre y federada en una única búsqueda. Aquí explicamos qué es cada una y a quién pertenece — la reproducción y el catálogo viven en la app móvil, no en este servidor.', 'flavor-news-hub'); ?></p>
+            </section>
+
+            <section class="fnh-musica-bloque">
+                <h3><?php esc_html_e('Plataformas indexadas', 'flavor-news-hub'); ?></h3>
+                <ul class="fnh-musica-plataformas">
+                    <?php foreach ($plataformas as $p) : ?>
+                        <li class="fnh-musica-plataforma">
+                            <h4>
+                                <a href="<?php echo esc_url($p['url']); ?>" target="_blank" rel="noopener">
+                                    <?php echo esc_html($p['nombre']); ?>
+                                </a>
+                            </h4>
+                            <p><?php echo esc_html($p['descripcion']); ?></p>
+                            <p class="fnh-musica-uso">
+                                <strong><?php esc_html_e('En la app:', 'flavor-news-hub'); ?></strong>
+                                <?php echo esc_html($p['que_hace_la_app']); ?>
+                            </p>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </section>
+
+            <section class="fnh-musica-bloque">
+                <h3><?php esc_html_e('Por qué no se reproduce desde aquí', 'flavor-news-hub'); ?></h3>
+                <p><?php esc_html_e('Cada plataforma tiene su propio reproductor, sus propias APIs y su propio control de cuotas. Hacer proxy desde este servidor multiplicaría el coste para nadie y rompería la relación directa entre quien escucha y quien publica. La app llama directamente a cada API — esta web sólo te enseña qué hay y te lleva a instalarla.', 'flavor-news-hub'); ?></p>
+            </section>
+
+            <section class="fnh-musica-bloque fnh-musica-cta">
+                <h3><?php esc_html_e('Para escuchar', 'flavor-news-hub'); ?></h3>
+                <p>
+                    <a class="fnh-musica-boton" href="<?php echo esc_url(self::REPO_URL . '/releases/latest'); ?>" target="_blank" rel="noopener">
+                        <?php esc_html_e('Descargar la app', 'flavor-news-hub'); ?> →
+                    </a>
+                </p>
+                <p class="fnh-musica-nota">
+                    <?php esc_html_e('Disponible para Android (F-Droid, GitHub Releases, Google Play). La pestaña "Música" funciona sin cuenta y sin registro.', 'flavor-news-hub'); ?>
+                </p>
+            </section>
+        </div><?php
+        return self::envolverShortcode('musica', (string) ob_get_clean());
     }
 }
