@@ -14,7 +14,13 @@ use FlavorNewsHub\Database\IngestLogTable;
  */
 final class DashboardPage
 {
-    public static function render(): void
+    /**
+     * Render de la pantalla. Cuando se invoca desde `SistemaPage`
+     * (tabs unificadas), `$conWrap` debe ser false para que el
+     * contenedor `.wrap` y el `<h1>` los aporte la página padre y no
+     * se dupliquen.
+     */
+    public static function render(bool $conWrap = true): void
     {
         if (!current_user_can('edit_posts')) {
             return;
@@ -40,11 +46,13 @@ final class DashboardPage
         );
 
         ?>
+        <?php if ($conWrap) : ?>
         <div class="wrap">
             <h1><?php esc_html_e('Flavor News Hub', 'flavor-news-hub'); ?></h1>
             <p class="description">
                 <?php esc_html_e('Backend headless: agrega medios alternativos y lista colectivos organizados. Consulta el manifiesto del proyecto para entender qué entra aquí y qué no.', 'flavor-news-hub'); ?>
             </p>
+        <?php endif; ?>
 
             <div style="display:flex; gap:1em; margin:1em 0; flex-wrap:wrap;">
                 <?php
@@ -88,7 +96,9 @@ final class DashboardPage
                     </tbody>
                 </table>
             <?php endif; ?>
+        <?php if ($conWrap) : ?>
         </div>
+        <?php endif; ?>
         <?php
     }
 

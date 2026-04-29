@@ -10,6 +10,7 @@ use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Catalog\CreadorPaginas;
 use FlavorNewsHub\Database\IngestLogTable;
+use FlavorNewsHub\Database\UsoApiTable;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Options\OptionsRepository;
 
@@ -34,6 +35,7 @@ final class Activator
         self::precargarTematicasCanonicas();
 
         IngestLogTable::crearOActualizar();
+        UsoApiTable::crearOActualizar();
         OptionsRepository::asegurarDefaults();
 
         // Migraciones idempotentes.

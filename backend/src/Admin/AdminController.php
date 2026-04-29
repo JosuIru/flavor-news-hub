@@ -33,6 +33,10 @@ final class AdminController
         // Menú principal y pantallas propias.
         add_action('admin_menu', [Menu::class, 'registrar']);
         add_action('admin_init', [SettingsPage::class, 'registrarAjustes']);
+        // Bookmarks viejos a Estado de fuentes y Estadísticas: redirigir
+        // a la tab correspondiente del nuevo Sistema. Prioridad alta
+        // para que ocurra antes de que admin.php empiece a renderear.
+        add_action('admin_init', [Menu::class, 'redirigirSlugsAntiguos'], 1);
 
         // Metaboxes.
         add_action('add_meta_boxes', [SourceMetaBox::class, 'registrar']);

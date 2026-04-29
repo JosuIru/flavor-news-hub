@@ -21,6 +21,9 @@ use FlavorNewsHub\Admin\AdminController;
 use FlavorNewsHub\Activation\Activator;
 use FlavorNewsHub\Database\LogsCleanup;
 use FlavorNewsHub\Database\ItemsCleanup;
+use FlavorNewsHub\Database\UsoApiTable;
+use FlavorNewsHub\Database\UsoApiCleanup;
+use FlavorNewsHub\Stats\UsoTracker;
 use FlavorNewsHub\Notifications\WeeklyReport;
 use FlavorNewsHub\Integration\FlavorPlatformAddon;
 use FlavorNewsHub\Shortcodes\Shortcodes;
@@ -93,11 +96,19 @@ final class Plugin
         // REST pública `flavor-news/v1`.
         add_action('rest_api_init', [RestController::class, 'registrar']);
 
+        // Tracker anónimo de uso de la API. Se engancha post-dispatch
+        // para no añadir latencia al request real. Sin IPs, sin cookies:
+        // sólo (día, endpoint, hash MD5 truncado del UA) — ver
+        // `UsoTracker` y `UsoApiTable` para la justificación de privacidad.
+        add_filter('rest_post_dispatch', [UsoTracker::class, 'registrarSiAplica'], 10, 3);
+
         // Job diario: limpieza de logs antiguos + purga de noticias que
-        // excedan la retención (default 90 días). Ambos comparten el
-        // mismo hook diario para no duplicar eventos de wp-cron.
+        // excedan la retención (default 90 días) + limpieza de la tabla
+        // de uso de la API (retención fija 90 días). Comparten el mismo
+        // hook diario para no duplicar eventos en wp-cron.
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [LogsCleanup::class, 'ejecutar']);
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [ItemsCleanup::class, 'ejecutar']);
+        add_action(Scheduler::HOOK_CLEANUP_LOGS, [UsoApiCleanup::class, 'ejecutar']);
 
         // Job semanal: informe con stats de feeds (top activos, muertos,
         // errores, propuestas pendientes). Enganchado siempre — la propia
@@ -171,6 +182,11 @@ final class Plugin
             return;
         }
         \FlavorNewsHub\Catalog\CreadorPaginas::crearSiNoExisten();
+        // Asegura que las tablas propias existan cuando un usuario
+        // actualiza el plugin sin desactivar/reactivar — `Activator::activate`
+        // sólo corre en la activación inicial. `dbDelta` es idempotente.
+        \FlavorNewsHub\Database\IngestLogTable::crearOActualizar();
+        UsoApiTable::crearOActualizar();
         // Invalida el cache de la release de GitHub: si el usuario acaba
         // de instalar un plugin nuevo es MUY probable que también haya
         // un APK nuevo anunciable — no tiene sentido seguir sirviendo

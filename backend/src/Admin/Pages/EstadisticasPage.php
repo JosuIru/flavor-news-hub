@@ -26,7 +26,13 @@ final class EstadisticasPage
     private const REPO_GITHUB = 'JosuIru/flavor-news-hub';
     private const TRANSIENT_CACHE = 'fnh_stats_descargas';
 
-    public static function render(): void
+    /**
+     * Render de la pantalla. Cuando se invoca desde `SistemaPage`
+     * (tabs unificadas), `$conWrap` debe ser false para que el
+     * contenedor `.wrap` y el `<h1>` los aporte la página padre y no
+     * se dupliquen.
+     */
+    public static function render(bool $conWrap = true): void
     {
         if (!current_user_can('edit_posts')) {
             return;
@@ -50,10 +56,12 @@ final class EstadisticasPage
         $datos = self::obtenerDatos();
 
         ?>
+        <?php if ($conWrap) : ?>
         <div class="wrap">
             <h1><?php esc_html_e('Estadísticas de descargas', 'flavor-news-hub'); ?></h1>
+        <?php endif; ?>
             <p class="description">
-                <?php esc_html_e('Contadores leídos de GitHub Releases. La app y el plugin no envían telemetría — sólo se cuenta lo que GitHub registra al servir el asset.', 'flavor-news-hub'); ?>
+                <?php esc_html_e('Contadores leídos de GitHub Releases. La app y el plugin no envían telemetría — sólo se cuenta lo que GitHub registra al servir el asset. Si has descargado tú un release recién publicado, márcalo abajo para descontarlo de los contadores.', 'flavor-news-hub'); ?>
             </p>
 
             <?php if ($refrescoForzado && !isset($datos['error'])) : ?>
@@ -121,7 +129,9 @@ final class EstadisticasPage
 
             <?php self::renderSeccionIngesta(); ?>
             <?php self::renderSeccionMedios(); ?>
+        <?php if ($conWrap) : ?>
         </div>
+        <?php endif; ?>
         <?php
     }
 
@@ -164,16 +174,26 @@ final class EstadisticasPage
             return ['error' => __('Respuesta inesperada de GitHub.', 'flavor-news-hub')];
         }
 
+        // Offset de descargas marcadas como propias por el admin desde la
+        // tab Descargas (ver `SistemaPage::offsetDescargasPropias`). Lo
+        // aplicamos por release entera: si el admin se descarga una
+        // versión, suele bajarse APK + ZIP — restamos el mismo offset
+        // de cada asset para no dejar uno de los dos artificialmente
+        // alto. Si el offset deja un asset en negativo lo capamos a 0.
+        $offsetPropias = SistemaPage::offsetDescargasPropias();
+
         $totalApk = 0;
         $totalZip = 0;
         $filas = [];
         foreach ($cuerpo as $release) {
             if (!is_array($release)) continue;
             $tag = (string) ($release['tag_name'] ?? '');
+            $offsetReleaseActual = (int) ($offsetPropias[$tag] ?? 0);
             foreach (($release['assets'] ?? []) as $asset) {
                 if (!is_array($asset)) continue;
                 $nombre = (string) ($asset['name'] ?? '');
-                $descargas = (int) ($asset['download_count'] ?? 0);
+                $descargasCrudas = (int) ($asset['download_count'] ?? 0);
+                $descargas = max(0, $descargasCrudas - $offsetReleaseActual);
                 if ($descargas <= 0) continue;
                 $extension = strtolower((string) pathinfo($nombre, PATHINFO_EXTENSION));
                 if ($extension === 'apk') {

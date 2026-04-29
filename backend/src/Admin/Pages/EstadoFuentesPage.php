@@ -23,7 +23,13 @@ final class EstadoFuentesPage
 {
     public const SLUG = 'fnh-estado-fuentes';
 
-    public static function render(): void
+    /**
+     * Render de la pantalla. Cuando se invoca desde `SistemaPage`
+     * (tabs unificadas), `$conWrap` debe ser false para que el
+     * contenedor `.wrap` y el `<h1>` los aporte la página padre y no
+     * se dupliquen.
+     */
+    public static function render(bool $conWrap = true): void
     {
         // Esta pantalla muestra acciones de mutación (desactivar fuente,
         // aplicar URLs, auto-descubrir feeds) que los handlers exigen con
@@ -101,8 +107,10 @@ final class EstadoFuentesPage
         }
 
         ?>
+        <?php if ($conWrap) : ?>
         <div class="wrap">
             <h1><?php esc_html_e('Estado de las fuentes', 'flavor-news-hub'); ?></h1>
+        <?php endif; ?>
             <p class="description">
                 <?php printf(
                     /* translators: %1$d total, %2$d sanas, %3$d inactivas, %4$d muertas, %5$d con errores */
@@ -157,7 +165,9 @@ final class EstadoFuentesPage
                 <h2 style="color:#46b450; margin-top:2em"><?php esc_html_e('Sanas (activas últimos 7 días)', 'flavor-news-hub'); ?></h2>
                 <?php self::renderTabla($sanas, false); ?>
             <?php endif; ?>
+        <?php if ($conWrap) : ?>
         </div>
+        <?php endif; ?>
         <?php
     }
 
