@@ -143,8 +143,19 @@ final class UsoTracker
      */
     public static function resumen(int $dias = 7): array
     {
-        global $wpdb;
         $dias = max(1, min(90, $dias));
+        // Cache por ventana — son 4 SUM/COUNT/GROUP BY sobre `wp_fnh_uso_api`
+        // que pueden hacer filesort cuando la tabla acumula 90 días de
+        // tráfico. El admin nunca necesita ver el incremento al segundo;
+        // 5 min de TTL es invisible en la UX y elimina el coste de cada
+        // recarga del tab.
+        $claveCache = 'fnh_uso_resumen_' . $dias;
+        $cacheado = get_transient($claveCache);
+        if (is_array($cacheado) && isset($cacheado['total_peticiones'])) {
+            return $cacheado;
+        }
+
+        global $wpdb;
         $tabla = UsoApiTable::nombreCompleto();
 
         $totalPeticiones = (int) $wpdb->get_var($wpdb->prepare(
@@ -181,12 +192,14 @@ final class UsoTracker
             $mapaDia[(string) $fila->dia] = (int) $fila->total;
         }
 
-        return [
+        $resumen = [
             'total_peticiones' => $totalPeticiones,
             'uas_distintos'    => $uasDistintos,
             'por_endpoint'     => $mapaEndpoint,
             'por_dia'          => $mapaDia,
             'dias'             => $dias,
         ];
+        set_transient($claveCache, $resumen, 5 * MINUTE_IN_SECONDS);
+        return $resumen;
     }
 }

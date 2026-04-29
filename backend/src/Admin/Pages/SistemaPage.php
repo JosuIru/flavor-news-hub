@@ -248,10 +248,10 @@ final class SistemaPage
                 <div style="font-size:2em;font-weight:600;"><?php echo (int) $resumen['total_peticiones']; ?></div>
             </div>
             <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
-                <div style="font-size:.85em;color:#666;"><?php esc_html_e('User-agents distintos', 'flavor-news-hub'); ?></div>
+                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Variantes de cliente', 'flavor-news-hub'); ?></div>
                 <div style="font-size:2em;font-weight:600;"><?php echo (int) $resumen['uas_distintos']; ?></div>
                 <div style="font-size:.8em;color:#888;margin-top:.25em;">
-                    <?php esc_html_e('señal de cuántos clientes diferentes consumen la API', 'flavor-news-hub'); ?>
+                    <?php esc_html_e('versión + plataforma de la app, navegadores, curl, bots… No cuenta instalaciones únicas.', 'flavor-news-hub'); ?>
                 </div>
             </div>
             <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
@@ -313,7 +313,7 @@ final class SistemaPage
         </table>
 
         <p style="margin-top:1.5em;font-size:.9em;color:#666;">
-            <?php esc_html_e('Sólo se cuentan endpoints de flavor-news/v1 con métodos GET/POST. ua_hash es MD5 truncado a 16 caracteres del User-Agent — irreversible y no permite identificar a la persona. La tabla se purga automáticamente cada 90 días.', 'flavor-news-hub'); ?>
+            <?php esc_html_e('Sólo se cuentan endpoints de flavor-news/v1 con métodos GET/POST. ua_hash es MD5 truncado a 16 caracteres del User-Agent — irreversible y no permite identificar a la persona. La app envía un UA fijo por build (FlavorNewsHub/version (plataforma; canal)), así que todas las instalaciones del mismo build colapsan en un único hash: la métrica indica variedad de clientes, no número de usuarios. La tabla se purga automáticamente cada 90 días.', 'flavor-news-hub'); ?>
         </p>
         <?php
     }

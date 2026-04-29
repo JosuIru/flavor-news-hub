@@ -50,10 +50,17 @@ final class EstadisticasPage
         if (isset($_GET['refrescar'])) {
             check_admin_referer('fnh_stats_refrescar', '_wpnonce');
             delete_transient(self::TRANSIENT_CACHE);
+            // El refresco también invalida las stats internas
+            // (Recopilador) para que el admin no vea el bundle de
+            // GitHub fresco al lado de KPIs internos rancios.
+            Recopilador::invalidarCacheStatsAdmin();
             $refrescoForzado = true;
         }
 
         $datos = self::obtenerDatos();
+        // Calculado y cacheado una sola vez: lo comparten las dos
+        // secciones internas (ingesta + medios) que pintamos abajo.
+        $statsInternas = Recopilador::statsAdmin();
 
         ?>
         <?php if ($conWrap) : ?>
@@ -127,8 +134,8 @@ final class EstadisticasPage
                 </table>
             <?php endif; ?>
 
-            <?php self::renderSeccionIngesta(); ?>
-            <?php self::renderSeccionMedios(); ?>
+            <?php self::renderSeccionIngesta($statsInternas['actividad']); ?>
+            <?php self::renderSeccionMedios($statsInternas); ?>
         <?php if ($conWrap) : ?>
         </div>
         <?php endif; ?>
@@ -222,11 +229,13 @@ final class EstadisticasPage
 
     /**
      * Sección "Ingesta": items nuevos por ventana, tasa de éxito, último
-     * cron, próximo cron. Datos calculados por Stats\Recopilador.
+     * cron, próximo cron. Recibe el bloque ya calculado del bundle
+     * cacheado en `Recopilador::statsAdmin()`.
+     *
+     * @param array<string, mixed> $stats
      */
-    private static function renderSeccionIngesta(): void
+    private static function renderSeccionIngesta(array $stats): void
     {
-        $stats = Recopilador::actividadIngesta();
         ?>
         <h2 style="margin-top:2em;"><?php esc_html_e('Ingesta', 'flavor-news-hub'); ?></h2>
         <p class="description">
@@ -284,14 +293,24 @@ final class EstadisticasPage
     /**
      * Sección "Medios": totales del catálogo, top fuentes activas, fuentes
      * muertas, fuentes con error, distribución por tipo de feed.
+     * Recibe los bloques ya calculados del bundle cacheado en
+     * `Recopilador::statsAdmin()`.
+     *
+     * @param array{
+     *   totales: array<string, int>,
+     *   top: list<array{source_id:int, nombre:string, items:int}>,
+     *   muertas: list<array{source_id:int, nombre:string, ultimo_item_utc:?string}>,
+     *   errores: list<array{source_id:int, nombre:string, error:string}>,
+     *   distribucion: list<array{tipo:string, total:int}>
+     * } $statsInternas
      */
-    private static function renderSeccionMedios(): void
+    private static function renderSeccionMedios(array $statsInternas): void
     {
-        $totales = Recopilador::totalesCatalogo();
-        $top = Recopilador::topFuentesActivas(10, 7);
-        $muertas = Recopilador::fuentesMuertas(10);
-        $errores = Recopilador::fuentesConError(10);
-        $distribucion = Recopilador::distribucionPorTipoFeed();
+        $totales = $statsInternas['totales'];
+        $top = $statsInternas['top'];
+        $muertas = $statsInternas['muertas'];
+        $errores = $statsInternas['errores'];
+        $distribucion = $statsInternas['distribucion'];
         ?>
         <h2 style="margin-top:2em;"><?php esc_html_e('Medios', 'flavor-news-hub'); ?></h2>
         <p class="description">

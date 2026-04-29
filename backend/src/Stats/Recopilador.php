@@ -9,6 +9,7 @@ use FlavorNewsHub\CPT\Collective;
 use FlavorNewsHub\CPT\Radio;
 use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\Scheduler;
+use FlavorNewsHub\Support\Transients;
 
 /**
  * Servicio que centraliza el cálculo de estadísticas del catálogo y la
@@ -24,6 +25,70 @@ final class Recopilador
 {
     /** Umbral en días para clasificar una fuente activa como "muerta". */
     public const UMBRAL_MUERTA_DIAS = 14;
+
+    /**
+     * Transient que cachea el bundle completo de stats para el admin.
+     * Las consultas que lo alimentan (topFuentesActivas, fuentesMuertas,
+     * fuentesConError, ...) llevan subqueries correlacionadas que se
+     * evalúan por cada fuente activa — un par de centenas de fuentes
+     * convierten cada visita al admin en cientos de joins. Cacheamos
+     * el resultado entero para que sólo el primer render tras la
+     * caducidad pague el coste.
+     *
+     * No se invoca desde el cron del informe semanal (allí queremos
+     * lectura cruda); ese caller sigue llamando a los métodos
+     * individuales sin cache.
+     */
+    public const TRANSIENT_STATS_ADMIN = 'fnh_stats_recopilador';
+
+    /**
+     * Bundle de todas las stats que pinta `EstadisticasPage`. Cachea
+     * el resultado en un único transient — calcular esto cuesta
+     * decenas o centenas de queries (subqueries correlacionadas por
+     * fuente). El TTL es `Transients::CACHE_ESTADISTICAS` (1h), ya
+     * usado para el bundle de descargas de GitHub.
+     *
+     * Para forzar recálculo desde el botón "Refrescar ya" o tras una
+     * acción del admin, hace falta invocar `invalidarCacheStatsAdmin()`.
+     *
+     * @return array{
+     *   actividad: array<string, mixed>,
+     *   totales: array<string, int>,
+     *   top: list<array{source_id:int, nombre:string, items:int}>,
+     *   muertas: list<array{source_id:int, nombre:string, ultimo_item_utc:?string}>,
+     *   errores: list<array{source_id:int, nombre:string, error:string}>,
+     *   distribucion: list<array{tipo:string, total:int}>,
+     *   ts_lectura: int
+     * }
+     */
+    public static function statsAdmin(): array
+    {
+        $cache = get_transient(self::TRANSIENT_STATS_ADMIN);
+        if (is_array($cache) && isset($cache['totales'])) {
+            return $cache;
+        }
+        $datos = [
+            'actividad'    => self::actividadIngesta(),
+            'totales'      => self::totalesCatalogo(),
+            'top'          => self::topFuentesActivas(10, 7),
+            'muertas'      => self::fuentesMuertas(10),
+            'errores'      => self::fuentesConError(10),
+            'distribucion' => self::distribucionPorTipoFeed(),
+            'ts_lectura'   => time(),
+        ];
+        set_transient(self::TRANSIENT_STATS_ADMIN, $datos, Transients::CACHE_ESTADISTICAS);
+        return $datos;
+    }
+
+    /**
+     * Invalida el bundle cacheado por `statsAdmin()`. Lo llaman las
+     * acciones del admin que cambian datos visibles en la pantalla
+     * (refresco manual, edición de fuentes, etc.).
+     */
+    public static function invalidarCacheStatsAdmin(): void
+    {
+        delete_transient(self::TRANSIENT_STATS_ADMIN);
+    }
 
     /**
      * Contadores agregados del catálogo.

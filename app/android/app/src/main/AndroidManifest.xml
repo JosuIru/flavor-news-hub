@@ -226,7 +226,8 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />
         </intent>
-        <!-- url_launcher: abrir mailto si algún día lo usamos. -->
+        <!-- url_launcher: abrir mailto desde la sección "Contacto y
+             sugerencias" de Acerca de. -->
         <intent>
             <action android:name="android.intent.action.SENDTO" />
             <data android:scheme="mailto" />

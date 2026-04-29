@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Admin\Actions;
 
+use FlavorNewsHub\Admin\Menu;
 use FlavorNewsHub\Admin\Pages\EstadoFuentesPage;
+use FlavorNewsHub\Admin\Pages\SistemaPage;
 use FlavorNewsHub\Catalog\AutodescubrirFeeds;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
@@ -366,7 +368,15 @@ final class EstadoFuentesActions
     public static function mostrarAviso(): void
     {
         $pantallaActual = isset($_GET['page']) ? sanitize_key((string) wp_unslash($_GET['page'])) : '';
-        if ($pantallaActual !== EstadoFuentesPage::SLUG) {
+        $tabActual = isset($_GET['tab']) ? sanitize_key((string) wp_unslash($_GET['tab'])) : '';
+        // El aviso vive ahora bajo `?page=flavor-news-hub&tab=fuentes`.
+        // Mantenemos la detección del slug antiguo para que un bookmark
+        // viejo redirigido por `Menu::redirigirSlugsAntiguos` no se
+        // quede sin aviso si entra por esa vía.
+        $enPaginaCorrecta =
+            ($pantallaActual === Menu::SLUG_MENU && $tabActual === SistemaPage::TAB_FUENTES)
+            || $pantallaActual === EstadoFuentesPage::SLUG;
+        if (!$enPaginaCorrecta) {
             return;
         }
         if (isset($_GET['fnh_desactivadas'])) {
@@ -459,11 +469,30 @@ final class EstadoFuentesActions
         }
     }
 
-    /** @param array<string,int|string> $extra */
+    /**
+     * URL de retorno tras una acción admin-post.
+     *
+     * Antes apuntaba a `EstadoFuentesPage::SLUG` (`fnh-estado-fuentes`),
+     * que ya NO está registrado como page en el menú desde que se
+     * unificó todo en `SistemaPage`. WordPress respondía "no tienes
+     * permisos" al cargar esa URL porque el slug no existía en
+     * `$admin_page_hooks`. Existía un fallback `Menu::redirigirSlugsAntiguos`
+     * que reenviaba al slug nuevo, pero perdía los query params de la
+     * acción (p.ej. `fnh_duplicados_papelera=7`) y, según el orden de
+     * hooks, podía perder la carrera contra el `wp_die` de WP.
+     *
+     * Apuntamos directamente al slug nuevo `flavor-news-hub` con
+     * `tab=fuentes` para no depender del fallback.
+     *
+     * @param array<string,int|string> $extra
+     */
     private static function urlRedireccion(array $extra): string
     {
         return add_query_arg(
-            array_merge(['page' => EstadoFuentesPage::SLUG], $extra),
+            array_merge([
+                'page' => Menu::SLUG_MENU,
+                'tab'  => SistemaPage::TAB_FUENTES,
+            ], $extra),
             admin_url('admin.php')
         );
     }

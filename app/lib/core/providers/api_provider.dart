@@ -13,6 +13,7 @@ import '../models/radio.dart' as modelo_radio;
 import '../models/source.dart';
 import '../models/topic.dart';
 import 'preferences_provider.dart';
+import 'user_agent_provider.dart';
 
 /// Cliente HTTP compartido. Se cierra cuando el provider se descarta.
 final httpClientProvider = Provider<http.Client>((ref) {
@@ -30,10 +31,12 @@ final flavorNewsApiProvider = Provider<FlavorNewsApi>((ref) {
     preferenciasProvider.select((prefs) => prefs.urlInstanciaBackend),
   );
   final cliente = ref.watch(httpClientProvider);
+  final userAgent = ref.watch(userAgentProvider);
   final urlNormalizada = urlGuardada.endsWith('/') ? urlGuardada : '$urlGuardada/';
   return FlavorNewsApi(
     baseUrl: Uri.parse(urlNormalizada),
     httpClient: cliente,
+    userAgent: userAgent,
   );
 });
 

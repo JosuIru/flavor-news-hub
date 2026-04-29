@@ -3943,34 +3943,6 @@
     "live_stream_permit": "none"
   },
   {
-    "id": 7344,
-    "name": "Suba Alternativa",
-    "slug": "suba-alternativa",
-    "feed_url": "https://subaalternativa.co/feed/",
-    "feed_type": "rss",
-    "website_url": "https://subaalternativa.co/",
-    "territory": "Bogotá",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "cultura",
-      "educacion",
-      "derechos-civiles",
-      "juventud"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none",
-    "es_movimiento": true
-  },
-  {
     "id": 7345,
     "name": "El Puente FM",
     "slug": "el-puente-fm",

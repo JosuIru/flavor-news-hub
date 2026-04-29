@@ -19,12 +19,21 @@ import 'api_exception.dart';
 /// Apto para múltiples instancias backend: `baseUrl` se inyecta y viene
 /// de las preferencias del usuario (Ajustes → URL de la instancia).
 class FlavorNewsApi {
-  FlavorNewsApi({required this.baseUrl, required this.httpClient});
+  FlavorNewsApi({
+    required this.baseUrl,
+    required this.httpClient,
+    required this.userAgent,
+  });
 
   /// URL base del namespace — debe acabar en `/`.
   final Uri baseUrl;
 
   final http.Client httpClient;
+
+  /// Cabecera `User-Agent` enviada en cada petición. Identifica la
+  /// variante de cliente (versión + plataforma + canal) — no la
+  /// instalación concreta. La consume el panel anónimo del plugin.
+  final String userAgent;
 
   static const Duration _tiempoMaximoPeticion = Duration(seconds: 20);
 
@@ -204,7 +213,10 @@ class FlavorNewsApi {
         );
     try {
       final respuesta = await httpClient
-          .get(uri, headers: const {'Accept': 'application/json'})
+          .get(uri, headers: {
+            'Accept': 'application/json',
+            'User-Agent': userAgent,
+          })
           .timeout(_tiempoMaximoPeticion);
       _lanzarSiHayError(respuesta);
       return respuesta;
@@ -229,9 +241,10 @@ class FlavorNewsApi {
       final respuesta = await httpClient
           .post(
             uri,
-            headers: const {
+            headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
+              'User-Agent': userAgent,
             },
             body: jsonEncode(body),
           )

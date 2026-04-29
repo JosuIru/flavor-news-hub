@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/providers/preferences_provider.dart';
+import 'core/providers/user_agent_provider.dart';
 import 'core/services/ingest_trigger.dart';
 import 'core/services/settings_sync.dart';
 import 'features/notifications/data/preferencias_notif.dart';
@@ -29,6 +31,12 @@ Future<void> main() async {
   );
 
   final sharedPrefs = await SharedPreferences.getInstance();
+
+  // Resolvemos el User-Agent una sola vez al arranque para que el
+  // cliente HTTP del backend pueda enviarlo síncronamente. El plugin
+  // lo usa como variante de cliente en su panel de uso anónimo.
+  final infoPaquete = await PackageInfo.fromPlatform();
+  final userAgent = construirUserAgent(version: infoPaquete.version);
 
   // Workmanager arranca antes de la UI. Siempre registramos el worker
   // periódico (aunque las notificaciones estén off): lo usamos para
@@ -57,6 +65,7 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+        userAgentProvider.overrideWithValue(userAgent),
       ],
       child: const FlavorNewsHubApp(),
     ),

@@ -119,10 +119,17 @@ final class Menu
         if ($tabDestino === null) {
             return;
         }
-        wp_safe_redirect(add_query_arg([
+        // Conservamos cualquier query param adicional (avisos como
+        // `fnh_duplicados_papelera=7`, paginadores, etc.) — si los
+        // perdiéramos, los notices del admin no tendrían contexto al
+        // pintarse en el slug nuevo.
+        $parametrosOriginales = $_GET;
+        unset($parametrosOriginales['page']);
+        $parametrosFinales = array_merge($parametrosOriginales, [
             'page' => self::SLUG_MENU,
             'tab'  => $tabDestino,
-        ], admin_url('admin.php')));
+        ]);
+        wp_safe_redirect(add_query_arg($parametrosFinales, admin_url('admin.php')));
         exit;
     }
 }

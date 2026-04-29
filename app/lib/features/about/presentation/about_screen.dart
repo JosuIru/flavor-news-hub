@@ -12,6 +12,13 @@ const String _urlLicenciaAgpl = 'https://www.gnu.org/licenses/agpl-3.0.html';
 const String _urlManifiesto =
     'https://github.com/JosuIru/flavor-news-hub/blob/main/MANIFESTO.md';
 
+/// Canales de contacto del proyecto. GitHub Issues para reportes y
+/// sugerencias técnicas (queda público y trazable); email para todo lo
+/// demás (colaboraciones, prensa, mensajes que no encajan en un issue).
+const String _urlIssuesGithub =
+    'https://github.com/JosuIru/flavor-news-hub/issues/new';
+const String _emailContactoProyecto = 'irurag@gmail.com';
+
 final _paqueteInfoProvider = FutureProvider<PackageInfo>((ref) async {
   return PackageInfo.fromPlatform();
 });
@@ -98,6 +105,26 @@ class AboutScreen extends ConsumerWidget {
               icono: Icons.auto_awesome,
               etiqueta: textos.ecosistemaTitle,
               url: 'https://coleccion-nuevo-ser.gailu.net/',
+            ),
+          ]),
+
+          const SizedBox(height: 24),
+          _Seccion(titulo: 'Contacto y sugerencias', children: [
+            const Text(
+              'Para reportes de bugs, sugerencias de funcionalidades o medios que añadir al catálogo, lo más rápido es abrir un issue en GitHub. Para colaboraciones, prensa o cualquier otro tema, escribe al email de contacto.',
+            ),
+            const SizedBox(height: 12),
+            const _BotonEnlaceExterno(
+              icono: Icons.bug_report_outlined,
+              etiqueta: 'Abrir issue en GitHub',
+              url: _urlIssuesGithub,
+            ),
+            const SizedBox(height: 8),
+            _BotonEnlaceExterno(
+              icono: Icons.mail_outline,
+              etiqueta: _emailContactoProyecto,
+              url: 'mailto:$_emailContactoProyecto'
+                  '?subject=${Uri.encodeComponent('Flavor News Hub')}',
             ),
           ]),
 

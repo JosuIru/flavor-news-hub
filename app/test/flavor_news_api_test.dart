@@ -47,6 +47,7 @@ void main() {
       final api = FlavorNewsApi(
         baseUrl: Uri.parse('https://instance.example/wp-json/flavor-news/v1/'),
         httpClient: clienteMock,
+        userAgent: 'FlavorNewsHub/test (Linux; libre)',
       );
 
       final pagina = await api.fetchItems();
@@ -75,6 +76,7 @@ void main() {
       final api = FlavorNewsApi(
         baseUrl: Uri.parse('https://instance.example/wp-json/flavor-news/v1/'),
         httpClient: clienteMock,
+        userAgent: 'FlavorNewsHub/test (Linux; libre)',
       );
 
       try {
