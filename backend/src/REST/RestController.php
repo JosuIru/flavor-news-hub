@@ -26,6 +26,7 @@ final class RestController
         CollectiveSubmitEndpoint::registrarRutas();
         SourceSubmitEndpoint::registrarRutas();
         RadiosEndpoint::registrarRutas();
+        RadioNowPlayingEndpoint::registrarRutas();
         AppUpdateEndpoint::registrarRutas();
         FeedHtmlEndpoint::registrarRutas();
         IngestTriggerEndpoint::registrarRutas();

@@ -1904,7 +1904,9 @@ JS;
             $stream = (string) get_post_meta($id, '_fnh_stream_url', true);
             $web = (string) get_post_meta($id, '_fnh_website_url', true);
             $territorio = (string) get_post_meta($id, '_fnh_territory', true);
-            echo '<li class="fnh-radio">';
+            // El `data-fnh-radio-id` lo usa el script de "now playing" para
+            // saber a qué endpoint preguntar cuando el usuario pulsa play.
+            printf('<li class="fnh-radio" data-fnh-radio-id="%d">', $id);
             printf('<h4>%s</h4>', esc_html(get_the_title($post)));
             if ($territorio !== '') {
                 echo '<div class="fnh-meta">' . esc_html($territorio) . '</div>';
@@ -1914,6 +1916,10 @@ JS;
                     '<audio controls preload="none" class="fnh-audio"><source src="%s" type="audio/mpeg" /></audio>',
                     esc_url($stream)
                 );
+                // Línea de "ahora suena" rellenada por el script via REST.
+                // Empieza oculta (hidden) para no dejar hueco vacío hasta
+                // que llegue el primer StreamTitle ICY.
+                echo '<div class="fnh-radio-programa" data-fnh-now hidden></div>';
             }
             if ($web !== '') {
                 printf(
@@ -1926,7 +1932,101 @@ JS;
         }
         echo '</ul>';
         self::imprimirScriptAudioExclusivo();
+        self::imprimirScriptNowPlayingRadios();
         return self::envolverShortcode('radios', (string) ob_get_clean(), $filtros);
+    }
+
+    /**
+     * Inyecta el script que pinta el "ahora suena" debajo del audio
+     * de cada radio. Cuando el usuario pulsa play, arranca un polling
+     * cada 30 s al endpoint `/radios/{id}/now-playing` y rellena el
+     * `data-fnh-now`. Al pause, para el polling.
+     *
+     * El intervalo coincide con el TTL del transient en
+     * `RadioNowPlayingEndpoint`: cada visita al endpoint o devuelve
+     * cache o lo recalcula. 30 s es la frescura máxima útil — los
+     * StreamTitle ICY suelen actualizarse al cambiar de canción
+     * (varios minutos), no al segundo.
+     *
+     * Igual que el script de audio exclusivo, se imprime una sola
+     * vez por request (flag estático).
+     */
+    private static function imprimirScriptNowPlayingRadios(): void
+    {
+        static $impreso = false;
+        if ($impreso) {
+            return;
+        }
+        $impreso = true;
+        $urlBaseRest = esc_js(rest_url(\FlavorNewsHub\REST\RestController::NAMESPACE_REST . '/radios/'));
+        ?><script>
+(function(){
+  var URL_BASE = '<?php echo $urlBaseRest; ?>';
+  var INTERVALO_MS = 30000;
+  var temporizador = null;
+  var idActivo = null;
+
+  function pintarTitulo(contenedor, titulo) {
+    titulo = (titulo || '').trim();
+    if (titulo) {
+      contenedor.textContent = titulo;
+      contenedor.hidden = false;
+    } else {
+      contenedor.textContent = '';
+      contenedor.hidden = true;
+    }
+  }
+
+  function pedirNowPlaying(idRadio, contenedor) {
+    fetch(URL_BASE + idRadio + '/now-playing', {credentials: 'omit'})
+      .then(function(resp){ return resp.ok ? resp.json() : null; })
+      .then(function(json){
+        if (json && idRadio === idActivo) pintarTitulo(contenedor, json.title);
+      })
+      .catch(function(){ /* silencioso: la línea sólo se rellena si llegan datos */ });
+  }
+
+  function pararPolling() {
+    if (temporizador) {
+      clearInterval(temporizador);
+      temporizador = null;
+    }
+    idActivo = null;
+  }
+
+  document.addEventListener('play', function(evento){
+    var audio = evento.target;
+    if (!audio || audio.tagName !== 'AUDIO') return;
+    if (!audio.classList || !audio.classList.contains('fnh-audio')) return;
+    var li = audio.closest ? audio.closest('.fnh-radio') : null;
+    if (!li) return;
+    var idRadio = li.getAttribute('data-fnh-radio-id');
+    if (!idRadio) return;
+    var contenedor = li.querySelector('[data-fnh-now]');
+    if (!contenedor) return;
+    pararPolling();
+    idActivo = idRadio;
+    pedirNowPlaying(idRadio, contenedor);
+    temporizador = setInterval(function(){
+      pedirNowPlaying(idRadio, contenedor);
+    }, INTERVALO_MS);
+  }, true);
+
+  document.addEventListener('pause', function(evento){
+    var audio = evento.target;
+    if (!audio || audio.tagName !== 'AUDIO') return;
+    if (!audio.classList || !audio.classList.contains('fnh-audio')) return;
+    var li = audio.closest ? audio.closest('.fnh-radio') : null;
+    if (!li) return;
+    var idRadio = li.getAttribute('data-fnh-radio-id');
+    if (idRadio === idActivo) {
+      pararPolling();
+      var contenedor = li.querySelector('[data-fnh-now]');
+      if (contenedor) pintarTitulo(contenedor, '');
+    }
+  }, true);
+})();
+</script><?php
     }
 
     /**
