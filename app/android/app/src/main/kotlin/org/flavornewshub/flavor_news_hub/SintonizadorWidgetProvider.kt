@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.view.KeyEvent
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
@@ -138,17 +139,25 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
             val radioNueva = radios[indiceNuevo]
             val fuenteActual = prefs.getString(CLAVE_FUENTE, "") ?: ""
             if (fuenteActual == FUENTE_APP) {
-                // Delegamos en la app: deep link a /audio con la nueva
-                // emisora. La activity captura el URI por onNewIntent y
-                // su DeepLinkListener llama a `reproducir(radio)` en el
-                // AudioPlayer principal. Ningún stream paralelo.
-                cambiarEmisoraEnApp(context, radioNueva.id)
-            } else {
-                // No hay app reproduciendo (fuente vacía o "servicio"):
-                // arrancamos / relanzamos el servicio nativo con la
-                // nueva URL. Internamente para el stream anterior.
-                iniciarServicioPlay(context, radioNueva)
+                // La fuente original era la app (just_audio_background).
+                // Antes hacíamos un deep link a `flavornews://radios/play/$id`
+                // confiando en que la activity estaría abierta y el
+                // intent pasaría por `onNewIntent`. Pero just_audio_background
+                // mantiene el playback con la activity destruida (caso
+                // típico: escuchas con la pantalla bloqueada), y entonces
+                // `startActivity` traía la app al frente — exactamente
+                // lo contrario de lo que se espera de "siguiente radio
+                // en el widget".
+                //
+                // En su lugar, transferimos el playback al `RadioService`
+                // nativo del widget: paramos lo que esté sonando en
+                // cualquier MediaSession (KEYCODE_MEDIA_STOP) y arrancamos
+                // el servicio con la nueva URL. La próxima pulsación ya
+                // verá `CLAVE_FUENTE = FUENTE_SERVICIO` y caerá por la
+                // rama directa.
+                pararPlaybackEnApp(context)
             }
+            iniciarServicioPlay(context, radioNueva)
         }
 
         // Forzar redibujado inmediato del widget.
@@ -176,22 +185,29 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
     }
 
     /**
-     * Cambia la emisora reproduciendo en el AudioPlayer principal de la
-     * app via deep link. Usado por ◄/► del widget cuando la fuente
-     * actual es `FUENTE_APP`. La activity ya está abierta en ese caso —
-     * el deep link sólo dispara `onNewIntent`, no abre nueva pantalla.
+     * Manda KEYCODE_MEDIA_STOP al MediaSession activo (gestionado por
+     * audio_service / just_audio_background dentro de la app). Si la
+     * sesión existe, para el playback. Si no, el broadcast es no-op.
+     *
+     * Lo usamos al cambiar de emisora con ◄/► cuando la fuente actual
+     * es `FUENTE_APP`: paramos lo de la app antes de arrancar el
+     * RadioService nativo, para no tener dos streams sonando en paralelo.
      */
-    private fun cambiarEmisoraEnApp(context: Context, idRadio: Int) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("flavornews://radios/play/$idRadio")).apply {
+    private fun pararPlaybackEnApp(context: Context) {
+        val intent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
             setPackage(context.packageName)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(
+                Intent.EXTRA_KEY_EVENT,
+                KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_STOP),
+            )
         }
         try {
-            context.startActivity(intent)
+            context.sendBroadcast(intent)
         } catch (_: Exception) {
-            // ActivityNotFound no debería pasar (paquete propio); si lo
-            // hace, no rompemos el widget — el dial se queda en el
-            // nuevo índice y el siguiente click puede recuperarse.
+            // Best effort: si por algún motivo el broadcast no llega, el
+            // RadioService nativo arrancará igualmente con la nueva URL.
+            // Lo único que se rompería es la transición limpia (puede
+            // haber un breve solapamiento entre las dos fuentes).
         }
     }
 
