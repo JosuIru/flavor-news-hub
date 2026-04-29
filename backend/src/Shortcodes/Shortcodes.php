@@ -1925,7 +1925,47 @@ JS;
             echo '</li>';
         }
         echo '</ul>';
+        self::imprimirScriptAudioExclusivo();
         return self::envolverShortcode('radios', (string) ob_get_clean(), $filtros);
+    }
+
+    /**
+     * Imprime una sola vez por request un script que asegura que sólo
+     * un `<audio class="fnh-audio">` puede sonar a la vez: cuando uno
+     * empieza a reproducir, pausa al resto. Sin esto, en la página de
+     * radios cada tarjeta sigue sonando aunque pulses play en otra.
+     *
+     * El listener va en fase de captura porque los eventos `play` de
+     * HTMLMediaElement no burbujean — un addEventListener normal sobre
+     * document no los recibe. Captura sí.
+     *
+     * El flag estático evita duplicar el script si en una misma página
+     * coexisten varios shortcodes que también renderizan audio (radios,
+     * podcasts, TV).
+     */
+    private static function imprimirScriptAudioExclusivo(): void
+    {
+        static $impreso = false;
+        if ($impreso) {
+            return;
+        }
+        $impreso = true;
+        ?><script>
+(function(){
+  document.addEventListener('play', function(evento){
+    var elementoActivo = evento.target;
+    if (!elementoActivo || elementoActivo.tagName !== 'AUDIO') return;
+    if (!elementoActivo.classList || !elementoActivo.classList.contains('fnh-audio')) return;
+    var todosLosAudios = document.querySelectorAll('audio.fnh-audio');
+    for (var i = 0; i < todosLosAudios.length; i++) {
+      var otro = todosLosAudios[i];
+      if (otro !== elementoActivo && !otro.paused) {
+        otro.pause();
+      }
+    }
+  }, true);
+})();
+</script><?php
     }
 
     /**
