@@ -78,10 +78,11 @@
         </service>
 
         <!-- RadioService propio: foreground service que reproduce streams
-             desde el widget Sintonizador sin abrir la app Flutter. Usa
-             MediaPlayer nativo, vive independiente del FlutterEngine
-             para que el playback dure indefinidamente (a diferencia de
-             un callback Dart background, que muere al rato). -->
+             desde el widget Sintonizador sin abrir la app Flutter. Mantiene
+             un MediaSession (Media3) cuyo token usa la notificación
+             foreground en `MediaStyle` — eso hace que el sistema la trate
+             como notificación de media (controles en lockscreen, sección
+             "Now playing", etc.), no como notificación normal. -->
         <service
             android:name=".RadioService"
             android:foregroundServiceType="mediaPlayback"

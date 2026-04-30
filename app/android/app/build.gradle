@@ -128,6 +128,16 @@ dependencies {
     def versionMedia3 = "1.4.1"
     implementation "androidx.media3:media3-exoplayer:$versionMedia3"
     implementation "androidx.media3:media3-common:$versionMedia3"
+    // media3-session da el MediaSession (Media3) cuyo token enlazamos a la
+    // notificación foreground del RadioService. Sin esto la notificación
+    // del foreground service era un Notification normal — funcional pero
+    // no integrada con los media controls de Android.
+    implementation "androidx.media3:media3-session:$versionMedia3"
+    // androidx.media (legacy) trae `MediaStyle` para NotificationCompat,
+    // que es lo que el sistema reconoce como "notificación de media" y
+    // promueve a la sección "Now playing" / lockscreen. Se vincula al
+    // token del MediaSession Media3 vía `setMediaSession(platformToken)`.
+    implementation "androidx.media:media:1.7.0"
 }
 
 // Evita clash entre work-runtime (flutter_local_notifications 17.x trae

@@ -284,10 +284,20 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         } else {
             views.setViewVisibility(R.id.sintonizador_programa, View.GONE)
         }
-        views.setTextViewText(
-            R.id.sintonizador_btn_play,
-            if (cargando) GLIFO_CARGANDO else GLIFO_PLAY,
-        )
+        // Glifo del botón principal:
+        //   cargando → `…` (no responde al click más que para reentrar
+        //              al servicio, que ignora el play repetido).
+        //   sonando  → `⏸` y al pulsar dispara ACCION_STOP. Antes el
+        //              icono volvía siempre a `▶` aunque la radio
+        //              estuviera sonando, dando la impresión de que el
+        //              widget no había registrado la pulsación.
+        //   parado   → `▶` y al pulsar arranca el servicio.
+        val glifoBotonPrincipal = when {
+            cargando -> GLIFO_CARGANDO
+            sonando -> "⏸"
+            else -> GLIFO_PLAY
+        }
+        views.setTextViewText(R.id.sintonizador_btn_play, glifoBotonPrincipal)
 
         // Botón anterior → broadcast al propio provider.
         val intentAnt = Intent(context, SintonizadorWidgetProvider::class.java).apply { action = ACCION_ANTERIOR }
@@ -305,24 +315,35 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.sintonizador_btn_siguiente, pSig)
 
-        // Botón play → arranca RadioService en foreground con la URL del
-        // stream. El servicio vive independientemente y mantiene la radio
-        // sonando aunque el widget se redibuje o el sistema recicle el
-        // proceso de la app — sigue siendo "sin abrir la app".
-        val intentPlay = Intent(context, RadioService::class.java).apply {
-            action = RadioService.ACCION_PLAY
-            putExtra(RadioService.EXTRA_URL, radio.streamUrl)
-            putExtra(RadioService.EXTRA_TITULO, radio.nombre)
-            putExtra(RadioService.EXTRA_ID_RADIO, idRadio.toString())
+        // Botón play/pausa → si nada suena, arranca RadioService en
+        // foreground con la URL del stream. Si ya hay reproducción, el
+        // mismo botón actúa como pausa y dispara ACCION_STOP. El servicio
+        // vive independientemente y mantiene la radio sonando aunque el
+        // widget se redibuje o el sistema recicle el proceso de la app.
+        val pPlay = if (sonando) {
+            val intentPausar = Intent(context, RadioService::class.java).apply {
+                action = RadioService.ACCION_STOP
+            }
+            PendingIntent.getService(
+                context, widgetId * 10 + 5, intentPausar,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+        } else {
+            val intentPlay = Intent(context, RadioService::class.java).apply {
+                action = RadioService.ACCION_PLAY
+                putExtra(RadioService.EXTRA_URL, radio.streamUrl)
+                putExtra(RadioService.EXTRA_TITULO, radio.nombre)
+                putExtra(RadioService.EXTRA_ID_RADIO, idRadio.toString())
+            }
+            pendingIntentForegroundService(
+                context,
+                // requestCode único por (widget, emisora) — sin esto Android
+                // reusa un PendingIntent cacheado de la emisora anterior y al
+                // pulsar ▶ con otra radio el sistema dispara el viejo Intent.
+                widgetId * 1_000_000 + idRadio,
+                intentPlay,
+            )
         }
-        val pPlay = pendingIntentForegroundService(
-            context,
-            // requestCode único por (widget, emisora) — sin esto Android
-            // reusa un PendingIntent cacheado de la emisora anterior y al
-            // pulsar ▶ con otra radio el sistema dispara el viejo Intent.
-            widgetId * 1_000_000 + idRadio,
-            intentPlay,
-        )
         views.setOnClickPendingIntent(R.id.sintonizador_btn_play, pPlay)
 
         // Botón stop → manda ACCION_STOP al servicio. Si no hay servicio

@@ -11,7 +11,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
+import androidx.media.app.NotificationCompat as MediaNotificationCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -19,6 +21,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
 import es.antonborri.home_widget.HomeWidgetPlugin
 
 /**
@@ -39,6 +42,13 @@ import es.antonborri.home_widget.HomeWidgetPlugin
  *   `MediaMetadata.title` vía `Player.Listener.onMediaMetadataChanged`,
  *   sin parseo manual. MediaPlayer del SDK no expone ICY.
  *   Coste: ~600-800 KB en el APK release tras R8.
+ *
+ * Por qué un MediaSession + MediaStyle:
+ *   Sin MediaSession la notificación foreground es informativa pero no
+ *   integrada con los media controls de Android — no aparece en la
+ *   sección "Now playing" del panel de notificaciones, ni en lockscreen.
+ *   Adjuntando el token del MediaSession a una NotificationCompat.MediaStyle
+ *   el sistema la promociona automáticamente a "media notification".
  *
  * Convivencia con la app principal (`just_audio_background`):
  *   Son dos rutas independientes. El usuario que abre la app y arranca
@@ -82,6 +92,7 @@ class RadioService : Service() {
     }
 
     private var reproductor: ExoPlayer? = null
+    private var sesionMedia: MediaSession? = null
     private var idRadioActual: String = ""
     private var tituloRadioActual: String = ""
     private var programaActual: String = ""
@@ -117,18 +128,18 @@ class RadioService : Service() {
 
         crearCanalNotificacionSiHaceFalta()
         // Foreground YA con notificación de "cargando" — el sistema exige
-        // que un foreground service pinte notif en los primeros 5 s.
+        // que un foreground service pinte notif en los primeros 5 s. La
+        // notificación es MediaStyle desde el primer frame; cuando llega
+        // el ICY la actualizamos en el mismo slot.
         startForeground(NOTIFICACION_ID, construirNotificacion(cargando = true))
         actualizarEstadoWidget("cargando", idRadio, programa = "")
 
-        // Si había ExoPlayer previo, lo soltamos y creamos uno nuevo.
-        // Reusar el player con setMediaItem también funcionaría, pero un
-        // player nuevo por cambio de emisora es más predecible (estado
-        // interno limpio, listeners frescos).
-        reproductor?.let {
-            try { it.stop() } catch (_: Exception) {}
-            try { it.release() } catch (_: Exception) {}
-        }
+        // Si había ExoPlayer/MediaSession previos, los soltamos y creamos
+        // unos nuevos. Reusar el player con setMediaItem también funcionaría,
+        // pero un player nuevo por cambio de emisora es más predecible
+        // (estado interno limpio, listeners frescos, MediaSession con la
+        // nueva metadata desde el principio).
+        liberarReproductorYSesion()
 
         val nuevoReproductor = ExoPlayer.Builder(this)
             .setAudioAttributes(
@@ -146,6 +157,15 @@ class RadioService : Service() {
                 prepare()
             }
         reproductor = nuevoReproductor
+        // El MediaSession se ata al ExoPlayer — todos los eventos (play,
+        // pause, metadata, posición) viajan automáticamente al token que
+        // la notificación referencia. El id del MediaSession es único por
+        // proceso; con uno fijo Media3 lanza IllegalStateException si
+        // intentamos crear otro mientras el anterior aún existe, por eso
+        // `liberarReproductorYSesion()` arriba hace `release()` antes.
+        sesionMedia = MediaSession.Builder(this, nuevoReproductor)
+            .setId("flavor-news-hub-radio")
+            .build()
     }
 
     /**
@@ -206,11 +226,7 @@ class RadioService : Service() {
     }
 
     private fun manejarStop() {
-        reproductor?.let {
-            try { it.stop() } catch (_: Exception) {}
-            try { it.release() } catch (_: Exception) {}
-        }
-        reproductor = null
+        liberarReproductorYSesion()
         idRadioActual = ""
         tituloRadioActual = ""
         programaActual = ""
@@ -228,7 +244,16 @@ class RadioService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        liberarReproductorYSesion()
+    }
+
+    private fun liberarReproductorYSesion() {
+        sesionMedia?.let {
+            try { it.release() } catch (_: Exception) {}
+        }
+        sesionMedia = null
         reproductor?.let {
+            try { it.stop() } catch (_: Exception) {}
             try { it.release() } catch (_: Exception) {}
         }
         reproductor = null
@@ -281,6 +306,25 @@ class RadioService : Service() {
             else -> getString(R.string.radio_service_subtitulo)
         }
 
+        // MediaStyle anclada al token del MediaSession: el sistema la
+        // promociona a "media notification" — aparece en lockscreen, en
+        // la sección "Now playing" del panel de notificaciones, y los
+        // controles del cabezal Bluetooth/auriculares también la usan.
+        // Si la sesión todavía no existe (caso primer frame de
+        // "cargando" antes de crear el player), el estilo cae a una
+        // notificación normal — Media3 lo tolera y la próxima
+        // actualización (`actualizarNotificacionAhora`) la sustituye con
+        // la versión MediaStyle completa.
+        val estilo = MediaNotificationCompat.MediaStyle()
+            .setShowActionsInCompactView(0)
+        // El MediaStyle legacy espera un `MediaSessionCompat.Token`. El
+        // MediaSession Media3 expone su token framework vía `platformToken`;
+        // `MediaSessionCompat.Token.fromToken` lo envuelve sin copia para
+        // que ambas APIs hablen entre sí.
+        sesionMedia?.platformToken?.let {
+            estilo.setMediaSession(MediaSessionCompat.Token.fromToken(it))
+        }
+
         return NotificationCompat.Builder(this, CANAL_NOTIFICACION)
             .setContentTitle(tituloMostrado)
             .setContentText(subtituloMostrado)
@@ -292,6 +336,7 @@ class RadioService : Service() {
                 getString(R.string.radio_service_parar),
                 pIntentParar,
             )
+            .setStyle(estilo)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .build()
