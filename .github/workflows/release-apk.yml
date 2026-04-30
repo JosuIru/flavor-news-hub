@@ -97,9 +97,19 @@ jobs:
         # confusión: antes el APK se llamaba igual que el repo y
         # costaba diferenciarlo del source-code zip que GitHub añade
         # automáticamente.
+        #
+        # Subimos también una copia con nombre fijo
+        # `flavor-news-hub-app.apk` para tener una URL estable que no
+        # cambie entre versiones:
+        #   https://github.com/JosuIru/flavor-news-hub/releases/latest/download/flavor-news-hub-app.apk
+        # Lo usa el botón "Compartir app" para que la persona que
+        # recibe el enlace descargue directamente el último APK sin
+        # pasar por la página de la release.
         run: |
           mv build/app/outputs/flutter-apk/app-libre-release.apk \
              build/app/outputs/flutter-apk/flavor-news-hub-app-${GITHUB_REF_NAME}.apk
+          cp build/app/outputs/flutter-apk/flavor-news-hub-app-${GITHUB_REF_NAME}.apk \
+             build/app/outputs/flutter-apk/flavor-news-hub-app.apk
 
       - name: Setup PHP
         # Necesario para `composer install` del plugin WordPress.
@@ -158,4 +168,5 @@ jobs:
           generate_release_notes: true
           files: |
             app/build/app/outputs/flutter-apk/flavor-news-hub-app-${{ github.ref_name }}.apk
+            app/build/app/outputs/flutter-apk/flavor-news-hub-app.apk
             plugin_build/flavor-news-hub-plugin-${{ github.ref_name }}.zip

@@ -1,7 +1,7 @@
 name: flavor_news_hub
 description: "Puerta de entrada común entre informarse (medios alternativos) y actuar (colectivos organizados)."
 publish_to: 'none'
-version: 0.13.0+105
+version: 0.13.5+106
 
 environment:
   sdk: ^3.5.0
@@ -123,6 +123,13 @@ dev_dependencies:
   build_runner: ^2.4.12
   freezed: ^2.5.7
   json_serializable: ^6.8.0
+
+  # Branding del flavor `portfolio`: regenera los launcher icons de
+  # Android y la splash nativa a partir de un PNG de marca. Sólo se
+  # ejecuta a mano antes de un release portfolio (ver docs/portfolio.md);
+  # no se usa en CI del hub.
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.0
 
 flutter:
   uses-material-design: true
