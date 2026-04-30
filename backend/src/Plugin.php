@@ -11,6 +11,7 @@ use FlavorNewsHub\Taxonomy\Topic;
 use FlavorNewsHub\Meta\MetaRegistrar;
 use FlavorNewsHub\Catalog\CatalogoPorDefecto;
 use FlavorNewsHub\Catalog\ImportadorCatalogo;
+use FlavorNewsHub\Catalog\ItemsHuerfanos;
 use FlavorNewsHub\Catalog\SeedExcluidos;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Ingest\FeedIngester;
@@ -125,6 +126,12 @@ final class Plugin
         // source/radio/collective desde wp-admin, la marcamos para que
         // el sync del catálogo en futuros upgrades NO la vuelva a crear.
         SeedExcluidos::registrarHooks();
+
+        // Cuando se manda a la papelera una `fnh_source`, mandamos
+        // también sus `fnh_item` — sin esto los items quedaban
+        // sueltos en BD y seguían apareciendo en /items aunque el
+        // admin pensara haber "borrado" la fuente.
+        ItemsHuerfanos::registrarHooks();
 
         // Admin (menú, metaboxes, acciones, settings). Los hooks admin_*
         // sólo disparan en backend; registrar siempre es inofensivo.
@@ -246,6 +253,11 @@ final class Plugin
         // sale vacía en instancias antiguas — el filtro
         // `_fnh_es_movimiento='1'` no encuentra nada.
         self::backfillFlagsEditorialesDesdeSeed();
+
+        // Purga única de items con source en papelera o inexistente.
+        // Marcados para que un eventual untrash de la source los pueda
+        // recuperar. Ver `ItemsHuerfanos` para el detalle.
+        ItemsHuerfanos::purgarHuerfanosUnaVez();
 
         update_option('fnh_catalogo_sincronizado_version', FNH_VERSION);
     }
