@@ -38,31 +38,6 @@
     ]
   },
   {
-    "id": 6202,
-    "name": "Ecologistas en Acción",
-    "slug": "ecologistas-en-accion",
-    "description": "<p>Confederación de grupos ecologistas distribuidos por pueblos y ciudades, referente del ecologismo social en el Estado español.</p>\n",
-    "url": "http://localhost:10028/c/ecologistas-en-accion/",
-    "website_url": "https://www.ecologistasenaccion.org/",
-    "flavor_url": "",
-    "territory": "Estado español",
-    "has_contact": true,
-    "verified": true,
-    "topics": [
-      {
-        "id": 71,
-        "name": "Ecologismo",
-        "slug": "ecologismo"
-      },
-      {
-        "id": 84,
-        "name": "Alimentación",
-        "slug": "alimentacion"
-      }
-    ],
-    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
-  },
-  {
     "id": 6203,
     "name": "Marea Granate",
     "slug": "marea-granate",
@@ -1852,24 +1827,6 @@
     "source_slugs": [
       "sindicato-inquilinas-madrid"
     ]
-  },
-  {
-    "id": 6273,
-    "name": "Ecologistas en Acción Cantabria",
-    "slug": "ecologistas-accion-cantabria",
-    "description": "Federación de grupos ecologistas en Cantabria.",
-    "website_url": "https://www.ecologistasenaccion.org/cantabria/",
-    "territory": "Cantabria",
-    "topics": [
-      {
-        "slug": "ecologismo"
-      }
-    ],
-    "verified": true,
-    "source_slugs": [
-      "ecologistas-accion-cantabria"
-    ],
-    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/"
   },
   {
     "id": 6274,
