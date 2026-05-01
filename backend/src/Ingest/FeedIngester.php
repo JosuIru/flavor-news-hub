@@ -196,6 +196,19 @@ final class FeedIngester
             $args['headers'] = isset($args['headers']) && is_array($args['headers'])
                 ? $args['headers'] : [];
             $args['headers']['From'] = 'flavor.gailu.it (Flavor News Hub agregator)';
+            // Headers adicionales que envía un Chrome real. Algunos WAFs
+            // (CloudFlare, Sucuri) inspeccionan más allá del UA y devuelven
+            // 403/486 si faltan estos: Accept con MIME RSS/Atom explícitos
+            // hace que el origen sirva XML en vez de HTML cuando autoselecciona;
+            // Accept-Language evita que rutas que sirven distinto por idioma
+            // caigan a la versión de fallback (a veces redirige a página de
+            // bot-check). Sec-Fetch-* aparecen en cualquier fetch moderno y
+            // su ausencia es señal de scraping para algunos motores.
+            $args['headers']['Accept'] = 'application/rss+xml,application/atom+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.5';
+            $args['headers']['Accept-Language'] = 'es,en;q=0.8';
+            $args['headers']['Sec-Fetch-Dest'] = 'document';
+            $args['headers']['Sec-Fetch-Mode'] = 'navigate';
+            $args['headers']['Sec-Fetch-Site'] = 'none';
             return $args;
         };
         // SSL bypass por dominio: si el feed actual está en la lista de

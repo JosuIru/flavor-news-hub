@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\CLI;
 
+use FlavorNewsHub\Catalog\AutodescubrirFeeds;
 use FlavorNewsHub\Catalog\SeedExcluidos;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Source;
+use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\Ingest\FeedItemParser;
 
@@ -521,6 +523,150 @@ final class IngestCommand
                 break;
             default:
                 \WP_CLI::error("Acción desconocida: '$accion'. Usa list, add o remove.");
+        }
+    }
+
+    /**
+     * Recorre las fuentes con error reciente o sin items en 30 días,
+     * intenta auto-descubrir un feed alternativo desde la URL declarada
+     * (vía `<link rel="alternate">` de la página HTML del medio) y lista
+     * las propuestas. Con `--aplicar` actualiza `_fnh_feed_url` y reactiva
+     * la fuente; sin `--aplicar` es dry-run (sólo lista).
+     *
+     * Equivalente CLI del botón "Auto-descubrir feeds rotos" del panel
+     * admin "Estado de fuentes".
+     *
+     * ## OPTIONS
+     *
+     * [--aplicar]
+     * : Actualiza `_fnh_feed_url` y reactiva las fuentes con propuesta válida.
+     *   Sin esto sólo lista (dry-run).
+     *
+     * [--limite=<n>]
+     * : Tope de fuentes a escanear en una pasada. Default 60.
+     *
+     * ## EXAMPLES
+     *
+     *     wp flavor-news reparar-feeds
+     *     wp flavor-news reparar-feeds --aplicar
+     *     wp flavor-news reparar-feeds --limite=200
+     *
+     * @param array<int,string>    $argumentosPosicionales
+     * @param array<string,string> $argumentosConNombre
+     */
+    public function reparar_feeds($argumentosPosicionales, $argumentosConNombre): void
+    {
+        $debeAplicar = isset($argumentosConNombre['aplicar']);
+        $limite = isset($argumentosConNombre['limite']) ? max(1, (int) $argumentosConNombre['limite']) : 60;
+
+        global $wpdb;
+        $tablaLogs = IngestLogTable::nombreCompleto();
+
+        // Misma query que `EstadoFuentesActions::manejarDetectarFeeds`:
+        // sources activas con último log en error O sin items en 30 días.
+        $idsCandidatas = $wpdb->get_col($wpdb->prepare(
+            "SELECT p.ID FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pma ON pma.post_id = p.ID
+                AND pma.meta_key = '_fnh_active' AND pma.meta_value = '1'
+             WHERE p.post_type = %s AND p.post_status = 'publish'
+               AND (
+                   EXISTS (
+                       SELECT 1 FROM {$tablaLogs} il
+                       WHERE il.source_id = p.ID AND il.status = 'error'
+                         AND il.started_at = (
+                             SELECT MAX(il2.started_at) FROM {$tablaLogs} il2
+                             WHERE il2.source_id = p.ID
+                         )
+                   )
+                   OR NOT EXISTS (
+                       SELECT 1 FROM {$wpdb->postmeta} pmi
+                       INNER JOIN {$wpdb->posts} pi ON pi.ID = pmi.post_id
+                       WHERE pmi.meta_key = '_fnh_source_id' AND pmi.meta_value = p.ID
+                         AND pi.post_type = %s AND pi.post_status = 'publish'
+                         AND pi.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)
+                       LIMIT 1
+                   )
+               )
+             ORDER BY p.ID ASC
+             LIMIT %d",
+            Source::SLUG,
+            Item::SLUG,
+            $limite
+        ));
+
+        $idsCandidatas = array_map('intval', is_array($idsCandidatas) ? $idsCandidatas : []);
+        if ($idsCandidatas === []) {
+            \WP_CLI::success('Ninguna fuente candidata: todas las activas tienen ingesta exitosa reciente y items en los últimos 30 días.');
+            return;
+        }
+
+        \WP_CLI::log(sprintf('Escaneando %d fuentes candidatas…', count($idsCandidatas)));
+
+        $cuentaPropuestas = 0;
+        $cuentaAplicadas = 0;
+        $cuentaSinPropuesta = 0;
+        foreach ($idsCandidatas as $idCandidata) {
+            $urlFeedActual = (string) get_post_meta($idCandidata, '_fnh_feed_url', true);
+            if ($urlFeedActual === '') {
+                continue;
+            }
+
+            // Primero probamos sobre la URL del feed (puede haber sido
+            // redirigida a HTML por el medio). Si no descubre nada,
+            // fallback a la homepage.
+            $deteccion = AutodescubrirFeeds::detectarDesdeUrl($urlFeedActual);
+            if ($deteccion === null) {
+                $urlSitioWeb = (string) get_post_meta($idCandidata, '_fnh_website_url', true);
+                if ($urlSitioWeb !== '' && $urlSitioWeb !== $urlFeedActual) {
+                    $deteccion = AutodescubrirFeeds::detectarDesdeUrl($urlSitioWeb);
+                }
+            }
+            if ($deteccion === null) {
+                $cuentaSinPropuesta++;
+                continue;
+            }
+            [$urlFeedDetectada, $tipoFeedDetectado, $timestampUltimoItem] = $deteccion;
+            if ($urlFeedDetectada === $urlFeedActual) {
+                $cuentaSinPropuesta++;
+                continue;
+            }
+
+            $cuentaPropuestas++;
+            $nombre = (string) get_the_title($idCandidata);
+            $marcaFrescura = $timestampUltimoItem > 0
+                ? sprintf('último item: hace %d días', max(1, (int) floor((time() - $timestampUltimoItem) / DAY_IN_SECONDS)))
+                : 'frescura desconocida';
+
+            \WP_CLI::log('');
+            \WP_CLI::log(sprintf('  #%d  %s', $idCandidata, $nombre));
+            \WP_CLI::log(sprintf('    actual:    %s', $urlFeedActual));
+            \WP_CLI::log(sprintf('    detectada: %s  [%s, %s]', $urlFeedDetectada, $tipoFeedDetectado, $marcaFrescura));
+
+            if ($debeAplicar) {
+                update_post_meta($idCandidata, '_fnh_feed_url', $urlFeedDetectada);
+                if (in_array($tipoFeedDetectado, ['rss', 'atom'], true)) {
+                    update_post_meta($idCandidata, '_fnh_feed_type', $tipoFeedDetectado);
+                }
+                update_post_meta($idCandidata, '_fnh_active', true);
+                $cuentaAplicadas++;
+                \WP_CLI::log('    → APLICADO');
+            }
+        }
+
+        \WP_CLI::log('');
+        if ($debeAplicar) {
+            \WP_CLI::success(sprintf(
+                'Reparación: %d propuestas detectadas, %d aplicadas, %d sin propuesta válida.',
+                $cuentaPropuestas,
+                $cuentaAplicadas,
+                $cuentaSinPropuesta
+            ));
+        } else {
+            \WP_CLI::success(sprintf(
+                'Dry-run: %d propuestas detectadas, %d sin propuesta válida. Re-ejecuta con --aplicar para guardar los cambios.',
+                $cuentaPropuestas,
+                $cuentaSinPropuesta
+            ));
         }
     }
 }

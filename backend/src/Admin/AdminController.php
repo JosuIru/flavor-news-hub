@@ -77,6 +77,7 @@ final class AdminController
         add_action(EstadoFuentesActions::HOOK_APLICAR_URLS, [EstadoFuentesActions::class, 'manejarAplicarUrls']);
         add_action(EstadoFuentesActions::HOOK_DETECTAR_FEEDS, [EstadoFuentesActions::class, 'manejarDetectarFeeds']);
         add_action(EstadoFuentesActions::HOOK_APLICAR_FEED_UNICO, [EstadoFuentesActions::class, 'manejarAplicarFeedDetectado']);
+        add_action(EstadoFuentesActions::HOOK_APLICAR_FEEDS_TODOS, [EstadoFuentesActions::class, 'manejarAplicarTodasPropuestas']);
         add_action(EstadoFuentesActions::HOOK_ELIMINAR_DUPLICADOS, [EstadoFuentesActions::class, 'manejarEliminarDuplicados']);
         add_action('admin_notices', [EstadoFuentesActions::class, 'mostrarAviso']);
     }

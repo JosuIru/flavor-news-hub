@@ -28,6 +28,7 @@ final class EstadoFuentesActions
     public const HOOK_APLICAR_URLS         = 'admin_post_fnh_aplicar_urls_conocidas';
     public const HOOK_DETECTAR_FEEDS       = 'admin_post_fnh_detectar_feeds';
     public const HOOK_APLICAR_FEED_UNICO   = 'admin_post_fnh_aplicar_feed_detectado';
+    public const HOOK_APLICAR_FEEDS_TODOS  = 'admin_post_fnh_aplicar_feeds_todos';
     public const HOOK_ELIMINAR_DUPLICADOS  = 'admin_post_fnh_eliminar_duplicados';
 
     /** Clave del transient donde se guardan las propuestas tras escanear. */
@@ -312,6 +313,61 @@ final class EstadoFuentesActions
     }
 
     /**
+     * Aplica de golpe TODAS las propuestas detectadas en el último escaneo.
+     * Atajo cuando el admin ya ha revisado la lista y se fía. Internamente
+     * itera el transient y aplica cada par (url, tipo) a su fuente.
+     *
+     * Repite la lógica de `manejarAplicarFeedDetectado` por entrada para
+     * no exigir un nonce por fuente — un único nonce general protege la
+     * acción en bloque.
+     */
+    public static function manejarAplicarTodasPropuestas(): void
+    {
+        self::comprobarPermisos();
+        $nonce = isset($_POST['_wpnonce']) ? (string) wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'fnh_aplicar_feeds_todos')) {
+            wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
+        }
+
+        $propuestasGuardadas = get_transient(self::TRANSIENT_PROPUESTAS);
+        if (!is_array($propuestasGuardadas) || $propuestasGuardadas === []) {
+            wp_safe_redirect(self::urlRedireccion(['fnh_feeds_aplicados_lote' => 0]));
+            exit;
+        }
+
+        $aplicadas = 0;
+        foreach ($propuestasGuardadas as $idSource => $propuesta) {
+            $idSource = (int) $idSource;
+            if ($idSource <= 0 || !is_array($propuesta)) {
+                continue;
+            }
+            $urlFeedNueva = (string) ($propuesta['url_detectada'] ?? '');
+            $tipoFeedNuevo = (string) ($propuesta['tipo_detectado'] ?? '');
+            if ($urlFeedNueva === '' || !filter_var($urlFeedNueva, FILTER_VALIDATE_URL)) {
+                continue;
+            }
+            $post = get_post($idSource);
+            if (!$post || $post->post_type !== Source::SLUG) {
+                continue;
+            }
+            update_post_meta($idSource, '_fnh_feed_url', $urlFeedNueva);
+            if (in_array($tipoFeedNuevo, ['rss', 'atom'], true)) {
+                update_post_meta($idSource, '_fnh_feed_type', $tipoFeedNuevo);
+            }
+            update_post_meta($idSource, '_fnh_active', true);
+            $aplicadas++;
+        }
+
+        // Vacía el transient — todas las propuestas se han aplicado (o
+        // se ignoraron porque eran inválidas, en cualquier caso ya no
+        // queremos seguir mostrándolas).
+        delete_transient(self::TRANSIENT_PROPUESTAS);
+
+        wp_safe_redirect(self::urlRedireccion(['fnh_feeds_aplicados_lote' => $aplicadas]));
+        exit;
+    }
+
+    /**
      * Manda a papelera los duplicados de fuentes detectados —
      * mantiene el ID más bajo de cada par (el original) y manda a
      * papelera los demás. Considera duplicado:
@@ -439,6 +495,24 @@ final class EstadoFuentesActions
                 printf(
                     '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
                     esc_html__('No se pudo aplicar el feed: la propuesta ha caducado o no es válida.', 'flavor-news-hub')
+                );
+            }
+        }
+        if (isset($_GET['fnh_feeds_aplicados_lote'])) {
+            $cuentaAplicadasLote = (int) $_GET['fnh_feeds_aplicados_lote'];
+            if ($cuentaAplicadasLote > 0) {
+                printf(
+                    '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                    esc_html(sprintf(
+                        /* translators: %d feeds aplicados en bloque */
+                        _n('%d feed actualizado en bloque y fuentes reactivadas.', '%d feeds actualizados en bloque y fuentes reactivadas.', $cuentaAplicadasLote, 'flavor-news-hub'),
+                        $cuentaAplicadasLote
+                    ))
+                );
+            } else {
+                printf(
+                    '<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+                    esc_html__('No había propuestas válidas que aplicar.', 'flavor-news-hub')
                 );
             }
         }

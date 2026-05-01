@@ -71,9 +71,14 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         private const val COLOR_AGUJA_APAGADA = 0xFFB54040.toInt()
         private const val COLOR_AGUJA_ENCENDIDA = 0xFFFF4040.toInt()
 
-        // Glifos para el botón ▶: cambia a `…` mientras carga el stream.
+        // Glifos para el botón ▶: cambia a `…` mientras carga el stream y
+        // a `⏸` cuando ya está sonando — pulsarlo entonces detiene la
+        // reproducción (toggle play/pause). Sin esto el botón siempre
+        // mostraba `▶` aunque la radio estuviera sonando, dando la
+        // impresión de que el widget no había registrado la pulsación.
         private const val GLIFO_PLAY = "▶"
         private const val GLIFO_CARGANDO = "…"
+        private const val GLIFO_PAUSA = "⏸"
 
         // Bloques Unicode para el VU falso. Mezcla picos altos y bajos
         // en cada redibujado para que parezca señal viva — no hay
@@ -294,7 +299,7 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         //   parado   → `▶` y al pulsar arranca el servicio.
         val glifoBotonPrincipal = when {
             cargando -> GLIFO_CARGANDO
-            sonando -> "⏸"
+            sonando -> GLIFO_PAUSA
             else -> GLIFO_PLAY
         }
         views.setTextViewText(R.id.sintonizador_btn_play, glifoBotonPrincipal)

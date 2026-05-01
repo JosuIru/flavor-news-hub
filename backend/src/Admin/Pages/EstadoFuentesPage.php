@@ -261,6 +261,20 @@ final class EstadoFuentesPage
         <p class="description" style="max-width:800px">
             <?php esc_html_e('Estas URLs fueron detectadas leyendo la etiqueta <link rel="alternate" type="application/rss+xml"> de la página del medio. Antes de aplicar verifica que la URL nueva tiene sentido.', 'flavor-news-hub'); ?>
         </p>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0 0 1em" onsubmit="return confirm('<?php echo esc_js(__('¿Aplicar TODAS las propuestas listadas? Esta acción actualiza la URL de cada medio y reactiva la fuente.', 'flavor-news-hub')); ?>');">
+            <input type="hidden" name="action" value="fnh_aplicar_feeds_todos" />
+            <?php wp_nonce_field('fnh_aplicar_feeds_todos'); ?>
+            <button type="submit" class="button button-primary">
+                <?php printf(
+                    /* translators: %d propuestas en bloque */
+                    esc_html__('Aplicar todas las propuestas (%d)', 'flavor-news-hub'),
+                    count($propuestas)
+                ); ?>
+            </button>
+            <span class="description" style="margin-left:.5em">
+                <?php esc_html_e('o revísalas una por una más abajo.', 'flavor-news-hub'); ?>
+            </span>
+        </form>
         <table class="widefat striped" style="max-width:1200px">
             <thead>
                 <tr>

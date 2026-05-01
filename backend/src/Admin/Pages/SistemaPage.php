@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Admin\Pages;
 
+use FlavorNewsHub\REST\AppUpdateEndpoint;
 use FlavorNewsHub\Stats\UsoTracker;
 
 /**
@@ -44,6 +45,7 @@ final class SistemaPage
     public const TAB_FUENTES = 'fuentes';
     public const TAB_DESCARGAS = 'descargas';
     public const TAB_USO = 'uso';
+    public const TAB_ACTUALIZACIONES_APP = 'actualizaciones-app';
 
     /**
      * Lista de tabs en el orden que aparecerán. Cada entrada tiene
@@ -55,10 +57,11 @@ final class SistemaPage
     private static function tabs(): array
     {
         return [
-            self::TAB_RESUMEN   => ['label' => __('Resumen', 'flavor-news-hub'),   'cap' => 'edit_posts'],
-            self::TAB_FUENTES   => ['label' => __('Fuentes', 'flavor-news-hub'),   'cap' => 'manage_options'],
-            self::TAB_DESCARGAS => ['label' => __('Descargas', 'flavor-news-hub'), 'cap' => 'edit_posts'],
-            self::TAB_USO       => ['label' => __('Uso de la API', 'flavor-news-hub'), 'cap' => 'edit_posts'],
+            self::TAB_RESUMEN            => ['label' => __('Resumen', 'flavor-news-hub'),        'cap' => 'edit_posts'],
+            self::TAB_FUENTES            => ['label' => __('Fuentes', 'flavor-news-hub'),        'cap' => 'manage_options'],
+            self::TAB_DESCARGAS          => ['label' => __('Descargas', 'flavor-news-hub'),      'cap' => 'edit_posts'],
+            self::TAB_USO                => ['label' => __('Uso de la API', 'flavor-news-hub'),  'cap' => 'edit_posts'],
+            self::TAB_ACTUALIZACIONES_APP => ['label' => __('Actualizaciones app', 'flavor-news-hub'), 'cap' => 'manage_options'],
         ];
     }
 
@@ -111,6 +114,9 @@ final class SistemaPage
                     break;
                 case self::TAB_USO:
                     self::renderTabUso();
+                    break;
+                case self::TAB_ACTUALIZACIONES_APP:
+                    self::renderTabActualizacionesApp();
                     break;
                 case self::TAB_RESUMEN:
                 default:
@@ -314,6 +320,180 @@ final class SistemaPage
 
         <p style="margin-top:1.5em;font-size:.9em;color:#666;">
             <?php esc_html_e('Sólo se cuentan endpoints de flavor-news/v1 con métodos GET/POST. ua_hash es MD5 truncado a 16 caracteres del User-Agent — irreversible y no permite identificar a la persona. La app envía un UA fijo por build (FlavorNewsHub/version (plataforma; canal)), así que todas las instalaciones del mismo build colapsan en un único hash: la métrica indica variedad de clientes, no número de usuarios. La tabla se purga automáticamente cada 90 días.', 'flavor-news-hub'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Tab "Actualizaciones app": el admin decide si dejar el anuncio en
+     * automático (la app recibirá la última release con APK del repo —
+     * comportamiento histórico) o fijar manualmente una versión concreta
+     * (típico para retrasar un rollout, hacer rollback a una versión
+     * estable previa, o marcar una versión como obligatoria).
+     *
+     * Estado guardado en `wp_options::fnh_anuncio_actualizacion_app`.
+     * Si la opción está vacía o tiene `tag=''`, modo auto.
+     */
+    private static function renderTabActualizacionesApp(): void
+    {
+        // Procesar form ANTES de leer opción para que el render refleje
+        // el cambio en este mismo request.
+        if (
+            isset($_POST['fnh_guardar_anuncio_actualizacion'], $_POST['_wpnonce'])
+            && current_user_can('manage_options')
+            && wp_verify_nonce((string) $_POST['_wpnonce'], 'fnh_anuncio_actualizacion')
+        ) {
+            $modoElegido = (string) ($_POST['modo'] ?? 'auto');
+            if ($modoElegido === 'manual') {
+                $tagSeleccionado = sanitize_text_field((string) ($_POST['tag'] ?? ''));
+                $obligatoria = isset($_POST['es_obligatoria']);
+                if ($tagSeleccionado === '') {
+                    echo '<div class="notice notice-error is-dismissible"><p>'
+                        . esc_html__('Tienes que seleccionar una versión para anunciar manualmente.', 'flavor-news-hub')
+                        . '</p></div>';
+                } else {
+                    update_option(AppUpdateEndpoint::OPCION_ANUNCIO, [
+                        'tag'            => $tagSeleccionado,
+                        'es_obligatoria' => $obligatoria,
+                        'anunciado_at'   => gmdate('c'),
+                        'anunciado_por'  => get_current_user_id(),
+                    ], false);
+                    echo '<div class="notice notice-success is-dismissible"><p>'
+                        . esc_html(sprintf(
+                            /* translators: %1$s = tag de la versión, %2$s = "(obligatoria)" o "" */
+                            __('Anuncio guardado: %1$s %2$s. Las apps lo verán en su próximo check (hasta 1h por cache).', 'flavor-news-hub'),
+                            $tagSeleccionado,
+                            $obligatoria ? __('(obligatoria)', 'flavor-news-hub') : ''
+                        ))
+                        . '</p></div>';
+                }
+            } else {
+                // modo=auto → borramos la opción para que el endpoint
+                // caiga al fallback (última release con APK).
+                delete_option(AppUpdateEndpoint::OPCION_ANUNCIO);
+                echo '<div class="notice notice-success is-dismissible"><p>'
+                    . esc_html__('Modo automático activado: se anuncia la última release con APK del repo.', 'flavor-news-hub')
+                    . '</p></div>';
+            }
+        }
+
+        // Botón "Refrescar caché" — fuerza re-lectura de GitHub al
+        // siguiente render (útil tras publicar una release nueva).
+        if (
+            isset($_POST['fnh_refrescar_releases'], $_POST['_wpnonce'])
+            && current_user_can('manage_options')
+            && wp_verify_nonce((string) $_POST['_wpnonce'], 'fnh_refrescar_releases')
+        ) {
+            global $wpdb;
+            // Borra todos los transients del prefijo `fnh_app_update_cache`
+            // (listado, beta, _tag_*, etc.). Más limpio que listar nombres.
+            $wpdb->query(
+                "DELETE FROM {$wpdb->options}
+                 WHERE option_name LIKE '\\_transient\\_fnh\\_app\\_update\\_cache%'
+                    OR option_name LIKE '\\_transient\\_timeout\\_fnh\\_app\\_update\\_cache%'"
+            );
+            echo '<div class="notice notice-success is-dismissible"><p>'
+                . esc_html__('Caché de releases vaciada. La próxima carga consultará GitHub directamente.', 'flavor-news-hub')
+                . '</p></div>';
+        }
+
+        $config = AppUpdateEndpoint::leerConfigAnuncio();
+        $modoActual = $config['tag'] !== '' ? 'manual' : 'auto';
+        $forzarRefresh = false; // ya lo hicimos arriba si tocaba.
+        $releases = AppUpdateEndpoint::listarReleasesParaAdmin(15, $forzarRefresh);
+        ?>
+        <h2><?php esc_html_e('Anuncio de actualización en la app', 'flavor-news-hub'); ?></h2>
+        <p class="description">
+            <?php esc_html_e('Controla qué versión del APK se anuncia a las apps libre instaladas (las del flavor playstore se actualizan vía Google Play). Por defecto se anuncia la última release del repo con APK; si quieres retrasar un rollout o forzar a los usuarios a una versión concreta, fija una manualmente aquí.', 'flavor-news-hub'); ?>
+        </p>
+
+        <?php if ($modoActual === 'manual') : ?>
+            <div class="notice notice-info inline" style="margin:1em 0;">
+                <p>
+                    <strong><?php esc_html_e('Anuncio activo:', 'flavor-news-hub'); ?></strong>
+                    <code><?php echo esc_html($config['tag']); ?></code>
+                    <?php if ($config['es_obligatoria']) : ?>
+                        — <?php esc_html_e('marcada como obligatoria (la app no permitirá descartar el aviso).', 'flavor-news-hub'); ?>
+                    <?php endif; ?>
+                    <?php if ($config['anunciado_at'] !== '') : ?>
+                        <br><small><?php
+                            printf(
+                                /* translators: %s = fecha ISO */
+                                esc_html__('Última modificación: %s UTC', 'flavor-news-hub'),
+                                esc_html($config['anunciado_at'])
+                            );
+                        ?></small>
+                    <?php endif; ?>
+                </p>
+            </div>
+        <?php endif; ?>
+
+        <form method="post" style="margin:1em 0;">
+            <?php wp_nonce_field('fnh_anuncio_actualizacion'); ?>
+
+            <p>
+                <label>
+                    <input type="radio" name="modo" value="auto" <?php checked($modoActual === 'auto'); ?> />
+                    <strong><?php esc_html_e('Auto', 'flavor-news-hub'); ?></strong>
+                    — <?php esc_html_e('anunciar la última release del repo con APK (comportamiento por defecto).', 'flavor-news-hub'); ?>
+                </label>
+            </p>
+            <p>
+                <label>
+                    <input type="radio" name="modo" value="manual" <?php checked($modoActual === 'manual'); ?> />
+                    <strong><?php esc_html_e('Manual', 'flavor-news-hub'); ?></strong>
+                    — <?php esc_html_e('fijar una versión concreta:', 'flavor-news-hub'); ?>
+                </label>
+            </p>
+            <div style="margin:0 0 1em 2.2em;">
+                <select name="tag" style="font-family:monospace;min-width:280px;">
+                    <option value=""><?php esc_html_e('— elegir versión —', 'flavor-news-hub'); ?></option>
+                    <?php foreach ($releases as $rel) :
+                        $fecha = $rel['published_at'] !== ''
+                            ? substr($rel['published_at'], 0, 10)
+                            : ''; ?>
+                        <option value="<?php echo esc_attr($rel['version']); ?>"
+                                <?php selected($config['tag'], $rel['version']); ?>>
+                            <?php echo esc_html($rel['version']); ?>
+                            <?php if ($fecha !== '') : ?>
+                                — <?php echo esc_html($fecha); ?>
+                            <?php endif; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <br>
+                <label style="margin-top:.6em;display:inline-block;">
+                    <input type="checkbox" name="es_obligatoria" value="1" <?php checked($config['es_obligatoria']); ?> />
+                    <?php esc_html_e('Marcarla como obligatoria (el aviso no se podrá descartar)', 'flavor-news-hub'); ?>
+                </label>
+                <?php if ($releases === []) : ?>
+                    <p class="description" style="color:#b32d2e;">
+                        <?php esc_html_e('Aún no hay releases con APK detectables. Pulsa "Refrescar" si acabas de publicar una.', 'flavor-news-hub'); ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+
+            <p>
+                <button type="submit" name="fnh_guardar_anuncio_actualizacion" value="1" class="button button-primary">
+                    <?php esc_html_e('Guardar', 'flavor-news-hub'); ?>
+                </button>
+            </p>
+        </form>
+
+        <hr>
+
+        <form method="post" style="margin-top:1em;">
+            <?php wp_nonce_field('fnh_refrescar_releases'); ?>
+            <p class="description">
+                <?php esc_html_e('Si acabas de publicar una release nueva en GitHub y aún no aparece arriba, vacía la caché (TTL 1h):', 'flavor-news-hub'); ?>
+            </p>
+            <button type="submit" name="fnh_refrescar_releases" value="1" class="button button-secondary">
+                <?php esc_html_e('Refrescar caché de releases', 'flavor-news-hub'); ?>
+            </button>
+        </form>
+
+        <p style="margin-top:2em;font-size:.9em;color:#666;">
+            <?php esc_html_e('Las apps consultan este anuncio en cada arranque y respetan el aviso durante 30 min de cache cliente. En modo manual el aviso permanece hasta que cambies la versión o vuelvas a auto. La opción de “obligatoria” quita el botón “No ahora” del diálogo en la app.', 'flavor-news-hub'); ?>
         </p>
         <?php
     }

@@ -200,21 +200,6 @@
     "es_movimiento": true
   },
   {
-    "id": 6132,
-    "name": "Ecologistas en Acción",
-    "slug": "ecologistas-en-accion-2",
-    "feed_url": "https://www.ecologistasenaccion.org/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.ecologistasenaccion.org",
-    "territory": "Estado español",
-    "languages": [
-      "es"
-    ],
-    "topics": [],
-    "support_url": "https://www.ecologistasenaccion.org/participa/asociate/",
-    "es_movimiento": true
-  },
-  {
     "id": 6752,
     "name": "El Mundo Today",
     "slug": "el-mundo-today",
@@ -1299,21 +1284,6 @@
     ],
     "topics": [
       "educacion"
-    ]
-  },
-  {
-    "id": 7155,
-    "name": "Pol Lluís",
-    "slug": "yt-pol-lluis",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCdpXIsfJUV9k8tQyFwAuG6Q",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@PolLuis",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "cultura"
     ]
   },
   {
@@ -2671,34 +2641,6 @@
     "es_movimiento": true
   },
   {
-    "id": 7318,
-    "name": "Radio Victoria",
-    "slug": "radio-victoria",
-    "feed_url": "https://radiovictoriagt.com/feed/",
-    "feed_type": "rss",
-    "website_url": "https://radiovictoriagt.com/",
-    "territory": "Guatemala",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "derechos-civiles",
-      "ecologismo",
-      "migraciones",
-      "cultura"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none",
-    "es_movimiento": true
-  },
-  {
     "id": 7319,
     "name": "Radio Caminante",
     "slug": "radio-caminante",
@@ -3248,23 +3190,6 @@
     ],
     "medium_type": "news",
     "content_license": ""
-  },
-  {
-    "slug": "yt-pol-bertran",
-    "name": "Pol Bertran",
-    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC7XQcDCPNGjNxy9HeFkqMsg",
-    "feed_type": "youtube",
-    "website_url": "https://www.youtube.com/@PolBertran",
-    "territory": "Internacional",
-    "languages": [
-      "es"
-    ],
-    "topics": [
-      "educacion"
-    ],
-    "medium_type": "news",
-    "content_license": "",
-    "es_movimiento": true
   },
   {
     "slug": "yt-diego-en-la-lucha",
@@ -3958,37 +3883,6 @@
       "educacion",
       "derechos-civiles",
       "economia-social"
-    ],
-    "medium_type": "news",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "",
-    "has_live_stream": false,
-    "live_stream_permit": "none",
-    "es_movimiento": true
-  },
-  {
-    "id": 7347,
-    "name": "Radio ZP-30",
-    "slug": "radio-zp-30",
-    "feed_url": "https://www.zp30.com.py/es/podcast/feed/",
-    "feed_type": "rss",
-    "website_url": "https://www.zp30.com.py/",
-    "territory": "Filadelfia, Chaco",
-    "languages": [
-      "es",
-      "de",
-      "gn",
-      "en"
-    ],
-    "topics": [
-      "educacion",
-      "cultura",
-      "derechos-civiles",
-      "internacional"
     ],
     "medium_type": "news",
     "broadcast_format": [
