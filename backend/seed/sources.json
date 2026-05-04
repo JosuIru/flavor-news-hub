@@ -131,7 +131,8 @@
       "es"
     ],
     "topics": [],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 6463,
@@ -1334,7 +1335,8 @@
       "memoria-historica",
       "cultura"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7160,
@@ -1350,7 +1352,8 @@
     "topics": [
       "cultura"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7161,
@@ -1364,7 +1367,8 @@
       "ca"
     ],
     "topics": [],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7162,
@@ -1379,7 +1383,8 @@
       "es"
     ],
     "topics": [],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7163,
@@ -1412,7 +1417,8 @@
     "topics": [
       "memoria-historica"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7165,
@@ -1497,7 +1503,8 @@
       "migraciones",
       "cultura"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7170,
@@ -1548,7 +1555,8 @@
       "memoria-historica",
       "internacional"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7174,
@@ -2084,7 +2092,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7296,
@@ -2112,13 +2121,14 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7297,
     "name": "Scroll.in",
     "slug": "scroll-in",
-    "feed_url": "https://scroll.in/feed/7165",
+    "feed_url": "https://feeds.feedburner.com/ScrollinArticles.rss",
     "feed_type": "rss",
     "website_url": "https://scroll.in/video",
     "territory": "India",
@@ -2164,7 +2174,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7299,
@@ -2246,7 +2257,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7302,
@@ -2524,7 +2536,8 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "es_movimiento": true,
-    "support_url": "https://mixteco.org/donate/"
+    "support_url": "https://mixteco.org/donate/",
+    "active": false
   },
   {
     "id": 7313,
@@ -2553,7 +2566,8 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "support_url": "https://radiolavozindigena.org/apoyanos",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7314,
@@ -3672,7 +3686,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7337,
@@ -3700,7 +3715,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7338,
@@ -3734,7 +3750,7 @@
     "id": 7339,
     "name": "Radio Pueblo",
     "slug": "radio-pueblo",
-    "feed_url": "https://www.radiopueblo.coop.ar/feed/",
+    "feed_url": "https://www.radiopueblo.coop.ar/blog-feed.xml",
     "feed_type": "rss",
     "website_url": "https://www.radiopueblo.coop.ar/",
     "territory": "Deán Funes",
@@ -3893,7 +3909,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7348,
@@ -3921,7 +3938,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7349,
@@ -4117,7 +4135,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7356,
@@ -4135,31 +4154,6 @@
       "derechos-civiles",
       "memoria-historica"
     ],
-    "es_movimiento": true
-  },
-  {
-    "id": 7357,
-    "name": "Hamaika Telebista",
-    "slug": "hamaika-tb",
-    "feed_url": "",
-    "feed_type": "rss",
-    "website_url": "https://www.hamaika.eus",
-    "territory": "Euskal Herria",
-    "languages": [
-      "eu"
-    ],
-    "topics": [
-      "cultura"
-    ],
-    "medium_type": "tv_station",
-    "broadcast_format": [
-      "web",
-      "streaming"
-    ],
-    "content_license": "all-rights-reserved",
-    "legal_note": "Televisión asociativa íntegramente en euskera. Emite por TDT con licencia y por web. No expone RSS público; la web es el punto de entrada.",
-    "has_live_stream": true,
-    "live_stream_permit": "licensed",
     "es_movimiento": true
   },
   {

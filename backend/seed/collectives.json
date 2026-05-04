@@ -781,7 +781,7 @@
     "slug": "la-casa-invisible",
     "description": "<p>Centro social y cultural de gestión ciudadana en Málaga que impulsa redes de apoyo mutuo, cultura libre, participación y acción colectiva.</p>\n",
     "url": "http://localhost:10028/c/la-casa-invisible/",
-    "website_url": "https://lainvisible.net/es/",
+    "website_url": "https://lainvisible.net/",
     "flavor_url": "",
     "territory": "Málaga",
     "has_contact": true,
@@ -1285,7 +1285,8 @@
         "name": "Cultura",
         "slug": "cultura"
       }
-    ]
+    ],
+    "active": false
   },
   {
     "id": 6250,
@@ -1569,7 +1570,8 @@
         "name": "Ecologismo",
         "slug": "ecologismo"
       }
-    ]
+    ],
+    "active": false
   },
   {
     "id": 6261,
@@ -1593,7 +1595,8 @@
         "name": "Juventud",
         "slug": "juventud"
       }
-    ]
+    ],
+    "active": false
   },
   {
     "id": 6262,
@@ -1617,7 +1620,8 @@
         "name": "Memoria histórica",
         "slug": "memoria-historica"
       }
-    ]
+    ],
+    "active": false
   },
   {
     "id": 6263,
