@@ -149,6 +149,18 @@ final class FeedIngester
             // segunda ingesta en el mismo proceso PHP heredaría
             // timestamps obsoletos y aplicaría throttles innecesarios.
             self::$ultimoRequestPorHost = [];
+
+            // Recuperación de logs huérfanos: si en rondas anteriores el
+            // proceso PHP murió por `max_execution_time` antes de cerrar
+            // el log de la fuente que tocaba, ese log queda en `running`
+            // para siempre y la fuente se reintenta cada ronda con el
+            // mismo desenlace. Aquí marcamos como `error` cualquier log
+            // `running` con >5min de antigüedad y sumamos error a la
+            // fuente correspondiente para que entre en cuarentena
+            // progresiva. El lock global garantiza que no pisamos un
+            // log legítimo de una ronda en curso.
+            self::recuperarLogsHuerfanos();
+
             $idsFuentesActivas = self::obtenerIdsFuentesActivas();
             $resumenGlobal = [
                 'sources_processed'   => 0,
@@ -613,6 +625,52 @@ final class FeedIngester
         return max(0, (int) ($datos['duration'] ?? 0));
     }
 
+    /**
+     * Marca como `error` los logs en `running` con más de N minutos de
+     * antigüedad (default 5). Para cada uno, incrementa el contador de
+     * errores consecutivos de la fuente para activar la cuarentena
+     * progresiva (5/10/20 errores → 1h/6h/24h). Sin esto, una fuente
+     * que siempre hace timeout se reintentaría cada ronda y mantendría
+     * el cron al borde del `max_execution_time` indefinidamente.
+     */
+    private static function recuperarLogsHuerfanos(): void
+    {
+        global $wpdb;
+        $minutosUmbral = (int) apply_filters('fnh_log_huerfano_minutos', 5);
+        $nombreTabla = IngestLogTable::nombreCompleto();
+
+        $filasHuerfanas = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, source_id FROM {$nombreTabla}
+             WHERE status = 'running'
+               AND started_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d MINUTE)",
+            $minutosUmbral
+        ));
+        if (!is_array($filasHuerfanas) || empty($filasHuerfanas)) {
+            return;
+        }
+
+        $mensajeRecuperacion = sprintf(
+            /* translators: %d = minutos */
+            __('Log huérfano recuperado: el proceso anterior superó el timeout (%d min) sin cerrar el log. Probable timeout HTTP o exceso de max_execution_time.', 'flavor-news-hub'),
+            $minutosUmbral
+        );
+
+        foreach ($filasHuerfanas as $filaHuerfana) {
+            $wpdb->update(
+                $nombreTabla,
+                [
+                    'status'        => 'error',
+                    'finished_at'   => current_time('mysql', 1),
+                    'error_message' => $mensajeRecuperacion,
+                ],
+                ['id' => (int) $filaHuerfana->id],
+                ['%s', '%s', '%s'],
+                ['%d']
+            );
+            self::registrarErrorYProgramarReintento((int) $filaHuerfana->source_id);
+        }
+    }
+
     private static function crearLogInicial(int $idFuente): int
     {
         global $wpdb;
@@ -786,8 +844,15 @@ final class FeedIngester
         }
 
         $bypassSsl = self::dominioRequiereBypassSsl($hostFeed);
+        // Timeout corto (12s): orígenes lentos (Misión Verdad, España XR
+        // Tube vía PeerTube) podían tardar >25s y empujar el cron por
+        // encima de `max_execution_time`, dejando el log de la fuente en
+        // `running` para siempre. Con 12s, ni siquiera dos fuentes lentas
+        // seguidas alcanzan los 30s típicos del PHP-FPM. La fuente queda
+        // marcada como error y entra en cuarentena progresiva.
+        $timeoutFeed = (int) apply_filters('fnh_feed_http_timeout_seg', 12);
         $args = [
-            'timeout'     => 25,
+            'timeout'     => $timeoutFeed,
             'redirection' => 5,
             'user-agent'  => $uaNavegador,
             'sslverify'   => !$bypassSsl,
