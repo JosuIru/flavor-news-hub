@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace FlavorNewsHub\Admin\MetaBoxes;
 
+use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Source;
+use FlavorNewsHub\Database\IngestLogTable;
 
 /**
  * Metabox de edición para el CPT `fnh_source`.
@@ -16,6 +18,8 @@ final class SourceMetaBox
 {
     public const ID_METABOX_DATOS = 'fnh_source_datos';
     public const ID_METABOX_INGESTA = 'fnh_source_ingesta';
+    public const ID_METABOX_ACTIVIDAD = 'fnh_source_actividad';
+    private const LIMITE_FILAS_ACTIVIDAD = 10;
     public const NONCE_NAME = 'fnh_source_metabox_nonce';
     public const NONCE_ACTION = 'fnh_source_metabox_save';
 
@@ -48,6 +52,15 @@ final class SourceMetaBox
             Source::SLUG,
             'side',
             'default'
+        );
+
+        add_meta_box(
+            self::ID_METABOX_ACTIVIDAD,
+            __('Actividad reciente', 'flavor-news-hub'),
+            [self::class, 'renderActividad'],
+            Source::SLUG,
+            'normal',
+            'low'
         );
     }
 
@@ -149,6 +162,158 @@ final class SourceMetaBox
                 <?php esc_html_e('Dispara una ingesta inmediata de este medio. El cron sigue activo al margen.', 'flavor-news-hub'); ?>
             </p>
         </form>
+        <?php
+    }
+
+    /**
+     * Metabox "Actividad reciente": dos bloques server-rendered con las
+     * últimas 10 ingestas (tabla `fnh_ingest_log`, índice
+     * `idx_source_started`) y los últimos 10 items publicados de esta
+     * fuente (CPT `fnh_item`, meta `_fnh_source_id`). Sin AJAX, sin
+     * paginación, sin SQL_CALC_FOUND_ROWS — el coste por carga es
+     * predecible (~2 queries acotadas con LIMIT 10).
+     */
+    public static function renderActividad(\WP_Post $post): void
+    {
+        if ($post->post_status === 'auto-draft') {
+            echo '<p>' . esc_html__('Guarda el medio primero para ver su actividad.', 'flavor-news-hub') . '</p>';
+            return;
+        }
+
+        global $wpdb;
+        $nombreTablaLogs = IngestLogTable::nombreCompleto();
+        $logsRecientes = $wpdb->get_results($wpdb->prepare(
+            "SELECT status, started_at, finished_at, items_new, items_skipped, error_message
+             FROM {$nombreTablaLogs}
+             WHERE source_id = %d
+             ORDER BY started_at DESC
+             LIMIT %d",
+            $post->ID,
+            self::LIMITE_FILAS_ACTIVIDAD
+        ));
+
+        // `no_found_rows` evita el SQL_CALC_FOUND_ROWS implícito de WP;
+        // no necesitamos contar el total, sólo las 10 más recientes.
+        $itemsRecientes = get_posts([
+            'post_type'      => Item::SLUG,
+            'post_status'    => ['publish', 'pending', 'draft'],
+            'posts_per_page' => self::LIMITE_FILAS_ACTIVIDAD,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                [
+                    'key'   => '_fnh_source_id',
+                    'value' => (int) $post->ID,
+                ],
+            ],
+        ]);
+
+        // Cuarentena y errores consecutivos: indicadores rápidos del
+        // estado del circuit breaker para esta fuente.
+        $erroresConsecutivos = (int) get_post_meta($post->ID, '_fnh_consecutive_errors', true);
+        $proximoIntentoTras = (int) get_post_meta($post->ID, '_fnh_next_attempt_after', true);
+        $estaEnCuarentena = $proximoIntentoTras > 0 && $proximoIntentoTras > time();
+
+        ?>
+        <div class="fnh-actividad-resumen" style="margin-bottom:12px;">
+            <?php if ($estaEnCuarentena) : ?>
+                <p>
+                    <strong style="color:#d63638;">
+                        <?php esc_html_e('Fuente en cuarentena.', 'flavor-news-hub'); ?>
+                    </strong>
+                    <?php
+                    printf(
+                        /* translators: %s = fecha-hora del próximo intento */
+                        esc_html__('Próximo intento: %s', 'flavor-news-hub'),
+                        esc_html(wp_date('Y-m-d H:i', $proximoIntentoTras))
+                    );
+                    ?>
+                    — <?php
+                    printf(
+                        /* translators: %d = número de errores consecutivos */
+                        esc_html__('%d errores consecutivos.', 'flavor-news-hub'),
+                        $erroresConsecutivos
+                    );
+                    ?>
+                </p>
+            <?php elseif ($erroresConsecutivos > 0) : ?>
+                <p style="color:#996800;">
+                    <?php
+                    printf(
+                        /* translators: %d = número de errores consecutivos */
+                        esc_html__('Acumulando %d errores consecutivos (sin cuarentena todavía).', 'flavor-news-hub'),
+                        $erroresConsecutivos
+                    );
+                    ?>
+                </p>
+            <?php endif; ?>
+        </div>
+
+        <h3 style="margin-top:0;"><?php esc_html_e('Últimas ingestas', 'flavor-news-hub'); ?></h3>
+        <?php if (empty($logsRecientes)) : ?>
+            <p><em><?php esc_html_e('Sin ejecuciones de ingesta registradas todavía.', 'flavor-news-hub'); ?></em></p>
+        <?php else : ?>
+            <table class="widefat striped" style="margin-bottom:16px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Inicio', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Estado', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Nuevos', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Descartados', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Detalle', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($logsRecientes as $filaLog) :
+                        $colorEstado = match ($filaLog->status) {
+                            'success' => '#008a20',
+                            'error'   => '#d63638',
+                            'running' => '#996800',
+                            default   => '#1d2327',
+                        };
+                    ?>
+                        <tr>
+                            <td><?php echo esc_html((string) $filaLog->started_at); ?> UTC</td>
+                            <td><span style="color:<?php echo esc_attr($colorEstado); ?>;font-weight:600;">
+                                <?php echo esc_html((string) $filaLog->status); ?>
+                            </span></td>
+                            <td><?php echo (int) $filaLog->items_new; ?></td>
+                            <td><?php echo (int) $filaLog->items_skipped; ?></td>
+                            <td><?php echo esc_html((string) ($filaLog->error_message ?? '')); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <h3><?php esc_html_e('Últimos items publicados', 'flavor-news-hub'); ?></h3>
+        <?php if (empty($itemsRecientes)) : ?>
+            <p><em><?php esc_html_e('Esta fuente todavía no ha producido items.', 'flavor-news-hub'); ?></em></p>
+        <?php else : ?>
+            <table class="widefat striped">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Fecha', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Título', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Estado', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($itemsRecientes as $itemReciente) : ?>
+                        <tr>
+                            <td><?php echo esc_html(get_the_date('Y-m-d H:i', $itemReciente)); ?></td>
+                            <td>
+                                <a href="<?php echo esc_url(get_edit_post_link($itemReciente->ID)); ?>">
+                                    <?php echo esc_html(get_the_title($itemReciente)); ?>
+                                </a>
+                            </td>
+                            <td><?php echo esc_html((string) $itemReciente->post_status); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
         <?php
     }
 
