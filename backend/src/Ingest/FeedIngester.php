@@ -64,6 +64,65 @@ final class FeedIngester
     ];
 
     /**
+     * Cabeceras condicionales: meta donde guardamos el ETag y el
+     * Last-Modified que devolvió el servidor en el último fetch
+     * exitoso. En la siguiente ronda los mandamos como If-None-Match
+     * e If-Modified-Since para que el origen pueda devolver
+     * `304 Not Modified` (sin cuerpo) si nada ha cambiado.
+     *
+     * Beneficio doble:
+     *  - Reducimos drásticamente el ancho de banda consumido (la
+     *    inmensa mayoría de feeds no cambian entre cron y cron).
+     *  - Algunos WAFs (Sucuri, Cloudflare) usan "respeta cabeceras
+     *    condicionales" como heurística de cliente legítimo: dejar
+     *    de bajar el feed entero cuando devuelven 304 nos saca de
+     *    listas de "scrapers agresivos" y reduce el riesgo de que
+     *    nuestra IP acabe en blacklist colectiva.
+     */
+    public const META_ETAG = '_fnh_etag';
+    public const META_LAST_MODIFIED = '_fnh_last_modified';
+
+    /**
+     * Circuit breaker: cuando una fuente acumula errores consecutivos
+     * (DNS muerto, 403/486 anti-bot, timeouts persistentes…), en
+     * lugar de seguir golpeándola en cada ciclo la ponemos en
+     * cuarentena. Reduce el ruido del log de ingesta y, sobre todo,
+     * deja de gastar peticiones contra orígenes que ya nos rechazan
+     * — lo que es señal de "buen ciudadano" para WAFs heurísticos.
+     *
+     * Política escalonada por número de fallos:
+     *  - <5 errores → reintento normal en cada cron.
+     *  - 5-9         → cuarentena 1h ±25%.
+     *  - 10-19       → cuarentena 6h ±25%.
+     *  - 20+         → cuarentena 24h ±25%.
+     *
+     * El jitter ±25% evita que cientos de fuentes que cayeron en la
+     * misma ronda salgan de cuarentena a la vez (thundering herd).
+     */
+    public const META_ERRORES_CONSECUTIVOS = '_fnh_consecutive_errors';
+    public const META_PROXIMO_INTENTO_TRAS = '_fnh_next_attempt_after';
+    private const UMBRAL_CUARENTENA_1H = 5;
+    private const UMBRAL_CUARENTENA_6H = 10;
+    private const UMBRAL_CUARENTENA_24H = 20;
+
+    /**
+     * Jitter entre fuentes en una ingesta global (microsegundos).
+     * El throttle por host (`INTERVALO_MINIMO_HOST_MICROSEG`) sólo
+     * pausa cuando la siguiente fuente comparte host con la anterior;
+     * entre dominios distintos la cola corría sin pausa, lo que
+     * convertía 280+ fuentes en una ráfaga concentrada de pocos
+     * minutos — patrón clásico que disparan los anti-bot heurísticos
+     * tipo Sucuri (que devolvían 486 a una porción significativa de
+     * fuentes desde nuestra IP de salida).
+     *
+     * Con un jitter aleatorio entre 200 y 600 ms, el ciclo se alarga
+     * de ~5 a ~12 min — irrelevante para un cron, decisivo para
+     * dejar de parecer un scraper.
+     */
+    private const JITTER_MIN_MICROSEG = 200_000;
+    private const JITTER_MAX_MICROSEG = 600_000;
+
+    /**
      * Punto de entrada para cron y para disparo manual sin argumentos.
      *
      * @return array{
@@ -98,7 +157,8 @@ final class FeedIngester
                 'errors'              => [],
             ];
 
-            foreach ($idsFuentesActivas as $idFuente) {
+            $totalFuentes = count($idsFuentesActivas);
+            foreach ($idsFuentesActivas as $indice => $idFuente) {
                 $resumenFuente = self::ingestarFuente($idFuente);
                 $resumenGlobal['sources_processed']++;
                 $resumenGlobal['items_new_total']     += $resumenFuente['items_new'];
@@ -108,6 +168,18 @@ final class FeedIngester
                         'source_id' => $idFuente,
                         'message'   => $resumenFuente['error'],
                     ];
+                }
+                // Jitter entre fuentes (no después de la última, que no
+                // sirve de nada). El filtro permite desactivarlo en tests
+                // — devolver 0 hace que `usleep(0)` sea no-op.
+                if ($indice < $totalFuentes - 1) {
+                    $microsegEspera = (int) apply_filters(
+                        'fnh_jitter_entre_fuentes_microseg',
+                        random_int(self::JITTER_MIN_MICROSEG, self::JITTER_MAX_MICROSEG)
+                    );
+                    if ($microsegEspera > 0) {
+                        usleep($microsegEspera);
+                    }
                 }
             }
             return $resumenGlobal;
@@ -124,6 +196,17 @@ final class FeedIngester
      */
     public static function ingestarFuente(int $idFuente): array
     {
+        // Circuit breaker: si la fuente está en cuarentena por errores
+        // consecutivos previos, salimos en silencio antes de crear el
+        // log. NO loggeamos el skip — si lo hiciéramos, una fuente
+        // muerta inundaría la tabla de logs con cientos de "skipped
+        // por cuarentena" inútiles. El admin ve la cuarentena
+        // indirectamente: la fuente no aparece en los logs recientes
+        // hasta que pasa el plazo o resetea manualmente.
+        if (self::estaEnCuarentena($idFuente)) {
+            return self::resumenFuente(0, 0, '', 0);
+        }
+
         $idLog = self::crearLogInicial($idFuente);
         $contadorNuevos = 0;
         $contadorDescartados = 0;
@@ -133,6 +216,7 @@ final class FeedIngester
         if ($urlFeed === '') {
             $mensajeError = __('La fuente no tiene feed_url configurado.', 'flavor-news-hub');
             self::cerrarLog($idLog, 'error', $contadorNuevos, $contadorDescartados, $mensajeError);
+            self::registrarErrorYProgramarReintento($idFuente);
             return self::resumenFuente(0, 0, $mensajeError, $idLog);
         }
 
@@ -143,13 +227,19 @@ final class FeedIngester
         $tipoFeed = (string) get_post_meta($idFuente, '_fnh_feed_type', true);
         if ($tipoFeed === 'flavor_platform') {
             $resumenFlavor = FlavorPlatformIngester::ingestarDeInstancia($idFuente, $urlFeed);
+            $huboError = $resumenFlavor['error'] !== '';
             self::cerrarLog(
                 $idLog,
-                $resumenFlavor['error'] === '' ? 'success' : 'error',
+                $huboError ? 'error' : 'success',
                 $resumenFlavor['items_new'],
                 $resumenFlavor['items_skipped'],
                 $resumenFlavor['error']
             );
+            if ($huboError) {
+                self::registrarErrorYProgramarReintento($idFuente);
+            } else {
+                self::resetearContadorErrores($idFuente);
+            }
             return self::resumenFuente(
                 $resumenFlavor['items_new'],
                 $resumenFlavor['items_skipped'],
@@ -160,105 +250,62 @@ final class FeedIngester
 
         require_once ABSPATH . WPINC . '/feed.php';
 
-        // User-Agent: usábamos `FlavorNewsHubBot/0.2 (+url)` por
-        // transparencia, pero Cloudflare y servicios similares en muchos
-        // medios (CEAR, NDTV, Cuarto Poder…) detectan la subcadena "Bot"
-        // y devuelven 403 con un challenge HTML. Cambiamos a un UA de
-        // Chrome moderno — es lo que hacen Feedly, Inoreader y otros
-        // lectores RSS comerciales. Mantenemos identificación del
-        // proyecto en el header `From:` para que un admin curioso pueda
-        // ver de dónde viene el tráfico.
-        // Timeout 25s (antes 15s): muchos servidores latinoamericanos y
-        // de webs autohospedadas tardan más de 10s en handshake TLS y
-        // caían sistemáticamente con "cURL error 28" antes de que diera
-        // tiempo a leer el feed. 25s sigue siendo razonable para no
-        // bloquear la ingesta global cuando un dominio está caído.
-        $uaNavegador = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
-        $filtroAjustesFeed = static function (\SimplePie $feed) use ($uaNavegador): void {
-            $feed->set_useragent($uaNavegador);
-            $feed->set_timeout(25);
-        };
-        // Algunas rutas internas de SimplePie / WordPress usan `WP_Http`
-        // y NO el timeout de SimplePie (head request, image probing). Para
-        // que esas también respeten el límite generoso, subimos el
-        // timeout de `WP_Http` durante la ingesta y lo restauramos
-        // después en el `finally`.
-        $filtroTimeoutHttp = static function (array $args) use ($uaNavegador): array {
-            if (!isset($args['timeout']) || (int) $args['timeout'] < 25) {
-                $args['timeout'] = 25;
-            }
-            // Aplicamos el mismo UA navegador a todas las peticiones HTTP
-            // de WP que pasen por el ingester — algunas rutas internas
-            // de SimplePie usan `wp_remote_get` con el UA de WP por
-            // defecto ("WordPress/X") que también es vetado por algunos
-            // servicios. Header `From:` para transparencia.
-            $args['user-agent'] = $uaNavegador;
-            $args['headers'] = isset($args['headers']) && is_array($args['headers'])
-                ? $args['headers'] : [];
-            $args['headers']['From'] = 'flavor.gailu.it (Flavor News Hub agregator)';
-            // Headers adicionales que envía un Chrome real. Algunos WAFs
-            // (CloudFlare, Sucuri) inspeccionan más allá del UA y devuelven
-            // 403/486 si faltan estos: Accept con MIME RSS/Atom explícitos
-            // hace que el origen sirva XML en vez de HTML cuando autoselecciona;
-            // Accept-Language evita que rutas que sirven distinto por idioma
-            // caigan a la versión de fallback (a veces redirige a página de
-            // bot-check). Sec-Fetch-* aparecen en cualquier fetch moderno y
-            // su ausencia es señal de scraping para algunos motores.
-            $args['headers']['Accept'] = 'application/rss+xml,application/atom+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.5';
-            $args['headers']['Accept-Language'] = 'es,en;q=0.8';
-            $args['headers']['Sec-Fetch-Dest'] = 'document';
-            $args['headers']['Sec-Fetch-Mode'] = 'navigate';
-            $args['headers']['Sec-Fetch-Site'] = 'none';
-            return $args;
-        };
-        // SSL bypass por dominio: si el feed actual está en la lista de
-        // dominios con cert problemático, desactivamos la verificación
-        // sólo para ESA petición.
-        $hostFeed = strtolower((string) wp_parse_url($urlFeed, PHP_URL_HOST));
-        $bypassSsl = self::dominioRequiereBypassSsl($hostFeed);
-        $filtroSslVerify = $bypassSsl
-            ? static fn(bool $verificar, string $urlSolicitada): bool => false
-            : null;
-        // WordPress cachea los feeds 12h por defecto (vía
-        // wp_feed_cache_transient_lifetime). Inaceptable para un
-        // agregador en vivo: el TTL canónico está en
-        // Transients::CACHE_FEEDS_INGESTA con la justificación.
-        $filtroTtlCache = static fn(int $segundos): int => Transients::CACHE_FEEDS_INGESTA;
-        add_action('wp_feed_options', $filtroAjustesFeed);
-        add_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
-        add_filter('http_request_args', $filtroTimeoutHttp);
-        if ($filtroSslVerify !== null) {
-            add_filter('https_ssl_verify', $filtroSslVerify, 10, 2);
-            add_filter('https_local_ssl_verify', $filtroSslVerify, 10, 2);
-        }
-        // Invalida el transient específico de este feed antes de
-        // descargarlo. Crítico en sitios con object-cache externo
-        // (Redis, Memcached) donde el transient vive fuera de wp_options
-        // y nuestro DELETE global no lo toca. `delete_transient` usa la
-        // API correcta que maneja DB + object cache.
-        $hashFeed = md5($urlFeed);
-        // WordPress guarda el cuerpo cacheado como `feed_{hash}` y la
-        // marca de modificación como `feed_mod_{hash}` — prefijo
-        // `feed_mod_` delante del hash, no sufijo `_mod` detrás.
-        // El sufijo _mod que había aquí nunca borraba nada.
-        delete_transient('feed_' . $hashFeed);
-        delete_transient('feed_mod_' . $hashFeed);
         // Throttle reactivo por host: si ya pedimos al mismo host hace
         // <1.5s, dormimos la diferencia. Evita que YouTube/WAFs
         // devuelvan 404/403 espurios cuando hay 50+ canales seguidos en
         // la cola. No pausa cuando el host es nuevo en la ronda actual.
+        $hostFeed = strtolower((string) wp_parse_url($urlFeed, PHP_URL_HOST));
         self::aplicarThrottlePorHost($hostFeed);
-        $feedDescargado = fetch_feed($urlFeed);
-        if ($filtroSslVerify !== null) {
-            remove_filter('https_ssl_verify', $filtroSslVerify, 10);
-            remove_filter('https_local_ssl_verify', $filtroSslVerify, 10);
+
+        // Fetch HTTP propio (en lugar de `fetch_feed`) por dos motivos:
+        //   1) Permite mandar `If-None-Match` / `If-Modified-Since`
+        //      con los valores que guardamos del último éxito, así el
+        //      servidor puede responder `304 Not Modified` (sin cuerpo)
+        //      cuando el feed no ha cambiado. Esto reduce ancho de
+        //      banda ~80% y nos saca de listas de "scrapers agresivos"
+        //      en WAFs heurísticos.
+        //   2) Da control total sobre cabeceras y SSL bypass; SimplePie
+        //      sólo se encarga del parseo (vía `set_raw_data`), no del
+        //      transporte.
+        $resultadoHttp = self::fetchFeedHttp($idFuente, $urlFeed, $hostFeed);
+        if (isset($resultadoHttp['not_modified'])) {
+            // 304: feed inalterado desde la última ronda. Cerramos el
+            // log como "success" con 0 items y un aviso explícito para
+            // que el admin entienda por qué no hay nuevos.
+            self::cerrarLog(
+                $idLog,
+                'success',
+                0,
+                0,
+                'Feed no modificado desde el último fetch (304).'
+            );
+            self::resetearContadorErrores($idFuente);
+            return self::resumenFuente(0, 0, '', $idLog);
         }
-        remove_filter('http_request_args', $filtroTimeoutHttp);
-        remove_filter('wp_feed_cache_transient_lifetime', $filtroTtlCache);
-        remove_action('wp_feed_options', $filtroAjustesFeed);
-        if (is_wp_error($feedDescargado)) {
-            $mensajeError = $feedDescargado->get_error_message();
-            self::cerrarLog($idLog, 'error', $contadorNuevos, $contadorDescartados, $mensajeError);
+        if (isset($resultadoHttp['error'])) {
+            $mensajeError = $resultadoHttp['error'];
+            self::cerrarLog($idLog, 'error', 0, 0, $mensajeError);
+            self::registrarErrorYProgramarReintento($idFuente);
+            return self::resumenFuente(0, 0, $mensajeError, $idLog);
+        }
+
+        // Persistimos los validadores que devolvió el origen para la
+        // próxima ronda. Si el origen no manda ETag pero sí
+        // Last-Modified (o al revés), usaremos sólo el que tengamos.
+        update_post_meta($idFuente, self::META_ETAG, (string) $resultadoHttp['etag']);
+        update_post_meta($idFuente, self::META_LAST_MODIFIED, (string) $resultadoHttp['last_modified']);
+
+        // Pasamos el cuerpo crudo a SimplePie. `init()` parsea sin
+        // hacer HTTP — todo el transporte ya lo hicimos en `fetchFeedHttp`.
+        // El charset se detecta del XML declaration o del BOM, no del
+        // Content-Type del response (que tampoco tendríamos aquí).
+        $feedDescargado = new \SimplePie();
+        $feedDescargado->set_raw_data((string) $resultadoHttp['body']);
+        $feedDescargado->init();
+        if ($feedDescargado->error()) {
+            $mensajeError = (string) $feedDescargado->error();
+            self::cerrarLog($idLog, 'error', 0, 0, $mensajeError);
+            self::registrarErrorYProgramarReintento($idFuente);
             return self::resumenFuente(0, 0, $mensajeError, $idLog);
         }
 
@@ -310,6 +357,7 @@ final class FeedIngester
             );
         }
         self::cerrarLog($idLog, 'success', $contadorNuevos, $contadorDescartados, $mensajeAviso);
+        self::resetearContadorErrores($idFuente);
         return self::resumenFuente($contadorNuevos, $contadorDescartados, $mensajeAviso, $idLog);
     }
 
@@ -628,5 +676,137 @@ final class FeedIngester
     private static function liberarLock(): void
     {
         delete_option(self::NOMBRE_LOCK_TRANSIENT);
+    }
+
+    /**
+     * Devuelve true si la fuente está en cuarentena: tiene un
+     * timestamp de "próximo intento" en el futuro tras haber
+     * acumulado errores consecutivos. El meta se borra solo cuando
+     * una ingesta posterior tiene éxito (ver `resetearContadorErrores`).
+     */
+    private static function estaEnCuarentena(int $idFuente): bool
+    {
+        $proximoIntentoTras = (int) get_post_meta($idFuente, self::META_PROXIMO_INTENTO_TRAS, true);
+        return $proximoIntentoTras > 0 && $proximoIntentoTras > time();
+    }
+
+    /**
+     * Suma uno al contador de errores consecutivos y, si supera los
+     * umbrales, planta una fecha de "próximo intento" futura. Política
+     * escalonada con jitter ±25% para evitar thundering herd cuando
+     * docenas de fuentes caen en la misma ronda.
+     */
+    private static function registrarErrorYProgramarReintento(int $idFuente): void
+    {
+        $contadorActual = (int) get_post_meta($idFuente, self::META_ERRORES_CONSECUTIVOS, true);
+        $contadorActual++;
+        update_post_meta($idFuente, self::META_ERRORES_CONSECUTIVOS, $contadorActual);
+
+        if ($contadorActual < self::UMBRAL_CUARENTENA_1H) {
+            // Aún no merece cuarentena: borramos cualquier "próximo
+            // intento" que pudiera haber quedado de un ciclo anterior.
+            delete_post_meta($idFuente, self::META_PROXIMO_INTENTO_TRAS);
+            return;
+        }
+        if ($contadorActual < self::UMBRAL_CUARENTENA_6H) {
+            $cuarentenaSegBase = HOUR_IN_SECONDS;
+        } elseif ($contadorActual < self::UMBRAL_CUARENTENA_24H) {
+            $cuarentenaSegBase = 6 * HOUR_IN_SECONDS;
+        } else {
+            $cuarentenaSegBase = DAY_IN_SECONDS;
+        }
+        $factorJitter = random_int(75, 125) / 100;
+        $cuarentenaSegFinal = (int) ($cuarentenaSegBase * $factorJitter);
+        update_post_meta(
+            $idFuente,
+            self::META_PROXIMO_INTENTO_TRAS,
+            time() + $cuarentenaSegFinal
+        );
+    }
+
+    /**
+     * Reset del breaker tras una ingesta exitosa (incluye 304: si el
+     * origen responde "no hay cambios", la fuente está sana). Borra
+     * tanto el contador como la fecha de próximo intento.
+     */
+    private static function resetearContadorErrores(int $idFuente): void
+    {
+        delete_post_meta($idFuente, self::META_ERRORES_CONSECUTIVOS);
+        delete_post_meta($idFuente, self::META_PROXIMO_INTENTO_TRAS);
+    }
+
+    /**
+     * Hace la petición HTTP del feed con cabeceras condicionales y
+     * todas las cabeceras "de navegador real" que ya teníamos. La
+     * llama `ingestarFuente` directamente — antes era SimplePie quien
+     * hacía la petición vía `fetch_feed`.
+     *
+     * @return array{not_modified: true}
+     *       | array{error: string}
+     *       | array{body: string, etag: string, last_modified: string}
+     */
+    private static function fetchFeedHttp(int $idFuente, string $urlFeed, string $hostFeed): array
+    {
+        // Mismo UA y headers que ya enviábamos por el filtro
+        // `http_request_args` de la versión anterior. Razones documentadas
+        // en la rama eliminada: WP-default UA bloqueado por CEAR/NDTV;
+        // "Bot" en UA bloqueado por Cloudflare; Sec-Fetch-* esperados por
+        // WAFs heurísticos como Sucuri.
+        $uaNavegador = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+        $cabeceras = [
+            'From'           => 'flavor.gailu.it (Flavor News Hub agregator)',
+            'Accept'         => 'application/rss+xml,application/atom+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.5',
+            'Accept-Language' => 'es,en;q=0.8',
+            'Sec-Fetch-Dest' => 'document',
+            'Sec-Fetch-Mode' => 'navigate',
+            'Sec-Fetch-Site' => 'none',
+        ];
+        // Cabeceras condicionales: si las tenemos, las mandamos. El
+        // origen responderá 304 si no hay cambios.
+        $etagPrevio = (string) get_post_meta($idFuente, self::META_ETAG, true);
+        $lastModPrevio = (string) get_post_meta($idFuente, self::META_LAST_MODIFIED, true);
+        if ($etagPrevio !== '') {
+            $cabeceras['If-None-Match'] = $etagPrevio;
+        }
+        if ($lastModPrevio !== '') {
+            $cabeceras['If-Modified-Since'] = $lastModPrevio;
+        }
+
+        $bypassSsl = self::dominioRequiereBypassSsl($hostFeed);
+        $args = [
+            'timeout'     => 25,
+            'redirection' => 5,
+            'user-agent'  => $uaNavegador,
+            'sslverify'   => !$bypassSsl,
+            'headers'     => $cabeceras,
+        ];
+
+        $respuesta = wp_remote_get($urlFeed, $args);
+        if (is_wp_error($respuesta)) {
+            return ['error' => $respuesta->get_error_message()];
+        }
+
+        $codigoHttp = (int) wp_remote_retrieve_response_code($respuesta);
+        if ($codigoHttp === 304) {
+            return ['not_modified' => true];
+        }
+        if ($codigoHttp >= 400 || $codigoHttp < 200) {
+            return ['error' => sprintf(
+                /* translators: %d = código HTTP */
+                __('HTTP %d devuelto por el origen del feed.', 'flavor-news-hub'),
+                $codigoHttp
+            )];
+        }
+
+        $cuerpo = (string) wp_remote_retrieve_body($respuesta);
+        if ($cuerpo === '') {
+            return ['error' => __('El origen devolvió 200 pero con cuerpo vacío.', 'flavor-news-hub')];
+        }
+
+        return [
+            'body'          => $cuerpo,
+            'etag'          => (string) wp_remote_retrieve_header($respuesta, 'etag'),
+            'last_modified' => (string) wp_remote_retrieve_header($respuesta, 'last-modified'),
+        ];
     }
 }

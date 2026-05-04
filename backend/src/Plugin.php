@@ -25,6 +25,8 @@ use FlavorNewsHub\Database\ItemsCleanup;
 use FlavorNewsHub\Database\UsoApiTable;
 use FlavorNewsHub\Database\UsoApiCleanup;
 use FlavorNewsHub\Stats\UsoTracker;
+use FlavorNewsHub\Stats\Recopilador;
+use FlavorNewsHub\Admin\Pages\EstadisticasPage;
 use FlavorNewsHub\Notifications\WeeklyReport;
 use FlavorNewsHub\Integration\FlavorPlatformAddon;
 use FlavorNewsHub\Shortcodes\Shortcodes;
@@ -93,6 +95,20 @@ final class Plugin
         // Ingesta: declaración de intervalo y enganche del job.
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
         add_action(Scheduler::HOOK_CRON, [FeedIngester::class, 'ingestarTodasLasFuentesActivas']);
+
+        // Precalentado de los transients que alimentan la pestaña
+        // Sistema → Descargas. Los enganchamos al MISMO cron de
+        // ingesta con prioridad 20 (la ingesta corre en 10), de
+        // modo que después de cada ronda de ingesta:
+        //   - el bundle de stats internas refleja los items recién
+        //     entrados,
+        //   - el bundle de descargas de GitHub Releases ya está en
+        //     el transient.
+        // Sin esto, la primera visita admin tras la caducidad (1h)
+        // pagaba el HTTP a api.github.com (hasta 10s de timeout) más
+        // las subqueries correlacionadas del Recopilador.
+        add_action(Scheduler::HOOK_CRON, [Recopilador::class, 'precalentarCacheStatsAdmin'], 20);
+        add_action(Scheduler::HOOK_CRON, [EstadisticasPage::class, 'precalentarCacheDescargas'], 20);
 
         // REST pública `flavor-news/v1`.
         add_action('rest_api_init', [RestController::class, 'registrar']);

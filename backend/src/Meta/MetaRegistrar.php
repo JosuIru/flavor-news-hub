@@ -249,6 +249,37 @@ final class MetaRegistrar
             'sanitize_callback' => [self::class, 'saneatPermisoStream'],
             'auth_callback'     => [self::class, 'puedeEditarPosts'],
         ]);
+
+        // Estado interno del ingester: cabeceras condicionales (ETag,
+        // Last-Modified) que mandamos en el siguiente fetch para que
+        // el origen pueda responder 304 Not Modified, y contadores
+        // del circuit breaker (errores consecutivos + timestamp del
+        // próximo intento). No se exponen vía REST: son detalles
+        // operacionales del backend, no datos editoriales.
+        register_post_meta($tipoPostSource, '_fnh_etag', [
+            'type'         => 'string',
+            'single'       => true,
+            'show_in_rest' => false,
+            'default'      => '',
+        ]);
+        register_post_meta($tipoPostSource, '_fnh_last_modified', [
+            'type'         => 'string',
+            'single'       => true,
+            'show_in_rest' => false,
+            'default'      => '',
+        ]);
+        register_post_meta($tipoPostSource, '_fnh_consecutive_errors', [
+            'type'         => 'integer',
+            'single'       => true,
+            'show_in_rest' => false,
+            'default'      => 0,
+        ]);
+        register_post_meta($tipoPostSource, '_fnh_next_attempt_after', [
+            'type'         => 'integer',
+            'single'       => true,
+            'show_in_rest' => false,
+            'default'      => 0,
+        ]);
     }
 
     private static function registrarMetaDeItem(): void

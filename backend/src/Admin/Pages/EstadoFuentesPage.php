@@ -7,6 +7,7 @@ use FlavorNewsHub\Admin\Actions\EstadoFuentesActions;
 use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
+use FlavorNewsHub\Ingest\FeedIngester;
 
 /**
  * Pantalla de admin "Estado de fuentes": una fila por cada fuente
@@ -88,10 +89,25 @@ final class EstadoFuentesPage
 
         $filas = is_array($filas) ? $filas : [];
 
-        // Clasificar en tres categorías visuales.
+        // Clasificar en tres categorías visuales. De paso, leemos para
+        // cada fila el estado del circuit breaker (errores acumulados +
+        // timestamp de "próximo intento") para que la tabla pueda
+        // renderizar el badge de cuarentena y el botón de reset. Es 2
+        // get_post_meta por fuente — irrelevante para 200-300 filas.
         $ahora = time();
         $muertas = []; $inactivas = []; $sanas = []; $conErrores = [];
         foreach ($filas as $f) {
+            $idSourceFila = (int) ($f['source_id'] ?? 0);
+            $f['cuarentena_hasta'] = (int) get_post_meta(
+                $idSourceFila,
+                FeedIngester::META_PROXIMO_INTENTO_TRAS,
+                true
+            );
+            $f['errores_consecutivos'] = (int) get_post_meta(
+                $idSourceFila,
+                FeedIngester::META_ERRORES_CONSECUTIVOS,
+                true
+            );
             $itemsSiete = (int) ($f['items_7d'] ?? 0);
             $itemsTreinta = (int) ($f['items_30d'] ?? 0);
             $status = (string) ($f['ultimo_status'] ?? '');
@@ -197,6 +213,9 @@ final class EstadoFuentesPage
                     $ultimaHumana = $ultima !== ''
                         ? human_time_diff(strtotime($ultima . ' UTC'), time()) . ' atrás'
                         : '—';
+                    $cuarentenaHasta = (int) ($f['cuarentena_hasta'] ?? 0);
+                    $erroresConsecutivos = (int) ($f['errores_consecutivos'] ?? 0);
+                    $enCuarentena = $cuarentenaHasta > 0 && $cuarentenaHasta > time();
                 ?>
                 <tr>
                     <td>
@@ -206,6 +225,28 @@ final class EstadoFuentesPage
                         <?php endif; ?>
                         <?php if ($feedUrl !== '') : ?>
                             <br><a href="<?php echo esc_url($feedUrl); ?>" target="_blank" style="font-size:.8em; color:#999" rel="noopener"><?php echo esc_html(wp_parse_url($feedUrl, PHP_URL_HOST) ?: $feedUrl); ?></a>
+                        <?php endif; ?>
+                        <?php if ($enCuarentena) : ?>
+                            <br><span title="<?php echo esc_attr(sprintf(
+                                /* translators: %d errores consecutivos acumulados */
+                                __('%d errores consecutivos acumulados antes de entrar en cuarentena', 'flavor-news-hub'),
+                                $erroresConsecutivos
+                            )); ?>"
+                                  style="display:inline-block; margin-top:4px; padding:2px 8px; background:#fcf0f1; color:#a00; border-radius:3px; font-size:.75em">
+                                <?php printf(
+                                    /* translators: %s tiempo humano hasta el próximo intento (p.ej. "en 1 hora") */
+                                    esc_html__('🔒 en cuarentena · próximo intento %s', 'flavor-news-hub'),
+                                    esc_html(human_time_diff(time(), $cuarentenaHasta))
+                                ); ?>
+                            </span>
+                        <?php elseif ($erroresConsecutivos > 0) : ?>
+                            <br><span style="display:inline-block; margin-top:4px; padding:2px 8px; background:#fff8e5; color:#8a5a00; border-radius:3px; font-size:.75em">
+                                <?php printf(
+                                    /* translators: %d errores consecutivos */
+                                    esc_html(_n('%d error consecutivo', '%d errores consecutivos', $erroresConsecutivos, 'flavor-news-hub')),
+                                    $erroresConsecutivos
+                                ); ?>
+                            </span>
                         <?php endif; ?>
                     </td>
                     <td><code style="font-size:.75em"><?php echo esc_html((string) ($f['feed_type'] ?? '?')); ?></code></td>
@@ -227,6 +268,16 @@ final class EstadoFuentesPage
                             <?php wp_nonce_field('fnh_desactivar_fuente_' . $idSource); ?>
                             <button type="submit" class="button-link" style="color:#c33; padding:0"><?php esc_html_e('Desactivar', 'flavor-news-hub'); ?></button>
                         </form>
+                        <?php if ($enCuarentena) : ?>
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:block; margin-top:4px">
+                                <input type="hidden" name="action" value="fnh_resetear_cuarentena" />
+                                <input type="hidden" name="source_id" value="<?php echo esc_attr((string) $idSource); ?>" />
+                                <?php wp_nonce_field('fnh_resetear_cuarentena_' . $idSource); ?>
+                                <button type="submit" class="button-link" style="color:#2271b1; padding:0; font-size:.85em">
+                                    <?php esc_html_e('Resetear cuarentena', 'flavor-news-hub'); ?>
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>

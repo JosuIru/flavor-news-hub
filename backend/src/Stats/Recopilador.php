@@ -91,6 +91,19 @@ final class Recopilador
     }
 
     /**
+     * Recalcula el bundle de stats y reescribe el transient. Pensado
+     * para engancharse al final del cron de ingesta: así, cuando el
+     * admin abre la pestaña Sistema → Descargas, el transient está
+     * caliente y se ahorra los segundos que cuestan las subqueries
+     * correlacionadas de `topFuentesActivas` y `fuentesMuertas`.
+     */
+    public static function precalentarCacheStatsAdmin(): void
+    {
+        self::invalidarCacheStatsAdmin();
+        self::statsAdmin();
+    }
+
+    /**
      * Contadores agregados del catálogo.
      *
      * @return array{

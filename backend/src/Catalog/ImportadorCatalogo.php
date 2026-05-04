@@ -266,6 +266,17 @@ final class ImportadorCatalogo
                 '_fnh_languages',
                 array_values(array_map('strval', $idiomas))
             );
+            // Política `active` simétrica a `importarSources`:
+            //  - Si el seed lo declara, gana el seed (permite desactivar
+            //    declarativamente radios cuyo stream ha muerto).
+            //  - Si es radio nueva y no lo declara, activa.
+            //  - Si la radio ya existe, respetamos lo que el admin haya
+            //    puesto manualmente.
+            if (array_key_exists('active', $raw)) {
+                update_post_meta($idPost, '_fnh_active', (bool) $raw['active']);
+            } elseif (!$existente) {
+                update_post_meta($idPost, '_fnh_active', true);
+            }
 
             if ($existente) {
                 $actualizados++;
@@ -365,6 +376,17 @@ final class ImportadorCatalogo
             update_post_meta($idPost, '_fnh_region', (string) ($raw['region'] ?? $ubicacion['region']));
             update_post_meta($idPost, '_fnh_city', (string) ($raw['city'] ?? $ubicacion['city']));
             update_post_meta($idPost, '_fnh_verified', $verificado);
+            // Política `active` simétrica a `importarSources`:
+            //  - Si el seed lo declara, gana el seed (permite desactivar
+            //    declarativamente colectivos con dominio extinto).
+            //  - Si es colectivo nuevo y no lo declara, activo.
+            //  - Si el colectivo ya existe, respetamos lo que el admin
+            //    haya puesto manualmente.
+            if (array_key_exists('active', $raw)) {
+                update_post_meta($idPost, '_fnh_active', (bool) $raw['active']);
+            } elseif (!$existente) {
+                update_post_meta($idPost, '_fnh_active', true);
+            }
 
             // Sources vinculadas: admitimos o bien una lista de IDs
             // (`source_ids`) o una lista de slugs (`source_slugs`) por

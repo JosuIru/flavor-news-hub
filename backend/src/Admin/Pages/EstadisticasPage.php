@@ -143,17 +143,35 @@ final class EstadisticasPage
     }
 
     /**
+     * Recalcula el bundle de descargas y reescribe el transient.
+     * Pensado para engancharse al final del cron de ingesta: así,
+     * cuando el admin abre la pestaña Sistema → Descargas, no paga
+     * el coste del HTTP a la API de GitHub (hasta 10s de timeout)
+     * en el render.
+     *
+     * Si GitHub devuelve error, `obtenerDatos` no escribe el
+     * transient — eso deja intacto el bundle anterior, que aunque
+     * rancio sigue siendo más útil que un mensaje de fallo.
+     */
+    public static function precalentarCacheDescargas(): void
+    {
+        self::obtenerDatos(true);
+    }
+
+    /**
      * @return array{
      *   total_apk:int,total_zip:int,total_releases:int,
      *   filas:list<array{tag:string,nombre:string,descargas:int}>,
      *   ts_lectura:int
      * }|array{error:string}
      */
-    private static function obtenerDatos(): array
+    private static function obtenerDatos(bool $forzarRefresco = false): array
     {
-        $cache = get_transient(self::TRANSIENT_CACHE);
-        if (is_array($cache) && isset($cache['filas'])) {
-            return $cache;
+        if (!$forzarRefresco) {
+            $cache = get_transient(self::TRANSIENT_CACHE);
+            if (is_array($cache) && isset($cache['filas'])) {
+                return $cache;
+            }
         }
 
         $url = 'https://api.github.com/repos/' . self::REPO_GITHUB . '/releases?per_page=30';

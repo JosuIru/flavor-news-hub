@@ -9,6 +9,7 @@ use FlavorNewsHub\Admin\Pages\SistemaPage;
 use FlavorNewsHub\Catalog\AutodescubrirFeeds;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
+use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\Support\Transients;
 
 /**
@@ -30,6 +31,7 @@ final class EstadoFuentesActions
     public const HOOK_APLICAR_FEED_UNICO   = 'admin_post_fnh_aplicar_feed_detectado';
     public const HOOK_APLICAR_FEEDS_TODOS  = 'admin_post_fnh_aplicar_feeds_todos';
     public const HOOK_ELIMINAR_DUPLICADOS  = 'admin_post_fnh_eliminar_duplicados';
+    public const HOOK_RESETEAR_CUARENTENA  = 'admin_post_fnh_resetear_cuarentena';
 
     /** Clave del transient donde se guardan las propuestas tras escanear. */
     public const TRANSIENT_PROPUESTAS = 'fnh_feeds_detectados_propuestas';
@@ -90,6 +92,37 @@ final class EstadoFuentesActions
         }
         update_post_meta($idSource, '_fnh_active', false);
         wp_safe_redirect(self::urlRedireccion(['fnh_desactivadas' => 1]));
+        exit;
+    }
+
+    /**
+     * Borra el estado del circuit breaker de una fuente: contador de
+     * errores consecutivos y timestamp del próximo intento. Tras esto,
+     * la siguiente ronda de cron procesará la fuente normalmente, sin
+     * importar cuántos fallos había acumulado.
+     *
+     * Útil cuando el admin sabe que el problema externo se ha resuelto
+     * (ej. el sitio del medio volvió a publicar tras unos días de
+     * caída) y no quiere esperar a que expire la cuarentena.
+     */
+    public static function manejarResetearCuarentena(): void
+    {
+        self::comprobarPermisos();
+        $idSource = isset($_POST['source_id']) ? (int) $_POST['source_id'] : 0;
+        if ($idSource <= 0) {
+            wp_die(esc_html__('ID de medio inválido.', 'flavor-news-hub'), '', ['response' => 400]);
+        }
+        $nonce = isset($_POST['_wpnonce']) ? (string) wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'fnh_resetear_cuarentena_' . $idSource)) {
+            wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
+        }
+        $post = get_post($idSource);
+        if (!$post || $post->post_type !== Source::SLUG) {
+            wp_die(esc_html__('Medio no encontrado.', 'flavor-news-hub'), '', ['response' => 404]);
+        }
+        delete_post_meta($idSource, FeedIngester::META_ERRORES_CONSECUTIVOS);
+        delete_post_meta($idSource, FeedIngester::META_PROXIMO_INTENTO_TRAS);
+        wp_safe_redirect(self::urlRedireccion(['fnh_cuarentena_reseteada' => 1]));
         exit;
     }
 
@@ -533,6 +566,12 @@ final class EstadoFuentesActions
                     esc_html__('Las URLs conocidas ya estaban aplicadas.', 'flavor-news-hub')
                 );
             }
+        }
+        if (isset($_GET['fnh_cuarentena_reseteada'])) {
+            printf(
+                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                esc_html__('Cuarentena reseteada. La fuente se reintentará en el próximo cron.', 'flavor-news-hub')
+            );
         }
     }
 
