@@ -110,6 +110,12 @@ final class CatalogoPage
             'flavor-news-hub'
         );
         echo '</label>';
+        echo '<p class="description" style="margin-top:6px;">';
+        echo esc_html__(
+            'Marca la casilla de las entradas que quieras (re)importar y pulsa "Importar seleccionados". Para entradas ya instaladas necesitas también marcar "Sobrescribir metas" para que el seed pise sus valores actuales.',
+            'flavor-news-hub'
+        );
+        echo '</p>';
         echo '</div>';
 
         echo '<p>';
@@ -150,12 +156,16 @@ final class CatalogoPage
 
             echo '<tr>';
             echo '<td>';
-            if (!$existe) {
-                printf(
-                    '<input type="checkbox" name="slugs[]" value="%s" />',
-                    esc_attr($slug)
-                );
-            }
+            // Checkbox SIEMPRE — antes sólo se dibujaba para entradas
+            // pendientes y eso impedía re-importar (con "Sobrescribir
+            // metas") fuentes ya existentes para sincronizar cambios
+            // del seed (URLs corregidas, `active=false` en lote, etc.).
+            // Re-importar sin "Sobrescribir metas" es no-op porque
+            // `ImportadorCatalogo` salta los existentes en ese caso.
+            printf(
+                '<input type="checkbox" name="slugs[]" value="%s" />',
+                esc_attr($slug)
+            );
             echo '</td>';
             echo '<td><strong>' . esc_html((string) ($entry['name'] ?? '')) . '</strong></td>';
             echo '<td>' . esc_html((string) ($entry['territory'] ?? '')) . '</td>';

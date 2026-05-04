@@ -170,12 +170,25 @@ final class FeedIngester
                     ];
                 }
                 // Jitter entre fuentes (no después de la última, que no
-                // sirve de nada). El filtro permite desactivarlo en tests
-                // — devolver 0 hace que `usleep(0)` sea no-op.
+                // sirve de nada). Default 0: en producción real el jitter
+                // (200-600ms × 281 fuentes ≈ +110s) empujaba el cron por
+                // encima de `max_execution_time` del request HTTP que
+                // dispara wp-cron — el proceso moría antes de cerrar el
+                // log de la fuente actual y la entrada quedaba en
+                // `running` para siempre, bloqueando todas las fuentes
+                // posteriores en la cola.
+                //
+                // El throttle por host (1.5s entre peticiones al mismo
+                // host) ya cubre el caso YouTube/Cloudflare; añadir
+                // jitter global no aportaba lo suficiente para
+                // justificar el riesgo. Lo mantengo detrás de un filtro
+                // por si en algún sitio concreto vuelve a hacer falta:
+                //   add_filter('fnh_jitter_entre_fuentes_microseg',
+                //     fn() => random_int(200_000, 600_000));
                 if ($indice < $totalFuentes - 1) {
                     $microsegEspera = (int) apply_filters(
                         'fnh_jitter_entre_fuentes_microseg',
-                        random_int(self::JITTER_MIN_MICROSEG, self::JITTER_MAX_MICROSEG)
+                        0
                     );
                     if ($microsegEspera > 0) {
                         usleep($microsegEspera);
