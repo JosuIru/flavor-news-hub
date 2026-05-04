@@ -140,6 +140,12 @@ final class EstadoFuentesPage
             </p>
 
             <div style="display:flex; gap:12px; margin:16px 0 24px; flex-wrap:wrap">
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0"
+                      onsubmit="return confirm('<?php echo esc_js(__('Se ejecutará una ronda completa de ingesta ahora mismo (puede tardar varios minutos). El cron normal sigue activo. ¿Continuar?', 'flavor-news-hub')); ?>');">
+                    <input type="hidden" name="action" value="fnh_ejecutar_ronda" />
+                    <?php wp_nonce_field('fnh_ejecutar_ronda'); ?>
+                    <?php submit_button(__('Ejecutar ronda completa ahora', 'flavor-news-hub'), 'primary', 'submit', false); ?>
+                </form>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin:0">
                     <input type="hidden" name="action" value="fnh_aplicar_urls_conocidas" />
                     <?php wp_nonce_field('fnh_aplicar_urls_conocidas'); ?>

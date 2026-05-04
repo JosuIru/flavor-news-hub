@@ -10,6 +10,7 @@ use FlavorNewsHub\Catalog\AutodescubrirFeeds;
 use FlavorNewsHub\CPT\Source;
 use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\FeedIngester;
+use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Support\Transients;
 
 /**
@@ -32,6 +33,7 @@ final class EstadoFuentesActions
     public const HOOK_APLICAR_FEEDS_TODOS  = 'admin_post_fnh_aplicar_feeds_todos';
     public const HOOK_ELIMINAR_DUPLICADOS  = 'admin_post_fnh_eliminar_duplicados';
     public const HOOK_RESETEAR_CUARENTENA  = 'admin_post_fnh_resetear_cuarentena';
+    public const HOOK_EJECUTAR_RONDA       = 'admin_post_fnh_ejecutar_ronda';
 
     /** Clave del transient donde se guardan las propuestas tras escanear. */
     public const TRANSIENT_PROPUESTAS = 'fnh_feeds_detectados_propuestas';
@@ -123,6 +125,44 @@ final class EstadoFuentesActions
         delete_post_meta($idSource, FeedIngester::META_ERRORES_CONSECUTIVOS);
         delete_post_meta($idSource, FeedIngester::META_PROXIMO_INTENTO_TRAS);
         wp_safe_redirect(self::urlRedireccion(['fnh_cuarentena_reseteada' => 1]));
+        exit;
+    }
+
+    /**
+     * Dispara una ronda completa de ingesta inmediata. Útil para:
+     *  - Probar cambios de timeout/cuarentena sin esperar al cron natural.
+     *  - Recuperar logs huérfanos en `running` (la ronda los marca como
+     *    error al inicio).
+     *  - Diagnóstico tras desplegar una nueva versión del plugin.
+     *
+     * Mecánica: NO ejecuta la ingesta síncronamente en este request (con
+     * 281 fuentes a 12s podría tardar varios minutos y nginx/apache
+     * cortarían). En lugar de eso, agenda un evento single inmediato del
+     * hook de cron y llama a `spawn_cron()` para que WP arranque un
+     * sub-request HTTP en background — exactamente la misma mecánica
+     * que usa IngestTriggerEndpoint para el cliente móvil. El admin
+     * vuelve a la página al instante; el resultado se ve cuando el cron
+     * acaba (en los logs de la fuente / pantalla de estado).
+     */
+    public static function manejarEjecutarRonda(): void
+    {
+        self::comprobarPermisos();
+        $nonce = isset($_POST['_wpnonce']) ? (string) wp_unslash($_POST['_wpnonce']) : '';
+        if (!wp_verify_nonce($nonce, 'fnh_ejecutar_ronda')) {
+            wp_die(esc_html__('Nonce inválido.', 'flavor-news-hub'), '', ['response' => 403]);
+        }
+
+        $ahora = time();
+        // Si ya hay un evento de ingesta pendiente para los próximos
+        // 30s, reutilizamos. Si no, agendamos uno para AHORA-1s para
+        // que `spawn_cron()` lo recoja como vencido.
+        $proximoYaAgendado = wp_next_scheduled(Scheduler::HOOK_CRON);
+        if ($proximoYaAgendado === false || $proximoYaAgendado > $ahora + 30) {
+            wp_schedule_single_event($ahora - 1, Scheduler::HOOK_CRON);
+        }
+        spawn_cron($ahora);
+
+        wp_safe_redirect(self::urlRedireccion(['fnh_ronda_lanzada' => 1]));
         exit;
     }
 
@@ -571,6 +611,12 @@ final class EstadoFuentesActions
             printf(
                 '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
                 esc_html__('Cuarentena reseteada. La fuente se reintentará en el próximo cron.', 'flavor-news-hub')
+            );
+        }
+        if (isset($_GET['fnh_ronda_lanzada'])) {
+            printf(
+                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                esc_html__('Ronda lanzada en background. En unos segundos verás logs nuevos en la pestaña Sistema → Ingestas.', 'flavor-news-hub')
             );
         }
     }

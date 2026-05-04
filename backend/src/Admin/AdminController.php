@@ -80,6 +80,7 @@ final class AdminController
         add_action(EstadoFuentesActions::HOOK_APLICAR_FEEDS_TODOS, [EstadoFuentesActions::class, 'manejarAplicarTodasPropuestas']);
         add_action(EstadoFuentesActions::HOOK_ELIMINAR_DUPLICADOS, [EstadoFuentesActions::class, 'manejarEliminarDuplicados']);
         add_action(EstadoFuentesActions::HOOK_RESETEAR_CUARENTENA, [EstadoFuentesActions::class, 'manejarResetearCuarentena']);
+        add_action(EstadoFuentesActions::HOOK_EJECUTAR_RONDA, [EstadoFuentesActions::class, 'manejarEjecutarRonda']);
         add_action('admin_notices', [EstadoFuentesActions::class, 'mostrarAviso']);
     }
 }
