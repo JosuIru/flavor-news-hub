@@ -144,6 +144,28 @@ final class FeedIngester
     public const TTL_ESLABON_LOCK_SEG = 180;
 
     /**
+     * Cuántas fuentes intenta procesar un eslabón en el mismo worker antes
+     * de ceder y agendar el siguiente eslabón.
+     *
+     * Motivo: cada eslabón de wp-cron es un sub-request HTTP que arranca
+     * un PHP-FPM nuevo y bootstrappea WordPress + todos los plugins
+     * activos desde cero (autoloader, init de módulos, registro de
+     * shortcodes…). En sitios con un plugin grande co-residente, ese
+     * bootstrap puede consumir 6-10 s por sub-request — más que la
+     * propia ingesta de la fuente. Procesar 1 fuente por eslabón dejaba
+     * el worker gastando >90% del tiempo en bootstrap inútil; con 15
+     * fuentes amortizamos ese coste fijo entre todas.
+     */
+    public const MAX_FUENTES_POR_LOTE = 15;
+    /**
+     * Tope de segundos que un eslabón gasta procesando antes de ceder.
+     * Con set_time_limit(120) deja margen amplio para el bootstrap del
+     * siguiente eslabón sin acercarse al request_terminate_timeout
+     * típico (60-120 s en hostings compartidos).
+     */
+    public const MAX_SEG_POR_LOTE = 25;
+
+    /**
      * Kickoff de la ronda. NO procesa fuentes; solo agenda el primer
      * eslabón de la cadena y vuelve. Cada eslabón es un wp-cron event
      * single que procesa UNA fuente en su propio sub-request HTTP y al
@@ -198,64 +220,76 @@ final class FeedIngester
     }
 
     /**
-     * Hook handler de cada eslabón de la cadena. Procesa UNA fuente y
-     * agenda el siguiente eslabón si quedan fuentes y no hemos llegado
-     * al tope por ronda. Cada llamada se ejecuta en su propio sub-
-     * request de wp-cron, así que dispone del max_execution_time
-     * completo y un timeout en una fuente NO afecta a las demás.
+     * Hook handler de cada eslabón. Procesa un LOTE de fuentes en el
+     * mismo worker (hasta `MAX_FUENTES_POR_LOTE` o `MAX_SEG_POR_LOTE`),
+     * y solo entonces agenda el siguiente eslabón. Esto amortiza el
+     * coste fijo de bootstrap de WordPress + plugins co-residentes
+     * entre todas las fuentes del lote: con bootstrap de ~8 s y fuente
+     * de ~1-2 s, el ratio bootstrap/útil pasa de ~9:1 (eslabón=1) a
+     * ~1:3 (eslabón=15).
+     *
+     * Diseño anterior (un eslabón = una fuente) seguía fallando porque
+     * cada sub-request `spawn_cron()` arrancaba un PHP-FPM nuevo y
+     * pagaba el bootstrap completo: el worker moría por
+     * `request_terminate_timeout` antes (o casi) de procesar la fuente.
      */
     public static function procesarEslabonCadena(int $idFuente): void
     {
-        @set_time_limit(60);
+        @set_time_limit(120);
         @ignore_user_abort(true);
         self::$ultimoRequestPorHost = [];
 
-        // Lock por fuente: si otra cadena concurrente ya está
-        // procesando esta fuente (race típica entre kickoff REST y
-        // cron natural), salimos en silencio. El TTL del lock cubre
-        // peor caso de eslabón con timeout; si está vencido, lo
-        // robamos asumiendo proceso muerto.
-        if (!self::adquirirLockFuente($idFuente)) {
-            // Aún así avanzamos la cadena con OTRA fuente — no
-            // queremos que la cadena muera porque una fuente esté
-            // ocupada en otro worker.
-            self::avanzarCadena();
-            return;
-        }
+        $tiempoInicioLote = microtime(true);
+        $fuentesIntentadasEnLote = 0;
+        $idActual = $idFuente;
 
-        try {
-            self::ingestarFuente($idFuente);
-        } catch (\Throwable $errorIngesta) {
-            // Silenciamos: el log de la fuente ya capturó el detalle y
-            // no queremos que un fallo encadene mata-cadena hacia abajo.
-            unset($errorIngesta);
-        } finally {
-            self::liberarLockFuente($idFuente);
-        }
-
-        self::avanzarCadena();
-    }
-
-    /**
-     * Incrementa el contador de la ronda y, si no hemos llegado al tope,
-     * agenda el siguiente eslabón con la siguiente fuente.
-     */
-    private static function avanzarCadena(): void
-    {
-        $contadorEnRonda = self::incrementarContadorRondaAtomico();
+        $maxPorLote = (int) apply_filters('fnh_max_fuentes_por_lote', self::MAX_FUENTES_POR_LOTE);
+        $maxSegPorLote = (int) apply_filters('fnh_max_seg_por_lote', self::MAX_SEG_POR_LOTE);
         $maxPorRonda = (int) apply_filters('fnh_max_fuentes_por_ronda', 80);
-        if ($contadorEnRonda >= $maxPorRonda) {
-            self::resetearContadorRonda();
-            return;
+
+        while ($idActual > 0) {
+            // Lock por fuente: si otra cadena concurrente ya la procesa
+            // (race típica entre kickoff REST y cron natural), saltamos
+            // en silencio. La contamos como "intentada" para no entrar
+            // en bucle si la query nos sigue devolviendo la misma.
+            if (self::adquirirLockFuente($idActual)) {
+                try {
+                    self::ingestarFuente($idActual);
+                } catch (\Throwable $errorIngesta) {
+                    // Silenciamos: el log de la fuente ya capturó el
+                    // detalle y no queremos que un fallo aislado mate
+                    // todo el lote.
+                    unset($errorIngesta);
+                } finally {
+                    self::liberarLockFuente($idActual);
+                }
+            }
+
+            $fuentesIntentadasEnLote++;
+            $contadorEnRonda = self::incrementarContadorRondaAtomico();
+            if ($contadorEnRonda >= $maxPorRonda) {
+                self::resetearContadorRonda();
+                return;
+            }
+
+            $tiempoTranscurrido = microtime(true) - $tiempoInicioLote;
+            if ($fuentesIntentadasEnLote >= $maxPorLote || $tiempoTranscurrido >= $maxSegPorLote) {
+                $siguienteParaOtroEslabon = self::obtenerSiguienteFuenteParaCadena();
+                if ($siguienteParaOtroEslabon > 0) {
+                    self::agendarSiguienteEslabon($siguienteParaOtroEslabon);
+                    spawn_cron();
+                } else {
+                    self::resetearContadorRonda();
+                }
+                return;
+            }
+
+            $idActual = self::obtenerSiguienteFuenteParaCadena();
         }
 
-        $siguiente = self::obtenerSiguienteFuenteParaCadena();
-        if ($siguiente > 0) {
-            self::agendarSiguienteEslabon($siguiente);
-            spawn_cron();
-        } else {
-            self::resetearContadorRonda();
-        }
+        // Sin más fuentes pendientes (cuarentena/lock cubre el resto):
+        // cerramos la ronda.
+        self::resetearContadorRonda();
     }
 
     private static function agendarSiguienteEslabon(int $idFuente): void
