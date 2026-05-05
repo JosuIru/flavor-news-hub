@@ -104,20 +104,15 @@ final class Plugin
         add_action('init', [self::class, 'sincronizarCatalogoTrasUpgrade'], 8);
 
         // Ingesta: declaración de intervalo y enganche del job.
+        // Patrón clásico de WordPress: una vez al cron, todas las
+        // fuentes en bucle síncrono dentro del mismo sub-request.
+        // Funcionaba bien antes de v0.15.5; volvemos a él tras una
+        // serie de "optimizaciones" (cadena de eslabones, spawn_cron
+        // por fuente, locks atómicos) que en este hosting introducían
+        // overhead de bootstrap por sub-request mayor que la propia
+        // ingesta.
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
         add_action(Scheduler::HOOK_CRON, [FeedIngester::class, 'ingestarTodasLasFuentesActivas']);
-        // Eslabón individual de la cadena: cada fuente en su propio
-        // sub-request wp-cron para no compartir max_execution_time.
-        add_action(FeedIngester::HOOK_ESLABON, [FeedIngester::class, 'procesarEslabonCadena'], 10, 1);
-
-        // (Antes filtrábamos `wp_cron_lock_timeout` a 600s para evitar
-        // que dos rondas se solapasen. Pero ese filtro también bloquea
-        // `spawn_cron`: WP guarda un transient `doing_cron` con ese TTL
-        // y mientras esté vivo NO arranca un nuevo sub-request, lo que
-        // dejaba el botón admin y el REST trigger sin efecto durante
-        // 10 min. Con la cadena de eslabones, cada eslabón dura
-        // segundos, no minutos — el default de 60s vuelve a ser
-        // razonable y permite disparos manuales.)
 
         // Precalentado de los transients que alimentan la pestaña
         // Sistema → Descargas. Los enganchamos al MISMO cron de

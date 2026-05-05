@@ -134,54 +134,6 @@ final class FeedIngester
      *   errors?:list<array{source_id:int,message:string}>
      * }
      */
-    /** Hook del eslabón de la cadena (1 fuente → la siguiente). */
-    public const HOOK_ESLABON = 'fnh_ingest_eslabon';
-    /** Contador atómico de fuentes procesadas en la ronda en curso (option). */
-    public const OPCION_CONTADOR_RONDA = 'fnh_ronda_contador';
-    /** Postmeta con timestamp del lock por fuente: evita procesar la misma 2 veces a la vez. */
-    public const META_ESLABON_LOCK = '_fnh_eslabon_lock';
-    /** TTL del lock por fuente (s): si más antiguo, se considera muerto y se roba. */
-    public const TTL_ESLABON_LOCK_SEG = 180;
-
-    /**
-     * Cuántas fuentes intenta procesar un eslabón en el mismo worker antes
-     * de ceder y agendar el siguiente eslabón.
-     *
-     * Motivo: cada eslabón de wp-cron es un sub-request HTTP que arranca
-     * un PHP-FPM nuevo y bootstrappea WordPress + todos los plugins
-     * activos desde cero (autoloader, init de módulos, registro de
-     * shortcodes…). En sitios con un plugin grande co-residente, ese
-     * bootstrap puede consumir 6-10 s por sub-request — más que la
-     * propia ingesta de la fuente. Procesar 1 fuente por eslabón dejaba
-     * el worker gastando >90% del tiempo en bootstrap inútil; con 15
-     * fuentes amortizamos ese coste fijo entre todas.
-     */
-    public const MAX_FUENTES_POR_LOTE = 15;
-    /**
-     * Tope de segundos que un eslabón gasta procesando antes de ceder.
-     * Con set_time_limit(120) deja margen amplio para el bootstrap del
-     * siguiente eslabón sin acercarse al request_terminate_timeout
-     * típico (60-120 s en hostings compartidos).
-     */
-    public const MAX_SEG_POR_LOTE = 25;
-
-    /**
-     * Kickoff de la ronda. NO procesa fuentes; solo agenda el primer
-     * eslabón de la cadena y vuelve. Cada eslabón es un wp-cron event
-     * single que procesa UNA fuente en su propio sub-request HTTP y al
-     * terminar agenda el siguiente. Si un eslabón muere por timeout
-     * del worker, el siguiente lo recupera (huérfanos) y continúa.
-     *
-     * Antes esto era un bucle síncrono sobre 80+ fuentes en un solo
-     * proceso PHP. En hostings con `request_terminate_timeout` o
-     * `proxy_read_timeout` bajos, el proceso moría tras 1-2 fuentes y
-     * el resto nunca se procesaba (cron atascado eternamente).
-     *
-     * Ventaja del fan-out: cada fuente cuenta con todo el límite del
-     * worker para sí. Desventaja: serializa (1 a la vez) en lugar de
-     * paralelizar; pero con 80 fuentes × ~5s = 7 min por ronda es
-     * aceptable.
-     */
     public static function ingestarTodasLasFuentesActivas(): array
     {
         if (!self::adquirirLock()) {
@@ -192,209 +144,63 @@ final class FeedIngester
         }
 
         try {
-            @set_time_limit(60);
-            @ignore_user_abort(true);
-
+            // Reset del registro de peticiones por host: cada ingesta
+            // global es una "ronda" independiente. Sin este reset, una
+            // segunda ingesta en el mismo proceso PHP heredaría
+            // timestamps obsoletos y aplicaría throttles innecesarios.
             self::$ultimoRequestPorHost = [];
+
+            // Recuperación de logs huérfanos: si en rondas anteriores el
+            // proceso PHP murió por `max_execution_time` antes de cerrar
+            // el log de la fuente que tocaba, ese log queda en `running`
+            // para siempre y la fuente se reintenta cada ronda con el
+            // mismo desenlace. Aquí marcamos como `error` cualquier log
+            // `running` con >umbral de antigüedad. El lock global
+            // garantiza que no pisamos un log legítimo de una ronda en
+            // curso.
             self::recuperarLogsHuerfanos();
 
-            // Reseteamos el contador de la ronda en curso: cada vez que
-            // este kickoff se dispara, empezamos una nueva tanda.
-            self::resetearContadorRonda();
-
-            $primer = self::obtenerSiguienteFuenteParaCadena();
-            if ($primer > 0) {
-                self::agendarSiguienteEslabon($primer);
-                spawn_cron();
-            }
-            return [
+            $idsFuentesActivas = self::obtenerIdsFuentesActivas();
+            $resumenGlobal = [
                 'sources_processed'   => 0,
                 'items_new_total'     => 0,
                 'items_skipped_total' => 0,
                 'errors'              => [],
-                'chain_started_with'  => $primer,
             ];
+
+            $totalFuentes = count($idsFuentesActivas);
+            foreach ($idsFuentesActivas as $indice => $idFuente) {
+                $resumenFuente = self::ingestarFuente($idFuente);
+                $resumenGlobal['sources_processed']++;
+                $resumenGlobal['items_new_total']     += $resumenFuente['items_new'];
+                $resumenGlobal['items_skipped_total'] += $resumenFuente['items_skipped'];
+                if ($resumenFuente['error'] !== '') {
+                    $resumenGlobal['errors'][] = [
+                        'source_id' => $idFuente,
+                        'message'   => $resumenFuente['error'],
+                    ];
+                }
+                // Jitter entre fuentes (no después de la última, que no
+                // sirve de nada). Default 0: el throttle por host
+                // (1.5s entre peticiones al mismo host) ya cubre
+                // YouTube/Cloudflare; añadir jitter global empuja el
+                // cron por encima de `max_execution_time`. Lo dejamos
+                // detrás de filtro por si en algún sitio concreto
+                // vuelve a hacer falta.
+                if ($indice < $totalFuentes - 1) {
+                    $microsegEspera = (int) apply_filters(
+                        'fnh_jitter_entre_fuentes_microseg',
+                        0
+                    );
+                    if ($microsegEspera > 0) {
+                        usleep($microsegEspera);
+                    }
+                }
+            }
+            return $resumenGlobal;
         } finally {
             self::liberarLock();
         }
-    }
-
-    /**
-     * Hook handler de cada eslabón. Procesa un LOTE de fuentes en el
-     * mismo worker (hasta `MAX_FUENTES_POR_LOTE` o `MAX_SEG_POR_LOTE`),
-     * y solo entonces agenda el siguiente eslabón. Esto amortiza el
-     * coste fijo de bootstrap de WordPress + plugins co-residentes
-     * entre todas las fuentes del lote: con bootstrap de ~8 s y fuente
-     * de ~1-2 s, el ratio bootstrap/útil pasa de ~9:1 (eslabón=1) a
-     * ~1:3 (eslabón=15).
-     *
-     * Diseño anterior (un eslabón = una fuente) seguía fallando porque
-     * cada sub-request `spawn_cron()` arrancaba un PHP-FPM nuevo y
-     * pagaba el bootstrap completo: el worker moría por
-     * `request_terminate_timeout` antes (o casi) de procesar la fuente.
-     */
-    public static function procesarEslabonCadena(int $idFuente): void
-    {
-        @set_time_limit(120);
-        @ignore_user_abort(true);
-        self::$ultimoRequestPorHost = [];
-
-        $tiempoInicioLote = microtime(true);
-        $fuentesIntentadasEnLote = 0;
-        $idActual = $idFuente;
-
-        $maxPorLote = (int) apply_filters('fnh_max_fuentes_por_lote', self::MAX_FUENTES_POR_LOTE);
-        $maxSegPorLote = (int) apply_filters('fnh_max_seg_por_lote', self::MAX_SEG_POR_LOTE);
-        $maxPorRonda = (int) apply_filters('fnh_max_fuentes_por_ronda', 80);
-
-        while ($idActual > 0) {
-            // Lock por fuente: si otra cadena concurrente ya la procesa
-            // (race típica entre kickoff REST y cron natural), saltamos
-            // en silencio. La contamos como "intentada" para no entrar
-            // en bucle si la query nos sigue devolviendo la misma.
-            if (self::adquirirLockFuente($idActual)) {
-                try {
-                    self::ingestarFuente($idActual);
-                } catch (\Throwable $errorIngesta) {
-                    // Silenciamos: el log de la fuente ya capturó el
-                    // detalle y no queremos que un fallo aislado mate
-                    // todo el lote.
-                    unset($errorIngesta);
-                } finally {
-                    self::liberarLockFuente($idActual);
-                }
-            }
-
-            $fuentesIntentadasEnLote++;
-            $contadorEnRonda = self::incrementarContadorRondaAtomico();
-            if ($contadorEnRonda >= $maxPorRonda) {
-                self::resetearContadorRonda();
-                return;
-            }
-
-            $tiempoTranscurrido = microtime(true) - $tiempoInicioLote;
-            if ($fuentesIntentadasEnLote >= $maxPorLote || $tiempoTranscurrido >= $maxSegPorLote) {
-                $siguienteParaOtroEslabon = self::obtenerSiguienteFuenteParaCadena();
-                if ($siguienteParaOtroEslabon > 0) {
-                    self::agendarSiguienteEslabon($siguienteParaOtroEslabon);
-                    spawn_cron();
-                } else {
-                    self::resetearContadorRonda();
-                }
-                return;
-            }
-
-            $idActual = self::obtenerSiguienteFuenteParaCadena();
-        }
-
-        // Sin más fuentes pendientes (cuarentena/lock cubre el resto):
-        // cerramos la ronda.
-        self::resetearContadorRonda();
-    }
-
-    private static function agendarSiguienteEslabon(int $idFuente): void
-    {
-        wp_schedule_single_event(time() - 1, self::HOOK_ESLABON, [$idFuente]);
-    }
-
-    /**
-     * Adquiere lock por fuente. Atomicidad por `add_post_meta`:
-     * MySQL UNIQUE KEY (post_id, meta_key) garantiza que solo uno
-     * gana en concurrencia. Si la insert falla porque ya existe,
-     * comprobamos si el lock está vencido (>TTL) y lo robamos.
-     */
-    private static function adquirirLockFuente(int $idFuente): bool
-    {
-        $ahora = time();
-        $insertado = add_post_meta($idFuente, self::META_ESLABON_LOCK, (string) $ahora, true);
-        if ($insertado !== false) {
-            return true;
-        }
-        $previo = (int) get_post_meta($idFuente, self::META_ESLABON_LOCK, true);
-        if ($previo > 0 && ($ahora - $previo) < self::TTL_ESLABON_LOCK_SEG) {
-            return false;
-        }
-        update_post_meta($idFuente, self::META_ESLABON_LOCK, (string) $ahora);
-        return true;
-    }
-
-    private static function liberarLockFuente(int $idFuente): void
-    {
-        delete_post_meta($idFuente, self::META_ESLABON_LOCK);
-    }
-
-    /**
-     * Incremento atómico del contador de la ronda usando UPDATE en
-     * `wp_options`. `update_option` con valor string no es atómico,
-     * pero `$wpdb->query("UPDATE ... SET value = CAST(value AS UNSIGNED)+1")`
-     * sí lo es a nivel de fila MySQL. Si la opción no existe, la
-     * creamos a 1.
-     */
-    private static function incrementarContadorRondaAtomico(): int
-    {
-        global $wpdb;
-        $insertado = add_option(self::OPCION_CONTADOR_RONDA, '1', '', 'no');
-        if ($insertado) {
-            return 1;
-        }
-        $wpdb->query($wpdb->prepare(
-            "UPDATE {$wpdb->options}
-             SET option_value = CAST(option_value AS UNSIGNED) + 1
-             WHERE option_name = %s",
-            self::OPCION_CONTADOR_RONDA
-        ));
-        return (int) get_option(self::OPCION_CONTADOR_RONDA, '0');
-    }
-
-    private static function resetearContadorRonda(): void
-    {
-        delete_option(self::OPCION_CONTADOR_RONDA);
-    }
-
-    /**
-     * Devuelve el ID de la siguiente fuente a procesar en la cadena:
-     * la activa con `ultima_ingesta` más antigua (NULL primero) que NO
-     * esté en cuarentena ni con un log `running` reciente. Excluir
-     * cuarentena evita gastar eslabones en fuentes que sabemos que
-     * están descansando; excluir `running` evita pisar otra cadena
-     * concurrente que ya esté procesando la misma fuente.
-     */
-    private static function obtenerSiguienteFuenteParaCadena(): int
-    {
-        global $wpdb;
-        $tablaLogs = IngestLogTable::nombreCompleto();
-        $ahoraTimestamp = time();
-
-        $sql = $wpdb->prepare(
-            "SELECT p.ID
-             FROM {$wpdb->posts} p
-             LEFT JOIN {$wpdb->postmeta} m_active
-               ON m_active.post_id = p.ID
-              AND m_active.meta_key = '_fnh_active'
-             LEFT JOIN {$wpdb->postmeta} m_quar
-               ON m_quar.post_id = p.ID
-              AND m_quar.meta_key = %s
-             LEFT JOIN (
-                 SELECT source_id,
-                        MAX(started_at) AS ultimo,
-                        MAX(CASE WHEN status='running' THEN started_at END) AS ultimo_running
-                 FROM {$tablaLogs}
-                 GROUP BY source_id
-             ) ult ON ult.source_id = p.ID
-             WHERE p.post_type = %s
-               AND p.post_status = 'publish'
-               AND (m_active.meta_value = '1' OR m_active.meta_value IS NULL)
-               AND (m_quar.meta_value IS NULL OR CAST(m_quar.meta_value AS UNSIGNED) <= %d)
-               AND (ult.ultimo_running IS NULL
-                    OR ult.ultimo_running < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 10 MINUTE))
-             ORDER BY ult.ultimo ASC, p.ID ASC
-             LIMIT 1",
-            self::META_PROXIMO_INTENTO_TRAS,
-            Source::SLUG,
-            $ahoraTimestamp
-        );
-
-        return (int) ($wpdb->get_var($sql) ?? 0);
     }
 
     /**
@@ -735,6 +541,36 @@ final class FeedIngester
             $mapa[(string) $valor] = true;
         }
         return $mapa;
+    }
+
+    /**
+     * IDs de las fuentes activas (post_status=publish y meta `_fnh_active`
+     * a '1' o ausente). Las que tienen el meta a '0' se excluyen.
+     *
+     * @return list<int>
+     */
+    private static function obtenerIdsFuentesActivas(): array
+    {
+        $consulta = new \WP_Query([
+            'post_type'      => Source::SLUG,
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                'relation' => 'OR',
+                [
+                    'key'     => '_fnh_active',
+                    'value'   => '1',
+                    'compare' => '=',
+                ],
+                [
+                    'key'     => '_fnh_active',
+                    'compare' => 'NOT EXISTS',
+                ],
+            ],
+        ]);
+        return array_map('intval', $consulta->posts);
     }
 
     private static function existeItemConMeta(string $claveMeta, string $valorBuscado): bool
