@@ -144,6 +144,15 @@ final class FeedIngester
         }
 
         try {
+            // Quitamos el límite de tiempo del worker PHP y desacoplamos
+            // del cliente HTTP. Sin esto, el cron muere por
+            // `max_execution_time` (típicamente 30s) tras procesar 1-2
+            // fuentes lentas; con 281 fuentes activas la ronda nunca
+            // llega al final. La mayoría de hostings permiten ambos
+            // (los `@` silencian el warning si no se permite).
+            @set_time_limit(0);
+            @ignore_user_abort(true);
+
             // Reset del registro de peticiones por host: cada ingesta
             // global es una "ronda" independiente. Sin este reset, una
             // segunda ingesta en el mismo proceso PHP heredaría
@@ -463,28 +472,62 @@ final class FeedIngester
         return false;
     }
 
+    /**
+     * Devuelve los IDs de fuentes a procesar en esta ronda, ordenadas
+     * por antigüedad de su último log (las que llevan más tiempo sin
+     * probarse, primero) y limitadas a un máximo configurable.
+     *
+     * Por qué rotamos: con 281 fuentes activas, intentar procesarlas
+     * todas en cada ronda hace que un par de orígenes lentos consuman
+     * tanto tiempo que el worker PHP nunca llega al final, las últimas
+     * de la cola jamás se actualizan y el cron se queda atascado.
+     *
+     * Con un lote de 80 por ronda y cron cada 30 min, una fuente
+     * cualquiera se reintenta en peor caso cada ~2 horas — más que
+     * suficiente para un agregador de medios alternativos. Las que
+     * acumulan errores entran en cuarentena progresiva (5/10/20 errores
+     * → 1h/6h/24h) y dejan de quemar slots.
+     *
+     * Filtrable por `fnh_max_fuentes_por_ronda` para sitios que quieran
+     * priorizar latencia (más alto) o capacidad (más bajo).
+     */
     private static function obtenerIdsFuentesActivas(): array
     {
-        $consulta = new \WP_Query([
-            'post_type'      => Source::SLUG,
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'fields'         => 'ids',
-            'no_found_rows'  => true,
-            'meta_query'     => [
-                'relation' => 'OR',
-                [
-                    'key'     => '_fnh_active',
-                    'value'   => '1',
-                    'compare' => '=',
-                ],
-                [
-                    'key'     => '_fnh_active',
-                    'compare' => 'NOT EXISTS',
-                ],
-            ],
-        ]);
-        return array_map('intval', $consulta->posts);
+        global $wpdb;
+        $maximoPorRonda = (int) apply_filters('fnh_max_fuentes_por_ronda', 80);
+        if ($maximoPorRonda < 1) {
+            $maximoPorRonda = 80;
+        }
+        $tablaLogs = IngestLogTable::nombreCompleto();
+
+        // LEFT JOIN con un subquery que saca el último started_at por
+        // source_id. Las fuentes nunca ingestadas (NULL) salen las
+        // primeras gracias a `ORDER BY ... ASC` con NULL primero (es
+        // el comportamiento por defecto en MySQL para ASC).
+        // El filtro `_fnh_active` permite NOT EXISTS porque para
+        // fuentes nuevas el meta puede no estar fijado (defaults).
+        $sql = $wpdb->prepare(
+            "SELECT p.ID
+             FROM {$wpdb->posts} p
+             LEFT JOIN {$wpdb->postmeta} m_active
+               ON m_active.post_id = p.ID
+              AND m_active.meta_key = '_fnh_active'
+             LEFT JOIN (
+                 SELECT source_id, MAX(started_at) AS ultimo
+                 FROM {$tablaLogs}
+                 GROUP BY source_id
+             ) ult ON ult.source_id = p.ID
+             WHERE p.post_type = %s
+               AND p.post_status = 'publish'
+               AND (m_active.meta_value = '1' OR m_active.meta_value IS NULL)
+             ORDER BY ult.ultimo ASC, p.ID ASC
+             LIMIT %d",
+            Source::SLUG,
+            $maximoPorRonda
+        );
+
+        $ids = $wpdb->get_col($sql);
+        return array_map('intval', $ids);
     }
 
     /**

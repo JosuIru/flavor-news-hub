@@ -96,6 +96,16 @@ final class Plugin
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
         add_action(Scheduler::HOOK_CRON, [FeedIngester::class, 'ingestarTodasLasFuentesActivas']);
 
+        // Subimos el lock de wp-cron de 60s (default) a 600s. WP libera
+        // el lock pasado este TTL aunque el cron siga corriendo, lo que
+        // permite que un segundo request HTTP arranque otro wp-cron en
+        // paralelo y dispare hooks ya en ejecución. Con 281 fuentes
+        // activas y timeout 12s/feed la ronda real puede llegar a varios
+        // minutos; 60s era completamente insuficiente y provocaba que
+        // se solapasen rondas, una matase a la otra y los logs se
+        // quedasen en `running` sin cerrar.
+        add_filter('wp_cron_lock_timeout', static fn(): int => 600);
+
         // Precalentado de los transients que alimentan la pestaña
         // Sistema → Descargas. Los enganchamos al MISMO cron de
         // ingesta con prioridad 20 (la ingesta corre en 10), de
