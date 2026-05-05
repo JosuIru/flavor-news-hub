@@ -924,12 +924,16 @@ final class FeedIngester
         }
 
         $bypassSsl = self::dominioRequiereBypassSsl($hostFeed);
-        // Timeout corto (12s): orígenes lentos (Misión Verdad, España XR
-        // Tube vía PeerTube) podían tardar >25s y empujar el cron por
-        // encima de `max_execution_time`, dejando el log de la fuente en
-        // `running` para siempre. Con 12s, ni siquiera dos fuentes lentas
-        // seguidas alcanzan los 30s típicos del PHP-FPM. La fuente queda
-        // marcada como error y entra en cuarentena progresiva.
+        // Timeout corto (8s): orígenes lentos podían tardar >25s y dejar
+        // el log de la fuente en `running` para siempre. Sin embargo el
+        // `timeout` de wp_remote_get es CURLOPT_TIMEOUT total, lo que
+        // suele basta — pero NO siempre: si el servidor responde con
+        // bytes goteando (1 byte cada cierto tiempo, "slowloris-friendly"),
+        // o si DNS/SSL handshake cuelga sin respuesta, el timeout total
+        // puede no dispararse a tiempo. Aplicamos via `http_api_curl`
+        // límites más estrictos: connect timeout 5 s y low-speed
+        // (cualquier transferencia <100 B/s durante 8 s aborta). Solo
+        // aplicado a este request, desactivado al volver.
         $timeoutFeed = (int) apply_filters('fnh_feed_http_timeout_seg', 8);
         $args = [
             'timeout'     => $timeoutFeed,
@@ -939,7 +943,22 @@ final class FeedIngester
             'headers'     => $cabeceras,
         ];
 
-        $respuesta = wp_remote_get($urlFeed, $args);
+        $endurecedorCurl = static function ($curlHandle) use ($timeoutFeed): void {
+            // CONNECTTIMEOUT cubre DNS + handshake; lo dejamos en
+            // máximo 5s para que los 8s del total se reserven al
+            // transfer. LOW_SPEED corta conexiones donde el servidor
+            // responde a cuentagotas (algunos peerTube/yt-dlp behind
+            // Cloudflare hacen esto bajo carga).
+            curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, min(5, $timeoutFeed));
+            curl_setopt($curlHandle, CURLOPT_LOW_SPEED_LIMIT, 100);
+            curl_setopt($curlHandle, CURLOPT_LOW_SPEED_TIME, $timeoutFeed);
+        };
+        add_action('http_api_curl', $endurecedorCurl, 10, 1);
+        try {
+            $respuesta = wp_remote_get($urlFeed, $args);
+        } finally {
+            remove_action('http_api_curl', $endurecedorCurl, 10);
+        }
         if (is_wp_error($respuesta)) {
             return ['error' => $respuesta->get_error_message()];
         }
