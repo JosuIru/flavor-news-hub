@@ -214,7 +214,26 @@ final class FeedIngester
                     break;
                 }
 
-                $resumenFuente = self::ingestarFuente($idFuente);
+                try {
+                    $resumenFuente = self::ingestarFuente($idFuente);
+                } catch (\Throwable $excepcionFuente) {
+                    // Aislamos cualquier excepción no capturada en una
+                    // fuente concreta para que no tire la ronda entera:
+                    // registramos el origen y seguimos con la siguiente.
+                    $resumenGlobal['errors'][] = [
+                        'source_id' => $idFuente,
+                        'message'   => sprintf(
+                            'excepcion_no_capturada: %s',
+                            $excepcionFuente->getMessage()
+                        ),
+                    ];
+                    error_log(sprintf(
+                        '[FNH] Excepción no capturada ingestando fuente %d: %s',
+                        $idFuente,
+                        $excepcionFuente->getMessage()
+                    ));
+                    continue;
+                }
                 $resumenGlobal['sources_processed']++;
                 $resumenGlobal['items_new_total']     += $resumenFuente['items_new'];
                 $resumenGlobal['items_skipped_total'] += $resumenFuente['items_skipped'];

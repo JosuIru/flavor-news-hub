@@ -105,6 +105,12 @@ final class SourceSubmitEndpoint
                 'message' => __('La URL del feed no tiene un formato válido (debe empezar por http:// o https://).', 'flavor-news-hub'),
             ], 400);
         }
+        if (Source::idDeFuenteConFeedUrl($urlFeed) > 0) {
+            return new \WP_REST_Response([
+                'error'   => 'duplicate_feed_url',
+                'message' => __('Ya existe un medio registrado con esa URL de feed.', 'flavor-news-hub'),
+            ], 409);
+        }
 
         $tipoFeed = sanitize_key((string) $request->get_param('feed_type'));
         if (!in_array($tipoFeed, self::TIPOS_FEED_PERMITIDOS, true)) {

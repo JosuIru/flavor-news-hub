@@ -341,6 +341,25 @@ final class SourceMetaBox
         if (!array_key_exists($tipoFeed, self::TIPOS_FEED_DISPONIBLES)) {
             $tipoFeed = 'rss';
         }
+
+        // Anti-duplicados: si la URL del feed ya está registrada en otra
+        // fuente, no la persistimos y dejamos un aviso transitorio para
+        // mostrarlo en el render siguiente. Conserva la URL anterior.
+        if ($urlFeed !== '') {
+            $idDuplicado = Source::idDeFuenteConFeedUrl($urlFeed, $idPost);
+            if ($idDuplicado > 0) {
+                set_transient(
+                    'fnh_source_aviso_dup_' . $idPost,
+                    sprintf(
+                        /* translators: %d: ID del medio existente con la misma URL. */
+                        __('La URL del feed ya está registrada en el medio #%d. No se ha actualizado.', 'flavor-news-hub'),
+                        $idDuplicado
+                    ),
+                    60
+                );
+                $urlFeed = (string) get_post_meta($idPost, '_fnh_feed_url', true);
+            }
+        }
         $urlSitio = isset($_POST['fnh_website_url']) ? esc_url_raw((string) wp_unslash($_POST['fnh_website_url'])) : '';
         $cadenaIdiomas = isset($_POST['fnh_languages']) ? sanitize_text_field((string) wp_unslash($_POST['fnh_languages'])) : '';
         $listaIdiomas = array_values(array_filter(array_map(
@@ -360,5 +379,31 @@ final class SourceMetaBox
         update_post_meta($idPost, '_fnh_ownership', $propiedad);
         update_post_meta($idPost, '_fnh_editorial_note', $lineaEditorial);
         update_post_meta($idPost, '_fnh_active', $activo);
+    }
+
+    /**
+     * Muestra el aviso de feed_url duplicado dejado por `guardar()` cuando
+     * se intentó re-guardar una fuente con una URL ya registrada en otra.
+     */
+    public static function mostrarAvisoDuplicado(): void
+    {
+        $pantalla = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$pantalla || $pantalla->post_type !== Source::SLUG || $pantalla->base !== 'post') {
+            return;
+        }
+        $idPost = isset($_GET['post']) ? (int) $_GET['post'] : 0;
+        if ($idPost <= 0) {
+            return;
+        }
+        $clave = 'fnh_source_aviso_dup_' . $idPost;
+        $mensaje = get_transient($clave);
+        if ($mensaje === false || $mensaje === '') {
+            return;
+        }
+        delete_transient($clave);
+        printf(
+            '<div class="notice notice-error"><p>%s</p></div>',
+            esc_html((string) $mensaje)
+        );
     }
 }

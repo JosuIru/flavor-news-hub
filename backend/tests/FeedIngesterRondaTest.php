@@ -40,6 +40,7 @@ final class FeedIngesterRondaTest extends WP_UnitTestCase
     {
         remove_filter('pre_http_request', [$this, 'interceptarHttp'], 10);
         remove_all_filters('fnh_max_seg_por_ronda');
+        remove_all_filters('fnh_max_items_per_ingest');
         parent::tear_down();
     }
 
@@ -399,6 +400,129 @@ final class FeedIngesterRondaTest extends WP_UnitTestCase
 
         $contadorPosterior = get_post_meta($idFuente, FeedIngester::META_ERRORES_CONSECUTIVOS, true);
         $this->assertSame('', $contadorPosterior, 'El 304 debe haber borrado el contador de errores previo.');
+    }
+
+    public function test_cap_default_50_recorta_a_los_50_items_mas_recientes(): void
+    {
+        $idFuente = self::crearFuenteActiva('https://example.test/feed-grande.xml');
+        $cantidadItemsEnFeed = 60;
+
+        $this->rutasMock = [
+            'https://example.test/feed-grande.xml' => [
+                'type' => 'ok',
+                'body' => self::cuerpoFeedConNItems('grande', $cantidadItemsEnFeed),
+            ],
+        ];
+
+        $resumen = FeedIngester::ingestarTodasLasFuentesActivas();
+
+        $this->assertSame(1, $resumen['sources_processed']);
+        $this->assertSame(
+            50,
+            $resumen['items_new_total'],
+            'Con el cap por defecto 50, un feed de 60 items debe insertar exactamente 50.'
+        );
+
+        // Los 50 más recientes son los de índice 10..59 (fechas más
+        // recientes en el helper). Los 0..9 son los más antiguos y NO
+        // deben estar en BD.
+        $itemsDeLaFuente = get_posts([
+            'post_type'      => Item::SLUG,
+            'posts_per_page' => -1,
+            'meta_query'     => [['key' => '_fnh_source_id', 'value' => $idFuente]],
+            'fields'         => 'ids',
+        ]);
+        $this->assertCount(50, $itemsDeLaFuente);
+
+        global $wpdb;
+        $guidsImportados = $wpdb->get_col($wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->postmeta}
+              WHERE meta_key = '_fnh_guid'
+                AND post_id IN (" . implode(',', array_fill(0, count($itemsDeLaFuente), '%d')) . ")",
+            ...$itemsDeLaFuente
+        ));
+        sort($guidsImportados);
+
+        // Los 50 GUIDs más recientes: índice 10..59.
+        $guidsEsperados = [];
+        for ($indice = 10; $indice < $cantidadItemsEnFeed; $indice++) {
+            $guidsEsperados[] = sprintf('fnh-grande-%03d', $indice);
+        }
+        sort($guidsEsperados);
+
+        $this->assertSame(
+            $guidsEsperados,
+            $guidsImportados,
+            'Los 50 items conservados deben ser los más recientes (índices 10..59).'
+        );
+    }
+
+    public function test_filtro_max_items_per_ingest_permite_subir_el_cap(): void
+    {
+        $idFuente = self::crearFuenteActiva('https://example.test/feed-cap-subido.xml');
+        $cantidadItemsEnFeed = 60;
+
+        $this->rutasMock = [
+            'https://example.test/feed-cap-subido.xml' => [
+                'type' => 'ok',
+                'body' => self::cuerpoFeedConNItems('subido', $cantidadItemsEnFeed),
+            ],
+        ];
+
+        // Subimos el cap a 100: el feed entero (60) debe entrar en BD.
+        add_filter('fnh_max_items_per_ingest', static fn() => 100);
+
+        $resumen = FeedIngester::ingestarTodasLasFuentesActivas();
+
+        $this->assertSame(1, $resumen['sources_processed']);
+        $this->assertSame(
+            $cantidadItemsEnFeed,
+            $resumen['items_new_total'],
+            'Con el filtro elevando el cap a 100, los 60 items del feed deben ingestar entero.'
+        );
+
+        $itemsDeLaFuente = get_posts([
+            'post_type'      => Item::SLUG,
+            'posts_per_page' => -1,
+            'meta_query'     => [['key' => '_fnh_source_id', 'value' => $idFuente]],
+            'fields'         => 'ids',
+        ]);
+        $this->assertCount($cantidadItemsEnFeed, $itemsDeLaFuente);
+    }
+
+    /**
+     * Genera un cuerpo de feed RSS con N items distintos. Las fechas son
+     * monótonamente crecientes con el índice — el item de índice más alto
+     * es el más reciente, así que SimplePie (orden desc por fecha) lo pone
+     * primero al servir `get_items()`.
+     */
+    private static function cuerpoFeedConNItems(string $sufijo, int $cantidadItems): string
+    {
+        $bloquesItem = [];
+        $tsBase = strtotime('2026-04-20 08:00:00 UTC');
+        for ($indice = 0; $indice < $cantidadItems; $indice++) {
+            $fechaPub = gmdate('D, d M Y H:i:s', $tsBase + $indice * 60) . ' +0000';
+            $bloquesItem[] = sprintf(
+                "<item>\n"
+                . "<title>Noticia %1\$03d de %2\$s</title>\n"
+                . "<link>https://example.test/%2\$s/articulo-%1\$03d</link>\n"
+                . "<guid isPermaLink=\"false\">fnh-%2\$s-%1\$03d</guid>\n"
+                . "<pubDate>%3\$s</pubDate>\n"
+                . "<description>Cuerpo del item %1\$03d.</description>\n"
+                . "</item>",
+                $indice,
+                $sufijo,
+                $fechaPub
+            );
+        }
+
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            . "<rss version=\"2.0\"><channel>\n"
+            . "<title>Feed grande {$sufijo}</title>\n"
+            . "<link>https://example.test/{$sufijo}</link>\n"
+            . "<description>Feed sintetico para tests del cap.</description>\n"
+            . implode("\n", $bloquesItem)
+            . "\n</channel></rss>";
     }
 
     private static function crearFuenteActiva(string $urlFeed): int

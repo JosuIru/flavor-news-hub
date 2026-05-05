@@ -51,4 +51,37 @@ final class Source
             'map_meta_cap'        => true,
         ]);
     }
+
+    /**
+     * Busca si ya existe otra fuente con la misma URL de feed. Devuelve el ID
+     * de la primera coincidencia o 0 si no hay duplicado. Excluye trash y,
+     * opcionalmente, un ID concreto (para no falsear positivos al re-guardar
+     * la propia fuente desde el editor).
+     */
+    public static function idDeFuenteConFeedUrl(string $urlFeed, int $idExcluir = 0): int
+    {
+        $urlNormalizada = trim($urlFeed);
+        if ($urlNormalizada === '') {
+            return 0;
+        }
+
+        global $wpdb;
+        $consulta = $wpdb->prepare(
+            "SELECT pm.post_id
+               FROM {$wpdb->postmeta} pm
+               INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+              WHERE pm.meta_key = %s
+                AND pm.meta_value = %s
+                AND p.post_type = %s
+                AND p.post_status != 'trash'
+                AND pm.post_id != %d
+              LIMIT 1",
+            '_fnh_feed_url',
+            $urlNormalizada,
+            self::SLUG,
+            $idExcluir
+        );
+        $idEncontrado = $wpdb->get_var($consulta);
+        return $idEncontrado !== null ? (int) $idEncontrado : 0;
+    }
 }

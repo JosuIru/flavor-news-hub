@@ -52,6 +52,9 @@ final class AdminController
         // Defaults de source: se aplican DESPUÉS del save del metabox.
         add_action('save_post_' . Source::SLUG, [SourceDefaults::class, 'aplicarDefaults'], 20, 2);
 
+        // Aviso de feed_url duplicado (consumido tras un save bloqueado).
+        add_action('admin_notices', [SourceMetaBox::class, 'mostrarAvisoDuplicado']);
+
         // Ingest now: admin-post endpoint.
         add_action(IngestNowHandler::HOOK_ADMIN_POST, [IngestNowHandler::class, 'manejar']);
         add_action('admin_notices', [IngestNowHandler::class, 'mostrarAvisoTrasIngesta']);
