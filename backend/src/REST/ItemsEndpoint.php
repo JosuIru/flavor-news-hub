@@ -366,7 +366,8 @@ final class ItemsEndpoint
         // importadas vía seed que aún no habían pasado por el admin —
         // el endpoint devolvía lista vacía cuando se pedía
         // `?source=N` para una de esas. Misma lógica que
-        // FeedIngester::obtenerIdsFuentesActivas.
+        // FeedIngester::obtenerSiguienteFuenteParaCadena (filtro
+        // _fnh_active = 1 OR NULL).
         $consulta = new \WP_Query([
             'post_type'      => Source::SLUG,
             'post_status'    => 'publish',

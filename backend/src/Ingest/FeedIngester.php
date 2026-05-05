@@ -136,8 +136,12 @@ final class FeedIngester
      */
     /** Hook del eslabón de la cadena (1 fuente → la siguiente). */
     public const HOOK_ESLABON = 'fnh_ingest_eslabon';
-    /** Contador de fuentes procesadas en la ronda en curso. */
-    public const TRANSIENT_CONTADOR_RONDA = 'fnh_ronda_contador';
+    /** Contador atómico de fuentes procesadas en la ronda en curso (option). */
+    public const OPCION_CONTADOR_RONDA = 'fnh_ronda_contador';
+    /** Postmeta con timestamp del lock por fuente: evita procesar la misma 2 veces a la vez. */
+    public const META_ESLABON_LOCK = '_fnh_eslabon_lock';
+    /** TTL del lock por fuente (s): si más antiguo, se considera muerto y se roba. */
+    public const TTL_ESLABON_LOCK_SEG = 180;
 
     /**
      * Kickoff de la ronda. NO procesa fuentes; solo agenda el primer
@@ -174,7 +178,7 @@ final class FeedIngester
 
             // Reseteamos el contador de la ronda en curso: cada vez que
             // este kickoff se dispara, empezamos una nueva tanda.
-            delete_transient(self::TRANSIENT_CONTADOR_RONDA);
+            self::resetearContadorRonda();
 
             $primer = self::obtenerSiguienteFuenteParaCadena();
             if ($primer > 0) {
@@ -206,35 +210,111 @@ final class FeedIngester
         @ignore_user_abort(true);
         self::$ultimoRequestPorHost = [];
 
+        // Lock por fuente: si otra cadena concurrente ya está
+        // procesando esta fuente (race típica entre kickoff REST y
+        // cron natural), salimos en silencio. El TTL del lock cubre
+        // peor caso de eslabón con timeout; si está vencido, lo
+        // robamos asumiendo proceso muerto.
+        if (!self::adquirirLockFuente($idFuente)) {
+            // Aún así avanzamos la cadena con OTRA fuente — no
+            // queremos que la cadena muera porque una fuente esté
+            // ocupada en otro worker.
+            self::avanzarCadena();
+            return;
+        }
+
         try {
             self::ingestarFuente($idFuente);
         } catch (\Throwable $errorIngesta) {
             // Silenciamos: el log de la fuente ya capturó el detalle y
             // no queremos que un fallo encadene mata-cadena hacia abajo.
             unset($errorIngesta);
+        } finally {
+            self::liberarLockFuente($idFuente);
         }
 
-        $contadorEnRonda = (int) get_transient(self::TRANSIENT_CONTADOR_RONDA);
-        $contadorEnRonda++;
+        self::avanzarCadena();
+    }
+
+    /**
+     * Incrementa el contador de la ronda y, si no hemos llegado al tope,
+     * agenda el siguiente eslabón con la siguiente fuente.
+     */
+    private static function avanzarCadena(): void
+    {
+        $contadorEnRonda = self::incrementarContadorRondaAtomico();
         $maxPorRonda = (int) apply_filters('fnh_max_fuentes_por_ronda', 80);
         if ($contadorEnRonda >= $maxPorRonda) {
-            delete_transient(self::TRANSIENT_CONTADOR_RONDA);
+            self::resetearContadorRonda();
             return;
         }
-        set_transient(self::TRANSIENT_CONTADOR_RONDA, $contadorEnRonda, HOUR_IN_SECONDS);
 
         $siguiente = self::obtenerSiguienteFuenteParaCadena();
         if ($siguiente > 0) {
             self::agendarSiguienteEslabon($siguiente);
             spawn_cron();
         } else {
-            delete_transient(self::TRANSIENT_CONTADOR_RONDA);
+            self::resetearContadorRonda();
         }
     }
 
     private static function agendarSiguienteEslabon(int $idFuente): void
     {
         wp_schedule_single_event(time() - 1, self::HOOK_ESLABON, [$idFuente]);
+    }
+
+    /**
+     * Adquiere lock por fuente. Atomicidad por `add_post_meta`:
+     * MySQL UNIQUE KEY (post_id, meta_key) garantiza que solo uno
+     * gana en concurrencia. Si la insert falla porque ya existe,
+     * comprobamos si el lock está vencido (>TTL) y lo robamos.
+     */
+    private static function adquirirLockFuente(int $idFuente): bool
+    {
+        $ahora = time();
+        $insertado = add_post_meta($idFuente, self::META_ESLABON_LOCK, (string) $ahora, true);
+        if ($insertado !== false) {
+            return true;
+        }
+        $previo = (int) get_post_meta($idFuente, self::META_ESLABON_LOCK, true);
+        if ($previo > 0 && ($ahora - $previo) < self::TTL_ESLABON_LOCK_SEG) {
+            return false;
+        }
+        update_post_meta($idFuente, self::META_ESLABON_LOCK, (string) $ahora);
+        return true;
+    }
+
+    private static function liberarLockFuente(int $idFuente): void
+    {
+        delete_post_meta($idFuente, self::META_ESLABON_LOCK);
+    }
+
+    /**
+     * Incremento atómico del contador de la ronda usando UPDATE en
+     * `wp_options`. `update_option` con valor string no es atómico,
+     * pero `$wpdb->query("UPDATE ... SET value = CAST(value AS UNSIGNED)+1")`
+     * sí lo es a nivel de fila MySQL. Si la opción no existe, la
+     * creamos a 1.
+     */
+    private static function incrementarContadorRondaAtomico(): int
+    {
+        global $wpdb;
+        $insertado = add_option(self::OPCION_CONTADOR_RONDA, '1', '', 'no');
+        if ($insertado) {
+            return 1;
+        }
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->options}
+             SET option_value = CAST(option_value AS UNSIGNED) + 1
+             WHERE option_name = %s",
+            self::OPCION_CONTADOR_RONDA
+        ));
+        return (int) get_option(self::OPCION_CONTADOR_RONDA, '0');
+    }
+
+    private static function resetearContadorRonda(): void
+    {
+        delete_option(self::OPCION_CONTADOR_RONDA);
     }
 
     /**
@@ -531,64 +611,6 @@ final class FeedIngester
             if (str_ends_with($host, '.' . $dominio)) return true;
         }
         return false;
-    }
-
-    /**
-     * Devuelve los IDs de fuentes a procesar en esta ronda, ordenadas
-     * por antigüedad de su último log (las que llevan más tiempo sin
-     * probarse, primero) y limitadas a un máximo configurable.
-     *
-     * Por qué rotamos: con 281 fuentes activas, intentar procesarlas
-     * todas en cada ronda hace que un par de orígenes lentos consuman
-     * tanto tiempo que el worker PHP nunca llega al final, las últimas
-     * de la cola jamás se actualizan y el cron se queda atascado.
-     *
-     * Con un lote de 80 por ronda y cron cada 30 min, una fuente
-     * cualquiera se reintenta en peor caso cada ~2 horas — más que
-     * suficiente para un agregador de medios alternativos. Las que
-     * acumulan errores entran en cuarentena progresiva (5/10/20 errores
-     * → 1h/6h/24h) y dejan de quemar slots.
-     *
-     * Filtrable por `fnh_max_fuentes_por_ronda` para sitios que quieran
-     * priorizar latencia (más alto) o capacidad (más bajo).
-     */
-    private static function obtenerIdsFuentesActivas(): array
-    {
-        global $wpdb;
-        $maximoPorRonda = (int) apply_filters('fnh_max_fuentes_por_ronda', 80);
-        if ($maximoPorRonda < 1) {
-            $maximoPorRonda = 80;
-        }
-        $tablaLogs = IngestLogTable::nombreCompleto();
-
-        // LEFT JOIN con un subquery que saca el último started_at por
-        // source_id. Las fuentes nunca ingestadas (NULL) salen las
-        // primeras gracias a `ORDER BY ... ASC` con NULL primero (es
-        // el comportamiento por defecto en MySQL para ASC).
-        // El filtro `_fnh_active` permite NOT EXISTS porque para
-        // fuentes nuevas el meta puede no estar fijado (defaults).
-        $sql = $wpdb->prepare(
-            "SELECT p.ID
-             FROM {$wpdb->posts} p
-             LEFT JOIN {$wpdb->postmeta} m_active
-               ON m_active.post_id = p.ID
-              AND m_active.meta_key = '_fnh_active'
-             LEFT JOIN (
-                 SELECT source_id, MAX(started_at) AS ultimo
-                 FROM {$tablaLogs}
-                 GROUP BY source_id
-             ) ult ON ult.source_id = p.ID
-             WHERE p.post_type = %s
-               AND p.post_status = 'publish'
-               AND (m_active.meta_value = '1' OR m_active.meta_value IS NULL)
-             ORDER BY ult.ultimo ASC, p.ID ASC
-             LIMIT %d",
-            Source::SLUG,
-            $maximoPorRonda
-        );
-
-        $ids = $wpdb->get_col($sql);
-        return array_map('intval', $ids);
     }
 
     /**

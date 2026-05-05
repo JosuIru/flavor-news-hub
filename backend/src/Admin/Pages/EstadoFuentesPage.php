@@ -76,6 +76,13 @@ final class EstadoFuentesPage
         global $wpdb;
         $logsTabla = IngestLogTable::nombreCompleto();
 
+        // GROUP_CONCAT trunca a `group_concat_max_len` (default 1024).
+        // Mensajes de error de SimplePie/cURL pueden superar fácilmente
+        // ese tope y dejar `SUBSTRING_INDEX(..., 0x1f, 1)` cortando un
+        // string sin separador. Subimos el límite SOLO para esta sesión
+        // (no afecta a otras conexiones del pool).
+        $wpdb->query('SET SESSION group_concat_max_len = 65535');
+
         $sql = $wpdb->prepare(
             "SELECT
                 p.ID                          AS source_id,
