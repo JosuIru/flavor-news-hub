@@ -95,6 +95,9 @@ final class Plugin
         // Ingesta: declaración de intervalo y enganche del job.
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
         add_action(Scheduler::HOOK_CRON, [FeedIngester::class, 'ingestarTodasLasFuentesActivas']);
+        // Eslabón individual de la cadena: cada fuente en su propio
+        // sub-request wp-cron para no compartir max_execution_time.
+        add_action(FeedIngester::HOOK_ESLABON, [FeedIngester::class, 'procesarEslabonCadena'], 10, 1);
 
         // Subimos el lock de wp-cron de 60s (default) a 600s. WP libera
         // el lock pasado este TTL aunque el cron siga corriendo, lo que

@@ -134,6 +134,28 @@ final class FeedIngester
      *   errors?:list<array{source_id:int,message:string}>
      * }
      */
+    /** Hook del eslabón de la cadena (1 fuente → la siguiente). */
+    public const HOOK_ESLABON = 'fnh_ingest_eslabon';
+    /** Contador de fuentes procesadas en la ronda en curso. */
+    public const TRANSIENT_CONTADOR_RONDA = 'fnh_ronda_contador';
+
+    /**
+     * Kickoff de la ronda. NO procesa fuentes; solo agenda el primer
+     * eslabón de la cadena y vuelve. Cada eslabón es un wp-cron event
+     * single que procesa UNA fuente en su propio sub-request HTTP y al
+     * terminar agenda el siguiente. Si un eslabón muere por timeout
+     * del worker, el siguiente lo recupera (huérfanos) y continúa.
+     *
+     * Antes esto era un bucle síncrono sobre 80+ fuentes en un solo
+     * proceso PHP. En hostings con `request_terminate_timeout` o
+     * `proxy_read_timeout` bajos, el proceso moría tras 1-2 fuentes y
+     * el resto nunca se procesaba (cron atascado eternamente).
+     *
+     * Ventaja del fan-out: cada fuente cuenta con todo el límite del
+     * worker para sí. Desventaja: serializa (1 a la vez) en lugar de
+     * paralelizar; pero con 80 fuentes × ~5s = 7 min por ronda es
+     * aceptable.
+     */
     public static function ingestarTodasLasFuentesActivas(): array
     {
         if (!self::adquirirLock()) {
@@ -144,82 +166,121 @@ final class FeedIngester
         }
 
         try {
-            // Quitamos el límite de tiempo del worker PHP y desacoplamos
-            // del cliente HTTP. Sin esto, el cron muere por
-            // `max_execution_time` (típicamente 30s) tras procesar 1-2
-            // fuentes lentas; con 281 fuentes activas la ronda nunca
-            // llega al final. La mayoría de hostings permiten ambos
-            // (los `@` silencian el warning si no se permite).
-            @set_time_limit(0);
+            @set_time_limit(60);
             @ignore_user_abort(true);
 
-            // Reset del registro de peticiones por host: cada ingesta
-            // global es una "ronda" independiente. Sin este reset, una
-            // segunda ingesta en el mismo proceso PHP heredaría
-            // timestamps obsoletos y aplicaría throttles innecesarios.
             self::$ultimoRequestPorHost = [];
-
-            // Recuperación de logs huérfanos: si en rondas anteriores el
-            // proceso PHP murió por `max_execution_time` antes de cerrar
-            // el log de la fuente que tocaba, ese log queda en `running`
-            // para siempre y la fuente se reintenta cada ronda con el
-            // mismo desenlace. Aquí marcamos como `error` cualquier log
-            // `running` con >5min de antigüedad y sumamos error a la
-            // fuente correspondiente para que entre en cuarentena
-            // progresiva. El lock global garantiza que no pisamos un
-            // log legítimo de una ronda en curso.
             self::recuperarLogsHuerfanos();
 
-            $idsFuentesActivas = self::obtenerIdsFuentesActivas();
-            $resumenGlobal = [
+            // Reseteamos el contador de la ronda en curso: cada vez que
+            // este kickoff se dispara, empezamos una nueva tanda.
+            delete_transient(self::TRANSIENT_CONTADOR_RONDA);
+
+            $primer = self::obtenerSiguienteFuenteParaCadena();
+            if ($primer > 0) {
+                self::agendarSiguienteEslabon($primer);
+                spawn_cron();
+            }
+            return [
                 'sources_processed'   => 0,
                 'items_new_total'     => 0,
                 'items_skipped_total' => 0,
                 'errors'              => [],
+                'chain_started_with'  => $primer,
             ];
-
-            $totalFuentes = count($idsFuentesActivas);
-            foreach ($idsFuentesActivas as $indice => $idFuente) {
-                $resumenFuente = self::ingestarFuente($idFuente);
-                $resumenGlobal['sources_processed']++;
-                $resumenGlobal['items_new_total']     += $resumenFuente['items_new'];
-                $resumenGlobal['items_skipped_total'] += $resumenFuente['items_skipped'];
-                if ($resumenFuente['error'] !== '') {
-                    $resumenGlobal['errors'][] = [
-                        'source_id' => $idFuente,
-                        'message'   => $resumenFuente['error'],
-                    ];
-                }
-                // Jitter entre fuentes (no después de la última, que no
-                // sirve de nada). Default 0: en producción real el jitter
-                // (200-600ms × 281 fuentes ≈ +110s) empujaba el cron por
-                // encima de `max_execution_time` del request HTTP que
-                // dispara wp-cron — el proceso moría antes de cerrar el
-                // log de la fuente actual y la entrada quedaba en
-                // `running` para siempre, bloqueando todas las fuentes
-                // posteriores en la cola.
-                //
-                // El throttle por host (1.5s entre peticiones al mismo
-                // host) ya cubre el caso YouTube/Cloudflare; añadir
-                // jitter global no aportaba lo suficiente para
-                // justificar el riesgo. Lo mantengo detrás de un filtro
-                // por si en algún sitio concreto vuelve a hacer falta:
-                //   add_filter('fnh_jitter_entre_fuentes_microseg',
-                //     fn() => random_int(200_000, 600_000));
-                if ($indice < $totalFuentes - 1) {
-                    $microsegEspera = (int) apply_filters(
-                        'fnh_jitter_entre_fuentes_microseg',
-                        0
-                    );
-                    if ($microsegEspera > 0) {
-                        usleep($microsegEspera);
-                    }
-                }
-            }
-            return $resumenGlobal;
         } finally {
             self::liberarLock();
         }
+    }
+
+    /**
+     * Hook handler de cada eslabón de la cadena. Procesa UNA fuente y
+     * agenda el siguiente eslabón si quedan fuentes y no hemos llegado
+     * al tope por ronda. Cada llamada se ejecuta en su propio sub-
+     * request de wp-cron, así que dispone del max_execution_time
+     * completo y un timeout en una fuente NO afecta a las demás.
+     */
+    public static function procesarEslabonCadena(int $idFuente): void
+    {
+        @set_time_limit(60);
+        @ignore_user_abort(true);
+        self::$ultimoRequestPorHost = [];
+
+        try {
+            self::ingestarFuente($idFuente);
+        } catch (\Throwable $errorIngesta) {
+            // Silenciamos: el log de la fuente ya capturó el detalle y
+            // no queremos que un fallo encadene mata-cadena hacia abajo.
+            unset($errorIngesta);
+        }
+
+        $contadorEnRonda = (int) get_transient(self::TRANSIENT_CONTADOR_RONDA);
+        $contadorEnRonda++;
+        $maxPorRonda = (int) apply_filters('fnh_max_fuentes_por_ronda', 80);
+        if ($contadorEnRonda >= $maxPorRonda) {
+            delete_transient(self::TRANSIENT_CONTADOR_RONDA);
+            return;
+        }
+        set_transient(self::TRANSIENT_CONTADOR_RONDA, $contadorEnRonda, HOUR_IN_SECONDS);
+
+        $siguiente = self::obtenerSiguienteFuenteParaCadena();
+        if ($siguiente > 0) {
+            self::agendarSiguienteEslabon($siguiente);
+            spawn_cron();
+        } else {
+            delete_transient(self::TRANSIENT_CONTADOR_RONDA);
+        }
+    }
+
+    private static function agendarSiguienteEslabon(int $idFuente): void
+    {
+        wp_schedule_single_event(time() - 1, self::HOOK_ESLABON, [$idFuente]);
+    }
+
+    /**
+     * Devuelve el ID de la siguiente fuente a procesar en la cadena:
+     * la activa con `ultima_ingesta` más antigua (NULL primero) que NO
+     * esté en cuarentena ni con un log `running` reciente. Excluir
+     * cuarentena evita gastar eslabones en fuentes que sabemos que
+     * están descansando; excluir `running` evita pisar otra cadena
+     * concurrente que ya esté procesando la misma fuente.
+     */
+    private static function obtenerSiguienteFuenteParaCadena(): int
+    {
+        global $wpdb;
+        $tablaLogs = IngestLogTable::nombreCompleto();
+        $ahoraTimestamp = time();
+
+        $sql = $wpdb->prepare(
+            "SELECT p.ID
+             FROM {$wpdb->posts} p
+             LEFT JOIN {$wpdb->postmeta} m_active
+               ON m_active.post_id = p.ID
+              AND m_active.meta_key = '_fnh_active'
+             LEFT JOIN {$wpdb->postmeta} m_quar
+               ON m_quar.post_id = p.ID
+              AND m_quar.meta_key = %s
+             LEFT JOIN (
+                 SELECT source_id,
+                        MAX(started_at) AS ultimo,
+                        MAX(CASE WHEN status='running' THEN started_at END) AS ultimo_running
+                 FROM {$tablaLogs}
+                 GROUP BY source_id
+             ) ult ON ult.source_id = p.ID
+             WHERE p.post_type = %s
+               AND p.post_status = 'publish'
+               AND (m_active.meta_value = '1' OR m_active.meta_value IS NULL)
+               AND (m_quar.meta_value IS NULL OR CAST(m_quar.meta_value AS UNSIGNED) <= %d)
+               AND (ult.ultimo_running IS NULL
+                    OR ult.ultimo_running < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 10 MINUTE))
+             ORDER BY ult.ultimo ASC, p.ID ASC
+             LIMIT 1",
+            self::META_PROXIMO_INTENTO_TRAS,
+            Source::SLUG,
+            $ahoraTimestamp
+        );
+
+        return (int) ($wpdb->get_var($sql) ?? 0);
     }
 
     /**
@@ -679,7 +740,13 @@ final class FeedIngester
     private static function recuperarLogsHuerfanos(): void
     {
         global $wpdb;
-        $minutosUmbral = (int) apply_filters('fnh_log_huerfano_minutos', 5);
+        // Umbral conservador: si el lock global expiró pero el proceso
+        // PHP del cron previo sigue vivo (típico cuando el worker tarda
+        // entre 3-7 minutos en una ronda), mi código no debe marcar
+        // su log como huérfano — sería un falso positivo que dispararía
+        // cuarentena innecesaria. 10 min cubre el peor caso esperado
+        // de un cron lento sin matar logs todavía vivos.
+        $minutosUmbral = (int) apply_filters('fnh_log_huerfano_minutos', 10);
         $nombreTabla = IngestLogTable::nombreCompleto();
 
         $filasHuerfanas = $wpdb->get_results($wpdb->prepare(
@@ -710,7 +777,13 @@ final class FeedIngester
                 ['%s', '%s', '%s'],
                 ['%d']
             );
-            self::registrarErrorYProgramarReintento((int) $filaHuerfana->source_id);
+            // NO incrementamos el contador de errores consecutivos
+            // de la fuente: el huérfano puede ser falso positivo (otro
+            // worker PHP del cron previo aún vivo cuyo lock expiró), y
+            // penalizar a la fuente con cuarentena por una incidencia
+            // de infra es injusto. Si la fuente realmente falla, lo
+            // hará en su próximo intento real con un error HTTP
+            // legítimo y entrará en cuarentena por su propio mérito.
         }
     }
 
