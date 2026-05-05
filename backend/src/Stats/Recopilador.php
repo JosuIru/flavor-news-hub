@@ -283,6 +283,134 @@ final class Recopilador
     }
 
     /**
+     * Top-N fuentes con más logs de error en los últimos N días. A
+     * diferencia de `fuentesConError`, que mira sólo el ÚLTIMO log,
+     * esta cuenta acumulado: detecta fuentes que fallan
+     * intermitentemente (un día sí, otro no) — invisibles a la otra
+     * métrica si la última ronda fue success.
+     *
+     * @return list<array{nombre:string, errores:int, ultimo_error:string}>
+     */
+    public static function topFuentesPorErrores(int $tope = 10, int $dias = 7): array
+    {
+        global $wpdb;
+        $logsTabla = IngestLogTable::nombreCompleto();
+        $filas = $wpdb->get_results($wpdb->prepare(
+            "SELECT
+                il.source_id,
+                COUNT(*) AS errores,
+                MAX(il.started_at) AS ultimo_error,
+                p.post_title AS nombre
+             FROM {$logsTabla} il
+             INNER JOIN {$wpdb->posts} p ON p.ID = il.source_id
+             WHERE il.status = 'error'
+               AND il.started_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d DAY)
+               AND p.post_type = %s
+             GROUP BY il.source_id, p.post_title
+             ORDER BY errores DESC, ultimo_error DESC
+             LIMIT %d",
+            $dias, Source::SLUG, $tope
+        ), ARRAY_A);
+        $filas = is_array($filas) ? $filas : [];
+        return array_map(static fn(array $f) => [
+            // Anonimizamos: NO exponemos source_id porque este dato
+            // viaja en el endpoint público `/diagnostics`. El nombre
+            // legible es suficiente para diagnóstico.
+            'nombre'       => (string) $f['nombre'],
+            'errores'      => (int) $f['errores'],
+            'ultimo_error' => (string) ($f['ultimo_error'] ?? ''),
+        ], $filas);
+    }
+
+    /**
+     * Top-N fuentes con mayor latencia media (ms) en los últimos N
+     * días. Sólo cuenta logs `success` con `finished_at` no nulo —
+     * los `error` o `running` huérfanos no aportan latencia
+     * representativa.
+     *
+     * Útil para detectar feeds en degradación: cuando una fuente
+     * pasa de 2s a 6s media, suele ser preludio del timeout (8s) y
+     * de la cuarentena. Con esto se ven antes de que entren en
+     * cuarentena.
+     *
+     * @return list<array{nombre:string, latencia_media_ms:int, muestras:int}>
+     */
+    public static function topFuentesPorLatencia(int $tope = 10, int $dias = 7): array
+    {
+        global $wpdb;
+        $logsTabla = IngestLogTable::nombreCompleto();
+        $filas = $wpdb->get_results($wpdb->prepare(
+            "SELECT
+                il.source_id,
+                AVG(TIMESTAMPDIFF(MICROSECOND, il.started_at, il.finished_at) / 1000) AS latencia_media_ms,
+                COUNT(*) AS muestras,
+                p.post_title AS nombre
+             FROM {$logsTabla} il
+             INNER JOIN {$wpdb->posts} p ON p.ID = il.source_id
+             WHERE il.status = 'success'
+               AND il.finished_at IS NOT NULL
+               AND il.started_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d DAY)
+               AND p.post_type = %s
+             GROUP BY il.source_id, p.post_title
+             HAVING latencia_media_ms > 0
+             ORDER BY latencia_media_ms DESC
+             LIMIT %d",
+            $dias, Source::SLUG, $tope
+        ), ARRAY_A);
+        $filas = is_array($filas) ? $filas : [];
+        return array_map(static fn(array $f) => [
+            'nombre'            => (string) $f['nombre'],
+            'latencia_media_ms' => (int) round((float) $f['latencia_media_ms']),
+            'muestras'          => (int) $f['muestras'],
+        ], $filas);
+    }
+
+    /**
+     * Fuentes que tras N rondas exitosas en N días NO devolvieron NI
+     * UNA respuesta 304. Significa que ignoran nuestras cabeceras
+     * condicionales (`If-None-Match` / `If-Modified-Since`) y siempre
+     * obligan a re-parsear el cuerpo entero.
+     *
+     * Sirve para detectar candidatos a:
+     *   - Limitar la frecuencia de ingesta (no aporta nada bajar más)
+     *   - Implementar caché propio basado en hash del cuerpo
+     *   - Reportar al dueño del feed que su CDN no soporta validators
+     *
+     * Filtramos por `>= MIN_RONDAS` para no señalar fuentes recién
+     * añadidas que aún no acumulan historial representativo.
+     *
+     * @return list<array{nombre:string, rondas:int}>
+     */
+    public static function fuentesSinCabecerasCondicionales(int $tope = 10, int $dias = 7, int $minRondas = 3): array
+    {
+        global $wpdb;
+        $logsTabla = IngestLogTable::nombreCompleto();
+        $filas = $wpdb->get_results($wpdb->prepare(
+            "SELECT
+                il.source_id,
+                COUNT(*) AS total_rondas,
+                SUM(CASE WHEN il.http_status = 304 THEN 1 ELSE 0 END) AS rondas_304,
+                p.post_title AS nombre
+             FROM {$logsTabla} il
+             INNER JOIN {$wpdb->posts} p ON p.ID = il.source_id
+             WHERE il.status = 'success'
+               AND il.http_status > 0
+               AND il.started_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d DAY)
+               AND p.post_type = %s
+             GROUP BY il.source_id, p.post_title
+             HAVING total_rondas >= %d AND rondas_304 = 0
+             ORDER BY total_rondas DESC
+             LIMIT %d",
+            $dias, Source::SLUG, $minRondas, $tope
+        ), ARRAY_A);
+        $filas = is_array($filas) ? $filas : [];
+        return array_map(static fn(array $f) => [
+            'nombre' => (string) $f['nombre'],
+            'rondas' => (int) $f['total_rondas'],
+        ], $filas);
+    }
+
+    /**
      * Distribución de fuentes activas por tipo de feed (rss, youtube,
      * mastodon, podcast, video, atom). Útil para ver el reparto del
      * catálogo de un vistazo.

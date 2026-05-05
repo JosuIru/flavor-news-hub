@@ -39,6 +39,13 @@ final class IngestLogTable
         $nombreTabla = self::nombreCompleto();
         $collateCharset = $wpdb->get_charset_collate();
 
+        // `http_status`: código HTTP de la respuesta del origen (200,
+        // 304, 404, 500…). 0 indica que no llegó a haber respuesta
+        // HTTP (timeout, DNS, SSL, fuente tipo flavor_platform, etc.).
+        // Lo persistimos para poder calcular % de 304 por fuente sin
+        // tener que parsear el `error_message` (frágil: depende del
+        // string literal "Feed no modificado..."). SMALLINT cubre
+        // hasta 999, suficiente para HTTP estándar y extensiones.
         $sentenciaSql = "CREATE TABLE {$nombreTabla} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             source_id BIGINT UNSIGNED NOT NULL,
@@ -48,9 +55,11 @@ final class IngestLogTable
             items_new INT UNSIGNED NOT NULL DEFAULT 0,
             items_skipped INT UNSIGNED NOT NULL DEFAULT 0,
             error_message TEXT DEFAULT NULL,
+            http_status SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             PRIMARY KEY  (id),
             KEY idx_source_started (source_id, started_at),
-            KEY idx_status (status)
+            KEY idx_status (status),
+            KEY idx_http_status (http_status)
         ) {$collateCharset};";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';

@@ -65,6 +65,17 @@ final class Transients
      */
     public const RATE_LIMIT_SUBMITS_PUBLICOS = HOUR_IN_SECONDS;
 
+    /**
+     * Cache del bloque de top-N (errores 7d, latencia media 7d) que
+     * sirve `DiagnosticsEndpoint`. Son agregaciones sobre la tabla
+     * de logs — que en producción crece miles de filas al día — y
+     * el endpoint es público, así que cualquier crawler podría
+     * machacarlo. 5 min es suficientemente fresco para que un admin
+     * vigilando el `/diagnostics` vea cambios casi en directo, sin
+     * castigar a la BD.
+     */
+    public const CACHE_DIAGNOSTICS_TOP = 5 * MINUTE_IN_SECONDS;
+
     private function __construct()
     {
         // Sólo constantes — no instanciable.

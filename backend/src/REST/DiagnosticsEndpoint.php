@@ -7,6 +7,8 @@ use FlavorNewsHub\CPT\Item;
 use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Options\OptionsRepository;
+use FlavorNewsHub\Stats\Recopilador;
+use FlavorNewsHub\Support\Transients;
 
 /**
  * Endpoint de diagnóstico público para saber el estado real de la
@@ -20,6 +22,13 @@ use FlavorNewsHub\Options\OptionsRepository;
  */
 final class DiagnosticsEndpoint
 {
+    /**
+     * Transient con el bloque de top-N (errores 7d + latencia 7d).
+     * Se invalida cuando la purga diaria de logs corre, para que
+     * los rankings reflejen sólo logs vigentes.
+     */
+    public const TRANSIENT_TOP_METRICS = 'fnh_diag_top_metrics';
+
     public static function registrarRutas(): void
     {
         register_rest_route(RestController::NAMESPACE_REST, '/diagnostics', [
@@ -106,6 +115,12 @@ final class DiagnosticsEndpoint
         ));
         $retencionItems = (int) (OptionsRepository::todas()['item_retention_days'] ?? 90);
 
+        // Top-N agregado: errores 7d y latencia media 7d. Caché 5 min
+        // porque son agregaciones sobre la tabla de logs y el endpoint
+        // es público — un crawler curioso no debe poder dispararlas en
+        // bucle.
+        $topMetricas = self::obtenerTopMetricasCacheadas();
+
         return new \WP_REST_Response([
             // Versión del plugin que está realmente ejecutando este request.
             // Crítica para diferenciar "WP cree que está actualizado" de
@@ -124,7 +139,33 @@ final class DiagnosticsEndpoint
                 : null,
             'ahora_utc'               => gmdate('c'),
             'ultimos_logs'            => $ultimos,
+            'top_errores_7d'          => $topMetricas['errores'],
+            'top_latencia_7d'         => $topMetricas['latencia'],
+            'fuentes_sin_304_7d'      => $topMetricas['sin_304'],
         ], 200);
+    }
+
+    /**
+     * Devuelve `['errores' => [...], 'latencia' => [...]]` con caché
+     * de 5 min. El bundle se calcula y guarda como un solo transient
+     * porque ambas listas se sirven juntas y quien quiera invalidar
+     * sólo tiene que borrar una clave.
+     *
+     * @return array{errores: list<array>, latencia: list<array>}
+     */
+    private static function obtenerTopMetricasCacheadas(): array
+    {
+        $cache = get_transient(self::TRANSIENT_TOP_METRICS);
+        if (is_array($cache) && isset($cache['errores'], $cache['latencia'])) {
+            return $cache;
+        }
+        $datos = [
+            'errores'   => Recopilador::topFuentesPorErrores(10, 7),
+            'latencia'  => Recopilador::topFuentesPorLatencia(10, 7),
+            'sin_304'   => Recopilador::fuentesSinCabecerasCondicionales(10, 7, 3),
+        ];
+        set_transient(self::TRANSIENT_TOP_METRICS, $datos, Transients::CACHE_DIAGNOSTICS_TOP);
+        return $datos;
     }
 
     private static function normalizarIso(mixed $valor): ?string

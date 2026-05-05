@@ -147,6 +147,13 @@ final class Plugin
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [LogsCleanup::class, 'ejecutar']);
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [ItemsCleanup::class, 'ejecutar']);
         add_action(Scheduler::HOOK_CLEANUP_LOGS, [UsoApiCleanup::class, 'ejecutar']);
+        // Tras purgar logs antiguos, los rankings cacheados en
+        // `/diagnostics` (top errores 7d / latencia 7d) podrían reflejar
+        // filas ya borradas. Borramos su transient para que la próxima
+        // petición recalcule sobre datos vigentes.
+        add_action(Scheduler::HOOK_CLEANUP_LOGS, static function (): void {
+            delete_transient(\FlavorNewsHub\REST\DiagnosticsEndpoint::TRANSIENT_TOP_METRICS);
+        }, 50);
 
         // Job semanal: informe con stats de feeds (top activos, muertos,
         // errores, propuestas pendientes). Enganchado siempre — la propia

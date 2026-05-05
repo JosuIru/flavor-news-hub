@@ -106,6 +106,27 @@ final class FeedIngester
     private const UMBRAL_CUARENTENA_24H = 20;
 
     /**
+     * Latencia media móvil exponencial (EWMA) por fuente, en
+     * milisegundos. Se actualiza en `cerrarLog()` con α=0.3:
+     * `nueva = 0.3 × actual + 0.7 × histórica`. Reacciona en pocas
+     * rondas a una degradación pero no se sobresalta por un pico
+     * aislado (timeout puntual).
+     *
+     * Sirve para dos cosas:
+     *   1) Marcar una fuente como `degraded` cuando supera
+     *      `UMBRAL_DEGRADED_MS` y desmarcarla cuando baja de
+     *      `UMBRAL_RECOVERED_MS` (histéresis: evita oscilar entre
+     *      ambos estados ronda a ronda).
+     *   2) Diagnóstico admin: ver qué fuentes están a punto de
+     *      cuarentenarse por timeout antes de que ocurra.
+     */
+    public const META_LATENCIA_EWMA_MS = '_fnh_avg_latency_ms';
+    public const META_DEGRADED = '_fnh_degraded';
+    private const LATENCIA_EWMA_ALFA = 0.3;
+    private const UMBRAL_DEGRADED_MS = 6000;
+    private const UMBRAL_RECOVERED_MS = 4000;
+
+    /**
      * Jitter entre fuentes en una ingesta global (microsegundos).
      * El throttle por host (`INTERVALO_MINIMO_HOST_MICROSEG`) sólo
      * pausa cuando la siguiente fuente comparte host con la anterior;
@@ -242,6 +263,10 @@ final class FeedIngester
         $contadorNuevos = 0;
         $contadorDescartados = 0;
         $mensajeError = '';
+        // Marcamos t0 para medir latencia real (incluye HTTP + parseo +
+        // dedupe). La actualización de la EWMA se hace dentro de
+        // `cerrarLog` con el delta calculado en cada call site de abajo.
+        $tInicioFuente = microtime(true);
 
         $urlFeed = (string) get_post_meta($idFuente, '_fnh_feed_url', true);
         if ($urlFeed === '') {
@@ -299,6 +324,7 @@ final class FeedIngester
         //      sólo se encarga del parseo (vía `set_raw_data`), no del
         //      transporte.
         $resultadoHttp = self::fetchFeedHttp($idFuente, $urlFeed, $hostFeed);
+        $codigoHttpRespuesta = (int) ($resultadoHttp['http_status'] ?? 0);
         if (isset($resultadoHttp['not_modified'])) {
             // 304: feed inalterado desde la última ronda. Cerramos el
             // log como "success" con 0 items y un aviso explícito para
@@ -308,14 +334,17 @@ final class FeedIngester
                 'success',
                 0,
                 0,
-                'Feed no modificado desde el último fetch (304).'
+                'Feed no modificado desde el último fetch (304).',
+                $codigoHttpRespuesta
             );
+            self::actualizarLatenciaYDegraded($idFuente, $tInicioFuente);
             self::resetearContadorErrores($idFuente);
             return self::resumenFuente(0, 0, '', $idLog);
         }
         if (isset($resultadoHttp['error'])) {
             $mensajeError = $resultadoHttp['error'];
-            self::cerrarLog($idLog, 'error', 0, 0, $mensajeError);
+            self::cerrarLog($idLog, 'error', 0, 0, $mensajeError, $codigoHttpRespuesta);
+            self::actualizarLatenciaYDegraded($idFuente, $tInicioFuente);
             self::registrarErrorYProgramarReintento($idFuente);
             return self::resumenFuente(0, 0, $mensajeError, $idLog);
         }
@@ -349,7 +378,11 @@ final class FeedIngester
         $feedDescargado->init();
         if ($feedDescargado->error()) {
             $mensajeError = (string) $feedDescargado->error();
-            self::cerrarLog($idLog, 'error', 0, 0, $mensajeError);
+            // El HTTP fue 200 (llegamos hasta SimplePie), pero el body
+            // no parseó. Registramos el 200 igualmente: facilita
+            // distinguir "fuente caída" de "fuente devuelve XML roto".
+            self::cerrarLog($idLog, 'error', 0, 0, $mensajeError, $codigoHttpRespuesta);
+            self::actualizarLatenciaYDegraded($idFuente, $tInicioFuente);
             self::registrarErrorYProgramarReintento($idFuente);
             return self::resumenFuente(0, 0, $mensajeError, $idLog);
         }
@@ -431,7 +464,8 @@ final class FeedIngester
                 implode(' | ', $muestraErroresParseo)
             );
         }
-        self::cerrarLog($idLog, 'success', $contadorNuevos, $contadorDescartados, $mensajeAviso);
+        self::cerrarLog($idLog, 'success', $contadorNuevos, $contadorDescartados, $mensajeAviso, $codigoHttpRespuesta);
+        self::actualizarLatenciaYDegraded($idFuente, $tInicioFuente);
         self::resetearContadorErrores($idFuente);
         return self::resumenFuente($contadorNuevos, $contadorDescartados, $mensajeAviso, $idLog);
     }
@@ -591,12 +625,24 @@ final class FeedIngester
     {
         global $wpdb;
         $tablaLogs = IngestLogTable::nombreCompleto();
+        // Orden de procesamiento (de prioridad alta a baja):
+        //  1. Fuentes sin historial (lst.ultimo IS NULL) → estrenan
+        //     ronda; las nuevas no se quedan al final esperando.
+        //  2. NO degraded antes que degraded (m_deg.meta_value IS NULL
+        //     primero) → las rápidas usan el budget; las lentas no
+        //     bloquean el resto.
+        //  3. Dentro de cada grupo, ASC por última ingesta → rotación
+        //     equilibrada: la más antigua primero.
+        //  4. Desempate por p.ID ASC.
         $sql = $wpdb->prepare(
             "SELECT p.ID
              FROM {$wpdb->posts} p
              LEFT JOIN {$wpdb->postmeta} m_active
                ON m_active.post_id = p.ID
               AND m_active.meta_key = '_fnh_active'
+             LEFT JOIN {$wpdb->postmeta} m_deg
+               ON m_deg.post_id = p.ID
+              AND m_deg.meta_key = %s
              LEFT JOIN (
                  SELECT source_id, MAX(started_at) AS ultimo
                  FROM {$tablaLogs}
@@ -606,7 +652,11 @@ final class FeedIngester
              WHERE p.post_type = %s
                AND p.post_status = 'publish'
                AND (m_active.meta_value = '1' OR m_active.meta_value IS NULL)
-             ORDER BY lst.ultimo IS NULL DESC, lst.ultimo ASC, p.ID ASC",
+             ORDER BY lst.ultimo IS NULL DESC,
+                      m_deg.meta_value IS NOT NULL ASC,
+                      lst.ultimo ASC,
+                      p.ID ASC",
+            self::META_DEGRADED,
             Source::SLUG
         );
         $ids = $wpdb->get_col($sql);
@@ -806,12 +856,20 @@ final class FeedIngester
         return (int) $wpdb->insert_id;
     }
 
+    /**
+     * `$codigoHttp` es opcional para no romper call sites previos —
+     * default 0 significa "no aplica / no se llegó a respuesta HTTP"
+     * (p.ej. timeout, DNS, error de validación previo). Los casos
+     * que lo pasan son los que sí tuvieron respuesta del origen
+     * (200, 304, 4xx, 5xx).
+     */
     private static function cerrarLog(
         int $idLog,
         string $estadoFinal,
         int $contadorNuevos,
         int $contadorDescartados,
-        string $mensajeError
+        string $mensajeError,
+        int $codigoHttp = 0
     ): void {
         if ($idLog === 0) {
             return;
@@ -825,9 +883,10 @@ final class FeedIngester
                 'items_new'     => $contadorNuevos,
                 'items_skipped' => $contadorDescartados,
                 'error_message' => $mensajeError === '' ? null : $mensajeError,
+                'http_status'   => $codigoHttp,
             ],
             ['id' => $idLog],
-            ['%s', '%s', '%d', '%d', '%s'],
+            ['%s', '%s', '%d', '%d', '%s', '%d'],
             ['%d']
         );
     }
@@ -927,14 +986,54 @@ final class FeedIngester
     }
 
     /**
+     * Recalcula y persiste la latencia EWMA de la fuente y, según
+     * umbrales con histéresis, la marca o desmarca como `degraded`.
+     *
+     * Se llama desde `ingestarFuente` después de cerrar el log, sólo
+     * en los caminos donde sí hubo intento HTTP — los caminos como
+     * "feed_url vacío" o "flavor_platform" no aportan latencia
+     * representativa de un feed RSS.
+     *
+     * Histéresis: degraded en >6000ms, recovered al bajar de 4000ms.
+     * Sin la franja entre umbrales, una fuente justo en la frontera
+     * oscilaría entre los dos estados ronda a ronda — flapping
+     * inútil que confundiría a admin.
+     */
+    private static function actualizarLatenciaYDegraded(int $idFuente, float $tInicio): void
+    {
+        $latenciaMsActual = (int) round((microtime(true) - $tInicio) * 1000);
+        if ($latenciaMsActual <= 0) {
+            return;
+        }
+
+        $latenciaPrevia = (int) get_post_meta($idFuente, self::META_LATENCIA_EWMA_MS, true);
+        if ($latenciaPrevia <= 0) {
+            // Primera medición: arrancamos la EWMA con el valor actual.
+            $latenciaNueva = $latenciaMsActual;
+        } else {
+            $alfa = self::LATENCIA_EWMA_ALFA;
+            $latenciaNueva = (int) round(($alfa * $latenciaMsActual) + ((1 - $alfa) * $latenciaPrevia));
+        }
+        update_post_meta($idFuente, self::META_LATENCIA_EWMA_MS, $latenciaNueva);
+
+        $degradedActual = (string) get_post_meta($idFuente, self::META_DEGRADED, true);
+        $estaDegraded = $degradedActual === '1';
+        if (!$estaDegraded && $latenciaNueva > self::UMBRAL_DEGRADED_MS) {
+            update_post_meta($idFuente, self::META_DEGRADED, '1');
+        } elseif ($estaDegraded && $latenciaNueva < self::UMBRAL_RECOVERED_MS) {
+            delete_post_meta($idFuente, self::META_DEGRADED);
+        }
+    }
+
+    /**
      * Hace la petición HTTP del feed con cabeceras condicionales y
      * todas las cabeceras "de navegador real" que ya teníamos. La
      * llama `ingestarFuente` directamente — antes era SimplePie quien
      * hacía la petición vía `fetch_feed`.
      *
-     * @return array{not_modified: true}
-     *       | array{error: string}
-     *       | array{body: string, etag: string, last_modified: string}
+     * @return array{not_modified: true, http_status: int}
+     *       | array{error: string, http_status: int}
+     *       | array{body: string, etag: string, last_modified: string, http_status: int}
      */
     private static function fetchFeedHttp(int $idFuente, string $urlFeed, string $hostFeed): array
     {
@@ -1000,30 +1099,38 @@ final class FeedIngester
             remove_action('http_api_curl', $endurecedorCurl, 10);
         }
         if (is_wp_error($respuesta)) {
-            return ['error' => $respuesta->get_error_message()];
+            // 0 = no llegó a haber respuesta (timeout, DNS, SSL, etc.)
+            return ['error' => $respuesta->get_error_message(), 'http_status' => 0];
         }
 
         $codigoHttp = (int) wp_remote_retrieve_response_code($respuesta);
         if ($codigoHttp === 304) {
-            return ['not_modified' => true];
+            return ['not_modified' => true, 'http_status' => 304];
         }
         if ($codigoHttp >= 400 || $codigoHttp < 200) {
-            return ['error' => sprintf(
-                /* translators: %d = código HTTP */
-                __('HTTP %d devuelto por el origen del feed.', 'flavor-news-hub'),
-                $codigoHttp
-            )];
+            return [
+                'error' => sprintf(
+                    /* translators: %d = código HTTP */
+                    __('HTTP %d devuelto por el origen del feed.', 'flavor-news-hub'),
+                    $codigoHttp
+                ),
+                'http_status' => $codigoHttp,
+            ];
         }
 
         $cuerpo = (string) wp_remote_retrieve_body($respuesta);
         if ($cuerpo === '') {
-            return ['error' => __('El origen devolvió 200 pero con cuerpo vacío.', 'flavor-news-hub')];
+            return [
+                'error' => __('El origen devolvió 200 pero con cuerpo vacío.', 'flavor-news-hub'),
+                'http_status' => $codigoHttp,
+            ];
         }
 
         return [
             'body'          => $cuerpo,
             'etag'          => (string) wp_remote_retrieve_header($respuesta, 'etag'),
             'last_modified' => (string) wp_remote_retrieve_header($respuesta, 'last-modified'),
+            'http_status'   => $codigoHttp,
         ];
     }
 }
