@@ -134,6 +134,22 @@ final class FeedIngester
      *   errors?:list<array{source_id:int,message:string}>
      * }
      */
+    /**
+     * Tope total de segundos que UNA ronda gasta procesando fuentes
+     * antes de cortar y dejar el resto para la siguiente ronda. Con
+     * 354 fuentes a 3-5 s cada una, una ronda completa tardaría
+     * 20-30 min — inviable bajo `request_terminate_timeout` (60-120 s
+     * en hostings compartidos). Cortar a 50 s y reanudar en la
+     * siguiente ronda permite que TODAS las fuentes acaben siendo
+     * procesadas en varias rondas, sin morir a medias.
+     *
+     * Combinado con el orden ASC por última ingesta en
+     * `obtenerIdsFuentesActivas`, las fuentes rotan equilibradamente:
+     * las que más tiempo llevan sin procesarse van primero en cada
+     * ronda.
+     */
+    public const MAX_SEG_POR_RONDA = 50;
+
     public static function ingestarTodasLasFuentesActivas(): array
     {
         if (!self::adquirirLock()) {
@@ -145,19 +161,13 @@ final class FeedIngester
 
         try {
             // Reset del registro de peticiones por host: cada ingesta
-            // global es una "ronda" independiente. Sin este reset, una
-            // segunda ingesta en el mismo proceso PHP heredaría
-            // timestamps obsoletos y aplicaría throttles innecesarios.
+            // global es una "ronda" independiente.
             self::$ultimoRequestPorHost = [];
 
             // Recuperación de logs huérfanos: si en rondas anteriores el
             // proceso PHP murió por `max_execution_time` antes de cerrar
             // el log de la fuente que tocaba, ese log queda en `running`
-            // para siempre y la fuente se reintenta cada ronda con el
-            // mismo desenlace. Aquí marcamos como `error` cualquier log
-            // `running` con >umbral de antigüedad. El lock global
-            // garantiza que no pisamos un log legítimo de una ronda en
-            // curso.
+            // para siempre.
             self::recuperarLogsHuerfanos();
 
             $idsFuentesActivas = self::obtenerIdsFuentesActivas();
@@ -168,8 +178,21 @@ final class FeedIngester
                 'errors'              => [],
             ];
 
+            $tiempoInicioRonda = microtime(true);
+            $maxSegPorRonda = (int) apply_filters('fnh_max_seg_por_ronda', self::MAX_SEG_POR_RONDA);
             $totalFuentes = count($idsFuentesActivas);
             foreach ($idsFuentesActivas as $indice => $idFuente) {
+                // Budget de tiempo: si llevamos más de `MAX_SEG_POR_RONDA`,
+                // cortamos. Las fuentes restantes se procesarán en la
+                // próxima ronda — el orden ASC por última ingesta
+                // garantiza rotación equilibrada.
+                $tiempoTranscurrido = microtime(true) - $tiempoInicioRonda;
+                if ($tiempoTranscurrido >= $maxSegPorRonda) {
+                    $resumenGlobal['budget_exceeded'] = true;
+                    $resumenGlobal['sources_skipped'] = $totalFuentes - $indice;
+                    break;
+                }
+
                 $resumenFuente = self::ingestarFuente($idFuente);
                 $resumenGlobal['sources_processed']++;
                 $resumenGlobal['items_new_total']     += $resumenFuente['items_new'];
@@ -180,13 +203,6 @@ final class FeedIngester
                         'message'   => $resumenFuente['error'],
                     ];
                 }
-                // Jitter entre fuentes (no después de la última, que no
-                // sirve de nada). Default 0: el throttle por host
-                // (1.5s entre peticiones al mismo host) ya cubre
-                // YouTube/Cloudflare; añadir jitter global empuja el
-                // cron por encima de `max_execution_time`. Lo dejamos
-                // detrás de filtro por si en algún sitio concreto
-                // vuelve a hacer falta.
                 if ($indice < $totalFuentes - 1) {
                     $microsegEspera = (int) apply_filters(
                         'fnh_jitter_entre_fuentes_microseg',
@@ -314,6 +330,20 @@ final class FeedIngester
         // hacer HTTP — todo el transporte ya lo hicimos en `fetchFeedHttp`.
         // El charset se detecta del XML declaration o del BOM, no del
         // Content-Type del response (que tampoco tendríamos aquí).
+        //
+        // IMPORTANTE: WordPress carga SimplePie perezosamente; sólo
+        // está disponible si previamente alguien llamó a
+        // `fetch_feed()` o equivalente. En cron disparado vía
+        // wp-cron.php real (PHP-FPM con un sub-request fresco) la
+        // clase NO está cargada, y `new \SimplePie()` lanza un fatal
+        // sin entrar en el try/catch del bucle externo: el log queda
+        // en `running` para siempre y no se ve traza en debug.log
+        // (PHP-FPM oculta los stderr del worker por defecto). Forzamos
+        // la carga con la función oficial de WP que carga la
+        // dependencia correctamente.
+        if (!class_exists('SimplePie', false)) {
+            require_once ABSPATH . WPINC . '/class-simplepie.php';
+        }
         $feedDescargado = new \SimplePie();
         $feedDescargado->set_raw_data((string) $resultadoHttp['body']);
         $feedDescargado->init();
@@ -544,33 +574,43 @@ final class FeedIngester
     }
 
     /**
-     * IDs de las fuentes activas (post_status=publish y meta `_fnh_active`
-     * a '1' o ausente). Las que tienen el meta a '0' se excluyen.
+     * IDs de las fuentes activas, ordenadas por última ingesta ASC
+     * (las que más tiempo llevan sin procesarse, primero; NULL —
+     * jamás procesadas — antes de todas). Esto es CRÍTICO cuando
+     * la ronda se corta por `MAX_SEG_POR_RONDA`: garantiza rotación
+     * equilibrada en lugar de ejecutar siempre las mismas N
+     * primeras (orden alfabético por ID, p.ej.).
+     *
+     * Se hace en SQL crudo porque WP_Query no permite ordenar por
+     * un agregado de una tabla externa (la tabla de logs no es
+     * postmeta).
      *
      * @return list<int>
      */
     private static function obtenerIdsFuentesActivas(): array
     {
-        $consulta = new \WP_Query([
-            'post_type'      => Source::SLUG,
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'fields'         => 'ids',
-            'no_found_rows'  => true,
-            'meta_query'     => [
-                'relation' => 'OR',
-                [
-                    'key'     => '_fnh_active',
-                    'value'   => '1',
-                    'compare' => '=',
-                ],
-                [
-                    'key'     => '_fnh_active',
-                    'compare' => 'NOT EXISTS',
-                ],
-            ],
-        ]);
-        return array_map('intval', $consulta->posts);
+        global $wpdb;
+        $tablaLogs = IngestLogTable::nombreCompleto();
+        $sql = $wpdb->prepare(
+            "SELECT p.ID
+             FROM {$wpdb->posts} p
+             LEFT JOIN {$wpdb->postmeta} m_active
+               ON m_active.post_id = p.ID
+              AND m_active.meta_key = '_fnh_active'
+             LEFT JOIN (
+                 SELECT source_id, MAX(started_at) AS ultimo
+                 FROM {$tablaLogs}
+                 WHERE status IN ('success', 'error')
+                 GROUP BY source_id
+             ) lst ON lst.source_id = p.ID
+             WHERE p.post_type = %s
+               AND p.post_status = 'publish'
+               AND (m_active.meta_value = '1' OR m_active.meta_value IS NULL)
+             ORDER BY lst.ultimo IS NULL DESC, lst.ultimo ASC, p.ID ASC",
+            Source::SLUG
+        );
+        $ids = $wpdb->get_col($sql);
+        return array_map('intval', is_array($ids) ? $ids : []);
     }
 
     private static function existeItemConMeta(string $claveMeta, string $valorBuscado): bool
