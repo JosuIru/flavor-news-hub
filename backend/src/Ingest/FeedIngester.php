@@ -493,13 +493,17 @@ final class FeedIngester
         $maximoItemsPorEjecucion = (int) apply_filters('fnh_max_items_per_ingest', 50);
         $itemsDelFeed = $feedDescargado->get_items(0, $maximoItemsPorEjecucion);
 
-        // Errores de parseo: contamos cuántos items malformados saltamos
-        // y guardamos los primeros 3 mensajes para que el log dé pista
-        // sobre por qué se descartaron. Antes el catch silenciaba todo
-        // y un feed con 49/50 items malos parecía "ingesta exitosa, 1
-        // item nuevo" sin avisar al admin.
+        // Pre-parseo: normalizamos y filtramos vacíos primero, después
+        // consultamos en UNA sola query qué GUIDs/permalinks de este
+        // batch ya existen en BD. Antes hacíamos 2 SELECT por item
+        // (yaExisteItem → existeItemConMeta dos veces) — para 50 items
+        // y 12K items en BD eran 100 queries cada una con meta_query
+        // y JOIN. Con prefetch baja a 1 query.
         $contadorErroresParseo = 0;
         $muestraErroresParseo = [];
+        $itemsPreparados = [];
+        $guidsBatch = [];
+        $permalinksBatch = [];
         foreach ($itemsDelFeed as $itemFeed) {
             try {
                 $datosNormalizados = FeedItemParser::parsear($itemFeed);
@@ -513,13 +517,39 @@ final class FeedIngester
             if ($datosNormalizados['title'] === '' || $datosNormalizados['permalink'] === '') {
                 continue;
             }
-            if (self::yaExisteItem($datosNormalizados['guid'], $datosNormalizados['permalink'])) {
+            $itemsPreparados[] = $datosNormalizados;
+            if ($datosNormalizados['guid'] !== '') {
+                $guidsBatch[] = $datosNormalizados['guid'];
+            }
+            if ($datosNormalizados['permalink'] !== '') {
+                $permalinksBatch[] = $datosNormalizados['permalink'];
+            }
+        }
+
+        $guidsExistentes = self::prefetchValoresMetaExistentes('_fnh_guid', $guidsBatch);
+        $permalinksExistentes = self::prefetchValoresMetaExistentes('_fnh_original_url', $permalinksBatch);
+
+        foreach ($itemsPreparados as $datosNormalizados) {
+            $existeGuid = $datosNormalizados['guid'] !== ''
+                && isset($guidsExistentes[$datosNormalizados['guid']]);
+            $existePermalink = $datosNormalizados['permalink'] !== ''
+                && isset($permalinksExistentes[$datosNormalizados['permalink']]);
+            if ($existeGuid || $existePermalink) {
                 $contadorDescartados++;
                 continue;
             }
             $idItemCreado = self::insertarItem($idFuente, $datosNormalizados, $idsTematicasHeredadas);
             if ($idItemCreado > 0) {
                 $contadorNuevos++;
+                // Añadimos al set para evitar duplicados intra-batch:
+                // dos items del mismo feed pueden compartir GUID por
+                // bug de la fuente y no queremos insertar dos veces.
+                if ($datosNormalizados['guid'] !== '') {
+                    $guidsExistentes[$datosNormalizados['guid']] = true;
+                }
+                if ($datosNormalizados['permalink'] !== '') {
+                    $permalinksExistentes[$datosNormalizados['permalink']] = true;
+                }
             }
         }
 
@@ -629,6 +659,48 @@ final class FeedIngester
             return true;
         }
         return false;
+    }
+
+    /**
+     * Devuelve un mapa [valor => true] con los meta_value de la lista
+     * que YA existen en `wp_postmeta` para la clave dada y posts del
+     * tipo Item. Una sola query con IN(...) en lugar de N consultas
+     * individuales. Usado por la ingesta para dedupe en bloque por
+     * lote (típicamente 50 items por feed).
+     *
+     * @param string[] $valoresBuscados
+     * @return array<string,bool>
+     */
+    private static function prefetchValoresMetaExistentes(string $claveMeta, array $valoresBuscados): array
+    {
+        if (empty($valoresBuscados)) {
+            return [];
+        }
+        global $wpdb;
+        // Limpieza y dedupe local antes del IN(...).
+        $valoresUnicos = array_values(array_unique(array_filter(
+            $valoresBuscados,
+            static fn(string $v): bool => $v !== ''
+        )));
+        if (empty($valoresUnicos)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($valoresUnicos), '%s'));
+        $sql = $wpdb->prepare(
+            "SELECT pm.meta_value
+             FROM {$wpdb->postmeta} pm
+             INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+             WHERE pm.meta_key = %s
+               AND pm.meta_value IN ({$placeholders})
+               AND p.post_type = %s",
+            array_merge([$claveMeta], $valoresUnicos, [Item::SLUG])
+        );
+        $valoresEncontrados = $wpdb->get_col($sql);
+        $mapa = [];
+        foreach ($valoresEncontrados as $valor) {
+            $mapa[(string) $valor] = true;
+        }
+        return $mapa;
     }
 
     private static function existeItemConMeta(string $claveMeta, string $valorBuscado): bool
@@ -988,7 +1060,7 @@ final class FeedIngester
         // `running` para siempre. Con 12s, ni siquiera dos fuentes lentas
         // seguidas alcanzan los 30s típicos del PHP-FPM. La fuente queda
         // marcada como error y entra en cuarentena progresiva.
-        $timeoutFeed = (int) apply_filters('fnh_feed_http_timeout_seg', 12);
+        $timeoutFeed = (int) apply_filters('fnh_feed_http_timeout_seg', 8);
         $args = [
             'timeout'     => $timeoutFeed,
             'redirection' => 5,

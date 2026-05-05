@@ -99,15 +99,14 @@ final class Plugin
         // sub-request wp-cron para no compartir max_execution_time.
         add_action(FeedIngester::HOOK_ESLABON, [FeedIngester::class, 'procesarEslabonCadena'], 10, 1);
 
-        // Subimos el lock de wp-cron de 60s (default) a 600s. WP libera
-        // el lock pasado este TTL aunque el cron siga corriendo, lo que
-        // permite que un segundo request HTTP arranque otro wp-cron en
-        // paralelo y dispare hooks ya en ejecución. Con 281 fuentes
-        // activas y timeout 12s/feed la ronda real puede llegar a varios
-        // minutos; 60s era completamente insuficiente y provocaba que
-        // se solapasen rondas, una matase a la otra y los logs se
-        // quedasen en `running` sin cerrar.
-        add_filter('wp_cron_lock_timeout', static fn(): int => 600);
+        // (Antes filtrábamos `wp_cron_lock_timeout` a 600s para evitar
+        // que dos rondas se solapasen. Pero ese filtro también bloquea
+        // `spawn_cron`: WP guarda un transient `doing_cron` con ese TTL
+        // y mientras esté vivo NO arranca un nuevo sub-request, lo que
+        // dejaba el botón admin y el REST trigger sin efecto durante
+        // 10 min. Con la cadena de eslabones, cada eslabón dura
+        // segundos, no minutos — el default de 60s vuelve a ser
+        // razonable y permite disparos manuales.)
 
         // Precalentado de los transients que alimentan la pestaña
         // Sistema → Descargas. Los enganchamos al MISMO cron de
