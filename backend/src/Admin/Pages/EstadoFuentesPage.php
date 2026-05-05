@@ -25,6 +25,127 @@ final class EstadoFuentesPage
     public const SLUG = 'fnh-estado-fuentes';
 
     /**
+     * Caché del bundle de filas de la pantalla "Estado de fuentes".
+     * Sin esto, cada visita admin cuesta 1 query con 7 subqueries
+     * correlacionadas para 281 fuentes (≈2.000 SELECTs anidados),
+     * que hace timeout en hostings compartidos. La query optimizada
+     * baja eso a ~5 LEFT JOINs derivados, pero con un transient de
+     * 5 min las visitas repetidas son instantáneas. El cron invalida
+     * el cache al terminar (Plugin::arrancar registra el hook).
+     */
+    public const TRANSIENT_CACHE = 'fnh_estado_fuentes_filas';
+    public const TTL_CACHE_SEG = 300;
+
+    /** Hook idempotente para purgar el cache desde otros sitios. */
+    public static function purgarCache(): void
+    {
+        delete_transient(self::TRANSIENT_CACHE);
+    }
+
+    /**
+     * Devuelve las filas de fuentes activas con su actividad cacheada.
+     * Si el transient está vivo, devuelve directamente; si no, ejecuta
+     * la query optimizada y la cachea por TTL_CACHE_SEG.
+     *
+     * Optimizaciones frente a la versión anterior (subqueries
+     * correlacionadas):
+     *  - Items por fuente: una sola subquery derivada con GROUP BY que
+     *    cuenta total/7d/30d en una sola pasada (en lugar de 3 COUNT
+     *    correlacionados por fuente).
+     *  - Último log por fuente: subquery derivada con MAX(started_at) +
+     *    LEFT JOIN al log que coincide con ese MAX (en lugar de 2
+     *    correlated subqueries con ORDER BY/LIMIT 1 por fuente).
+     *  - Último error: igual pero filtrando los logs con error_message.
+     *  - feed_url, feed_type, territorio: LEFT JOINs directos a
+     *    postmeta en vez de subqueries inline.
+     *
+     * El número total de filas devueltas (281 fuentes) sigue siendo el
+     * mismo; lo que cambia es el coste de generarlas: de ~1967 SELECTs
+     * anidados a 5 LEFT JOINs sobre tablas pequeñas con índices
+     * existentes (postmeta(meta_key,meta_value) y la PK del post).
+     *
+     * @return list<array<string,mixed>>
+     */
+    private static function cargarFilasConCache(): array
+    {
+        $cacheado = get_transient(self::TRANSIENT_CACHE);
+        if (is_array($cacheado)) {
+            return $cacheado;
+        }
+
+        global $wpdb;
+        $logsTabla = IngestLogTable::nombreCompleto();
+
+        $sql = $wpdb->prepare(
+            "SELECT
+                p.ID                          AS source_id,
+                p.post_title                  AS nombre,
+                pm_url.meta_value             AS feed_url,
+                pm_type.meta_value            AS feed_type,
+                pm_terr.meta_value            AS territorio,
+                COALESCE(ipf.total_items, 0)  AS total_items,
+                COALESCE(ipf.items_7d, 0)     AS items_7d,
+                COALESCE(ipf.items_30d, 0)    AS items_30d,
+                ult.ultima_ingesta            AS ultima_ingesta,
+                ult.ultimo_status             AS ultimo_status,
+                ult_err.error_message         AS ultimo_error
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pma
+                ON pma.post_id = p.ID
+               AND pma.meta_key = '_fnh_active'
+               AND pma.meta_value = '1'
+             LEFT JOIN {$wpdb->postmeta} pm_url
+                ON pm_url.post_id = p.ID AND pm_url.meta_key = '_fnh_feed_url'
+             LEFT JOIN {$wpdb->postmeta} pm_type
+                ON pm_type.post_id = p.ID AND pm_type.meta_key = '_fnh_feed_type'
+             LEFT JOIN {$wpdb->postmeta} pm_terr
+                ON pm_terr.post_id = p.ID AND pm_terr.meta_key = '_fnh_territory'
+             LEFT JOIN (
+                SELECT pmi.meta_value AS source_id,
+                       COUNT(*) AS total_items,
+                       SUM(CASE WHEN pi.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) AS items_7d,
+                       SUM(CASE WHEN pi.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS items_30d
+                FROM {$wpdb->postmeta} pmi
+                INNER JOIN {$wpdb->posts} pi ON pi.ID = pmi.post_id
+                WHERE pmi.meta_key = '_fnh_source_id'
+                  AND pi.post_type = %s
+                  AND pi.post_status = 'publish'
+                GROUP BY pmi.meta_value
+             ) ipf ON ipf.source_id = p.ID
+             LEFT JOIN (
+                SELECT il.source_id,
+                       MAX(il.started_at) AS ultima_ingesta,
+                       SUBSTRING_INDEX(
+                         GROUP_CONCAT(il.status ORDER BY il.started_at DESC SEPARATOR 0x1f),
+                         0x1f, 1
+                       ) AS ultimo_status
+                FROM {$logsTabla} il
+                GROUP BY il.source_id
+             ) ult ON ult.source_id = p.ID
+             LEFT JOIN (
+                SELECT il2.source_id,
+                       SUBSTRING_INDEX(
+                         GROUP_CONCAT(il2.error_message ORDER BY il2.started_at DESC SEPARATOR 0x1f),
+                         0x1f, 1
+                       ) AS error_message
+                FROM {$logsTabla} il2
+                WHERE il2.error_message IS NOT NULL AND il2.error_message != ''
+                GROUP BY il2.source_id
+             ) ult_err ON ult_err.source_id = p.ID
+             WHERE p.post_type = %s AND p.post_status = 'publish'
+             ORDER BY items_7d DESC, nombre ASC",
+            Item::SLUG,
+            Source::SLUG
+        );
+
+        $filasCrudas = $wpdb->get_results($sql, ARRAY_A);
+        $filas = is_array($filasCrudas) ? $filasCrudas : [];
+
+        set_transient(self::TRANSIENT_CACHE, $filas, self::TTL_CACHE_SEG);
+        return $filas;
+    }
+
+    /**
      * Render de la pantalla. Cuando se invoca desde `SistemaPage`
      * (tabs unificadas), `$conWrap` debe ser false para que el
      * contenedor `.wrap` y el `<h1>` los aporte la página padre y no
@@ -40,54 +161,7 @@ final class EstadoFuentesPage
             return;
         }
 
-        global $wpdb;
-        $logsTabla = IngestLogTable::nombreCompleto();
-
-        // Sources activas ordenadas por actividad descendente. Una sola
-        // query con subconsultas correlacionadas — no es bonito pero
-        // cabe en pantalla y evita N+1 a 110 fuentes.
-        $filas = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                p.ID AS source_id,
-                p.post_title AS nombre,
-                (SELECT pm2.meta_value FROM {$wpdb->postmeta} pm2
-                    WHERE pm2.post_id = p.ID AND pm2.meta_key = '_fnh_feed_url' LIMIT 1) AS feed_url,
-                (SELECT pm3.meta_value FROM {$wpdb->postmeta} pm3
-                    WHERE pm3.post_id = p.ID AND pm3.meta_key = '_fnh_feed_type' LIMIT 1) AS feed_type,
-                (SELECT pm4.meta_value FROM {$wpdb->postmeta} pm4
-                    WHERE pm4.post_id = p.ID AND pm4.meta_key = '_fnh_territory' LIMIT 1) AS territorio,
-                (SELECT COUNT(*) FROM {$wpdb->postmeta} pmi
-                    INNER JOIN {$wpdb->posts} pi ON pi.ID = pmi.post_id
-                    WHERE pmi.meta_key = '_fnh_source_id' AND pmi.meta_value = p.ID
-                      AND pi.post_type = %s AND pi.post_status = 'publish'
-                ) AS total_items,
-                (SELECT COUNT(*) FROM {$wpdb->postmeta} pmi
-                    INNER JOIN {$wpdb->posts} pi ON pi.ID = pmi.post_id
-                    WHERE pmi.meta_key = '_fnh_source_id' AND pmi.meta_value = p.ID
-                      AND pi.post_type = %s AND pi.post_status = 'publish'
-                      AND pi.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
-                ) AS items_7d,
-                (SELECT COUNT(*) FROM {$wpdb->postmeta} pmi
-                    INNER JOIN {$wpdb->posts} pi ON pi.ID = pmi.post_id
-                    WHERE pmi.meta_key = '_fnh_source_id' AND pmi.meta_value = p.ID
-                      AND pi.post_type = %s AND pi.post_status = 'publish'
-                      AND pi.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)
-                ) AS items_30d,
-                (SELECT MAX(il.started_at) FROM {$logsTabla} il WHERE il.source_id = p.ID) AS ultima_ingesta,
-                (SELECT il2.status FROM {$logsTabla} il2 WHERE il2.source_id = p.ID
-                    ORDER BY il2.started_at DESC LIMIT 1) AS ultimo_status,
-                (SELECT il3.error_message FROM {$logsTabla} il3 WHERE il3.source_id = p.ID
-                    AND il3.error_message IS NOT NULL AND il3.error_message != ''
-                    ORDER BY il3.started_at DESC LIMIT 1) AS ultimo_error
-             FROM {$wpdb->posts} p
-             INNER JOIN {$wpdb->postmeta} pma ON pma.post_id = p.ID
-                AND pma.meta_key = '_fnh_active' AND pma.meta_value = '1'
-             WHERE p.post_type = %s AND p.post_status = 'publish'
-             ORDER BY items_7d DESC, nombre ASC",
-            Item::SLUG, Item::SLUG, Item::SLUG, Source::SLUG
-        ), ARRAY_A);
-
-        $filas = is_array($filas) ? $filas : [];
+        $filas = self::cargarFilasConCache();
 
         // Clasificar en tres categorías visuales. De paso, leemos para
         // cada fila el estado del circuit breaker (errores acumulados +

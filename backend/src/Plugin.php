@@ -119,6 +119,9 @@ final class Plugin
         // las subqueries correlacionadas del Recopilador.
         add_action(Scheduler::HOOK_CRON, [Recopilador::class, 'precalentarCacheStatsAdmin'], 20);
         add_action(Scheduler::HOOK_CRON, [EstadisticasPage::class, 'precalentarCacheDescargas'], 20);
+        // Cache de la pestaña "Estado de fuentes" — purgamos al final de
+        // cada ronda para que la próxima visita admin vea datos frescos.
+        add_action(Scheduler::HOOK_CRON, [\FlavorNewsHub\Admin\Pages\EstadoFuentesPage::class, 'purgarCache'], 30);
 
         // REST pública `flavor-news/v1`.
         add_action('rest_api_init', [RestController::class, 'registrar']);
