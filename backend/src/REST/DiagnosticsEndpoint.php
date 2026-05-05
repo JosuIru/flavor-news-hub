@@ -107,6 +107,12 @@ final class DiagnosticsEndpoint
         $retencionItems = (int) (OptionsRepository::todas()['item_retention_days'] ?? 90);
 
         return new \WP_REST_Response([
+            // Versión del plugin que está realmente ejecutando este request.
+            // Crítica para diferenciar "WP cree que está actualizado" de
+            // "PHP-FPM/OPcache sigue sirviendo el bytecode viejo": si
+            // wp-admin → Plugins muestra X y este campo devuelve Y, hay
+            // OPcache stale y un reinicio o reactivación lo resuelve.
+            'plugin_version'          => defined('FNH_VERSION') ? FNH_VERSION : 'desconocida',
             'sources_activas'         => $sourcesActivas,
             'ultima_ejecucion_utc'    => self::normalizarIso($ultimaEjecucion),
             'ultimo_finalizado_utc'   => self::normalizarIso($ultimoFinalizado),

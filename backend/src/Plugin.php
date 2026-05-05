@@ -62,6 +62,17 @@ final class Plugin
      */
     public function arrancar(): void
     {
+        // Auto-invalidación de OPcache tras un upgrade del plugin. Sin
+        // esto, hostings con `opcache.validate_timestamps=0` siguen
+        // ejecutando el bytecode de la versión anterior aunque
+        // wp-admin → Plugins muestre la nueva — síntoma típico:
+        // wp-admin reporta v0.16.0 pero el cron ejecuta el código de
+        // v0.15.9. Comparamos contra una option escrita en cada
+        // arranque; si la versión runtime difiere, llamamos
+        // `opcache_reset()` y registramos. Coste: una option lookup
+        // por request, despreciable.
+        self::resetearOpcacheSiCambioVersion();
+
         add_action('init', [$this, 'cargarTraducciones'], 1);
 
         // Migraciones idempotentes: se ejecutan una vez por marca de
@@ -372,5 +383,42 @@ final class Plugin
         if ($actualizados > 0) {
             error_log('[FlavorNewsHub] Topics asignados a ' . $actualizados . ' sources sin topics.');
         }
+    }
+
+    /**
+     * Compara la versión runtime (FNH_VERSION del archivo principal,
+     * que llega tras OPcache hit) con la última versión que vimos
+     * activa. Si difieren, llamamos `opcache_reset()` y guardamos.
+     *
+     * Esto NO recupera el primer request tras el upgrade: el primer
+     * arranque sigue ejecutando código viejo si OPcache lo cacheó.
+     * Lo que SÍ logramos es que ese primer arranque del nuevo código
+     * (cuando la option se escribe con la nueva versión) limpie el
+     * resto del bytecode cacheado del plugin. La consecuencia
+     * práctica: tras un upgrade que sí entró (porque WP descomprimió
+     * el ZIP y fue suficiente para la página principal), las clases
+     * cargadas perezosamente por el autoloader empiezan a coger el
+     * código nuevo en el siguiente request.
+     *
+     * En sitios donde OPcache no soltó NADA del plugin tras el
+     * upgrade, hace falta intervención manual una vez (desactivar
+     * y reactivar el plugin, o reiniciar PHP-FPM).
+     */
+    private static function resetearOpcacheSiCambioVersion(): void
+    {
+        if (!defined('FNH_VERSION')) {
+            return;
+        }
+        $versionEnRuntime = FNH_VERSION;
+        $versionVistaPrev = (string) get_option('fnh_runtime_version', '');
+        if ($versionVistaPrev === $versionEnRuntime) {
+            return;
+        }
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+            error_log('[FlavorNewsHub] OPcache reseteado tras detectar cambio de versión: '
+                . $versionVistaPrev . ' → ' . $versionEnRuntime);
+        }
+        update_option('fnh_runtime_version', $versionEnRuntime, false);
     }
 }
