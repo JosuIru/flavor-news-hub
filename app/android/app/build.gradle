@@ -140,12 +140,16 @@ dependencies {
     implementation "androidx.media:media:1.7.0"
 }
 
-// Evita clash entre work-runtime (flutter_local_notifications 17.x trae
-// 2.8.1) y work-runtime-ktx (workmanager 0.5.x trae 2.7.1). Forzamos la
-// versión más nueva en todas las referencias.
+// Pin de `androidx.work` para que todas las dependencias resuelvan a la
+// misma versión. workmanager 0.9.x accede a `WorkManager.Companion` (un
+// objeto Kotlin añadido en androidx.work 2.9.0). Sin este pin, otras
+// dependencias arrastraban 2.8.1 y la app crasheaba en arranque con
+// `NoSuchFieldError: No field Companion of type WorkManager$Companion`
+// dentro del `GeneratedPluginRegistrant`, dejando la app en pantalla
+// negra. 2.10.x es la última estable y mantiene API con 2.9.
 configurations.all {
     resolutionStrategy {
-        force "androidx.work:work-runtime:2.8.1"
-        force "androidx.work:work-runtime-ktx:2.8.1"
+        force "androidx.work:work-runtime:2.10.0"
+        force "androidx.work:work-runtime-ktx:2.10.0"
     }
 }
