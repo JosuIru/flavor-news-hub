@@ -8,3 +8,7 @@ output-localization-file: app_localizations.dart
 output-class: AppLocalizations
 untranslated-messages-file: l10n_missing.txt
 nullable-getter: false
+# Flutter 3.40+ desactivó el paquete sintético `flutter_gen` por defecto.
+# Generamos los `app_localizations*.dart` físicamente en `lib/l10n/` y
+# los importamos por ruta del proyecto (`package:flavor_news_hub/...`).
+output-dir: lib/l10n

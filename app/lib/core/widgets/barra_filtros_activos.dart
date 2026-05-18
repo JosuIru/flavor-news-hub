@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flavor_news_hub/l10n/app_localizations.dart';
 
 /// Barra horizontal con un chip por cada filtro activo. Cada chip
 /// tiene su propia X para quitar ese filtro individualmente, y al

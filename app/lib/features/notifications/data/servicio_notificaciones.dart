@@ -252,7 +252,7 @@ Future<void> aplicarFrecuenciaNotif(FrecuenciaNotif frecuencia) async {
     kNombreWorkerTitulares,
     kNombreWorkerTitulares,
     frequency: Duration(minutes: minutos),
-    existingWorkPolicy: ExistingWorkPolicy.replace,
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
     tag: kTagWorker,
     constraints: Constraints(
       networkType: NetworkType.connected,

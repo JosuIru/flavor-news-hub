@@ -34,7 +34,7 @@ class AppTheme {
           color: esquemaColor.onSurface,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         margin: EdgeInsets.zero,
         color: esquemaColor.surface,
