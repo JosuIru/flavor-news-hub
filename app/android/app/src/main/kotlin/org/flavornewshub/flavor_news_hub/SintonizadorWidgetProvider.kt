@@ -162,7 +162,10 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
                 // rama directa.
                 pararPlaybackEnApp(context)
             }
-            iniciarServicioPlay(context, radioNueva)
+            // El signo del delta vale como dirección de skip — si esta
+            // emisora también falla, el RadioService seguirá saltando en
+            // el mismo sentido sin que el usuario tenga que repulsar.
+            iniciarServicioPlay(context, radioNueva, direccionSkip = delta.compareTo(0))
         }
 
         // Forzar redibujado inmediato del widget.
@@ -178,13 +181,23 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
      * indicada. Usa `startForegroundService` desde Android O en adelante
      * (requisito del sistema; el servicio tiene 5 s para llamar
      * `startForeground` o se mata).
+     *
+     * `direccionSkip` controla el sentido en que el servicio buscará
+     * alternativas si la emisora falla: +1 = siguiente, -1 = anterior.
+     * Para un play directo desde el dial vale +1 — la cadena de saltos
+     * sólo arranca si la primera emisora se cae, y avanzar es la
+     * elección menos sorprendente.
      */
-    private fun iniciarServicioPlay(context: Context, radio: Radio) {
+    private fun iniciarServicioPlay(context: Context, radio: Radio, direccionSkip: Int = 1) {
         val intent = Intent(context, RadioService::class.java).apply {
             action = RadioService.ACCION_PLAY
             putExtra(RadioService.EXTRA_URL, radio.streamUrl)
             putExtra(RadioService.EXTRA_TITULO, radio.nombre)
             putExtra(RadioService.EXTRA_ID_RADIO, radio.id.toString())
+            putExtra(RadioService.EXTRA_DIRECCION_SKIP, if (direccionSkip == 0) 1 else direccionSkip)
+            // Sin EXTRA_INDICE_ARRANQUE → el servicio lo interpreta como
+            // "arranque fresco" y toma el índice actual del Sintonizador
+            // como ancla de la cadena.
         }
         ContextCompat.startForegroundService(context, intent)
     }

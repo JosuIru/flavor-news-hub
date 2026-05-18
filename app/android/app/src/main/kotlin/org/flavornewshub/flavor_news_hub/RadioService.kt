@@ -9,7 +9,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
@@ -23,6 +25,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import es.antonborri.home_widget.HomeWidgetPlugin
+import org.json.JSONArray
 
 /**
  * Servicio Android foreground (`mediaPlayback`) que reproduce streams de
@@ -74,6 +77,17 @@ class RadioService : Service() {
         const val EXTRA_URL = "url"
         const val EXTRA_TITULO = "titulo"
         const val EXTRA_ID_RADIO = "id_radio"
+        // Sentido en el que avanzar si la emisora falla y hay que saltar a
+        // otra. +1 = siguiente (▶), -1 = anterior (◄). Para play "directo"
+        // desde el dial vale +1 — la cadena de saltos sólo arranca si la
+        // primera emisora falla, y avanzar es la elección menos
+        // sorprendente.
+        const val EXTRA_DIRECCION_SKIP = "direccion_skip"
+        // Índice donde el usuario inició la cadena. Si tras varios saltos
+        // damos la vuelta y volvemos aquí, paramos — todas caídas.
+        // -1 (default) significa "arranque fresco": el servicio lo
+        // inicializa al índice actual del Sintonizador.
+        const val EXTRA_INDICE_ARRANQUE = "indice_arranque"
 
         private const val TAG = "RadioService"
         private const val NOTIFICACION_ID = 4242
@@ -89,6 +103,30 @@ class RadioService : Service() {
         // como tercera línea del dial cuando hay valor.
         private const val CLAVE_PROGRAMA = "sintonizador_programa"
         private const val FUENTE_SERVICIO = "servicio"
+
+        // Lista de radios y selección actual del Sintonizador. Las escribe
+        // Flutter (WidgetSintonizadorWriter) y el provider. Aquí las leemos
+        // para encontrar la siguiente cuando una falla.
+        private const val CLAVE_LISTA_RADIOS = "sintonizador_radios"
+        private const val CLAVE_INDICE_ACTUAL = "sintonizador_indice_actual"
+
+        // Claves que lee `ReproductorRadioWidgetProvider`. Las escribe la
+        // app principal (WidgetRadioWriter); también las escribimos
+        // nosotros para que ese widget refleje lo que está sonando cuando
+        // la fuente es este servicio y no la UI Flutter.
+        private const val CLAVE_REPRODUCTOR_NOMBRE = "radio_nombre"
+        private const val CLAVE_REPRODUCTOR_ESTADO = "radio_estado"
+
+        // Cap defensivo: aunque "todas caídas" no debería ocurrir en
+        // condiciones normales, evitamos un bucle infinito si la red está
+        // mal o si toda la lista comparte un servidor que no responde.
+        private const val MAX_SALTOS_AUTOMATICOS = 8
+        // Si tras este tiempo desde `prepare()` no hemos llegado a
+        // STATE_READY ni a un error, el stream se ha colgado en silencio
+        // — tratamos el caso como fallo y saltamos. Algunos servidores
+        // Icecast aceptan la conexión TCP y luego no entregan datos sin
+        // disparar `onPlayerError`.
+        private const val TIMEOUT_APERTURA_MS = 8_000L
     }
 
     private var reproductor: ExoPlayer? = null
@@ -96,6 +134,20 @@ class RadioService : Service() {
     private var idRadioActual: String = ""
     private var tituloRadioActual: String = ""
     private var programaActual: String = ""
+
+    // Estado de la cadena de saltos automáticos. Se inicializa en
+    // `manejarPlay` cuando el Intent llega sin `EXTRA_INDICE_ARRANQUE`
+    // (= arranque fresco del usuario) y se preserva cuando el propio
+    // servicio se relanza para probar la siguiente emisora.
+    private var direccionSkipActual: Int = 1
+    private var indiceArranqueCadena: Int = -1
+    private var saltosRealizadosCadena: Int = 0
+
+    // Handler en el main looper para programar el timeout de apertura.
+    // Lo creamos lazy al primer play — antes el servicio puede ni
+    // siquiera tener Looper.
+    private val handlerPrincipal: Handler by lazy { Handler(Looper.getMainLooper()) }
+    private var runnableTimeoutApertura: Runnable? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -125,6 +177,26 @@ class RadioService : Service() {
         // tarda unos segundos en llegar; mientras tanto preferimos vacío
         // a mostrar el programa de la emisora anterior.
         programaActual = ""
+
+        // Estado de la cadena de saltos:
+        //   - Si el Intent NO trae `EXTRA_INDICE_ARRANQUE` (-1), es un
+        //     play "fresco" del usuario → reseteamos la cadena y tomamos
+        //     como ancla el índice actual del Sintonizador.
+        //   - Si lo trae, venimos de un salto automático (this servicio
+        //     se relanzó a sí mismo) → preservamos el ancla y la
+        //     dirección, e incrementamos el contador.
+        direccionSkipActual = intent.getIntExtra(EXTRA_DIRECCION_SKIP, 1)
+            .let { if (it == 0) 1 else it }
+        val indiceArranqueIntent = intent.getIntExtra(EXTRA_INDICE_ARRANQUE, -1)
+        if (indiceArranqueIntent < 0) {
+            indiceArranqueCadena = leerIndiceActualSintonizador()
+            saltosRealizadosCadena = 0
+        } else {
+            indiceArranqueCadena = indiceArranqueIntent
+        }
+        // Cualquier play en curso cancela el timeout previo — el nuevo
+        // intento arma el suyo después de `prepare()`.
+        cancelarTimeoutApertura()
 
         crearCanalNotificacionSiHaceFalta()
         // Foreground YA con notificación de "cargando" — el sistema exige
@@ -166,6 +238,8 @@ class RadioService : Service() {
         sesionMedia = MediaSession.Builder(this, nuevoReproductor)
             .setId("flavor-news-hub-radio")
             .build()
+
+        armarTimeoutApertura()
     }
 
     /**
@@ -185,14 +259,21 @@ class RadioService : Service() {
                 }
                 Player.STATE_READY -> {
                     if (reproductor?.playWhenReady == true) {
+                        // El stream ha empezado a fluir — el intento ha
+                        // ido bien, cancelamos el timeout de apertura y
+                        // declaramos la cadena de saltos completa.
+                        cancelarTimeoutApertura()
+                        saltosRealizadosCadena = 0
                         actualizarEstadoWidget("reproduciendo", idRadioActual, programaActual)
                         actualizarNotificacionAhora(cargando = false)
                     }
                 }
                 Player.STATE_ENDED -> {
                     // Streams en directo no deberían terminar; si lo hacen,
-                    // es que el servidor cortó la conexión.
-                    manejarStop()
+                    // es que el servidor cortó la conexión. Para el usuario
+                    // del Sintonizador es equivalente a "esta emisora ya
+                    // no funciona" — intentamos la siguiente.
+                    intentarSiguienteEmisoraDisponible(motivo = "stream terminó")
                 }
                 Player.STATE_IDLE -> {
                     // Estado tras release o error grave; no refrescamos
@@ -203,7 +284,7 @@ class RadioService : Service() {
 
         override fun onPlayerError(error: PlaybackException) {
             Log.w(TAG, "ExoPlayer error: ${error.errorCodeName}", error)
-            manejarStop()
+            intentarSiguienteEmisoraDisponible(motivo = "error ${error.errorCodeName}")
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -226,6 +307,12 @@ class RadioService : Service() {
     }
 
     private fun manejarStop() {
+        cancelarTimeoutApertura()
+        // Cualquier stop manual rompe la cadena de saltos — no quereremos
+        // que un play posterior arranque "donde se quedó" intentando
+        // emisoras que la usuaria ya rechazó al pulsar stop.
+        indiceArranqueCadena = -1
+        saltosRealizadosCadena = 0
         liberarReproductorYSesion()
         idRadioActual = ""
         tituloRadioActual = ""
@@ -363,21 +450,156 @@ class RadioService : Service() {
         // para (estado vacío) limpiamos la fuente para que la app o un
         // futuro servicio pueda tomar el dial sin estado fantasma.
         val fuente = if (estado.isEmpty()) "" else FUENTE_SERVICIO
+        // Para el ReproductorRadioWidgetProvider — comparte vocabulario
+        // de estados con WidgetRadioWriter (Flutter). "" → "detenido".
+        val estadoReproductor = if (estado.isEmpty()) "detenido" else estado
+        val nombreReproductor = if (estado.isEmpty()) "" else tituloRadioActual
         prefs.edit()
             .putString(CLAVE_ESTADO_WIDGET, estado)
             .putString(CLAVE_ID_REPRODUCIENDO, idRadio)
             .putString(CLAVE_FUENTE, fuente)
             .putString(CLAVE_PROGRAMA, programa)
+            .putString(CLAVE_REPRODUCTOR_NOMBRE, nombreReproductor)
+            .putString(CLAVE_REPRODUCTOR_ESTADO, estadoReproductor)
             .apply()
         val gestorWidget = AppWidgetManager.getInstance(this)
-        val ids = gestorWidget.getAppWidgetIds(
+        val idsSintonizador = gestorWidget.getAppWidgetIds(
             ComponentName(this, SintonizadorWidgetProvider::class.java)
         )
-        if (ids.isEmpty()) return
-        val intentUpdate = Intent(this, SintonizadorWidgetProvider::class.java).apply {
-            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        if (idsSintonizador.isNotEmpty()) {
+            val intentSintonizador = Intent(this, SintonizadorWidgetProvider::class.java).apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, idsSintonizador)
+            }
+            sendBroadcast(intentSintonizador)
         }
-        sendBroadcast(intentUpdate)
+        // También notificamos al ReproductorRadioWidgetProvider — su
+        // `onReceive` ya escucha ACTION_APPWIDGET_UPDATE y refresca los
+        // ids que correspondan. Sin esto, el widget Reproductor sólo se
+        // refrescaba cuando la app principal reproducía desde su UI
+        // (vía WidgetRadioWriter) y se quedaba congelado mientras
+        // sonaba la radio del Sintonizador.
+        val idsReproductor = gestorWidget.getAppWidgetIds(
+            ComponentName(this, ReproductorRadioWidgetProvider::class.java)
+        )
+        if (idsReproductor.isNotEmpty()) {
+            val intentReproductor = Intent(this, ReproductorRadioWidgetProvider::class.java).apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, idsReproductor)
+            }
+            sendBroadcast(intentReproductor)
+        }
+    }
+
+    /**
+     * Lee la lista de radios que mantiene el Sintonizador. Devuelve pares
+     * (id, nombre, url) sin más estructura — sólo nos hace falta saber el
+     * tamaño y la URL/nombre del índice que vayamos a probar.
+     *
+     * Si el JSON está malformado o la clave no existe, devolvemos lista
+     * vacía y la lógica de salto cae a `manejarStop` — el servicio no se
+     * inventa un siguiente cuando no hay nada que probar.
+     */
+    private fun leerListaRadios(): List<Triple<String, String, String>> {
+        val prefs = HomeWidgetPlugin.getData(this)
+        val raw = prefs.getString(CLAVE_LISTA_RADIOS, "[]") ?: "[]"
+        return try {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i ->
+                val o = arr.getJSONObject(i)
+                val id = o.optInt("id", 0).toString()
+                val nombre = o.optString("name", "")
+                val streamUrl = o.optString("stream_url", "")
+                if (id == "0" || nombre.isEmpty() || streamUrl.isEmpty()) null
+                else Triple(id, nombre, streamUrl)
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun leerIndiceActualSintonizador(): Int {
+        val prefs = HomeWidgetPlugin.getData(this)
+        return prefs.getInt(CLAVE_INDICE_ACTUAL, 0)
+    }
+
+    /**
+     * Núcleo del skip automático. Llamado desde `onPlayerError`, desde
+     * STATE_ENDED y desde el timeout de apertura. Avanza en el sentido
+     * de la cadena (`direccionSkipActual`) y relanza `manejarPlay` con
+     * la siguiente emisora. Si superamos `MAX_SALTOS_AUTOMATICOS` o
+     * damos la vuelta al índice de arranque, paramos — el sistema ha
+     * agotado las opciones razonables.
+     */
+    private fun intentarSiguienteEmisoraDisponible(motivo: String) {
+        cancelarTimeoutApertura()
+        val radios = leerListaRadios()
+        if (radios.isEmpty()) {
+            Log.w(TAG, "Skip pedido ($motivo) pero no hay lista de radios en prefs")
+            manejarStop()
+            return
+        }
+        if (saltosRealizadosCadena >= MAX_SALTOS_AUTOMATICOS) {
+            Log.w(TAG, "Skip pedido ($motivo) pero ya hemos probado $saltosRealizadosCadena emisoras — paramos")
+            manejarStop()
+            return
+        }
+        val indiceActual = leerIndiceActualSintonizador().coerceIn(0, radios.size - 1)
+        val indiceSiguiente = (((indiceActual + direccionSkipActual) % radios.size) + radios.size) % radios.size
+        // Si la cadena vuelve a su origen es señal de que hemos
+        // recorrido toda la lista sin éxito (cap explícito por encima
+        // del MAX_SALTOS para listas cortas — en listas largas el cap
+        // de saltos pega antes).
+        val anclaValida = indiceArranqueCadena in radios.indices
+        if (anclaValida && indiceSiguiente == indiceArranqueCadena && saltosRealizadosCadena > 0) {
+            Log.w(TAG, "Skip pedido ($motivo) ha dado la vuelta entera — paramos")
+            manejarStop()
+            return
+        }
+        val (id, nombre, url) = radios[indiceSiguiente]
+        Log.i(TAG, "Skip automático ($motivo): índice $indiceActual → $indiceSiguiente ($nombre)")
+
+        // Persistimos el nuevo índice para que el Sintonizador refleje
+        // la emisora que vamos a probar (el dial avanza solo durante la
+        // cadena de saltos).
+        val prefs = HomeWidgetPlugin.getData(this)
+        prefs.edit().putInt(CLAVE_INDICE_ACTUAL, indiceSiguiente).apply()
+        saltosRealizadosCadena += 1
+
+        val intentSiguiente = Intent(this, RadioService::class.java).apply {
+            action = ACCION_PLAY
+            putExtra(EXTRA_URL, url)
+            putExtra(EXTRA_TITULO, nombre)
+            putExtra(EXTRA_ID_RADIO, id)
+            putExtra(EXTRA_DIRECCION_SKIP, direccionSkipActual)
+            putExtra(EXTRA_INDICE_ARRANQUE, indiceArranqueCadena)
+        }
+        // Llamada directa en vez de `startService` — ya estamos en el
+        // proceso del servicio y no hace falta atravesar el sistema de
+        // intents. Además garantiza que se ejecute aunque el sistema
+        // esté bajo presión.
+        manejarPlay(intentSiguiente)
+    }
+
+    private fun armarTimeoutApertura() {
+        // Capturamos id e índice actuales para distinguir si el timeout
+        // dispara sobre el intento que lo armó o sobre uno posterior (en
+        // ese caso lo ignoramos — el intento ya fue superado).
+        val idObjetivo = idRadioActual
+        val runnable = Runnable {
+            if (idObjetivo != idRadioActual) return@Runnable
+            // Si para cuando dispara el timeout el player ya está
+            // listo y sonando, no hace falta saltar.
+            val rep = reproductor ?: return@Runnable
+            if (rep.playbackState == Player.STATE_READY && rep.playWhenReady) return@Runnable
+            intentarSiguienteEmisoraDisponible(motivo = "timeout apertura")
+        }
+        runnableTimeoutApertura = runnable
+        handlerPrincipal.postDelayed(runnable, TIMEOUT_APERTURA_MS)
+    }
+
+    private fun cancelarTimeoutApertura() {
+        runnableTimeoutApertura?.let { handlerPrincipal.removeCallbacks(it) }
+        runnableTimeoutApertura = null
     }
 }
