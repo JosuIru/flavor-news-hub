@@ -205,14 +205,35 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                 }
                 val base = urlBase.trimEnd('/')
                 val parametros = StringBuilder("per_page=20&exclude_source_type=video,youtube,podcast")
+
+                // Filtros transversales (slugs de topics + override de
+                // territorio + override de idiomas) — mismo set que el
+                // FeedNotifier compone con `filtrosTransversalesProvider`.
+                val filtrosTransversales = leerFiltrosTransversales(prefs)
+
                 val territorioBase = prefs.getString("flutter.fnh.pref.territorioBase", "") ?: ""
-                if (territorioBase.isNotBlank()) {
-                    parametros.append("&territory=").append(URLEncoder.encode(territorioBase, "UTF-8"))
+                // Override transversal de territorio tiene precedencia
+                // sobre el territorioBase, igual que en feed_notifier.dart.
+                val territorioEfectivo = filtrosTransversales.territorioOverride
+                    ?.takeIf { it.isNotBlank() }
+                    ?: territorioBase
+                if (territorioEfectivo.isNotBlank()) {
+                    parametros.append("&territory=").append(URLEncoder.encode(territorioEfectivo, "UTF-8"))
                 }
-                val idiomasContenido = leerIdiomasContenidoEfectivos(prefs)
-                if (idiomasContenido.isNotEmpty()) {
+
+                // Override de idiomas idem: si hay chips activos en
+                // cualquier pestaña, ganan a la política central.
+                val idiomasEfectivos = filtrosTransversales.idiomasOverride
+                    .ifEmpty { leerIdiomasContenidoEfectivos(prefs) }
+                if (idiomasEfectivos.isNotEmpty()) {
                     parametros.append("&language=").append(
-                        URLEncoder.encode(idiomasContenido.joinToString(","), "UTF-8")
+                        URLEncoder.encode(idiomasEfectivos.joinToString(","), "UTF-8")
+                    )
+                }
+
+                if (filtrosTransversales.slugsTopics.isNotEmpty()) {
+                    parametros.append("&topic=").append(
+                        URLEncoder.encode(filtrosTransversales.slugsTopics.joinToString(","), "UTF-8")
                     )
                 }
                 val url = URL("$base/items?$parametros")
@@ -278,6 +299,54 @@ class TitularesWidgetProvider : AppWidgetProvider() {
                 if (ids.isNotEmpty()) onUpdate(context, mgr, ids)
             }
         }.start()
+    }
+
+    /**
+     * Snapshot de los filtros transversales (topics + override de
+     * territorio + override de idiomas) que el usuario haya fijado en
+     * cualquier pestaña de la app. Se serializan a JSON en
+     * `filtros_transversales.dart` bajo la clave `fnh.filters.global`.
+     */
+    private data class FiltrosTransversales(
+        val slugsTopics: List<String>,
+        val territorioOverride: String?,
+        val idiomasOverride: List<String>,
+    )
+
+    /**
+     * Réplica en Kotlin del estado de `filtrosTransversalesProvider`.
+     * Lee el JSON persistido y devuelve los tres campos que el widget
+     * sabe aplicar al query del backend. Si la preferencia no existe o
+     * está corrupta devuelve filtros vacíos — equivalente a "el usuario
+     * no ha tocado ningún filtro".
+     */
+    private fun leerFiltrosTransversales(
+        prefs: android.content.SharedPreferences
+    ): FiltrosTransversales {
+        val crudo = prefs.getString("flutter.fnh.filters.global", null)
+        if (crudo.isNullOrBlank()) {
+            return FiltrosTransversales(emptyList(), null, emptyList())
+        }
+        return try {
+            val raiz = JSONObject(crudo)
+            val arraySlugs = raiz.optJSONArray("slugsTopics")
+            val slugs = if (arraySlugs == null) emptyList() else
+                (0 until arraySlugs.length()).mapNotNull { i ->
+                    arraySlugs.optString(i, "").takeIf { it.isNotBlank() }
+                }
+            val territorio = raiz.optString("codigoTerritorio", "")
+                .takeIf { it.isNotBlank() }
+            val arrayIdiomas = raiz.optJSONArray("codigosIdiomasOverride")
+            val idiomas = if (arrayIdiomas == null) emptyList() else
+                (0 until arrayIdiomas.length()).mapNotNull { i ->
+                    arrayIdiomas.optString(i, "").takeIf { it.isNotBlank() }
+                }
+            FiltrosTransversales(slugs, territorio, idiomas)
+        } catch (_: Exception) {
+            // JSON corrupto — degradamos a filtros vacíos en vez de
+            // hacer crashear el refresh entero.
+            FiltrosTransversales(emptyList(), null, emptyList())
+        }
     }
 
     /**
