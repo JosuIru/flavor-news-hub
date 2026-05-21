@@ -31,13 +31,13 @@ jobs:
           java-version: '17'
 
       - name: Setup Flutter
-        # Fijamos 3.24.0 para coincidir con la versión usada en
-        # desarrollo. Flutter 3.41+ eliminó el paquete sintético
-        # `flutter_gen` que aún usan los imports del proyecto; cuando
-        # se migre a imports propios se podrá volver a `channel: stable`.
+        # Fijamos 3.41.9 para coincidir con la versión usada en
+        # desarrollo. La migración a l10n no-sintético (commit
+        # af3d4eb) eliminó la dependencia de `flutter_gen`, así que
+        # ya se puede usar Flutter 3.41+ aquí también.
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.41.9'
           channel: stable
           cache: true
 

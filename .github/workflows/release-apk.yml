@@ -44,7 +44,7 @@ jobs:
         # aquella pasa, ésta también debería compilar limpio.
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.41.9'
           channel: stable
           cache: true
 
