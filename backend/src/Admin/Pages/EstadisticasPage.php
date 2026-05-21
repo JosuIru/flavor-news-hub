@@ -174,29 +174,56 @@ final class EstadisticasPage
             }
         }
 
-        $url = 'https://api.github.com/repos/' . self::REPO_GITHUB . '/releases?per_page=30';
+        // Paginamos hasta agotar el histórico — antes pedíamos sólo
+        // `per_page=30` y el total de descargas dejaba fuera todas las
+        // releases anteriores a la 30ª. Con `per_page=100` (máximo que
+        // permite GitHub) la mayoría de proyectos cabe en una página
+        // sola; mantenemos un tope de 10 páginas (1000 releases) como
+        // salvaguarda para no consumir el rate-limit en un loop si la
+        // API empieza a comportarse de forma rara.
         $headers = ['Accept' => 'application/vnd.github+json'];
         if (defined('FLAVOR_GH_TOKEN') && FLAVOR_GH_TOKEN !== '') {
             $headers['Authorization'] = 'Bearer ' . FLAVOR_GH_TOKEN;
         }
-        $respuesta = wp_remote_get($url, [
-            'headers' => $headers,
-            'timeout' => 10,
-        ]);
-        if (is_wp_error($respuesta)) {
-            return ['error' => __('No se pudo contactar con la API de GitHub.', 'flavor-news-hub')];
-        }
-        $codigoHttp = (int) wp_remote_retrieve_response_code($respuesta);
-        if ($codigoHttp !== 200) {
-            return ['error' => sprintf(
-                /* translators: %d = código HTTP */
-                __('GitHub devolvió HTTP %d (puede ser rate-limit; configura FLAVOR_GH_TOKEN si te pasa a menudo).', 'flavor-news-hub'),
-                $codigoHttp
-            )];
-        }
-        $cuerpo = json_decode((string) wp_remote_retrieve_body($respuesta), true);
-        if (!is_array($cuerpo)) {
-            return ['error' => __('Respuesta inesperada de GitHub.', 'flavor-news-hub')];
+        $perPage = 100;
+        $paginaMaxima = 10;
+        $cuerpo = [];
+        for ($pagina = 1; $pagina <= $paginaMaxima; $pagina++) {
+            $url = sprintf(
+                'https://api.github.com/repos/%s/releases?per_page=%d&page=%d',
+                self::REPO_GITHUB,
+                $perPage,
+                $pagina,
+            );
+            $respuesta = wp_remote_get($url, [
+                'headers' => $headers,
+                'timeout' => 10,
+            ]);
+            if (is_wp_error($respuesta)) {
+                return ['error' => __('No se pudo contactar con la API de GitHub.', 'flavor-news-hub')];
+            }
+            $codigoHttp = (int) wp_remote_retrieve_response_code($respuesta);
+            if ($codigoHttp !== 200) {
+                return ['error' => sprintf(
+                    /* translators: %d = código HTTP */
+                    __('GitHub devolvió HTTP %d (puede ser rate-limit; configura FLAVOR_GH_TOKEN si te pasa a menudo).', 'flavor-news-hub'),
+                    $codigoHttp
+                )];
+            }
+            $paginaCuerpo = json_decode((string) wp_remote_retrieve_body($respuesta), true);
+            if (!is_array($paginaCuerpo)) {
+                return ['error' => __('Respuesta inesperada de GitHub.', 'flavor-news-hub')];
+            }
+            if ($paginaCuerpo === []) {
+                break;
+            }
+            $cuerpo = array_merge($cuerpo, $paginaCuerpo);
+            // Última página: GitHub habría devuelto los `perPage` items
+            // si quedaran más. Cuando devuelve menos, no hay más que
+            // pedir — paramos sin gastar otra petición vacía.
+            if (count($paginaCuerpo) < $perPage) {
+                break;
+            }
         }
 
         // Offset de descargas marcadas como propias por el admin desde la
