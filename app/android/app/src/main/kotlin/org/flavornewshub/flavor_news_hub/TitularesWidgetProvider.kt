@@ -103,6 +103,19 @@ class TitularesWidgetProvider : AppWidgetProvider() {
         }
         views.setTextViewText(R.id.widget_vacio, textoEmpty)
 
+        // Spinner girando mientras dura el refresh — el icono ↻ se oculta
+        // y el ProgressBar indeterminado ocupa su sitio. RemoteViews no
+        // permite arrancar AnimatedVectorDrawable, así que esta es la
+        // única vía fiable de mostrar movimiento.
+        views.setViewVisibility(
+            R.id.widget_refrescar_icono,
+            if (actualizando) View.GONE else View.VISIBLE,
+        )
+        views.setViewVisibility(
+            R.id.widget_refrescar_spinner,
+            if (actualizando) View.VISIBLE else View.GONE,
+        )
+
         // Tap refrescar → broadcast a nosotros mismos.
         val intentRefrescar = Intent(context, TitularesWidgetProvider::class.java).apply {
             action = ACCION_REFRESCAR

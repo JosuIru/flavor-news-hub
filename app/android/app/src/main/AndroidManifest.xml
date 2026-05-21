@@ -39,6 +39,15 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Desactiva el handler automático de deep links de Flutter:
+                 los URIs `flavornews://` ya los procesa `DeepLinkListener`
+                 vía el canal nativo `fnh/deeplink` (ver MainActivity.kt).
+                 Sin esto, Flutter 3.41 entrega el URI también a GoRouter
+                 como ruta, que falla con "no routes for location:
+                 flavornews://items/<id>" al pulsar un titular del widget. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
