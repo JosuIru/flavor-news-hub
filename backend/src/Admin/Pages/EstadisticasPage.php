@@ -27,6 +27,14 @@ final class EstadisticasPage
     private const TRANSIENT_CACHE = 'fnh_stats_descargas';
 
     /**
+     * Hook del evento WP-Cron one-off que recalcula el bundle de descargas
+     * en segundo plano cuando el render encuentra el caché frío. Así la
+     * pantalla carga al instante sin esperar el HTTP a api.github.com.
+     * Se engancha a `precalentarCacheDescargas` en Plugin::registrarHooks.
+     */
+    public const HOOK_REFRESCO_BG = 'fnh_refrescar_stats_descargas';
+
+    /**
      * Render de la pantalla. Cuando se invoca desde `SistemaPage`
      * (tabs unificadas), `$conWrap` debe ser false para que el
      * contenedor `.wrap` y el `<h1>` los aporte la página padre y no
@@ -38,7 +46,8 @@ final class EstadisticasPage
             return;
         }
 
-        // Botón "Refrescar ya": borra el transient y refresca en línea.
+        // Botón "Refrescar ya": recalcula en línea y sobrescribe el
+        // transient (la carga normal, en cambio, nunca bloquea).
         // Antes redirigíamos con `wp_safe_redirect` para limpiar la URL,
         // pero si cualquier plugin/tema imprime output antes de que
         // EstadisticasPage::render se ejecute (espacios, BOM…), los
@@ -49,15 +58,21 @@ final class EstadisticasPage
         $refrescoForzado = false;
         if (isset($_GET['refrescar'])) {
             check_admin_referer('fnh_stats_refrescar', '_wpnonce');
-            delete_transient(self::TRANSIENT_CACHE);
             // El refresco también invalida las stats internas
             // (Recopilador) para que el admin no vea el bundle de
             // GitHub fresco al lado de KPIs internos rancios.
             Recopilador::invalidarCacheStatsAdmin();
-            $refrescoForzado = true;
+            // El admin pulsó "Refrescar ya" y acepta esperar: recalculamos
+            // en línea (sí bloquea contra api.github.com). Si GitHub
+            // falla, `recalcular…` deja intacto el bundle anterior.
+            $datos = self::recalcularYGuardarDescargas();
+            $refrescoForzado = !isset($datos['error']);
+        } else {
+            // Carga normal: NO bloqueamos el render esperando a GitHub.
+            // Servimos el caché si existe; si está frío, devolvemos el
+            // estado "calculando" y disparamos el refresco en segundo plano.
+            $datos = self::leerDescargasParaRender();
         }
-
-        $datos = self::obtenerDatos();
         // Calculado y cacheado una sola vez: lo comparten las dos
         // secciones internas (ingesta + medios) que pintamos abajo.
         $statsInternas = Recopilador::statsAdmin();
@@ -79,6 +94,15 @@ final class EstadisticasPage
 
             <?php if (isset($datos['error'])) : ?>
                 <div class="notice notice-error"><p><?php echo esc_html($datos['error']); ?></p></div>
+            <?php elseif (isset($datos['calculando'])) : ?>
+                <div class="notice notice-info"><p>
+                    <?php esc_html_e('Calculando las descargas desde GitHub en segundo plano… recarga esta página en unos segundos.', 'flavor-news-hub'); ?>
+                </p></div>
+                <p>
+                    <a href="<?php echo esc_url(remove_query_arg(['refrescar', '_wpnonce'])); ?>" class="button button-secondary">
+                        <?php esc_html_e('Recargar', 'flavor-news-hub'); ?>
+                    </a>
+                </p>
             <?php else : ?>
                 <div style="display:flex;gap:1em;margin:1em 0;flex-wrap:wrap;">
                     <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:160px;">
@@ -149,31 +173,65 @@ final class EstadisticasPage
      * el coste del HTTP a la API de GitHub (hasta 10s de timeout)
      * en el render.
      *
-     * Si GitHub devuelve error, `obtenerDatos` no escribe el
-     * transient — eso deja intacto el bundle anterior, que aunque
+     * Si GitHub devuelve error, `recalcularYGuardarDescargas` no escribe
+     * el transient — eso deja intacto el bundle anterior, que aunque
      * rancio sigue siendo más útil que un mensaje de fallo.
      */
     public static function precalentarCacheDescargas(): void
     {
-        self::obtenerDatos(true);
+        self::recalcularYGuardarDescargas();
     }
 
     /**
+     * Lectura para el render: nunca bloquea contra api.github.com.
+     * Devuelve el bundle cacheado si existe; si el caché está frío,
+     * programa el recálculo en segundo plano y devuelve el estado
+     * `['calculando' => true]` para que la pantalla cargue al instante.
+     *
+     * @return array{
+     *   total_apk:int,total_zip:int,total_releases:int,
+     *   filas:list<array{tag:string,nombre:string,descargas:int}>,
+     *   ts_lectura:int
+     * }|array{calculando:true}
+     */
+    private static function leerDescargasParaRender(): array
+    {
+        $cache = get_transient(self::TRANSIENT_CACHE);
+        if (is_array($cache) && isset($cache['filas'])) {
+            return $cache;
+        }
+        self::programarRefrescoEnSegundoPlano();
+        return ['calculando' => true];
+    }
+
+    /**
+     * Encola un evento WP-Cron one-off para recalcular el bundle sin
+     * bloquear la petición actual. El guard `wp_next_scheduled` evita
+     * apilar duplicados si el admin recarga varias veces mientras el
+     * caché sigue frío.
+     */
+    private static function programarRefrescoEnSegundoPlano(): void
+    {
+        if (!wp_next_scheduled(self::HOOK_REFRESCO_BG)) {
+            wp_schedule_single_event(time(), self::HOOK_REFRESCO_BG);
+        }
+    }
+
+    /**
+     * Recalcula el bundle pidiéndolo a la API de GitHub (bloqueante) y
+     * reescribe el transient. Lo usan el precalentamiento por cron, el
+     * refresco en segundo plano y el botón "Refrescar ya". Si GitHub
+     * falla devuelve `['error' => …]` SIN tocar el transient, de modo
+     * que el bundle anterior (aunque rancio) sigue disponible.
+     *
      * @return array{
      *   total_apk:int,total_zip:int,total_releases:int,
      *   filas:list<array{tag:string,nombre:string,descargas:int}>,
      *   ts_lectura:int
      * }|array{error:string}
      */
-    private static function obtenerDatos(bool $forzarRefresco = false): array
+    private static function recalcularYGuardarDescargas(): array
     {
-        if (!$forzarRefresco) {
-            $cache = get_transient(self::TRANSIENT_CACHE);
-            if (is_array($cache) && isset($cache['filas'])) {
-                return $cache;
-            }
-        }
-
         // Paginamos hasta agotar el histórico — antes pedíamos sólo
         // `per_page=30` y el total de descargas dejaba fuera todas las
         // releases anteriores a la 30ª. Con `per_page=100` (máximo que
@@ -268,7 +326,7 @@ final class EstadisticasPage
             'filas'          => $filas,
             'ts_lectura'     => time(),
         ];
-        set_transient(self::TRANSIENT_CACHE, $datos, Transients::CACHE_ESTADISTICAS);
+        set_transient(self::TRANSIENT_CACHE, $datos, Transients::CACHE_DESCARGAS_GITHUB);
         return $datos;
     }
 

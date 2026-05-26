@@ -41,6 +41,16 @@ final class Transients
     public const CACHE_ESTADISTICAS = HOUR_IN_SECONDS;
 
     /**
+     * Cache del bundle de descargas de GitHub Releases (EstadisticasPage).
+     * TTL más largo que CACHE_ESTADISTICAS porque su refresco no lo paga
+     * el render —que nunca bloquea contra api.github.com— sino el cron de
+     * ingesta (precalentamiento) y el botón "Refrescar ya". Un TTL amplio
+     * evita que el transient caduque entre rondas de cron y deje al admin
+     * con el estado "calculando" mientras se rehace en segundo plano.
+     */
+    public const CACHE_DESCARGAS_GITHUB = 12 * HOUR_IN_SECONDS;
+
+    /**
      * Cache de la última release de GitHub usada por
      * AppUpdateEndpoint. Pulsar /update demasiado rápido contra la
      * API de GitHub gasta cuota; 1h es lo bastante fresco para que

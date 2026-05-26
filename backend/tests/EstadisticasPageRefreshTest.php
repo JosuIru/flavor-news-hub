@@ -7,18 +7,26 @@ use FlavorNewsHub\Admin\Pages\EstadisticasPage;
 use WP_UnitTestCase;
 
 /**
- * Verifica el fix del botón "Refrescar ya" de la pantalla de estadísticas
- * (v0.9.70). Antes hacía `wp_safe_redirect` tras `delete_transient` y, si
- * cualquier plugin/tema imprimía output antes, los headers ya estaban
- * enviados y la pantalla quedaba en blanco. Ahora refresca inline y
- * pinta un `notice-success`.
+ * Verifica dos aspectos de la pantalla de estadísticas:
+ *
+ *  1. El fix del botón "Refrescar ya" (v0.9.70): antes hacía
+ *     `wp_safe_redirect` y, si algo imprimía output antes, la pantalla
+ *     quedaba en blanco. Ahora refresca inline (síncrono) y pinta un
+ *     `notice-success`.
+ *  2. El render no bloqueante: la carga normal nunca espera a
+ *     api.github.com. Sirve el caché si existe y, en frío, pinta el
+ *     estado "calculando" y encola el refresco en segundo plano.
  *
  * Mockeamos la API de GitHub vía `pre_http_request` para no salir a
- * Internet desde el test.
+ * Internet desde el test y, de paso, contar cuántas veces el render
+ * habría pegado a GitHub.
  */
 final class EstadisticasPageRefreshTest extends WP_UnitTestCase
 {
     private const TRANSIENT = 'fnh_stats_descargas';
+
+    /** Nº de peticiones a api.github.com interceptadas en el test actual. */
+    private int $llamadasGithub = 0;
 
     public function set_up(): void
     {
@@ -27,7 +35,9 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
         $idAdmin = self::factory()->user->create(['role' => 'administrator']);
         wp_set_current_user($idAdmin);
 
+        $this->llamadasGithub = 0;
         delete_transient(self::TRANSIENT);
+        wp_clear_scheduled_hook(EstadisticasPage::HOOK_REFRESCO_BG);
         add_filter('pre_http_request', [$this, 'mockGithubRespuesta'], 10, 3);
     }
 
@@ -35,6 +45,7 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
     {
         remove_filter('pre_http_request', [$this, 'mockGithubRespuesta'], 10);
         delete_transient(self::TRANSIENT);
+        wp_clear_scheduled_hook(EstadisticasPage::HOOK_REFRESCO_BG);
         unset($_GET['refrescar'], $_GET['_wpnonce'], $_REQUEST['_wpnonce']);
         parent::tear_down();
     }
@@ -49,6 +60,7 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
         if (strpos($url, 'api.github.com') === false) {
             return $previa;
         }
+        $this->llamadasGithub++;
         $cuerpoFalso = [[
             'tag_name' => 'v0.9.70',
             'assets'   => [[
@@ -98,11 +110,64 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
 
     public function test_render_normal_sin_refrescar_no_pinta_notice(): void
     {
+        // Pre-cargamos el caché para que la carga normal sirva datos y no
+        // entre en el estado "calculando".
+        set_transient(self::TRANSIENT, [
+            'total_apk'      => 1,
+            'total_zip'      => 0,
+            'total_releases' => 1,
+            'filas'          => [['tag' => 'v1', 'nombre' => 'x.apk', 'descargas' => 1]],
+            'ts_lectura'     => time(),
+        ], HOUR_IN_SECONDS);
+
         ob_start();
         EstadisticasPage::render();
         $html = (string) ob_get_clean();
 
         $this->assertStringContainsString('Estadísticas de descargas', $html);
         $this->assertStringNotContainsString('notice-success', $html, 'Sin ?refrescar=1, no se pinta el notice.');
+    }
+
+    /**
+     * Carga normal con el caché frío: el render NO debe bloquear contra
+     * api.github.com. Muestra el estado "calculando" y encola el evento
+     * WP-Cron one-off que rehace el bundle en segundo plano.
+     */
+    public function test_carga_normal_cache_frio_no_bloquea_y_programa_refresco(): void
+    {
+        // set_up ya borró el transient: estamos en frío.
+        ob_start();
+        EstadisticasPage::render();
+        $html = (string) ob_get_clean();
+
+        $this->assertSame(0, $this->llamadasGithub, 'El render en frío no debe pegarse a GitHub.');
+        $this->assertStringContainsString('Calculando las descargas', $html, 'Debe pintar el estado "calculando".');
+        $this->assertNotFalse(
+            wp_next_scheduled(EstadisticasPage::HOOK_REFRESCO_BG),
+            'Debe encolarse el refresco en segundo plano.'
+        );
+    }
+
+    /**
+     * Carga normal con el caché caliente: sirve el transient tal cual,
+     * sin ninguna petición a GitHub.
+     */
+    public function test_carga_normal_cache_caliente_sirve_sin_http(): void
+    {
+        set_transient(self::TRANSIENT, [
+            'total_apk'      => 42,
+            'total_zip'      => 7,
+            'total_releases' => 3,
+            'filas'          => [['tag' => 'v1', 'nombre' => 'x.apk', 'descargas' => 42]],
+            'ts_lectura'     => time(),
+        ], HOUR_IN_SECONDS);
+
+        ob_start();
+        EstadisticasPage::render();
+        $html = (string) ob_get_clean();
+
+        $this->assertSame(0, $this->llamadasGithub, 'Con caché caliente no se llama a GitHub.');
+        $this->assertStringContainsString('>42</div>', $html, 'Debe pintar el total cacheado.');
+        $this->assertStringNotContainsString('Calculando las descargas', $html);
     }
 }
