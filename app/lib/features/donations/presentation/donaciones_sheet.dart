@@ -70,6 +70,8 @@ class _ContenidoSheet extends ConsumerWidget {
                 ),
           ),
           const SizedBox(height: 20),
+          _SeccionCompartir(textos: textos),
+          const SizedBox(height: 24),
           _TarjetaEnlace(
             icono: Icons.local_cafe,
             titulo: 'Ko-fi',
@@ -98,8 +100,6 @@ class _ContenidoSheet extends ConsumerWidget {
             colorFondo: const Color(0xFFA07818),
           ),
           const SizedBox(height: 24),
-          _SeccionCompartir(textos: textos),
-          const SizedBox(height: 20),
           _OtrasFormas(textos: textos),
           const SizedBox(height: 16),
           _TarjetaEcosistema(textos: textos),
