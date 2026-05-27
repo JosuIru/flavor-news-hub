@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flavor_news_hub/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -71,6 +72,8 @@ class _ContenidoSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
           _SeccionCompartir(textos: textos),
+          const SizedBox(height: 16),
+          _SeccionProponerMedio(textos: textos),
           const SizedBox(height: 24),
           _TarjetaEnlace(
             icono: Icons.local_cafe,
@@ -329,6 +332,44 @@ class _SeccionCompartir extends StatelessWidget {
             // instalación). Antes el sheet de donaciones compartía un
             // texto distinto y mucho más escueto que el de Ajustes.
             onPressed: () => Share.share(textos.shareAppMessage),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Acceso al formulario de "Proponer un medio" desde la caja de apoyo:
+/// colabora aportando una fuente, no sólo dinero o difusión. Reutiliza
+/// los textos de Ajustes para no duplicar cadenas de localización.
+class _SeccionProponerMedio extends StatelessWidget {
+  const _SeccionProponerMedio({required this.textos});
+  final AppLocalizations textos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          textos.settingsProposeSourceSubtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.rss_feed_outlined),
+            label: Text(textos.settingsProposeSource),
+            // El formulario es una pantalla completa; cerramos la sheet
+            // antes de navegar para no dejarla abierta por debajo.
+            onPressed: () {
+              final router = GoRouter.of(context);
+              Navigator.of(context).pop();
+              router.push('/sources/submit');
+            },
           ),
         ),
       ],
