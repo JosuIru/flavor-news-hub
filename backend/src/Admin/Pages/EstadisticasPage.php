@@ -35,6 +35,22 @@ final class EstadisticasPage
     public const HOOK_REFRESCO_BG = 'fnh_refrescar_stats_descargas';
 
     /**
+     * Option (no autoload) con la serie histórica de descargas. GitHub
+     * sólo expone el contador ACUMULADO de cada asset, sin fecha, así que
+     * guardamos un snapshot del acumulado por día y derivamos las
+     * descargas diarias como la diferencia entre días consecutivos.
+     * Formato: ['YYYY-MM-DD' => ['apk' => int, 'zip' => int]] (acumulado
+     * crudo al cierre de ese día; se sobrescribe en cada pase del cron).
+     */
+    private const OPTION_HISTORICO = 'fnh_descargas_historico';
+
+    /** Días de histórico que conservamos (poda lo más viejo). */
+    private const DIAS_RETENCION_HISTORICO = 90;
+
+    /** Días que mostramos en el gráfico de barras de descargas/día. */
+    private const DIAS_GRAFICO = 30;
+
+    /**
      * Render de la pantalla. Cuando se invoca desde `SistemaPage`
      * (tabs unificadas), `$conWrap` debe ser false para que el
      * contenedor `.wrap` y el `<h1>` los aporte la página padre y no
@@ -156,6 +172,8 @@ final class EstadisticasPage
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+
+                <?php self::renderSeccionDescargasPorDia(); ?>
             <?php endif; ?>
 
             <?php self::renderSeccionIngesta($statsInternas['actividad']); ?>
@@ -294,6 +312,13 @@ final class EstadisticasPage
 
         $totalApk = 0;
         $totalZip = 0;
+        // Acumulados CRUDOS (sin restar el offset de descargas propias):
+        // son los que alimentan el snapshot diario. Usar el crudo evita
+        // que la serie por día se distorsione si el admin cambia el offset
+        // a posteriori — el delta entre dos días sólo refleja descargas
+        // reales de GitHub, no reajustes del contador propio.
+        $totalApkCrudo = 0;
+        $totalZipCrudo = 0;
         $filas = [];
         foreach ($cuerpo as $release) {
             if (!is_array($release)) continue;
@@ -303,9 +328,15 @@ final class EstadisticasPage
                 if (!is_array($asset)) continue;
                 $nombre = (string) ($asset['name'] ?? '');
                 $descargasCrudas = (int) ($asset['download_count'] ?? 0);
+                $extension = strtolower((string) pathinfo($nombre, PATHINFO_EXTENSION));
+                if ($extension === 'apk') {
+                    $totalApkCrudo += $descargasCrudas;
+                } elseif ($extension === 'zip') {
+                    $totalZipCrudo += $descargasCrudas;
+                }
+                // Total mostrado: descuenta las descargas propias del admin.
                 $descargas = max(0, $descargasCrudas - $offsetReleaseActual);
                 if ($descargas <= 0) continue;
-                $extension = strtolower((string) pathinfo($nombre, PATHINFO_EXTENSION));
                 if ($extension === 'apk') {
                     $totalApk += $descargas;
                 } elseif ($extension === 'zip') {
@@ -319,6 +350,10 @@ final class EstadisticasPage
             }
         }
 
+        // Registramos el acumulado del día para construir la serie por día
+        // (GitHub no expone descargas con fecha, sólo el contador total).
+        self::registrarSnapshotDiario($totalApkCrudo, $totalZipCrudo);
+
         $datos = [
             'total_apk'      => $totalApk,
             'total_zip'      => $totalZip,
@@ -328,6 +363,136 @@ final class EstadisticasPage
         ];
         set_transient(self::TRANSIENT_CACHE, $datos, Transients::CACHE_DESCARGAS_GITHUB);
         return $datos;
+    }
+
+    /**
+     * Guarda (o sobrescribe) el acumulado crudo del día en curso. Como el
+     * cron pasa varias veces al día, el día queda con el último valor
+     * leído; el delta diario se deriva al renderizar. Poda el histórico a
+     * `DIAS_RETENCION_HISTORICO` días para no inflar la tabla de options.
+     */
+    private static function registrarSnapshotDiario(int $apkCrudo, int $zipCrudo): void
+    {
+        $hoy = current_time('Y-m-d');
+        $historico = get_option(self::OPTION_HISTORICO, []);
+        if (!is_array($historico)) {
+            $historico = [];
+        }
+        $historico[$hoy] = ['apk' => $apkCrudo, 'zip' => $zipCrudo];
+        if (count($historico) > self::DIAS_RETENCION_HISTORICO) {
+            // Las claves son 'YYYY-MM-DD': el orden lexicográfico coincide
+            // con el cronológico, así que ksort + slice deja los más nuevos.
+            ksort($historico);
+            $historico = array_slice($historico, -self::DIAS_RETENCION_HISTORICO, null, true);
+        }
+        update_option(self::OPTION_HISTORICO, $historico, false);
+    }
+
+    /**
+     * Deriva las descargas POR DÍA a partir de los snapshots acumulados:
+     * cada día vale `acumulado[día] - acumulado[día_anterior]`. El primer
+     * día no tiene referencia previa y se omite. Capamos a 0 los deltas
+     * negativos (pueden aparecer si se borra un asset y el acumulado baja).
+     *
+     * @return list<array{fecha:string,apk:int,zip:int,total:int}>
+     */
+    private static function serieDescargasPorDia(): array
+    {
+        $historico = get_option(self::OPTION_HISTORICO, []);
+        if (!is_array($historico) || count($historico) < 2) {
+            return [];
+        }
+        ksort($historico);
+        $serie = [];
+        $diaPrevio = null;
+        foreach ($historico as $fecha => $acumulado) {
+            if (!is_array($acumulado)) {
+                continue;
+            }
+            $apk = (int) ($acumulado['apk'] ?? 0);
+            $zip = (int) ($acumulado['zip'] ?? 0);
+            if ($diaPrevio !== null) {
+                $deltaApk = max(0, $apk - $diaPrevio['apk']);
+                $deltaZip = max(0, $zip - $diaPrevio['zip']);
+                $serie[] = [
+                    'fecha' => (string) $fecha,
+                    'apk'   => $deltaApk,
+                    'zip'   => $deltaZip,
+                    'total' => $deltaApk + $deltaZip,
+                ];
+            }
+            $diaPrevio = ['apk' => $apk, 'zip' => $zip];
+        }
+        return $serie;
+    }
+
+    /**
+     * Sección "Descargas por día": gráfico de barras (CSS, sin librerías)
+     * de los últimos `DIAS_GRAFICO` días más una tabla. Si aún no hay al
+     * menos dos snapshots, explica que la serie se construye desde ahora.
+     */
+    private static function renderSeccionDescargasPorDia(): void
+    {
+        $serie = self::serieDescargasPorDia();
+        ?>
+        <h2><?php esc_html_e('Descargas por día', 'flavor-news-hub'); ?></h2>
+        <?php if ($serie === []) : ?>
+            <p class="description">
+                <?php esc_html_e('Aún recopilando datos. GitHub no expone las descargas con fecha, sólo el contador acumulado, así que esta serie se construye a partir de un snapshot diario y empieza a poblarse desde ahora: vuelve dentro de uno o dos días.', 'flavor-news-hub'); ?>
+            </p>
+        <?php else :
+            $ultimos = array_slice($serie, -self::DIAS_GRAFICO);
+            $maximo = 0;
+            foreach ($ultimos as $dia) {
+                if ($dia['total'] > $maximo) {
+                    $maximo = $dia['total'];
+                }
+            }
+            ?>
+            <div style="display:flex;align-items:flex-end;gap:3px;height:160px;max-width:900px;border-bottom:1px solid #ccd0d4;padding-bottom:2px;margin:1em 0;">
+                <?php foreach ($ultimos as $dia) :
+                    $altura = $maximo > 0 ? max(2, (int) round($dia['total'] / $maximo * 150)) : 2;
+                    $titulo = sprintf(
+                        /* translators: 1: fecha, 2: total, 3: APK, 4: ZIP */
+                        __('%1$s — %2$d descargas (APK %3$d, ZIP %4$d)', 'flavor-news-hub'),
+                        $dia['fecha'],
+                        $dia['total'],
+                        $dia['apk'],
+                        $dia['zip']
+                    );
+                    ?>
+                    <div title="<?php echo esc_attr($titulo); ?>"
+                         style="flex:1 1 0;min-width:4px;height:<?php echo (int) $altura; ?>px;background:#2271b1;border-radius:2px 2px 0 0;"></div>
+                <?php endforeach; ?>
+            </div>
+            <p class="description">
+                <?php echo esc_html(sprintf(
+                    /* translators: %d = número de días */
+                    __('Descargas diarias de los últimos %d días (pasa el ratón por cada barra para el detalle).', 'flavor-news-hub'),
+                    count($ultimos)
+                )); ?>
+            </p>
+            <table class="widefat striped" style="max-width:500px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Día', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('APK', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('ZIP', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('Total', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach (array_reverse($ultimos) as $dia) : ?>
+                        <tr>
+                            <td><?php echo esc_html($dia['fecha']); ?></td>
+                            <td style="text-align:right;"><?php echo (int) $dia['apk']; ?></td>
+                            <td style="text-align:right;"><?php echo (int) $dia['zip']; ?></td>
+                            <td style="text-align:right;"><strong><?php echo (int) $dia['total']; ?></strong></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif;
     }
 
     /**

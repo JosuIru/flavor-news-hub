@@ -55,6 +55,10 @@ $wpdb->query("DROP TABLE IF EXISTS {$nombreTablaLog}");
 // Borrar option de ajustes.
 delete_option('fnh_settings');
 
+// Borrar la serie histórica de descargas por día (snapshots del contador
+// de GitHub que alimentan el gráfico de Estadísticas → Descargas por día).
+delete_option('fnh_descargas_historico');
+
 // Limpiar transients del rate limiter (por si quedan sin expirar).
 $patronTransient = $wpdb->esc_like('_transient_fnh_rl_') . '%';
 $wpdb->query($wpdb->prepare(
