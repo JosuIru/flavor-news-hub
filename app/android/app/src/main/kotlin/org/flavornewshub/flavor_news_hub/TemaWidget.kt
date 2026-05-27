@@ -11,6 +11,16 @@ import android.widget.RemoteViews
  * el mismo layout en lugar de mantener dos XML paralelos.
  */
 object TemaWidget {
+    /**
+     * Clave en las prefs del widget donde el provider deja el modo
+     * (claro/oscuro) que detectó con su `context` del broadcast. La
+     * factory del ListView la lee para pintar el texto con el mismo
+     * criterio: su `applicationContext` a veces reporta
+     * `UI_MODE_NIGHT_NO` aunque el sistema esté en oscuro, lo que
+     * dejaba texto negro sobre fondo oscuro.
+     */
+    const val CLAVE_TEMA_OSCURO = "widget_tema_oscuro"
+
     fun esOscuro(ctx: Context): Boolean {
         val modo = ctx.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         return modo == Configuration.UI_MODE_NIGHT_YES
@@ -18,7 +28,9 @@ object TemaWidget {
 
     /**
      * Aplica colores coherentes con el tema del sistema. Recibe los ids
-     * relevantes del layout; los opcionales pueden ser 0.
+     * relevantes del layout; los opcionales pueden ser 0. Devuelve el
+     * modo oscuro que detectó, para que el llamante pueda persistirlo y
+     * compartirlo con la factory del ListView.
      */
     fun aplicar(
         ctx: Context,
@@ -26,7 +38,7 @@ object TemaWidget {
         idFondo: Int,
         idsTextoPrincipal: List<Int> = emptyList(),
         idsTextoSecundario: List<Int> = emptyList(),
-    ) {
+    ): Boolean {
         val oscuro = esOscuro(ctx)
         val fondoResId = if (oscuro) R.drawable.widget_fondo else R.drawable.widget_fondo_claro
         views.setInt(idFondo, "setBackgroundResource", fondoResId)
@@ -38,5 +50,6 @@ object TemaWidget {
         for (id in idsTextoSecundario) {
             views.setTextColor(id, colorSecundario)
         }
+        return oscuro
     }
 }
