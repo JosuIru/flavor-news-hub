@@ -24,6 +24,7 @@ use WP_UnitTestCase;
 final class EstadisticasPageRefreshTest extends WP_UnitTestCase
 {
     private const TRANSIENT = 'fnh_stats_descargas';
+    private const OPTION_HISTORICO = 'fnh_descargas_historico';
 
     /** Nº de peticiones a api.github.com interceptadas en el test actual. */
     private int $llamadasGithub = 0;
@@ -37,6 +38,7 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
 
         $this->llamadasGithub = 0;
         delete_transient(self::TRANSIENT);
+        delete_option(self::OPTION_HISTORICO);
         wp_clear_scheduled_hook(EstadisticasPage::HOOK_REFRESCO_BG);
         add_filter('pre_http_request', [$this, 'mockGithubRespuesta'], 10, 3);
     }
@@ -45,6 +47,7 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
     {
         remove_filter('pre_http_request', [$this, 'mockGithubRespuesta'], 10);
         delete_transient(self::TRANSIENT);
+        delete_option(self::OPTION_HISTORICO);
         wp_clear_scheduled_hook(EstadisticasPage::HOOK_REFRESCO_BG);
         unset($_GET['refrescar'], $_GET['_wpnonce'], $_REQUEST['_wpnonce']);
         parent::tear_down();
@@ -169,5 +172,62 @@ final class EstadisticasPageRefreshTest extends WP_UnitTestCase
         $this->assertSame(0, $this->llamadasGithub, 'Con caché caliente no se llama a GitHub.');
         $this->assertStringContainsString('>42</div>', $html, 'Debe pintar el total cacheado.');
         $this->assertStringNotContainsString('Calculando las descargas', $html);
+    }
+
+    /**
+     * El refresco registra un snapshot del acumulado CRUDO del día (el
+     * mock devuelve un APK con download_count=5), base de la serie diaria.
+     */
+    public function test_refrescar_registra_snapshot_diario_crudo(): void
+    {
+        $_GET['refrescar'] = '1';
+        $nonce = wp_create_nonce('fnh_stats_refrescar');
+        $_GET['_wpnonce'] = $nonce;
+        $_REQUEST['_wpnonce'] = $nonce;
+
+        ob_start();
+        EstadisticasPage::render();
+        ob_get_clean();
+
+        $historico = get_option(self::OPTION_HISTORICO);
+        $hoy = current_time('Y-m-d');
+        $this->assertIsArray($historico);
+        $this->assertArrayHasKey($hoy, $historico, 'Debe guardarse el snapshot del día actual.');
+        $this->assertSame(5, $historico[$hoy]['apk'], 'Guarda el acumulado crudo de APK del mock.');
+        $this->assertSame(0, $historico[$hoy]['zip']);
+    }
+
+    /**
+     * La sección "Descargas por día" deriva los deltas entre snapshots
+     * acumulados y omite el primer día (sin referencia previa).
+     */
+    public function test_seccion_por_dia_pinta_deltas_y_omite_primer_dia(): void
+    {
+        update_option(self::OPTION_HISTORICO, [
+            '2026-05-20' => ['apk' => 100, 'zip' => 10], // primer día: sin delta
+            '2026-05-21' => ['apk' => 108, 'zip' => 12], // delta total = 8 + 2 = 10
+            '2026-05-22' => ['apk' => 111, 'zip' => 14], // delta total = 3 + 2 = 5
+        ], false);
+        // Caché caliente para entrar en la rama de datos (donde se pinta
+        // la sección por día) sin pegar a GitHub.
+        set_transient(self::TRANSIENT, [
+            'total_apk'      => 1,
+            'total_zip'      => 0,
+            'total_releases' => 1,
+            'filas'          => [['tag' => 'v1', 'nombre' => 'x.apk', 'descargas' => 1]],
+            'ts_lectura'     => time(),
+        ], HOUR_IN_SECONDS);
+
+        ob_start();
+        EstadisticasPage::render();
+        $html = (string) ob_get_clean();
+
+        $this->assertStringContainsString('Descargas por día', $html);
+        $this->assertStringContainsString('2026-05-22', $html);
+        $this->assertStringContainsString('2026-05-21', $html);
+        $this->assertStringNotContainsString('2026-05-20', $html, 'El primer día no tiene delta y no se lista.');
+        // Totales diarios en la celda <strong>: 10 (día 21) y 5 (día 22).
+        $this->assertStringContainsString('<strong>10</strong>', $html);
+        $this->assertStringContainsString('<strong>5</strong>', $html);
     }
 }
