@@ -17,7 +17,7 @@ const String _urlManifiesto =
 /// demás (colaboraciones, prensa, mensajes que no encajan en un issue).
 const String _urlIssuesGithub =
     'https://github.com/JosuIru/flavor-news-hub/issues/new';
-const String _emailContactoProyecto = 'irurag@gmail.com';
+const String _emailContactoProyecto = 'gailuxare@gmail.com';
 
 final _paqueteInfoProvider = FutureProvider<PackageInfo>((ref) async {
   return PackageInfo.fromPlatform();
