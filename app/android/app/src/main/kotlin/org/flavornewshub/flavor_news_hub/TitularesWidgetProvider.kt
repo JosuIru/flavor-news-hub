@@ -134,13 +134,19 @@ class TitularesWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.widget_titulo, pendingAbrir)
 
-        TemaWidget.aplicar(
+        val temaOscuro = TemaWidget.aplicar(
             context,
             views,
             idFondo = R.id.widget_root,
             idsTextoPrincipal = listOf(R.id.widget_titulo),
             idsTextoSecundario = listOf(R.id.widget_vacio),
         )
+        // Compartimos con la factory del ListView el modo detectado aquí
+        // (con el `context` del broadcast, fiable). Debe escribirse ANTES
+        // del notify para que `onDataSetChanged` lea el valor fresco; si
+        // no, la factory caía en su `applicationContext` y pintaba texto
+        // negro sobre el fondo oscuro.
+        widgetPrefs.edit().putBoolean(TemaWidget.CLAVE_TEMA_OSCURO, temaOscuro).apply()
 
         appWidgetManager.updateAppWidget(widgetId, views)
         // Notificar a la factory que sus datos pueden haber cambiado —

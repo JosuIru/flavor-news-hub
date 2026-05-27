@@ -62,6 +62,12 @@ class TitularesRemoteViewsFactory(
 
     private val items = mutableListOf<Titular>()
 
+    // Modo oscuro que el provider detectó con su `context` del broadcast
+    // y dejó en las prefs. Lo usamos en `getViewAt` en lugar de recalcular
+    // con `applicationContext`, que reportaba claro aunque el sistema
+    // estuviera en oscuro (texto negro sobre fondo oscuro).
+    private var temaOscuro: Boolean = false
+
     override fun onCreate() {}
 
     override fun onDataSetChanged() {
@@ -70,6 +76,10 @@ class TitularesRemoteViewsFactory(
         // este hilo hasta terminar — está pensado para hacer I/O.
         items.clear()
         val prefs = HomeWidgetPlugin.getData(contexto)
+        temaOscuro = prefs.getBoolean(
+            TemaWidget.CLAVE_TEMA_OSCURO,
+            TemaWidget.esOscuro(contexto),
+        )
         for (indice in 1..MAX_ITEMS) {
             val titulo = prefs.getString("titular_${indice}_titulo", "") ?: ""
             if (titulo.isEmpty()) continue
@@ -95,8 +105,10 @@ class TitularesRemoteViewsFactory(
         // Colores aplicados en runtime según el modo claro/oscuro del
         // sistema. El XML no puede usar `?android:attr/textColor*` aquí
         // porque resuelve contra el tema del launcher (no del widget),
-        // saliendo negro contra el fondo oscuro estándar.
-        val oscuro = TemaWidget.esOscuro(contexto)
+        // saliendo negro contra el fondo oscuro estándar. Usamos el modo
+        // que persistió el provider (ver `temaOscuro`) para coincidir
+        // siempre con el color del fondo.
+        val oscuro = temaOscuro
         val colorTitulo = if (oscuro) android.graphics.Color.WHITE
             else android.graphics.Color.parseColor("#111111")
         val colorFuente = if (oscuro) android.graphics.Color.parseColor("#CCE0E0E0")
