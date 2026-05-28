@@ -62,6 +62,16 @@ jobs:
       - name: Flutter test
         run: flutter test
 
+      - name: Android unit tests (Robolectric)
+        # Smoke tests JVM de los AppWidgetProviders nativos. Robolectric
+        # simula el framework Android sin emulador, así que corren en el
+        # runner normal. Verifican que los 6 providers cargan y `onUpdate`
+        # no peta — la clase de fallo que dejó la app en negro tras bumps
+        # de toolchain. `--flavor libre` ya se compila abajo; aquí basta
+        # la variante de unit test del mismo flavor.
+        working-directory: app/android
+        run: ./gradlew :app:testLibreDebugUnitTest
+
       - name: Build APK (debug, flavor libre)
         # APK debug en lugar de release porque no firmamos aún. La
         # validación real aquí es "compila limpio para Android"; la
