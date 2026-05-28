@@ -47,6 +47,25 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
 
+    // Unit tests JVM (Robolectric) — corren sin emulador. `includeAndroidResources`
+    // da acceso al merge de recursos; `isReturnDefaultValues` evita que los stubs
+    // de android.jar lancen en las APIs que el test no ejerce.
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+            all { test ->
+                // En algunos entornos (CI, sandboxes) /tmp se monta `noexec`,
+                // y entonces Robolectric no puede extraer/cargar su .so de
+                // conscrypt (UnsatisfiedLinkError). Apuntamos el tmpdir de la
+                // JVM de test a un directorio del build, que sí permite exec.
+                def tmpTests = layout.buildDirectory.dir("test-tmp").get().asFile
+                test.doFirst { tmpTests.mkdirs() }
+                test.systemProperty "java.io.tmpdir", tmpTests.absolutePath
+            }
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "org.flavornewshub.flavor_news_hub"
@@ -139,6 +158,13 @@ dependencies {
     // promueve a la sección "Now playing" / lockscreen. Se vincula al
     // token del MediaSession Media3 vía `setMediaSession(platformToken)`.
     implementation "androidx.media:media:1.7.0"
+
+    // Smoke tests JVM de los AppWidgetProviders. Robolectric simula el
+    // framework Android en la JVM, así que verifican que los providers
+    // cargan y responden sin emulador ni dispositivo.
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.14.1"
+    testImplementation "androidx.test:core:1.6.1"
 }
 
 // Pin de `androidx.work` para que todas las dependencias resuelvan a la
