@@ -9,7 +9,9 @@ import '../../../core/config/canal_distribucion.dart';
 import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
 import '../../../core/idioma_contenido/sheet_politica_idioma_contenido.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../../core/services/registro_errores.dart';
 import '../../../core/services/settings_sync.dart';
+import '../../../core/widgets/pantalla_error.dart';
 import '../../../core/utils/territory_normalizer.dart';
 import '../../actualizaciones/data/actualizaciones_provider.dart';
 import '../../widgets/widgets_refrescador.dart';
@@ -33,6 +35,7 @@ class SettingsScreen extends ConsumerWidget {
     final textos = AppLocalizations.of(context);
     final preferencias = ref.watch(preferenciasProvider);
     final notifier = ref.read(preferenciasProvider.notifier);
+    final hayInformeError = ref.watch(ultimoInformeErrorProvider).valueOrNull != null;
 
     return Scaffold(
       appBar: AppBar(title: Text(textos.settingsTitle)),
@@ -164,6 +167,24 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(textos.settingsAbout),
             onTap: () => context.push('/about'),
           ),
+          // Solo visible si quedó registrado un fallo no controlado. Compartir
+          // es la única vía de telemetría del proyecto —voluntaria y a mano,
+          // coherente con "sin analítica". Descartar borra el informe local.
+          if (hayInformeError)
+            ListTile(
+              leading: const Icon(Icons.bug_report_outlined),
+              title: Text(textos.settingsErrorReport),
+              subtitle: Text(textos.settingsErrorReportSubtitle),
+              onTap: compartirUltimoInforme,
+              trailing: IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: textos.settingsErrorReportDismiss,
+                onPressed: () async {
+                  await RegistroErrores.instancia.limpiar();
+                  ref.invalidate(ultimoInformeErrorProvider);
+                },
+              ),
+            ),
           // "Avanzado" agrupa opciones para usuarios técnicos — hoy solo
           // la URL del backend. Colapsado por defecto: el 99 % de la
           // gente no necesita tocarla, y tenerla a la vista invita a

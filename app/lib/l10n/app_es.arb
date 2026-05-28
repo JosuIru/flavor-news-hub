@@ -347,5 +347,14 @@
   "flavorActivityEvents": "Eventos",
   "flavorActivityContent": "Catálogo",
   "flavorActivityBoard": "Tablón",
-  "flavorActivityEmpty": "Este nodo no publica actividad pública ahora mismo."
+  "flavorActivityEmpty": "Este nodo no publica actividad pública ahora mismo.",
+
+  "settingsErrorReport": "Compartir informe de error",
+  "@settingsErrorReport": { "description": "Entrada de Ajustes para compartir la traza del último fallo registrado." },
+
+  "settingsErrorReportSubtitle": "Se registró un fallo reciente. Compártelo para ayudar a arreglarlo; no se envía nada solo.",
+  "@settingsErrorReportSubtitle": { "description": "Subtítulo de la entrada de Ajustes para compartir el informe de error." },
+
+  "settingsErrorReportDismiss": "Descartar informe",
+  "@settingsErrorReportDismiss": { "description": "Acción para borrar el informe de error guardado." }
 }

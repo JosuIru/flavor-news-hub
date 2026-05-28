@@ -1024,4 +1024,14 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get flavorActivityEmpty =>
       'Nodo honek ez du jarduera publikorik orain.';
+
+  @override
+  String get settingsErrorReport => 'Partekatu errore-txostena';
+
+  @override
+  String get settingsErrorReportSubtitle =>
+      'Azkenaldian huts bat erregistratu da. Partekatu konpontzen laguntzeko; ez da ezer bakarrik bidaltzen.';
+
+  @override
+  String get settingsErrorReportDismiss => 'Baztertu txostena';
 }

@@ -1945,6 +1945,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Este nodo no publica actividad pública ahora mismo.'**
   String get flavorActivityEmpty;
+
+  /// Entrada de Ajustes para compartir la traza del último fallo registrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir informe de error'**
+  String get settingsErrorReport;
+
+  /// Subtítulo de la entrada de Ajustes para compartir el informe de error.
+  ///
+  /// In es, this message translates to:
+  /// **'Se registró un fallo reciente. Compártelo para ayudar a arreglarlo; no se envía nada solo.'**
+  String get settingsErrorReportSubtitle;
+
+  /// Acción para borrar el informe de error guardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar informe'**
+  String get settingsErrorReportDismiss;
 }
 
 class _AppLocalizationsDelegate

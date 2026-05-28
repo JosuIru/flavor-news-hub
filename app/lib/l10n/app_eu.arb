@@ -351,5 +351,9 @@
   "updateDownloadingTitle": "Eguneratzea deskargatzen",
   "updateDownloadingIndeterminate": "Prestatzen…",
   "updateDownloadFallback": "Ezin izan da aplikazioan deskargatu. Nabigatzailean irekitzen.",
-  "updateInstallFallback": "Ezin izan da instalatzailea ireki. Nabigatzailean irekitzen."
+  "updateInstallFallback": "Ezin izan da instalatzailea ireki. Nabigatzailean irekitzen.",
+
+  "settingsErrorReport": "Partekatu errore-txostena",
+  "settingsErrorReportSubtitle": "Azkenaldian huts bat erregistratu da. Partekatu konpontzen laguntzeko; ez da ezer bakarrik bidaltzen.",
+  "settingsErrorReportDismiss": "Baztertu txostena"
 }

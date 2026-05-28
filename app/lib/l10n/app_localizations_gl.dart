@@ -1015,4 +1015,14 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get flavorActivityEmpty =>
       'Este nodo non publica actividade pública agora mesmo.';
+
+  @override
+  String get settingsErrorReport => 'Compartir informe de erro';
+
+  @override
+  String get settingsErrorReportSubtitle =>
+      'Rexistrouse un fallo recente. Compárteo para axudar a arranxalo; non se envía nada só.';
+
+  @override
+  String get settingsErrorReportDismiss => 'Descartar informe';
 }
