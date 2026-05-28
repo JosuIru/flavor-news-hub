@@ -355,5 +355,8 @@
 
   "settingsErrorReport": "Share error report",
   "settingsErrorReportSubtitle": "A recent crash was recorded. Share it to help fix it; nothing is sent on its own.",
-  "settingsErrorReportDismiss": "Discard report"
+  "settingsErrorReportDismiss": "Discard report",
+
+  "feedOrganizingCardTitle": "Who's organizing around {tema}?",
+  "feedOrganizingCardCta": "See collectives"
 }

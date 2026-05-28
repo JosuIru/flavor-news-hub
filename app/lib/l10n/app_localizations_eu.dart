@@ -1034,4 +1034,12 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get settingsErrorReportDismiss => 'Baztertu txostena';
+
+  @override
+  String feedOrganizingCardTitle(String tema) {
+    return 'Nor ari da antolatzen $tema gaiaren inguruan?';
+  }
+
+  @override
+  String get feedOrganizingCardCta => 'Ikusi kolektiboak';
 }

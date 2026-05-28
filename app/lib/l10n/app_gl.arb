@@ -355,5 +355,8 @@
 
   "settingsErrorReport": "Compartir informe de erro",
   "settingsErrorReportSubtitle": "Rexistrouse un fallo recente. Compárteo para axudar a arranxalo; non se envía nada só.",
-  "settingsErrorReportDismiss": "Descartar informe"
+  "settingsErrorReportDismiss": "Descartar informe",
+
+  "feedOrganizingCardTitle": "Quen se organiza sobre {tema}?",
+  "feedOrganizingCardCta": "Ver colectivos"
 }

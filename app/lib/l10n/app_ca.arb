@@ -355,5 +355,8 @@
 
   "settingsErrorReport": "Comparteix l'informe d'error",
   "settingsErrorReportSubtitle": "S'ha registrat una fallada recent. Comparteix-la per ajudar a arreglar-la; no s'envia res sol.",
-  "settingsErrorReportDismiss": "Descarta l'informe"
+  "settingsErrorReportDismiss": "Descarta l'informe",
+
+  "feedOrganizingCardTitle": "Qui s'organitza sobre {tema}?",
+  "feedOrganizingCardCta": "Veure col·lectius"
 }
