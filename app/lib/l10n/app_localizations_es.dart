@@ -1030,4 +1030,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsErrorReportDismiss => 'Descartar informe';
+
+  @override
+  String feedOrganizingCardTitle(String tema) {
+    return '¿Quién se organiza sobre $tema?';
+  }
+
+  @override
+  String get feedOrganizingCardCta => 'Ver colectivos';
 }
