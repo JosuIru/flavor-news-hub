@@ -209,7 +209,11 @@ class _ImagenDestacada extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    // Imagen decorativa: el título del titular ya transmite el contenido,
+    // así que la excluimos de la semántica para que TalkBack no anuncie un
+    // nodo de imagen sin etiqueta dentro de la tarjeta.
+    return ExcludeSemantics(
+      child: SizedBox(
       width: 96,
       height: 96,
       child: CachedNetworkImage(
@@ -225,6 +229,7 @@ class _ImagenDestacada extends StatelessWidget {
         placeholder: (ctx, _) => Container(
           color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
         ),
+      ),
       ),
     );
   }

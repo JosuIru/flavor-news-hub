@@ -141,7 +141,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   ),
                 );
               }
-              return _PantallaVacia(mensaje: textos.feedEmpty);
+              return _PantallaVacia(
+                mensaje: textos.feedEmpty,
+                etiquetaReintentar: textos.commonRetry,
+                onReintentar: () => ref.read(feedProvider.notifier).refrescar(),
+              );
             }
             final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
             final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
@@ -267,8 +271,15 @@ class _PantallaCarga extends StatelessWidget {
 }
 
 class _PantallaVacia extends StatelessWidget {
-  const _PantallaVacia({required this.mensaje});
+  const _PantallaVacia({
+    required this.mensaje,
+    required this.etiquetaReintentar,
+    required this.onReintentar,
+  });
+
   final String mensaje;
+  final String etiquetaReintentar;
+  final VoidCallback onReintentar;
 
   @override
   Widget build(BuildContext context) {
@@ -276,14 +287,31 @@ class _PantallaVacia extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         const SizedBox(height: 120),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              mensaje,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 48,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                mensaje,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              // Sin filtros activos, un feed vacío suele ser backend dormido
+              // o sin conexión al primer arranque: damos salida en vez de
+              // dejar la pantalla muerta (pull-to-refresh no es descubrible).
+              FilledButton.tonalIcon(
+                onPressed: onReintentar,
+                icon: const Icon(Icons.refresh),
+                label: Text(etiquetaReintentar),
+              ),
+            ],
           ),
         ),
       ],
