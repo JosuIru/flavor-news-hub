@@ -1016,4 +1016,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get flavorActivityEmpty =>
       'This node hasn\'t published any public activity yet.';
+
+  @override
+  String get settingsErrorReport => 'Share error report';
+
+  @override
+  String get settingsErrorReportSubtitle =>
+      'A recent crash was recorded. Share it to help fix it; nothing is sent on its own.';
+
+  @override
+  String get settingsErrorReportDismiss => 'Discard report';
 }

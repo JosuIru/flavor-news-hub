@@ -351,5 +351,9 @@
   "updateDownloadingTitle": "Descarregant actualització",
   "updateDownloadingIndeterminate": "Preparant…",
   "updateDownloadFallback": "No s'ha pogut descarregar des de l'app. S'obre al navegador.",
-  "updateInstallFallback": "No s'ha pogut obrir l'instal·lador. S'obre al navegador."
+  "updateInstallFallback": "No s'ha pogut obrir l'instal·lador. S'obre al navegador.",
+
+  "settingsErrorReport": "Comparteix l'informe d'error",
+  "settingsErrorReportSubtitle": "S'ha registrat una fallada recent. Comparteix-la per ajudar a arreglar-la; no s'envia res sol.",
+  "settingsErrorReportDismiss": "Descarta l'informe"
 }

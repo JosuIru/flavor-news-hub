@@ -1022,4 +1022,14 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get flavorActivityEmpty =>
       'Aquest node no publica activitat pública ara mateix.';
+
+  @override
+  String get settingsErrorReport => 'Comparteix l\'informe d\'error';
+
+  @override
+  String get settingsErrorReportSubtitle =>
+      'S\'ha registrat una fallada recent. Comparteix-la per ajudar a arreglar-la; no s\'envia res sol.';
+
+  @override
+  String get settingsErrorReportDismiss => 'Descarta l\'informe';
 }

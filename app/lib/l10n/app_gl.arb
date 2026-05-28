@@ -351,5 +351,9 @@
   "updateDownloadingTitle": "Descargando actualización",
   "updateDownloadingIndeterminate": "Preparando…",
   "updateDownloadFallback": "Non se puido descargar dentro da app. Abríndoo no navegador.",
-  "updateInstallFallback": "Non se puido abrir o instalador. Abríndoo no navegador."
+  "updateInstallFallback": "Non se puido abrir o instalador. Abríndoo no navegador.",
+
+  "settingsErrorReport": "Compartir informe de erro",
+  "settingsErrorReportSubtitle": "Rexistrouse un fallo recente. Compárteo para axudar a arranxalo; non se envía nada só.",
+  "settingsErrorReportDismiss": "Descartar informe"
 }

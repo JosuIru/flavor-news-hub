@@ -351,5 +351,9 @@
   "updateDownloadingTitle": "Downloading update",
   "updateDownloadingIndeterminate": "Preparing…",
   "updateDownloadFallback": "Couldn't download inside the app. Opening in the browser.",
-  "updateInstallFallback": "Couldn't open the installer. Opening in the browser."
+  "updateInstallFallback": "Couldn't open the installer. Opening in the browser.",
+
+  "settingsErrorReport": "Share error report",
+  "settingsErrorReportSubtitle": "A recent crash was recorded. Share it to help fix it; nothing is sent on its own.",
+  "settingsErrorReportDismiss": "Discard report"
 }

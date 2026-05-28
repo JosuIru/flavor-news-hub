@@ -1020,4 +1020,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get flavorActivityEmpty =>
       'Este nodo no publica actividad pública ahora mismo.';
+
+  @override
+  String get settingsErrorReport => 'Compartir informe de error';
+
+  @override
+  String get settingsErrorReportSubtitle =>
+      'Se registró un fallo reciente. Compártelo para ayudar a arreglarlo; no se envía nada solo.';
+
+  @override
+  String get settingsErrorReportDismiss => 'Descartar informe';
 }

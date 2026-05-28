@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,18 +11,55 @@ import 'app.dart';
 import 'core/providers/preferences_provider.dart';
 import 'core/providers/user_agent_provider.dart';
 import 'core/services/ingest_trigger.dart';
+import 'core/services/registro_errores.dart';
 import 'core/services/settings_sync.dart';
+import 'core/widgets/pantalla_error.dart';
 import 'features/notifications/data/preferencias_notif.dart';
 import 'features/notifications/data/servicio_notificaciones.dart';
 
-/// Punto de entrada. Cargamos SharedPreferences antes de montar la UI
-/// para que el tema y el idioma apliquen desde el primer frame (sin
-/// flash de default → preferencia guardada).
+/// Punto de entrada. Instala primero la red de seguridad de errores y
+/// luego arranca dentro de una zona protegida para que ningún fallo
+/// —ni del framework, ni asíncrono, ni en el propio arranque— tumbe la
+/// app sin dejar rastro. Con distribución directa y usuarios reales, un
+/// crash silencioso en arranque es la peor pérdida: el usuario ve negro y
+/// desinstala. Aquí siempre queda un informe local que puede compartir.
+void main() {
+  // Errores del framework (build/layout/paint): los pintamos en consola en
+  // debug y registramos el informe local en todos los casos.
+  FlutterError.onError = (detalles) {
+    FlutterError.presentError(detalles);
+    RegistroErrores.instancia.registrar(detalles.exception, detalles.stack);
+  };
+
+  // Recuadro rojo por defecto → aviso sobrio que no asusta al usuario.
+  ErrorWidget.builder = (detalles) => WidgetErrorSobrio(detalles: detalles);
+
+  // Errores asíncronos que no atrapa ninguna zona (callbacks de plugins,
+  // motores nativos). Devolver true marca el error como gestionado.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    RegistroErrores.instancia.registrar(error, stack);
+    return true;
+  };
+
+  runZonedGuarded(_arrancar, (error, stack) {
+    RegistroErrores.instancia.registrar(error, stack);
+    // Si el arranque petó antes de montar la UI real, evitamos la pantalla
+    // negra mostrando una app mínima de error con opción de reintentar.
+    runApp(const AppErrorArranque(alReintentar: _arrancar));
+  });
+}
+
+/// Secuencia de arranque. Extraída de `main` para poder relanzarla desde la
+/// pantalla de error sin reiniciar el proceso.
+///
+/// Cargamos SharedPreferences antes de montar la UI para que el tema y el
+/// idioma apliquen desde el primer frame (sin flash de default →
+/// preferencia guardada).
 ///
 /// `JustAudioBackground.init` habilita controles en la notificación del
 /// sistema para las radios en vivo (seguir escuchando con pantalla
 /// bloqueada, botones bluetooth, Android Auto).
-Future<void> main() async {
+Future<void> _arrancar() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await JustAudioBackground.init(
