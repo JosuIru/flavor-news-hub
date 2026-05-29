@@ -41,17 +41,14 @@ void main() {
     });
 
     test('match de país da 2', () {
-      // OJO: usamos 'spain' a propósito. La clave 'españa' del mapa lleva ñ,
-      // pero el lookup normaliza la ñ a 'n' ('espana'), así que esa entrada
-      // es inalcanzable y 'España' como base NO resuelve a país (bug latente
-      // en TerritoryNormalizer). 'spain' sí casa.
       expect(prioridad(country: 'España', region: 'Madrid', base: 'spain'), 2);
     });
 
-    test('base "España" con ñ no resuelve hoy (bug documentado)', () {
-      // Captura el comportamiento actual para que un futuro arreglo del
-      // normalizador haga fallar este test y obligue a actualizarlo.
-      expect(prioridad(country: 'España', base: 'España'), 0);
+    test('base "España" con ñ ya resuelve a país (bug de la ñ arreglado)', () {
+      // El normalizador reindexa el mapa por su clave normalizada, así que la
+      // entrada 'españa' (con ñ) vuelve a ser alcanzable.
+      expect(prioridad(country: 'España', base: 'España'), 2);
+      expect(prioridad(country: 'España', region: 'Andalucía', base: 'Andalucía'), 3);
     });
 
     test('match de red transnacional da 1', () {
