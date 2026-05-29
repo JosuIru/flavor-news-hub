@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/source.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/widgets/snackbar_deshacer.dart';
 import '../data/fuentes_bloqueadas_notifier.dart';
 
 /// Pantalla "Mis medios" (selección del usuario): lista todas las fuentes
@@ -98,9 +99,23 @@ class _EstadoFuentesPreferencias extends ConsumerState<FuentesPreferenciasScreen
                                     ? Text(_subtitulo(fuente)!)
                                     : null,
                                 value: !bloqueadas.contains(fuente.id),
-                                onChanged: (_) => ref
-                                    .read(fuentesBloqueadasProvider.notifier)
-                                    .alternar(fuente.id),
+                                onChanged: (activa) {
+                                  ref
+                                      .read(fuentesBloqueadasProvider.notifier)
+                                      .alternar(fuente.id);
+                                  // Switch off = silenciar: confirmamos con
+                                  // deshacer. Al reactivar no molestamos.
+                                  if (!activa) {
+                                    mostrarSnackBarDeshacer(
+                                      context,
+                                      mensaje: textos.sourceMuted,
+                                      etiquetaDeshacer: textos.commonUndo,
+                                      onDeshacer: () => ref
+                                          .read(fuentesBloqueadasProvider.notifier)
+                                          .alternar(fuente.id),
+                                    );
+                                  }
+                                },
                               ),
                           ],
                         ],

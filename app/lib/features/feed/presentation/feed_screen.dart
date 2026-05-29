@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/filtros/filtros_transversales.dart';
 import '../../../core/models/item.dart';
+import '../../../core/widgets/snackbar_deshacer.dart';
 import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../donations/presentation/donaciones_sheet.dart';
 import '../../history/data/historial_provider.dart';
@@ -217,10 +218,34 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                         .read(filtrosTransversalesProvider.notifier)
                         .alternarTopic(slug);
                   },
-                  onGuardarAlternar: () =>
-                      ref.read(guardadosProvider.notifier).alternar(item),
-                  onUtilAlternar: () =>
-                      ref.read(utilesProvider.notifier).alternar(item),
+                  onGuardarAlternar: () {
+                    final estaba = guardados.contains(item.id);
+                    ref.read(guardadosProvider.notifier).alternar(item);
+                    // Confirmamos con deshacer solo al guardar; al quitar de
+                    // guardados no interrumpimos con un SnackBar.
+                    if (!estaba) {
+                      mostrarSnackBarDeshacer(
+                        context,
+                        mensaje: textos.feedItemSaved,
+                        etiquetaDeshacer: textos.commonUndo,
+                        onDeshacer: () =>
+                            ref.read(guardadosProvider.notifier).alternar(item),
+                      );
+                    }
+                  },
+                  onUtilAlternar: () {
+                    final estaba = utiles.contains(item.id);
+                    ref.read(utilesProvider.notifier).alternar(item);
+                    if (!estaba) {
+                      mostrarSnackBarDeshacer(
+                        context,
+                        mensaje: textos.feedItemMarkedUseful,
+                        etiquetaDeshacer: textos.commonUndo,
+                        onDeshacer: () =>
+                            ref.read(utilesProvider.notifier).alternar(item),
+                      );
+                    }
+                  },
                 );
               },
             );

@@ -358,5 +358,10 @@
   "settingsErrorReportDismiss": "Discard report",
 
   "feedOrganizingCardTitle": "Who's organizing around {tema}?",
-  "feedOrganizingCardCta": "See collectives"
+  "feedOrganizingCardCta": "See collectives",
+
+  "commonUndo": "Undo",
+  "feedItemSaved": "Saved",
+  "feedItemMarkedUseful": "Marked as useful",
+  "sourceMuted": "Source muted"
 }

@@ -365,5 +365,17 @@
   },
 
   "feedOrganizingCardCta": "Ver colectivos",
-  "@feedOrganizingCardCta": { "description": "Botón de la tarjeta de colectivos del feed para ir al directorio." }
+  "@feedOrganizingCardCta": { "description": "Botón de la tarjeta de colectivos del feed para ir al directorio." },
+
+  "commonUndo": "Deshacer",
+  "@commonUndo": { "description": "Acción para revertir la última acción, en el SnackBar de confirmación." },
+
+  "feedItemSaved": "Guardado",
+  "@feedItemSaved": { "description": "Confirmación al guardar un titular." },
+
+  "feedItemMarkedUseful": "Marcado como útil",
+  "@feedItemMarkedUseful": { "description": "Confirmación al marcar un titular como útil." },
+
+  "sourceMuted": "Fuente silenciada",
+  "@sourceMuted": { "description": "Confirmación al silenciar una fuente." }
 }

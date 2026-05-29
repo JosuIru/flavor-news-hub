@@ -1040,4 +1040,16 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get feedOrganizingCardCta => 'Veure col·lectius';
+
+  @override
+  String get commonUndo => 'Desfés';
+
+  @override
+  String get feedItemSaved => 'Desat';
+
+  @override
+  String get feedItemMarkedUseful => 'Marcat com a útil';
+
+  @override
+  String get sourceMuted => 'Font silenciada';
 }

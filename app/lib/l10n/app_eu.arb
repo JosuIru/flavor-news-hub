@@ -358,5 +358,10 @@
   "settingsErrorReportDismiss": "Baztertu txostena",
 
   "feedOrganizingCardTitle": "Nor ari da antolatzen {tema} gaiaren inguruan?",
-  "feedOrganizingCardCta": "Ikusi kolektiboak"
+  "feedOrganizingCardCta": "Ikusi kolektiboak",
+
+  "commonUndo": "Desegin",
+  "feedItemSaved": "Gordeta",
+  "feedItemMarkedUseful": "Baliagarri gisa markatua",
+  "sourceMuted": "Iturria isilarazita"
 }

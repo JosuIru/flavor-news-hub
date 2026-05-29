@@ -1034,4 +1034,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedOrganizingCardCta => 'See collectives';
+
+  @override
+  String get commonUndo => 'Undo';
+
+  @override
+  String get feedItemSaved => 'Saved';
+
+  @override
+  String get feedItemMarkedUseful => 'Marked as useful';
+
+  @override
+  String get sourceMuted => 'Source muted';
 }

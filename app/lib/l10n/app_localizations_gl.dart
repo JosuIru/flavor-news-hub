@@ -1033,4 +1033,16 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get feedOrganizingCardCta => 'Ver colectivos';
+
+  @override
+  String get commonUndo => 'Desfacer';
+
+  @override
+  String get feedItemSaved => 'Gardado';
+
+  @override
+  String get feedItemMarkedUseful => 'Marcado como útil';
+
+  @override
+  String get sourceMuted => 'Fonte silenciada';
 }

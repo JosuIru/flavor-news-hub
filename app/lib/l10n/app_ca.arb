@@ -358,5 +358,10 @@
   "settingsErrorReportDismiss": "Descarta l'informe",
 
   "feedOrganizingCardTitle": "Qui s'organitza sobre {tema}?",
-  "feedOrganizingCardCta": "Veure col·lectius"
+  "feedOrganizingCardCta": "Veure col·lectius",
+
+  "commonUndo": "Desfés",
+  "feedItemSaved": "Desat",
+  "feedItemMarkedUseful": "Marcat com a útil",
+  "sourceMuted": "Font silenciada"
 }
