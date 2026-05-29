@@ -1964,18 +1964,6 @@ abstract class AppLocalizations {
   /// **'Descartar informe'**
   String get settingsErrorReportDismiss;
 
-  /// Título de la tarjeta intercalada en el feed que enlaza con colectivos de la temática dominante.
-  ///
-  /// In es, this message translates to:
-  /// **'¿Quién se organiza sobre {tema}?'**
-  String feedOrganizingCardTitle(String tema);
-
-  /// Botón de la tarjeta de colectivos del feed para ir al directorio.
-  ///
-  /// In es, this message translates to:
-  /// **'Ver colectivos'**
-  String get feedOrganizingCardCta;
-
   /// Acción para revertir la última acción, en el SnackBar de confirmación.
   ///
   /// In es, this message translates to:

@@ -358,15 +358,6 @@
   "settingsErrorReportDismiss": "Descartar informe",
   "@settingsErrorReportDismiss": { "description": "Acción para borrar el informe de error guardado." },
 
-  "feedOrganizingCardTitle": "¿Quién se organiza sobre {tema}?",
-  "@feedOrganizingCardTitle": {
-    "description": "Título de la tarjeta intercalada en el feed que enlaza con colectivos de la temática dominante.",
-    "placeholders": { "tema": { "type": "String" } }
-  },
-
-  "feedOrganizingCardCta": "Ver colectivos",
-  "@feedOrganizingCardCta": { "description": "Botón de la tarjeta de colectivos del feed para ir al directorio." },
-
   "commonUndo": "Deshacer",
   "@commonUndo": { "description": "Acción para revertir la última acción, en el SnackBar de confirmación." },
 

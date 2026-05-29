@@ -357,9 +357,6 @@
   "settingsErrorReportSubtitle": "Azkenaldian huts bat erregistratu da. Partekatu konpontzen laguntzeko; ez da ezer bakarrik bidaltzen.",
   "settingsErrorReportDismiss": "Baztertu txostena",
 
-  "feedOrganizingCardTitle": "Nor ari da antolatzen {tema} gaiaren inguruan?",
-  "feedOrganizingCardCta": "Ikusi kolektiboak",
-
   "commonUndo": "Desegin",
   "feedItemSaved": "Gordeta",
   "feedItemMarkedUseful": "Baliagarri gisa markatua",

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/filtros/filtros_transversales.dart';
-import '../../../core/models/item.dart';
 import '../../../core/widgets/snackbar_deshacer.dart';
 import '../../../core/widgets/barra_filtros_activos.dart';
 import '../../donations/presentation/donaciones_sheet.dart';
@@ -12,9 +11,7 @@ import '../../history/data/historial_provider.dart';
 import '../../offline_seed/data/seed_loader.dart';
 import '../data/feed_notifier.dart';
 import '../data/filtros_feed.dart';
-import '../data/topic_dominante.dart';
 import 'item_card.dart';
-import 'tarjeta_colectivos_feed.dart';
 
 /// Feed cronológico paginado con:
 ///  - pull-to-refresh,
@@ -156,47 +153,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             final leidos = ref.watch(leidosProvider).valueOrNull ?? const <int>{};
             final indiceBase = estado.modoOffline ? 1 : 0; // +1 si hay banner offline
 
-            // Tarjeta "¿quién se organiza?": una sola, sobre la temática
-            // dominante del feed, intercalada tras unos pocos titulares.
-            // Una única consulta de red (cacheada por slug), no una por
-            // tarjeta. Solo si el feed trae temáticas; si no hay colectivos
-            // la propia tarjeta se oculta.
-            final temaFeed = topicDominante(estado.items);
-            final territorioFeed = _territorioDominante(estado.items);
-            final mostrarTarjetaColectivos = temaFeed != null && estado.items.length >= 3;
-            // Posición visual de la tarjeta dentro de la zona de items.
-            const posTarjetaEnItems = 3;
-
-            final totalFilas = indiceBase +
-                estado.items.length +
-                (mostrarTarjetaColectivos ? 1 : 0) +
-                1; // pie paginado
-
             return ListView.separated(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: totalFilas,
+              itemCount: estado.items.length + 1 + indiceBase,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, indice) {
                 if (estado.modoOffline && indice == 0) {
                   return _AvisoOffline(textos: textos);
                 }
-                // Índice dentro de la secuencia [items + tarjeta + pie].
-                final indiceLocal = indice - indiceBase;
-
-                if (mostrarTarjetaColectivos && indiceLocal == posTarjetaEnItems) {
-                  return TarjetaColectivosFeed(
-                    tema: temaFeed,
-                    territorio: territorioFeed,
-                  );
-                }
-
-                // Tras la tarjeta, los items se desplazan un slot.
-                final indiceItem =
-                    mostrarTarjetaColectivos && indiceLocal > posTarjetaEnItems
-                        ? indiceLocal - 1
-                        : indiceLocal;
-
+                final indiceItem = indice - indiceBase;
                 if (indiceItem == estado.items.length) {
                   return _PiePaginado(
                     cargando: estado.cargandoMasPaginas,
@@ -257,18 +223,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       ),
     );
   }
-}
-
-/// Territorio que usa la tarjeta de colectivos como señal débil cuando la
-/// temática no da resultados: el primer territorio no vacío entre los medios
-/// del feed. Suele bastar para que el fallback por zona del provider tenga
-/// algo con lo que trabajar.
-String _territorioDominante(List<Item> items) {
-  for (final item in items) {
-    final territorio = item.source?.territory ?? '';
-    if (territorio.isNotEmpty) return territorio;
-  }
-  return '';
 }
 
 /// Barra horizontal de chips dismissables visible debajo del AppBar

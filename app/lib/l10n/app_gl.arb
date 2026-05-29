@@ -357,9 +357,6 @@
   "settingsErrorReportSubtitle": "Rexistrouse un fallo recente. Compárteo para axudar a arranxalo; non se envía nada só.",
   "settingsErrorReportDismiss": "Descartar informe",
 
-  "feedOrganizingCardTitle": "Quen se organiza sobre {tema}?",
-  "feedOrganizingCardCta": "Ver colectivos",
-
   "commonUndo": "Desfacer",
   "feedItemSaved": "Gardado",
   "feedItemMarkedUseful": "Marcado como útil",

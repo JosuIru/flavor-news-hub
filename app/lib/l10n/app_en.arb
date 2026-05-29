@@ -357,9 +357,6 @@
   "settingsErrorReportSubtitle": "A recent crash was recorded. Share it to help fix it; nothing is sent on its own.",
   "settingsErrorReportDismiss": "Discard report",
 
-  "feedOrganizingCardTitle": "Who's organizing around {tema}?",
-  "feedOrganizingCardCta": "See collectives",
-
   "commonUndo": "Undo",
   "feedItemSaved": "Saved",
   "feedItemMarkedUseful": "Marked as useful",

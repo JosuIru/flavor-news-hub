@@ -1028,14 +1028,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsErrorReportDismiss => 'Discard report';
 
   @override
-  String feedOrganizingCardTitle(String tema) {
-    return 'Who\'s organizing around $tema?';
-  }
-
-  @override
-  String get feedOrganizingCardCta => 'See collectives';
-
-  @override
   String get commonUndo => 'Undo';
 
   @override
