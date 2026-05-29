@@ -23,7 +23,7 @@ final class TerritoryNormalizer
             return self::vacio();
         }
 
-        $mapa = self::mapa();
+        $mapa = self::mapaNormalizado();
         if (isset($mapa[$clave])) {
             return $mapa[$clave];
         }
@@ -43,6 +43,40 @@ final class TerritoryNormalizer
         }
 
         return self::vacio();
+    }
+
+    /**
+     * Mapa reindexado por la clave ya normalizada (sin tildes ni ñ). El lookup
+     * compara contra la cadena normalizada, pero muchas claves de mapa() están
+     * escritas con tilde/ñ ('españa', 'andalucía'…), lo que las hacía
+     * inalcanzables. Cacheado.
+     *
+     * Ante colisión (dos claves que normalizan igual) gana la que ya estaba en
+     * forma normalizada, para no cambiar comportamiento previo: p.ej. 'valencia'
+     * (región "Valencia") y 'valència' (región "València") normalizan ambas a
+     * 'valencia'; preservamos la grafía que ya resolvía.
+     *
+     * @var array<string,array{country:string,region:string,city:string,network:string}>|null
+     */
+    private static ?array $mapaNormalizadoCache = null;
+
+    /**
+     * @return array<string,array{country:string,region:string,city:string,network:string}>
+     */
+    private static function mapaNormalizado(): array
+    {
+        if (self::$mapaNormalizadoCache !== null) {
+            return self::$mapaNormalizadoCache;
+        }
+        $resultado = [];
+        foreach (self::mapa() as $clave => $valor) {
+            $claveNormalizada = self::normalizarCadena((string) $clave);
+            $claveYaNormalizada = ((string) $clave === $claveNormalizada);
+            if ($claveYaNormalizada || !isset($resultado[$claveNormalizada])) {
+                $resultado[$claveNormalizada] = $valor;
+            }
+        }
+        return self::$mapaNormalizadoCache = $resultado;
     }
 
     /**

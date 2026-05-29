@@ -65,17 +65,24 @@ final class TerritoryNormalizerTest extends TestCase
     }
 
     /**
-     * Bug documentado: remove_accents pasa la ñ a 'n' ('España'→'espana'),
-     * pero la clave del mapa es 'españa' (con ñ), así que esa entrada es
-     * inalcanzable y "España" tal cual NO resuelve a país. Solo funcionan los
-     * alias sin tilde ('spain', 'estado espanol'). Mismo bug que en la app
-     * (lib/core/utils/territory_normalizer.dart). Este test fija el
-     * comportamiento actual; arreglar el normalizador lo hará fallar y
-     * obligará a actualizarlo.
+     * El normalizador reindexa el mapa por su clave normalizada, así que las
+     * entradas con tilde/ñ ('españa', 'andalucía'…) vuelven a ser alcanzables.
+     * Antes "España" no resolvía (la clave 'españa' quedaba inaccesible porque
+     * el lookup normaliza la ñ a 'n').
      */
-    public function testBugEspanaConEnyeNoResuelve(): void
+    public function testEspanaConEnyeResuelveAPais(): void
     {
-        $resultado = TerritoryNormalizer::desglosar('España');
-        self::assertSame('', $resultado['country'], 'Si esto falla: el bug de la ñ se arregló, actualiza el test.');
+        self::assertSame('España', TerritoryNormalizer::desglosar('España')['country']);
+        self::assertSame('Andalucía', TerritoryNormalizer::desglosar('Andalucía')['region']);
+    }
+
+    /**
+     * Regresión de la resolución de colisiones: 'valencia' (región "Valencia")
+     * y 'valència' ("València") normalizan ambas a 'valencia'. Debe ganar la
+     * clave que ya estaba normalizada, conservando "Valencia".
+     */
+    public function testColisionValenciaConservaGrafiaPrevia(): void
+    {
+        self::assertSame('Valencia', TerritoryNormalizer::desglosar('Valencia')['region']);
     }
 }

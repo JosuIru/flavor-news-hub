@@ -120,7 +120,7 @@ class TerritoryNormalizer {
       return const TerritoryLocation(country: '', region: '', city: '', network: '');
     }
 
-    final match = _mapa()[key];
+    final match = _mapaNormalizado()[key];
     if (match != null) {
       return match;
     }
@@ -138,6 +138,31 @@ class TerritoryNormalizer {
     }
 
     return const TerritoryLocation(country: '', region: '', city: '', network: '');
+  }
+
+  /// El lookup compara contra la cadena ya normalizada (sin tildes ni ñ), pero
+  /// muchas claves de [_mapa] están escritas con tilde/ñ ('españa',
+  /// 'andalucía'…), lo que las hacía inalcanzables. Reindexamos el mapa por su
+  /// clave normalizada, cacheado.
+  ///
+  /// Criterio ante colisión (dos claves que normalizan igual): gana la que ya
+  /// estaba en forma normalizada, para no cambiar comportamiento previo —p.ej.
+  /// 'valencia' (región "Valencia") y 'valència' (región "València") normalizan
+  /// ambas a 'valencia'; preservamos la grafía castellana que ya resolvía.
+  static Map<String, TerritoryLocation>? _mapaNormalizadoCache;
+
+  static Map<String, TerritoryLocation> _mapaNormalizado() {
+    final cache = _mapaNormalizadoCache;
+    if (cache != null) return cache;
+    final resultado = <String, TerritoryLocation>{};
+    for (final entrada in _mapa().entries) {
+      final claveNorm = _normalizarCadena(entrada.key);
+      final claveYaNormalizada = entrada.key == claveNorm;
+      if (claveYaNormalizada || !resultado.containsKey(claveNorm)) {
+        resultado[claveNorm] = entrada.value;
+      }
+    }
+    return _mapaNormalizadoCache = resultado;
   }
 
   static Map<String, TerritoryLocation> _mapa() {
