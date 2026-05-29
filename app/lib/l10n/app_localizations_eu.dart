@@ -1042,4 +1042,16 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get feedOrganizingCardCta => 'Ikusi kolektiboak';
+
+  @override
+  String get commonUndo => 'Desegin';
+
+  @override
+  String get feedItemSaved => 'Gordeta';
+
+  @override
+  String get feedItemMarkedUseful => 'Baliagarri gisa markatua';
+
+  @override
+  String get sourceMuted => 'Iturria isilarazita';
 }

@@ -1975,6 +1975,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver colectivos'**
   String get feedOrganizingCardCta;
+
+  /// Acción para revertir la última acción, en el SnackBar de confirmación.
+  ///
+  /// In es, this message translates to:
+  /// **'Deshacer'**
+  String get commonUndo;
+
+  /// Confirmación al guardar un titular.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardado'**
+  String get feedItemSaved;
+
+  /// Confirmación al marcar un titular como útil.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcado como útil'**
+  String get feedItemMarkedUseful;
+
+  /// Confirmación al silenciar una fuente.
+  ///
+  /// In es, this message translates to:
+  /// **'Fuente silenciada'**
+  String get sourceMuted;
 }
 
 class _AppLocalizationsDelegate

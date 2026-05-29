@@ -1038,4 +1038,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get feedOrganizingCardCta => 'Ver colectivos';
+
+  @override
+  String get commonUndo => 'Deshacer';
+
+  @override
+  String get feedItemSaved => 'Guardado';
+
+  @override
+  String get feedItemMarkedUseful => 'Marcado como útil';
+
+  @override
+  String get sourceMuted => 'Fuente silenciada';
 }

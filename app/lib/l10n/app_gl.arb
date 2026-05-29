@@ -358,5 +358,10 @@
   "settingsErrorReportDismiss": "Descartar informe",
 
   "feedOrganizingCardTitle": "Quen se organiza sobre {tema}?",
-  "feedOrganizingCardCta": "Ver colectivos"
+  "feedOrganizingCardCta": "Ver colectivos",
+
+  "commonUndo": "Desfacer",
+  "feedItemSaved": "Gardado",
+  "feedItemMarkedUseful": "Marcado como útil",
+  "sourceMuted": "Fonte silenciada"
 }
