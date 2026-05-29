@@ -59,6 +59,11 @@ jobs:
       - name: Composer install
         run: composer install --prefer-dist --no-progress --no-interaction
 
+      - name: PHPUnit (unitarios, sin WordPress)
+        # Lógica pura (sin DB ni ciclo de vida WP). Corre antes de montar
+        # la test-lib + MySQL para fallar rápido si se rompe.
+        run: vendor/bin/phpunit -c phpunit-unit.xml.dist
+
       - name: Install WP test suite
         run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 latest
 

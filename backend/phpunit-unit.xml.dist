@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+  Suite de tests UNITARIOS puros: lógica sin WordPress ni base de datos.
+  Corre en cualquier máquina con PHP, sin la WP test-lib (a diferencia de
+  phpunit.xml.dist, que monta WordPress + MySQL para tests de integración).
+
+  Ejecutar: vendor/bin/phpunit -c phpunit-unit.xml.dist
+-->
+<phpunit
+    bootstrap="tests/unit/bootstrap.php"
+    backupGlobals="false"
+    colors="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true">
+
+    <testsuites>
+        <testsuite name="flavor-news-hub-unit">
+            <directory suffix="Test.php">./tests/unit</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
