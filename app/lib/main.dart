@@ -43,11 +43,21 @@ void main() {
 
   runZonedGuarded(_arrancar, (error, stack) {
     RegistroErrores.instancia.registrar(error, stack);
-    // Si el arranque petó antes de montar la UI real, evitamos la pantalla
-    // negra mostrando una app mínima de error con opción de reintentar.
-    runApp(const AppErrorArranque(alReintentar: _arrancar));
+    // CLAVE: solo sustituimos la UI por la pantalla de error si el arranque
+    // falló ANTES de montar la app. Una vez montada, un error asíncrono
+    // suelto (p.ej. un provider que se dispone a mitad) NO debe reemplazar la
+    // UI viva: hacer `runApp` aquí desmontaría el ProviderScope y los
+    // providers en vuelo fallarían con "container disposed", disparando más
+    // errores → cascada. Montada la app, basta con registrar el informe.
+    if (!_appMontada) {
+      runApp(const AppErrorArranque(alReintentar: _arrancar));
+    }
   });
 }
+
+/// Si la app llegó a montarse (runApp en `_arrancar`). A partir de ahí, los
+/// errores asíncronos solo se registran; no reemplazan la UI.
+bool _appMontada = false;
 
 /// Secuencia de arranque. Extraída de `main` para poder relanzarla desde la
 /// pantalla de error sin reiniciar el proceso.
@@ -99,6 +109,9 @@ Future<void> _arrancar() async {
   // etc.) para que admin pueda cambiarlos sin release nueva de APK.
   unawaited(sincronizarAjustesPublicos(sharedPrefs));
 
+  // La inicialización crítica terminó: a partir de aquí la app está montada y
+  // ningún error asíncrono debe reemplazar la UI (ver el handler en `main`).
+  _appMontada = true;
   runApp(
     ProviderScope(
       overrides: [

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/item.dart';
@@ -7,11 +8,25 @@ import 'items_locales_dao.dart';
 /// Provider singleton de la BD local. Se abre una vez (async) y se cierra
 /// con el ciclo de vida de Riverpod.
 final baseDatosLocalProvider = FutureProvider<BaseDatosLocal>((ref) async {
-  final base = await BaseDatosLocal.abrir();
-  ref.onDispose(base.cerrar);
-  // Purga oportunista al arrancar la app.
+  BaseDatosLocal? base;
+  // Registramos el cierre ANTES del primer `await`: si el provider se dispone
+  // mientras la apertura está en vuelo, llamar `ref.onDispose` después lanzaría
+  // `StateError: Cannot call onDispose after a provider was disposed`. Así el
+  // callback queda registrado mientras el provider sigue activo y cierra la BD
+  // solo si llegó a abrirse.
+  ref.onDispose(() => base?.cerrar());
+
+  base = await BaseDatosLocal.abrir();
+  // Purga oportunista al arrancar. Best-effort: si la BD se cerró mientras
+  // tanto (el provider se dispuso), las queries lanzan `database_closed`; ese
+  // fallo no es crítico (se reintenta en el próximo arranque), así que lo
+  // aislamos para que no escape como error asíncrono no manejado.
   final dao = ItemsLocalesDao(base);
-  await dao.purgarCacheAntiguo();
+  try {
+    await dao.purgarCacheAntiguo();
+  } catch (e) {
+    debugPrint('[baseDatosLocalProvider] purga omitida: $e');
+  }
   return base;
 });
 
