@@ -16,6 +16,11 @@ import '../../../core/models/paginated_list.dart';
 import '../../../core/providers/api_provider.dart';
 import '../../history/data/historial_provider.dart';
 
+/// El botón de "compartir" del detalle comparte el permalink del item en la
+/// web de Flavor. Mientras esa web esté a medias, lo mantenemos oculto.
+/// Poner a `true` para reactivarlo cuando la web sea pública.
+const bool _webFlavorPublica = false;
+
 /// Provider del detalle de un item concreto. Family por id.
 ///
 /// Ids negativos identifican items del seed RSS o de fuentes personales:
@@ -267,7 +272,10 @@ class _CuerpoDetalle extends ConsumerWidget {
               IconButton(
                 tooltip: textos.itemCopyLink,
                 onPressed: () async {
-                  final url = item.originalUrl.isNotEmpty ? item.originalUrl : item.url;
+                  // Compartimos/copiamos el enlace del medio original. La web
+                  // de Flavor (item.url) aún no es pública, así que no la
+                  // filtramos: si no hay original, no hay enlace que copiar.
+                  final url = item.originalUrl;
                   if (url.isEmpty) return;
                   await Clipboard.setData(ClipboardData(text: url));
                   if (context.mounted) {
@@ -278,16 +286,20 @@ class _CuerpoDetalle extends ConsumerWidget {
                 },
                 icon: const Icon(Icons.link),
               ),
-              IconButton(
-                tooltip: textos.itemShare,
-                onPressed: () async {
-                  final textoCompartir = item.url.isNotEmpty
-                      ? '${item.title}\n${item.url}'
-                      : item.title;
-                  await Share.share(textoCompartir);
-                },
-                icon: const Icon(Icons.share),
-              ),
+              // Oculto hasta que la web de Flavor sea pública (ver
+              // _webFlavorPublica). Al reactivarlo comparte el permalink del
+              // item en Flavor (item.url).
+              if (_webFlavorPublica)
+                IconButton(
+                  tooltip: textos.itemShare,
+                  onPressed: () async {
+                    final textoCompartir = item.url.isNotEmpty
+                        ? '${item.title}\n${item.url}'
+                        : item.title;
+                    await Share.share(textoCompartir);
+                  },
+                  icon: const Icon(Icons.share),
+                ),
             ],
           ),
           const SizedBox(height: 32),
