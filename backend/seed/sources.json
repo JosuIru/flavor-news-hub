@@ -4557,7 +4557,8 @@
       "derechos-civiles",
       "ecologismo"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7383,
