@@ -289,7 +289,14 @@ final class Recopilador
      * intermitentemente (un día sí, otro no) — invisibles a la otra
      * métrica si la última ronda fue success.
      *
-     * @return list<array{nombre:string, errores:int, ultimo_error:string}>
+     * Cada fila incluye además el último `mensaje` de error y su
+     * `http_status`, traídos con subconsultas correlacionadas sobre el
+     * log de error más reciente de la fuente. Esto es lo que permite
+     * diagnosticar la CAUSA sin entrar al admin: distinguir
+     * "feed_url muerto (404)" de "anti-bot del datacenter (403/486)"
+     * de "timeout/DNS/SSL (http_status 0)".
+     *
+     * @return list<array{nombre:string, errores:int, ultimo_error:string, mensaje:string, http_status:int}>
      */
     public static function topFuentesPorErrores(int $tope = 10, int $dias = 7): array
     {
@@ -300,7 +307,16 @@ final class Recopilador
                 il.source_id,
                 COUNT(*) AS errores,
                 MAX(il.started_at) AS ultimo_error,
-                p.post_title AS nombre
+                p.post_title AS nombre,
+                (SELECT ilm.error_message FROM {$logsTabla} ilm
+                    WHERE ilm.source_id = il.source_id
+                      AND ilm.status = 'error'
+                      AND ilm.error_message IS NOT NULL AND ilm.error_message != ''
+                    ORDER BY ilm.started_at DESC LIMIT 1) AS ultimo_mensaje,
+                (SELECT ilh.http_status FROM {$logsTabla} ilh
+                    WHERE ilh.source_id = il.source_id
+                      AND ilh.status = 'error'
+                    ORDER BY ilh.started_at DESC LIMIT 1) AS ultimo_http_status
              FROM {$logsTabla} il
              INNER JOIN {$wpdb->posts} p ON p.ID = il.source_id
              WHERE il.status = 'error'
@@ -319,6 +335,13 @@ final class Recopilador
             'nombre'       => (string) $f['nombre'],
             'errores'      => (int) $f['errores'],
             'ultimo_error' => (string) ($f['ultimo_error'] ?? ''),
+            // Mensaje truncado a 200 (igual que `fuentesConError`) por si
+            // SimplePie/cURL incrustan la URL del feed: no es secreta —
+            // el seed es público— pero acota el tamaño del payload.
+            'mensaje'      => mb_substr((string) ($f['ultimo_mensaje'] ?? ''), 0, 200),
+            // 0 = no hubo respuesta HTTP (timeout, DNS o SSL). 4xx/5xx =
+            // el origen respondió pero rechazó o falló.
+            'http_status'  => (int) ($f['ultimo_http_status'] ?? 0),
         ], $filas);
     }
 

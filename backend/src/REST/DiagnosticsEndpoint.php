@@ -29,6 +29,15 @@ final class DiagnosticsEndpoint
      */
     public const TRANSIENT_TOP_METRICS = 'fnh_diag_top_metrics';
 
+    /**
+     * Tope de fuentes en `top_errores_7d`. Más alto que latencia/304
+     * (10) porque lo que interesa aquí es ver TODAS las que fallan, no
+     * sólo las peores: con ~280 fuentes activas, las que erran en una
+     * ventana de 7 días pueden ser varias decenas. 40 cubre el caso
+     * real sin inflar el payload de un endpoint público y cacheado.
+     */
+    private const LIMITE_TOP_ERRORES = 40;
+
     public static function registrarRutas(): void
     {
         register_rest_route(RestController::NAMESPACE_REST, '/diagnostics', [
@@ -160,7 +169,7 @@ final class DiagnosticsEndpoint
             return $cache;
         }
         $datos = [
-            'errores'   => Recopilador::topFuentesPorErrores(10, 7),
+            'errores'   => Recopilador::topFuentesPorErrores(self::LIMITE_TOP_ERRORES, 7),
             'latencia'  => Recopilador::topFuentesPorLatencia(10, 7),
             'sin_304'   => Recopilador::fuentesSinCabecerasCondicionales(10, 7, 3),
         ];
