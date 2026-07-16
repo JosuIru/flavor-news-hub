@@ -45,10 +45,19 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
     companion object {
         const val ACCION_ANTERIOR = "org.flavornewshub.flavor_news_hub.SINTONIZADOR_ANTERIOR"
         const val ACCION_SIGUIENTE = "org.flavornewshub.flavor_news_hub.SINTONIZADOR_SIGUIENTE"
+        const val ACCION_BANDA = "org.flavornewshub.flavor_news_hub.SINTONIZADOR_BANDA"
         const val CLAVE_INDICE = "sintonizador_indice_actual"
         const val CLAVE_RADIOS = "sintonizador_radios"
         const val CLAVE_REPRODUCIENDO = "sintonizador_reproduciendo_id"
         const val CLAVE_ESTADO = "sintonizador_estado"
+        // Banda del dial, como el conmutador AM/FM de una radio antigua:
+        // "" (default) = FM = todas las emisoras; "favoritas" = FAV = sólo
+        // las marcadas como favoritas en la app. Los IDs favoritos los
+        // empuja Flutter (WidgetSintonizadorWriter.escribirFavoritas) como
+        // JSON array en CLAVE_FAVORITAS_IDS.
+        const val CLAVE_BANDA = "sintonizador_banda"
+        const val CLAVE_FAVORITAS_IDS = "sintonizador_favoritas_ids"
+        const val BANDA_FAVORITAS = "favoritas"
         // StreamTitle ICY actual (lo escribe RadioService cuando recibe
         // metadatos del servidor Icecast/Shoutcast). Vacío si la emisora
         // no expone metadatos o todavía no han llegado.
@@ -84,6 +93,50 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         // en cada redibujado para que parezca señal viva — no hay
         // animación porque RemoteViews no la permite, sólo re-pintado.
         private val BARRAS_VU = charArrayOf('▁', '▂', '▃', '▄', '▅', '▆', '▇')
+
+        // Etiquetas del selector de banda (ver CLAVE_BANDA).
+        private const val GLIFO_BANDA_TODAS = "FM"
+        private const val GLIFO_BANDA_FAVORITAS = "★FAV"
+
+        /**
+         * Lista de radios de la banda activa: todas, o sólo las favoritas
+         * cuando la banda es FAV. Compartida con `RadioService` para que
+         * la cadena de saltos automáticos no se salga de la banda que el
+         * usuario tiene seleccionada — el índice `CLAVE_INDICE` siempre
+         * apunta dentro de esta lista.
+         */
+        fun leerRadiosBanda(context: Context): List<Radio> {
+            val prefs = HomeWidgetPlugin.getData(context)
+            val raw = prefs.getString(CLAVE_RADIOS, "[]") ?: "[]"
+            val todas = try {
+                val arr = JSONArray(raw)
+                (0 until arr.length()).map { i ->
+                    val o = arr.getJSONObject(i)
+                    Radio(
+                        id = o.optInt("id", 0),
+                        nombre = o.optString("name", ""),
+                        territorio = o.optString("territory", ""),
+                        streamUrl = o.optString("stream_url", ""),
+                    )
+                }.filter { it.id > 0 && it.nombre.isNotEmpty() }
+            } catch (_: Exception) {
+                emptyList()
+            }
+            if (prefs.getString(CLAVE_BANDA, "") != BANDA_FAVORITAS) return todas
+            val favoritas = leerIdsFavoritas(context)
+            return todas.filter { favoritas.contains(it.id) }
+        }
+
+        private fun leerIdsFavoritas(context: Context): Set<Int> {
+            val raw = HomeWidgetPlugin.getData(context)
+                .getString(CLAVE_FAVORITAS_IDS, "[]") ?: "[]"
+            return try {
+                val arr = JSONArray(raw)
+                (0 until arr.length()).map { arr.getInt(it) }.toSet()
+            } catch (_: Exception) {
+                emptySet()
+            }
+        }
     }
 
     override fun onUpdate(
@@ -101,28 +154,36 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         when (intent.action) {
             ACCION_ANTERIOR -> ajustarIndice(context, delta = -1)
             ACCION_SIGUIENTE -> ajustarIndice(context, delta = +1)
+            ACCION_BANDA -> alternarBanda(context)
         }
     }
 
     data class Radio(val id: Int, val nombre: String, val territorio: String, val streamUrl: String)
 
-    private fun obtenerRadios(context: Context): List<Radio> {
+    private fun obtenerRadios(context: Context): List<Radio> = leerRadiosBanda(context)
+
+    /**
+     * Conmuta la banda del dial (todas ⇄ favoritas). No toca la
+     * reproducción en curso: sólo cambia qué lista navegan ◄/► y dónde
+     * apunta la aguja. Si la emisora que suena está en la banda nueva,
+     * la aguja la sigue; si no, vuelve al principio del dial.
+     */
+    private fun alternarBanda(context: Context) {
         val prefs = HomeWidgetPlugin.getData(context)
-        val raw = prefs.getString(CLAVE_RADIOS, "[]") ?: "[]"
-        return try {
-            val arr = JSONArray(raw)
-            (0 until arr.length()).map { i ->
-                val o = arr.getJSONObject(i)
-                Radio(
-                    id = o.optInt("id", 0),
-                    nombre = o.optString("name", ""),
-                    territorio = o.optString("territory", ""),
-                    streamUrl = o.optString("stream_url", ""),
-                )
-            }.filter { it.id > 0 && it.nombre.isNotEmpty() }
-        } catch (_: Exception) {
-            emptyList()
-        }
+        val bandaNueva =
+            if (prefs.getString(CLAVE_BANDA, "") == BANDA_FAVORITAS) "" else BANDA_FAVORITAS
+        prefs.edit().putString(CLAVE_BANDA, bandaNueva).apply()
+
+        val radios = leerRadiosBanda(context)
+        val reproduciendoId = prefs.getString(CLAVE_REPRODUCIENDO, "") ?: ""
+        val indiceSonando = radios.indexOfFirst { it.id.toString() == reproduciendoId }
+        prefs.edit().putInt(CLAVE_INDICE, if (indiceSonando >= 0) indiceSonando else 0).apply()
+
+        val gestorWidget = AppWidgetManager.getInstance(context)
+        val idsWidgets = gestorWidget.getAppWidgetIds(
+            ComponentName(context, SintonizadorWidgetProvider::class.java)
+        )
+        if (idsWidgets.isNotEmpty()) onUpdate(context, gestorWidget, idsWidgets)
     }
 
     private fun ajustarIndice(context: Context, delta: Int) {
@@ -238,8 +299,31 @@ class SintonizadorWidgetProvider : AppWidgetProvider() {
         val radios = obtenerRadios(context)
         val prefs = HomeWidgetPlugin.getData(context)
 
+        // Selector de banda: etiqueta según la banda activa y click que
+        // conmuta. Se ata SIEMPRE (también con lista vacía) — sin esto,
+        // una banda FAV sin favoritas dejaría al usuario atrapado sin
+        // forma de volver a FM desde el propio widget.
+        val enBandaFavoritas = prefs.getString(CLAVE_BANDA, "") == BANDA_FAVORITAS
+        views.setTextViewText(
+            R.id.sintonizador_btn_banda,
+            if (enBandaFavoritas) GLIFO_BANDA_FAVORITAS else GLIFO_BANDA_TODAS,
+        )
+        val intentBanda = Intent(context, SintonizadorWidgetProvider::class.java).apply { action = ACCION_BANDA }
+        val pBanda = PendingIntent.getBroadcast(
+            context, widgetId * 10 + 6, intentBanda,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        views.setOnClickPendingIntent(R.id.sintonizador_btn_banda, pBanda)
+
         if (radios.isEmpty()) {
-            views.setTextViewText(R.id.sintonizador_nombre, IdiomaWidget.recursos(context).getString(R.string.widget_sintonizador_sin_radios))
+            // Mensaje distinto si el vacío viene del filtro de favoritas
+            // (banda FAV sin nada marcado) o del catálogo en sí.
+            val mensajeVacio = if (enBandaFavoritas) {
+                IdiomaWidget.recursos(context).getString(R.string.widget_sintonizador_sin_favoritas)
+            } else {
+                IdiomaWidget.recursos(context).getString(R.string.widget_sintonizador_sin_radios)
+            }
+            views.setTextViewText(R.id.sintonizador_nombre, mensajeVacio)
             views.setTextViewText(R.id.sintonizador_territorio, "")
             views.setTextViewText(R.id.sintonizador_leds, repetirCompat("· ", NUM_LEDS).trim())
             views.setTextViewText(R.id.sintonizador_aguja, "")

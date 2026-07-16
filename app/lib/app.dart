@@ -45,14 +45,19 @@ class FlavorNewsHubApp extends ConsumerWidget {
     ref.listen<Set<int>>(radiosFavoritasProvider, (_, ids) {
       final radios = ref.read(radiosProvider).valueOrNull ?? const [];
       WidgetFavoritosWriter.escribir(ids, radios);
+      // La banda FAV del Sintonizador filtra con estos IDs.
+      WidgetSintonizadorWriter.escribirFavoritas(ids);
     });
     ref.listen(radiosProvider, (_, nueva) {
       final radios = nueva.valueOrNull ?? const [];
       final ids = ref.read(radiosFavoritasProvider);
       WidgetFavoritosWriter.escribir(ids, radios);
       // Widget sintonizador (radio madera) necesita la lista entera
-      // para navegar con ◄ / ► sin volver a llamar a Flutter.
+      // para navegar con ◄ / ► sin volver a llamar a Flutter, y los
+      // IDs de favoritas para la banda FAV (se reescriben aquí para
+      // poblarlos en cada arranque, no sólo al marcar/desmarcar).
       WidgetSintonizadorWriter.escribir(radios);
+      WidgetSintonizadorWriter.escribirFavoritas(ids);
     });
 
     return MaterialApp.router(

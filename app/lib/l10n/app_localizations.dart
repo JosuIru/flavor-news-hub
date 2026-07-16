@@ -1028,6 +1028,18 @@ abstract class AppLocalizations {
   /// **'Tamaño del texto'**
   String get settingsTextScale;
 
+  /// No description provided for @settingsRadioBluetooth.
+  ///
+  /// In es, this message translates to:
+  /// **'Radio al conectar el coche (Bluetooth)'**
+  String get settingsRadioBluetooth;
+
+  /// No description provided for @settingsRadioBluetoothSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Al conectar el audio Bluetooth del coche, la última emisora arranca sola si no suena nada. Desactivado no cambia nada.'**
+  String get settingsRadioBluetoothSubtitle;
+
   /// No description provided for @settingsBackendUrl.
   ///
   /// In es, this message translates to:

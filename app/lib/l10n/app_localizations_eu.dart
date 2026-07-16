@@ -521,6 +521,14 @@ class AppLocalizationsEu extends AppLocalizations {
   String get settingsTextScale => 'Testu-tamaina';
 
   @override
+  String get settingsRadioBluetooth =>
+      'Irratia autora konektatzean (Bluetooth)';
+
+  @override
+  String get settingsRadioBluetoothSubtitle =>
+      'Autoko Bluetooth audioa konektatzean, azken irratia bere kabuz hasten da ezer entzuten ez bada. Desaktibatuta ez du ezer aldatzen.';
+
+  @override
   String get settingsBackendUrl => 'Instantziaren URLa';
 
   @override

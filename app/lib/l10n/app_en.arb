@@ -182,6 +182,8 @@
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
   "settingsTextScale": "Text size",
+  "settingsRadioBluetooth": "Radio on car connect (Bluetooth)",
+  "settingsRadioBluetoothSubtitle": "When the car's Bluetooth audio connects, your last station starts on its own if nothing is playing. Off changes nothing.",
   "settingsBackendUrl": "Instance URL",
   "settingsBackendUrlDescription": "Change this to consume a different Flavor News Hub instance.",
   "settingsAbout": "About",

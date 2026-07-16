@@ -25,7 +25,6 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import es.antonborri.home_widget.HomeWidgetPlugin
-import org.json.JSONArray
 
 /**
  * Servicio Android foreground (`mediaPlayback`) que reproduce streams de
@@ -104,10 +103,9 @@ class RadioService : Service() {
         private const val CLAVE_PROGRAMA = "sintonizador_programa"
         private const val FUENTE_SERVICIO = "servicio"
 
-        // Lista de radios y selección actual del Sintonizador. Las escribe
-        // Flutter (WidgetSintonizadorWriter) y el provider. Aquí las leemos
-        // para encontrar la siguiente cuando una falla.
-        private const val CLAVE_LISTA_RADIOS = "sintonizador_radios"
+        // Índice de emisora actual del Sintonizador (dentro de la lista
+        // de la banda activa, ver `leerListaRadios`). Lo escriben el
+        // provider del widget, la app Flutter y este servicio al saltar.
         private const val CLAVE_INDICE_ACTUAL = "sintonizador_indice_actual"
 
         // Claves que lee `ReproductorRadioWidgetProvider`. Las escribe la
@@ -492,30 +490,22 @@ class RadioService : Service() {
     }
 
     /**
-     * Lee la lista de radios que mantiene el Sintonizador. Devuelve pares
-     * (id, nombre, url) sin más estructura — sólo nos hace falta saber el
-     * tamaño y la URL/nombre del índice que vayamos a probar.
+     * Lee la lista de radios de la banda activa del Sintonizador (todas o
+     * sólo favoritas — misma lista y orden que navega el widget, ver
+     * `SintonizadorWidgetProvider.leerRadiosBanda`). Devuelve tríos
+     * (id, nombre, url) — sólo nos hace falta saber el tamaño y la
+     * URL/nombre del índice que vayamos a probar. Compartir la banda
+     * importa: la cadena de saltos no debe sacar al usuario de FAV, y el
+     * índice `sintonizador_indice_actual` apunta dentro de esta lista.
      *
      * Si el JSON está malformado o la clave no existe, devolvemos lista
      * vacía y la lógica de salto cae a `manejarStop` — el servicio no se
      * inventa un siguiente cuando no hay nada que probar.
      */
     private fun leerListaRadios(): List<Triple<String, String, String>> {
-        val prefs = HomeWidgetPlugin.getData(this)
-        val raw = prefs.getString(CLAVE_LISTA_RADIOS, "[]") ?: "[]"
-        return try {
-            val arr = JSONArray(raw)
-            (0 until arr.length()).mapNotNull { i ->
-                val o = arr.getJSONObject(i)
-                val id = o.optInt("id", 0).toString()
-                val nombre = o.optString("name", "")
-                val streamUrl = o.optString("stream_url", "")
-                if (id == "0" || nombre.isEmpty() || streamUrl.isEmpty()) null
-                else Triple(id, nombre, streamUrl)
-            }
-        } catch (_: Exception) {
-            emptyList()
-        }
+        return SintonizadorWidgetProvider.leerRadiosBanda(this)
+            .filter { it.streamUrl.isNotEmpty() }
+            .map { Triple(it.id.toString(), it.nombre, it.streamUrl) }
     }
 
     private fun leerIndiceActualSintonizador(): Int {

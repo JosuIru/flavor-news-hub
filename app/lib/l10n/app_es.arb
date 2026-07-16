@@ -181,6 +181,8 @@
   "settingsThemeLight": "Claro",
   "settingsThemeDark": "Oscuro",
   "settingsTextScale": "Tamaño del texto",
+  "settingsRadioBluetooth": "Radio al conectar el coche (Bluetooth)",
+  "settingsRadioBluetoothSubtitle": "Al conectar el audio Bluetooth del coche, la última emisora arranca sola si no suena nada. Desactivado no cambia nada.",
   "settingsBackendUrl": "URL de la instancia",
   "settingsBackendUrlDescription": "Si cambias esto, la app consumirá los datos de otra instancia de Flavor News Hub.",
   "settingsAbout": "Acerca de",

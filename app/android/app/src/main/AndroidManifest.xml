@@ -9,6 +9,16 @@
          pide flutter_local_notifications al inicializar. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Autoplay al conectar el audio Bluetooth del coche (opt-in desde
+         Ajustes). En Android ≤11 recibir el broadcast A2DP pide el
+         permiso clásico BLUETOOTH (se concede al instalar); desde 12
+         el runtime BLUETOOTH_CONNECT ("dispositivos cercanos"), que la
+         app pide al activar el ajuste. Recibir ese broadcast exime
+         además de la restricción de arrancar foreground services desde
+         background en 12+. -->
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <!-- REQUEST_INSTALL_PACKAGES vive en src/libre/AndroidManifest.xml:
          lo necesita el flujo OTA, que sólo existe en el flavor `libre`.
          El flavor `playstore` se publica en Google Play y la política
@@ -51,6 +61,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+                <!-- Marca la app como "reproductor de música" para el sistema.
+                     Con esto, MIUI/Xiaomi y muchos sistemas de coche la ofrecen
+                     en el selector de app de música a autoarrancar al conectar
+                     Bluetooth; sin esta categoría, Flavor no aparece en esa lista
+                     aunque ya sea un MediaBrowserService que reproduce audio. -->
+                <category android:name="android.intent.category.APP_MUSIC"/>
             </intent-filter>
             <!-- Recibir "Compartir a Flavor News Hub" desde otras apps.
                  El usuario comparte una URL, nosotros abrimos el formulario
@@ -110,6 +126,19 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Autoplay del coche: cuando un dispositivo de audio Bluetooth
+             (A2DP) se conecta, arranca la última emisora vía RadioService
+             si el usuario activó el ajuste y no suena nada. El broadcast
+             A2DP está en la lista de excepciones de broadcasts implícitos,
+             así que llega aunque la app esté cerrada. -->
+        <receiver
+            android:name=".BluetoothAutoplayReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED" />
             </intent-filter>
         </receiver>
 

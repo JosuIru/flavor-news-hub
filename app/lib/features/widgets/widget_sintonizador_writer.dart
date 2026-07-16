@@ -15,10 +15,14 @@ import '../../core/models/radio.dart' as modelo_radio;
 /// vez, pero el array entero permite ◄/► sin tener que re-llamar).
 class WidgetSintonizadorWriter {
   static const String _nombreProvider = 'SintonizadorWidgetProvider';
-  static const int _maxRadios = 40;
+
+  /// Tope de radios que se empujan al widget. Público porque el
+  /// reproductor de la app lo usa para calcular el índice del dial con
+  /// el mismo corte de lista (ver `_empujarEstadoAlWidget`).
+  static const int maxRadios = 40;
 
   static Future<void> escribir(List<modelo_radio.Radio> todasLasRadios) async {
-    final visibles = todasLasRadios.take(_maxRadios).map((r) => {
+    final visibles = todasLasRadios.take(maxRadios).map((r) => {
           'id': r.id,
           'name': r.name,
           'territory': r.territory,
@@ -29,6 +33,20 @@ class WidgetSintonizadorWriter {
     await HomeWidget.saveWidgetData<String>(
       'sintonizador_radios',
       jsonEncode(visibles),
+    );
+    await HomeWidget.updateWidget(
+      name: _nombreProvider,
+      androidName: _nombreProvider,
+    );
+  }
+
+  /// Empuja los IDs de radios favoritas para la banda FAV del widget
+  /// (el botón FM/FAV filtra `sintonizador_radios` con este set, tanto
+  /// en el provider Kotlin como en el RadioService al saltar de emisora).
+  static Future<void> escribirFavoritas(Set<int> idsFavoritas) async {
+    await HomeWidget.saveWidgetData<String>(
+      'sintonizador_favoritas_ids',
+      jsonEncode(idsFavoritas.toList()),
     );
     await HomeWidget.updateWidget(
       name: _nombreProvider,

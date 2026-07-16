@@ -182,6 +182,8 @@
   "settingsThemeLight": "Clar",
   "settingsThemeDark": "Fosc",
   "settingsTextScale": "Mida del text",
+  "settingsRadioBluetooth": "Ràdio en connectar el cotxe (Bluetooth)",
+  "settingsRadioBluetoothSubtitle": "En connectar l'àudio Bluetooth del cotxe, la darrera emissora arrenca sola si no sona res. Desactivat no canvia res.",
   "settingsBackendUrl": "URL de la instància",
   "settingsBackendUrlDescription": "Si ho canvies, l'app consumirà dades d'una altra instància de Flavor News Hub.",
   "settingsAbout": "Quant a",

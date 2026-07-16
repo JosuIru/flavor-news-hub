@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flavor_news_hub/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -70,6 +71,30 @@ class SettingsScreen extends ConsumerWidget {
             escalaActual: preferencias.escalaTexto,
             onCambio: notifier.establecerEscalaTexto,
             etiqueta: textos.settingsTextScale,
+          ),
+          const Divider(height: 24),
+          SwitchListTile(
+            secondary: const Icon(Icons.bluetooth_audio),
+            title: Text(textos.settingsRadioBluetooth),
+            subtitle: Text(textos.settingsRadioBluetoothSubtitle),
+            value: preferencias.prepararUltimaRadioParaBluetooth,
+            onChanged: (activado) {
+              notifier.establecerPrepararUltimaRadioParaBluetooth(activado);
+              // El autoplay necesita BLUETOOTH_CONNECT en Android 12+
+              // para recibir el broadcast A2DP; el canal muestra el
+              // diálogo del sistema si falta. Fire-and-forget: si el
+              // usuario lo deniega, queda el modo "armar y reanudar con
+              // el play del coche", que no necesita permiso.
+              if (activado) {
+                const MethodChannel('fnh/permisos')
+                    .invokeMethod<bool>('pedirBluetoothConnect')
+                    .catchError((Object error) {
+                  // Plataformas sin handler (desktop, tests): irrelevante.
+                  debugPrint('[Ajustes] pedirBluetoothConnect: $error');
+                  return false;
+                });
+              }
+            },
           ),
           const Divider(height: 24),
           ListTile(

@@ -26,7 +26,12 @@ class MainActivity : AudioServiceActivity() {
     private var canalDeepLink: MethodChannel? = null
     private var canalPip: MethodChannel? = null
     private var canalRadioService: MethodChannel? = null
+    private var canalPermisos: MethodChannel? = null
     private var pipAutoActivo: Boolean = false
+
+    companion object {
+        private const val CODIGO_PERMISO_BLUETOOTH = 7301
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -85,6 +90,41 @@ class MainActivity : AudioServiceActivity() {
                             // ignoramos, el efecto deseado ya está.
                         }
                         result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        }
+        // Canal de permisos runtime que Flutter no cubre con sus plugins.
+        // `pedirBluetoothConnect`: el autoplay del coche necesita
+        // BLUETOOTH_CONNECT ("dispositivos cercanos") desde Android 12
+        // para recibir el broadcast A2DP; en versiones anteriores el
+        // permiso clásico se concede al instalar y devolvemos true.
+        // Devuelve si el permiso ya estaba concedido — la concesión del
+        // diálogo llega después de forma asíncrona y no bloqueamos en ella:
+        // el ajuste queda activado igual y el receiver simplemente empieza
+        // a recibir broadcasts cuando el usuario acepta.
+        canalPermisos = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "fnh/permisos",
+        ).also { canal ->
+            canal.setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "pedirBluetoothConnect" -> {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                            result.success(true)
+                            return@setMethodCallHandler
+                        }
+                        val concedido = checkSelfPermission(
+                            android.Manifest.permission.BLUETOOTH_CONNECT
+                        ) == PackageManager.PERMISSION_GRANTED
+                        if (!concedido) {
+                            requestPermissions(
+                                arrayOf(android.Manifest.permission.BLUETOOTH_CONNECT),
+                                CODIGO_PERMISO_BLUETOOTH,
+                            )
+                        }
+                        result.success(concedido)
                     }
                     else -> result.notImplemented()
                 }

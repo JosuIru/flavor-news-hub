@@ -33,6 +33,8 @@
     <string name="widget_sintonizador_play">Piztu</string>
     <string name="widget_sintonizador_stop">Itzali</string>
     <string name="widget_sintonizador_sin_radios">— irratirik gabe —</string>
+    <string name="widget_sintonizador_sin_favoritas">— gogokorik gabe —</string>
+    <string name="widget_sintonizador_banda">Banda aldatu: guztiak / gogokoak</string>
 
     <string name="widget_preview_titular_1">Saharar herriak 50 urte autodeterminazioaren aldeko borrokan</string>
     <string name="widget_preview_fuente_1">Berria · duela 2 ord</string>

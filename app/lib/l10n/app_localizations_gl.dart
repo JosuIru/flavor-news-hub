@@ -515,6 +515,13 @@ class AppLocalizationsGl extends AppLocalizations {
   String get settingsTextScale => 'Tamaño do texto';
 
   @override
+  String get settingsRadioBluetooth => 'Radio ao conectar o coche (Bluetooth)';
+
+  @override
+  String get settingsRadioBluetoothSubtitle =>
+      'Ao conectar o audio Bluetooth do coche, a última emisora arrinca soa se non soa nada. Desactivado non cambia nada.';
+
+  @override
   String get settingsBackendUrl => 'URL da instancia';
 
   @override

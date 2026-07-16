@@ -243,6 +243,8 @@
   "settingsThemeLight": "Argia",
   "settingsThemeDark": "Iluna",
   "settingsTextScale": "Testu-tamaina",
+  "settingsRadioBluetooth": "Irratia autora konektatzean (Bluetooth)",
+  "settingsRadioBluetoothSubtitle": "Autoko Bluetooth audioa konektatzean, azken irratia bere kabuz hasten da ezer entzuten ez bada. Desaktibatuta ez du ezer aldatzen.",
   "settingsBackendUrl": "Instantziaren URLa",
   "settingsBackendUrlDescription": "Hau aldatuz gero, aplikazioak beste Flavor News Hub instantzia batetik jasoko ditu datuak.",
   "settingsAbout": "Honi buruz",

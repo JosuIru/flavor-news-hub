@@ -33,6 +33,8 @@
     <string name="widget_sintonizador_play">Encender</string>
     <string name="widget_sintonizador_stop">Apagar</string>
     <string name="widget_sintonizador_sin_radios">— sin emisoras —</string>
+    <string name="widget_sintonizador_sin_favoritas">— sin favoritas —</string>
+    <string name="widget_sintonizador_banda">Cambiar banda: todas / favoritas</string>
 
     <!-- RadioService: notificación que se muestra mientras el servicio
          nativo de radio reproduce un stream desde el widget Sintonizador. -->

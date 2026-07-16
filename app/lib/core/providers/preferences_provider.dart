@@ -17,6 +17,7 @@ class PreferenciasUsuario {
     required this.escalaTexto,
     required this.territorioBase,
     required this.onboardingCompleto,
+    required this.prepararUltimaRadioParaBluetooth,
   });
 
   /// ThemeMode de Flutter (`system`, `light`, `dark`).
@@ -52,6 +53,14 @@ class PreferenciasUsuario {
   /// el sheet de "Mi territorio" en siguientes aperturas de la app.
   final bool onboardingCompleto;
 
+  /// `true` deja la última emisora reproducida "armada" en pausa al
+  /// arrancar la app, para que el PLAY del sistema de audio del coche (al
+  /// conectar el Bluetooth) la reanude sin abrir la app a mano. Por
+  /// defecto `false`: sin activarlo, el arranque no toca el reproductor,
+  /// así que no cambia nada para quien no lo use. Ver
+  /// `ReproductorRadioNotifier.precargarUltimaEmisora`.
+  final bool prepararUltimaRadioParaBluetooth;
+
   PreferenciasUsuario copyWith({
     ThemeMode? modoTema,
     String? codigoIdioma,
@@ -61,6 +70,7 @@ class PreferenciasUsuario {
     double? escalaTexto,
     String? territorioBase,
     bool? onboardingCompleto,
+    bool? prepararUltimaRadioParaBluetooth,
   }) {
     return PreferenciasUsuario(
       modoTema: modoTema ?? this.modoTema,
@@ -70,6 +80,8 @@ class PreferenciasUsuario {
       escalaTexto: escalaTexto ?? this.escalaTexto,
       territorioBase: territorioBase ?? this.territorioBase,
       onboardingCompleto: onboardingCompleto ?? this.onboardingCompleto,
+      prepararUltimaRadioParaBluetooth:
+          prepararUltimaRadioParaBluetooth ?? this.prepararUltimaRadioParaBluetooth,
     );
   }
 }
@@ -83,6 +95,7 @@ class _Claves {
   static const textScale = 'fnh.pref.textScale';
   static const territorioBase = 'fnh.pref.territorioBase';
   static const onboardingCompleto = 'fnh.pref.onboardingCompleto';
+  static const prepararRadioBluetooth = 'fnh.pref.prepararRadioBluetooth';
 }
 
 /// Valor por defecto de la URL de la instancia.
@@ -135,6 +148,8 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
       escalaTexto: _saneoEscalaTexto(sp.getDouble(_Claves.textScale)),
       territorioBase: sp.getString(_Claves.territorioBase) ?? '',
       onboardingCompleto: sp.getBool(_Claves.onboardingCompleto) ?? false,
+      prepararUltimaRadioParaBluetooth:
+          sp.getBool(_Claves.prepararRadioBluetooth) ?? false,
     );
   }
 
@@ -215,6 +230,11 @@ class PreferenciasNotifier extends StateNotifier<PreferenciasUsuario> {
   Future<void> marcarOnboardingCompleto() async {
     state = state.copyWith(onboardingCompleto: true);
     await _sharedPrefs.setBool(_Claves.onboardingCompleto, true);
+  }
+
+  Future<void> establecerPrepararUltimaRadioParaBluetooth(bool activado) async {
+    state = state.copyWith(prepararUltimaRadioParaBluetooth: activado);
+    await _sharedPrefs.setBool(_Claves.prepararRadioBluetooth, activado);
   }
 }
 

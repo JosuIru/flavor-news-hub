@@ -165,6 +165,9 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
     // arranca fría, `radiosProvider` puede tardar en resolverse.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final radios = await ref.read(radiosProvider.future);
+      // Catálogo vacío (backend caído y sin seed): sin guard, el
+      // `orElse: () => radios.first` de abajo lanzaría StateError.
+      if (radios.isEmpty) return;
       final radio = radios.firstWhere(
         (r) => r.id == idRadio,
         orElse: () => radios.first,

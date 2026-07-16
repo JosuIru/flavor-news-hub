@@ -514,6 +514,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTextScale => 'Text size';
 
   @override
+  String get settingsRadioBluetooth => 'Radio on car connect (Bluetooth)';
+
+  @override
+  String get settingsRadioBluetoothSubtitle =>
+      'When the car\'s Bluetooth audio connects, your last station starts on its own if nothing is playing. Off changes nothing.';
+
+  @override
   String get settingsBackendUrl => 'Instance URL';
 
   @override

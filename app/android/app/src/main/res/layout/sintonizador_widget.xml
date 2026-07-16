@@ -228,6 +228,27 @@
 
     </LinearLayout>
 
+    <!-- Selector de banda FM/FAV (como el conmutador AM/FM de las radios
+         antiguas): FM = todas las emisoras, FAV = sólo favoritas. El
+         texto lo fija el provider en runtime según la banda activa; el
+         tap dispara ACCION_BANDA. Padding generoso para que el área
+         táctil supere al texto de 10sp. -->
+    <TextView
+        android:id="@+id/sintonizador_btn_banda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="26dp"
+        android:padding="8dp"
+        android:text="FM"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.1"
+        android:textColor="#f0d89a"
+        android:contentDescription="@string/widget_sintonizador_banda" />
+
     <!-- Decoración: cuatro tornillos en las esquinas del marco para que
          parezca tapa atornillada de mueble vintage. Cosmético — no
          tienen click ni cambian de estado. -->
