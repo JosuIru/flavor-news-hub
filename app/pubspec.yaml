@@ -89,7 +89,10 @@ dependencies:
   latlong2: ^0.9.1
 
   # Recibir URLs compartidas desde otras apps (intent filters nativos).
-  receive_sharing_intent: ^1.8.0
+  # Fijada en 1.8.1: la 1.9.0 usa `kotlin()` en su build.gradle y rompe
+  # el build de release en CI (pubspec.lock no se versiona, así que el
+  # caret dejaba a CI resolver la 1.9.0 mientras local seguía en 1.8.1).
+  receive_sharing_intent: 1.8.1
 
   # Home-screen widgets (Android). Escribe datos desde Flutter vía
   # SharedPreferences nativos; la parte Kotlin lee y pinta RemoteViews.
