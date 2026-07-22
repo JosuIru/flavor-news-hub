@@ -114,7 +114,7 @@ final class Menu
         if ($paginaSolicitada === EstadoFuentesPage::SLUG) {
             $tabDestino = SistemaPage::TAB_FUENTES;
         } elseif ($paginaSolicitada === EstadisticasPage::SLUG) {
-            $tabDestino = SistemaPage::TAB_DESCARGAS;
+            $tabDestino = SistemaPage::TAB_ESTADISTICAS;
         }
         if ($tabDestino === null) {
             return;

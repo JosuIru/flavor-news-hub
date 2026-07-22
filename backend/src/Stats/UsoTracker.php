@@ -202,4 +202,112 @@ final class UsoTracker
         set_transient($claveCache, $resumen, 5 * MINUTE_IN_SECONDS);
         return $resumen;
     }
+
+    /**
+     * Reparto de actividad por versión de la app en los últimos N días.
+     *
+     * El UA de la app es determinista por build —
+     * `FlavorNewsHub/<version> (<plataforma>; <canal>)`, ver
+     * `construirUserAgent()` en el cliente Flutter — así que su `ua_hash`
+     * (MD5 truncado) es predecible. Reconstruimos aquí ese hash para cada
+     * (versión × plataforma × canal) conocido y lo cruzamos contra la
+     * columna `ua_hash` de la tabla de uso. Con eso el panel puede decir
+     * "cuánta actividad viene de 0.16.12 vs 0.16.10" sin guardar jamás el
+     * UA en claro.
+     *
+     * OJO — semántica del número: `peticiones`, no personas. Todas las
+     * instalaciones de un mismo build colapsan en un único hash, así que
+     * lo que sale es VOLUMEN de actividad por versión, no recuento de
+     * usuarios. Sirve para ver si la gente actualiza (si una versión vieja
+     * concentra la actividad y la última casi nada → no están actualizando).
+     *
+     * Los hashes que no casan con ninguna versión conocida (navegadores,
+     * curl, bots, versiones fuera de la ventana `$versionesConocidas`) se
+     * agregan en `otros`.
+     *
+     * @param list<string> $versionesConocidas SemVer con o sin prefijo `v`
+     *                                          (p. ej. `v0.16.12`).
+     * @return array{por_version:list<array{version:string,plataforma:string,canal:string,peticiones:int}>,otros:int,dias:int}
+     */
+    public static function actividadPorVersion(array $versionesConocidas, int $dias = 30): array
+    {
+        $dias = max(1, min(90, $dias));
+
+        // Plataformas que puede reportar `_nombrePlataforma()` en el
+        // cliente. El repo distribuye Android, pero incluimos el resto
+        // (builds propios / self-host) para no dejarlos en "otros".
+        $plataformas = ['Android', 'iOS', 'Linux', 'macOS', 'Windows'];
+        $canales     = ['libre', 'playstore'];
+
+        // Índice hash → etiqueta legible. Replica EXACTAMENTE el string que
+        // arma el cliente: `FlavorNewsHub/<version> (<plataforma>; <canal>)`.
+        $indiceHash = [];
+        foreach ($versionesConocidas as $versionCruda) {
+            $version = ltrim((string) $versionCruda, 'vV');
+            if ($version === '') {
+                continue;
+            }
+            foreach ($plataformas as $plataforma) {
+                foreach ($canales as $canal) {
+                    $userAgent = "FlavorNewsHub/{$version} ({$plataforma}; {$canal})";
+                    $hash = substr(md5($userAgent), 0, 16);
+                    $indiceHash[$hash] = [
+                        'version'    => $version,
+                        'plataforma' => $plataforma,
+                        'canal'      => $canal,
+                    ];
+                }
+            }
+        }
+
+        // Cache corto por ventana + juego de versiones — igual que `resumen()`,
+        // el GROUP BY sobre `wp_fnh_uso_api` no necesita verse al segundo.
+        $claveCache = 'fnh_uso_versiones_' . $dias . '_' . substr(md5(implode(',', array_keys($indiceHash))), 0, 8);
+        $cacheado = get_transient($claveCache);
+        if (is_array($cacheado) && isset($cacheado['por_version'])) {
+            return $cacheado;
+        }
+
+        global $wpdb;
+        $tabla = UsoApiTable::nombreCompleto();
+        $filas = $wpdb->get_results($wpdb->prepare(
+            "SELECT ua_hash, SUM(peticiones) AS total
+             FROM {$tabla}
+             WHERE dia >= DATE_SUB(CURDATE(), INTERVAL %d DAY)
+             GROUP BY ua_hash",
+            $dias
+        ));
+
+        $porVersion = [];
+        $otros = 0;
+        foreach ((is_array($filas) ? $filas : []) as $fila) {
+            $hash  = (string) $fila->ua_hash;
+            $total = (int) $fila->total;
+            if (isset($indiceHash[$hash])) {
+                $info  = $indiceHash[$hash];
+                // Agregamos por (versión, plataforma, canal): dos plataformas
+                // de la misma versión son filas distintas y así se ven.
+                $clave = $info['version'] . '|' . $info['plataforma'] . '|' . $info['canal'];
+                if (!isset($porVersion[$clave])) {
+                    $porVersion[$clave] = $info + ['peticiones' => 0];
+                }
+                $porVersion[$clave]['peticiones'] += $total;
+            } else {
+                $otros += $total;
+            }
+        }
+
+        $porVersion = array_values($porVersion);
+        usort($porVersion, static function ($a, $b) {
+            return $b['peticiones'] <=> $a['peticiones'];
+        });
+
+        $resultado = [
+            'por_version' => $porVersion,
+            'otros'       => $otros,
+            'dias'        => $dias,
+        ];
+        set_transient($claveCache, $resultado, 5 * MINUTE_IN_SECONDS);
+        return $resultado;
+    }
 }

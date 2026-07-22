@@ -43,9 +43,15 @@ final class SistemaPage
 
     public const TAB_RESUMEN = 'resumen';
     public const TAB_FUENTES = 'fuentes';
-    public const TAB_DESCARGAS = 'descargas';
-    public const TAB_USO = 'uso';
+    public const TAB_ESTADISTICAS = 'estadisticas';
     public const TAB_ACTUALIZACIONES_APP = 'actualizaciones-app';
+
+    // Slugs antiguos ('descargas' y 'uso' eran tabs separadas) mapeados a
+    // la tab fusionada, para no romper enlaces guardados ni bookmarks.
+    private const TABS_LEGACY = [
+        'descargas' => self::TAB_ESTADISTICAS,
+        'uso'       => self::TAB_ESTADISTICAS,
+    ];
 
     /**
      * Lista de tabs en el orden que aparecerán. Cada entrada tiene
@@ -59,8 +65,7 @@ final class SistemaPage
         return [
             self::TAB_RESUMEN            => ['label' => __('Resumen', 'flavor-news-hub'),        'cap' => 'edit_posts'],
             self::TAB_FUENTES            => ['label' => __('Fuentes', 'flavor-news-hub'),        'cap' => 'manage_options'],
-            self::TAB_DESCARGAS          => ['label' => __('Descargas', 'flavor-news-hub'),      'cap' => 'edit_posts'],
-            self::TAB_USO                => ['label' => __('Uso de la API', 'flavor-news-hub'),  'cap' => 'edit_posts'],
+            self::TAB_ESTADISTICAS      => ['label' => __('Estadísticas', 'flavor-news-hub'),   'cap' => 'edit_posts'],
             self::TAB_ACTUALIZACIONES_APP => ['label' => __('Actualizaciones app', 'flavor-news-hub'), 'cap' => 'manage_options'],
         ];
     }
@@ -73,6 +78,8 @@ final class SistemaPage
 
         $tabsDisponibles = self::tabs();
         $tabSolicitada = isset($_GET['tab']) ? sanitize_key((string) $_GET['tab']) : self::TAB_RESUMEN;
+        // Redirige slugs antiguos ('descargas', 'uso') a la tab fusionada.
+        $tabSolicitada = self::TABS_LEGACY[$tabSolicitada] ?? $tabSolicitada;
         if (!isset($tabsDisponibles[$tabSolicitada])) {
             $tabSolicitada = self::TAB_RESUMEN;
         }
@@ -88,7 +95,7 @@ final class SistemaPage
         <div class="wrap">
             <h1><?php esc_html_e('Sistema', 'flavor-news-hub'); ?></h1>
             <p class="description">
-                <?php esc_html_e('Estado operacional del plugin: contadores, salud de fuentes, descargas reales del proyecto y uso anónimo de la API.', 'flavor-news-hub'); ?>
+                <?php esc_html_e('Estado operacional del plugin: resumen de contadores, salud de fuentes, estadísticas de audiencia (app y descargas) y anuncio de actualizaciones.', 'flavor-news-hub'); ?>
             </p>
 
             <h2 class="nav-tab-wrapper" style="margin-bottom:20px;">
@@ -109,11 +116,8 @@ final class SistemaPage
                 case self::TAB_FUENTES:
                     EstadoFuentesPage::render(false);
                     break;
-                case self::TAB_DESCARGAS:
-                    self::renderTabDescargas();
-                    break;
-                case self::TAB_USO:
-                    self::renderTabUso();
+                case self::TAB_ESTADISTICAS:
+                    self::renderTabEstadisticas();
                     break;
                 case self::TAB_ACTUALIZACIONES_APP:
                     self::renderTabActualizacionesApp();
@@ -129,29 +133,31 @@ final class SistemaPage
     }
 
     /**
-     * Tab "Descargas": delega en `EstadisticasPage` para los KPIs de
-     * GitHub Releases y añade encima un botón "Marcar como mía" que
-     * permite al admin descontar de los contadores las descargas
-     * realizadas por él/ella misma (típico cuando se prueba un
-     * release recién publicado).
+     * Tab "Estadísticas": audiencia del proyecto en un solo sitio. Fusiona
+     * lo que antes eran tres bloques dispersos, ordenados de más fiable a
+     * más ruidoso:
      *
-     * El offset se guarda en la option `fnh_descargas_propias_offset`
-     * como mapa `tag => número`. La page de estadísticas lo aplica en
-     * tiempo de render — la API de GitHub no se modifica.
+     *  1. Actividad real de la app por versión — señal limpia (cruce de
+     *     hashes de UA), responde a "¿la gente actualiza?".
+     *  2. Uso de la API — volumen agregado por endpoint y día.
+     *  3. Descargas de GitHub — contadores brutos, inflados por bots y
+     *     sin contar F-Droid; se dejan al final, con su aviso.
+     *
+     * El procesado de formularios (marcar descarga propia / resetear
+     * offset) vive aquí arriba porque debe correr ANTES de que
+     * `EstadisticasPage` lea los contadores en la sección 3.
      */
-    private static function renderTabDescargas(): void
+    private static function renderTabEstadisticas(): void
     {
-        // Procesamos el form ANTES de invocar EstadisticasPage para
-        // que su contador refleje el incremento del offset al instante.
+        // Formularios de la sección "Descargas de GitHub". Se procesan al
+        // principio para que el offset ya esté aplicado cuando se renderice
+        // esa sección más abajo.
         if (
             isset($_POST['fnh_marcar_descarga_propia'], $_POST['_wpnonce'], $_POST['tag'])
             && current_user_can('edit_posts')
             && wp_verify_nonce((string) $_POST['_wpnonce'], 'fnh_marcar_descarga_propia')
         ) {
             self::incrementarOffsetDescargaPropia((string) $_POST['tag']);
-            // Invalidamos el cache de la page de estadísticas para que
-            // el siguiente render lea los download_counts crudos y
-            // aplique el nuevo offset.
             delete_transient('fnh_stats_descargas');
             echo '<div class="notice notice-success is-dismissible"><p>'
                 . esc_html__('Descarga marcada como tuya. Los contadores se descontarán a partir del próximo refresco.', 'flavor-news-hub')
@@ -169,13 +175,206 @@ final class SistemaPage
                 . '</p></div>';
         }
 
+        $diasVentana = isset($_GET['dias']) ? max(1, min(90, (int) $_GET['dias'])) : 7;
+        ?>
+        <h2><?php esc_html_e('Audiencia del proyecto', 'flavor-news-hub'); ?></h2>
+        <p class="description" style="max-width:640px;">
+            <?php esc_html_e('De la señal más fiable a la más ruidosa: primero qué versiones de la app están activas de verdad, luego el uso de la API, y al final los contadores de descargas de GitHub (útiles pero inflados por bots y sin contar F-Droid).', 'flavor-news-hub'); ?>
+        </p>
+
+        <p>
+            <?php esc_html_e('Ventana (afecta a app y API, no a los contadores de GitHub):', 'flavor-news-hub'); ?>
+            <?php foreach ([1, 7, 30, 90] as $dias) : ?>
+                <a href="<?php echo esc_url(add_query_arg([
+                    'page' => self::SLUG,
+                    'tab'  => self::TAB_ESTADISTICAS,
+                    'dias' => $dias,
+                ], admin_url('admin.php'))); ?>"
+                   class="button <?php echo $diasVentana === $dias ? 'button-primary' : 'button-secondary'; ?>"
+                   style="margin-right:.3em;">
+                    <?php echo esc_html(sprintf(_n('%d día', '%d días', $dias, 'flavor-news-hub'), $dias)); ?>
+                </a>
+            <?php endforeach; ?>
+        </p>
+
+        <?php
+        self::renderSeccionActividadApp($diasVentana);
+        self::renderSeccionUsoApi($diasVentana);
+        self::renderSeccionDescargasGitHub();
+    }
+
+    /**
+     * Sección 1 (señal fiable): reparto de actividad por versión de la app.
+     * Cruza los hashes de UA de la tabla de uso con los hashes
+     * reconstruidos de cada release conocida — ver `UsoTracker`. La lista
+     * de versiones sale del listado que ya cachea el endpoint de
+     * actualización, así se auto-mantiene con cada release nueva.
+     */
+    private static function renderSeccionActividadApp(int $diasVentana): void
+    {
+        $releasesConocidas = AppUpdateEndpoint::listarReleasesParaAdmin(15);
+        $versionesConocidas = array_column($releasesConocidas, 'version');
+        $actividad = UsoTracker::actividadPorVersion($versionesConocidas, $diasVentana);
+        $totalVersionado = array_sum(array_column($actividad['por_version'], 'peticiones'));
+        ?>
+        <h2 style="margin-top:2.5em;border-top:1px solid #dcdcde;padding-top:1.5em;">
+            <?php esc_html_e('1. Actividad real de la app, por versión', 'flavor-news-hub'); ?>
+        </h2>
+        <p class="description" style="max-width:640px;">
+            <?php esc_html_e('La señal fiable para responder "¿la gente actualiza?". Reconstruye el reparto cruzando el hash del User-Agent con el de cada release. Es VOLUMEN de peticiones por versión, no número de usuarios (todas las instalaciones de un build comparten hash), pero el reparto relativo lo dice todo: si una versión vieja concentra la actividad y la última casi nada, no están actualizando. Incluye a los usuarios de F-Droid (también consultan la API). "Otros" son navegadores, bots y versiones fuera de las últimas releases.', 'flavor-news-hub'); ?>
+        </p>
+        <?php if ($totalVersionado === 0) : ?>
+            <p><?php esc_html_e('Todavía no hay actividad identificable de la app en esta ventana (sólo tráfico de "otros").', 'flavor-news-hub'); ?></p>
+        <?php else : ?>
+            <table class="widefat striped" style="max-width:600px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Versión', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Plataforma', 'flavor-news-hub'); ?></th>
+                        <th><?php esc_html_e('Canal', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('Peticiones', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('% app', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($actividad['por_version'] as $fila) : ?>
+                        <tr>
+                            <td><code><?php echo esc_html((string) $fila['version']); ?></code></td>
+                            <td><?php echo esc_html((string) $fila['plataforma']); ?></td>
+                            <td><?php echo esc_html((string) $fila['canal']); ?></td>
+                            <td style="text-align:right;"><?php echo (int) $fila['peticiones']; ?></td>
+                            <td style="text-align:right;"><?php echo esc_html(number_format(100 * $fila['peticiones'] / $totalVersionado, 1)); ?>%</td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3"><em><?php esc_html_e('Otros (web, bots, versiones antiguas)', 'flavor-news-hub'); ?></em></td>
+                        <td style="text-align:right;"><em><?php echo (int) $actividad['otros']; ?></em></td>
+                        <td style="text-align:right;">—</td>
+                    </tr>
+                </tfoot>
+            </table>
+        <?php endif; ?>
+        <?php
+    }
+
+    /**
+     * Sección 2: uso agregado de la API pública (endpoints y días). Es el
+     * mismo dato que alimenta la sección 1, visto por endpoint/día en vez
+     * de por versión.
+     */
+    private static function renderSeccionUsoApi(int $diasVentana): void
+    {
+        $resumen = UsoTracker::resumen($diasVentana);
+        ?>
+        <h2 style="margin-top:2.5em;border-top:1px solid #dcdcde;padding-top:1.5em;">
+            <?php esc_html_e('2. Uso de la API pública', 'flavor-news-hub'); ?>
+        </h2>
+        <p class="description" style="max-width:640px;">
+            <?php esc_html_e('Métrica agregada anónima (día, endpoint, hash MD5 truncado del User-Agent). Sin IPs ni cookies. Responde a "¿se usa la app?" sin poder responder a "¿quién la usa?". Retención: 90 días.', 'flavor-news-hub'); ?>
+        </p>
+
+        <div style="display:flex;gap:1em;margin:1em 0;flex-wrap:wrap;">
+            <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
+                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Peticiones totales', 'flavor-news-hub'); ?></div>
+                <div style="font-size:2em;font-weight:600;"><?php echo (int) $resumen['total_peticiones']; ?></div>
+            </div>
+            <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
+                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Variantes de cliente', 'flavor-news-hub'); ?></div>
+                <div style="font-size:2em;font-weight:600;"><?php echo (int) $resumen['uas_distintos']; ?></div>
+                <div style="font-size:.8em;color:#888;margin-top:.25em;">
+                    <?php esc_html_e('versión + plataforma de la app, navegadores, curl, bots… No cuenta instalaciones únicas.', 'flavor-news-hub'); ?>
+                </div>
+            </div>
+            <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
+                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Días con actividad', 'flavor-news-hub'); ?></div>
+                <div style="font-size:2em;font-weight:600;"><?php echo (int) count($resumen['por_dia']); ?></div>
+                <div style="font-size:.8em;color:#888;margin-top:.25em;">
+                    <?php
+                    printf(
+                        /* translators: %d días en la ventana */
+                        esc_html__('de %d en la ventana', 'flavor-news-hub'),
+                        (int) $resumen['dias']
+                    );
+                    ?>
+                </div>
+            </div>
+        </div>
+
+        <?php if ($resumen['total_peticiones'] === 0) : ?>
+            <p>
+                <?php esc_html_e('Aún no hay registros. El tracker se activa con la próxima petición a flavor-news/v1/...', 'flavor-news-hub'); ?>
+            </p>
+        <?php else : ?>
+            <h3 style="margin-top:1.5em;"><?php esc_html_e('Peticiones por endpoint', 'flavor-news-hub'); ?></h3>
+            <table class="widefat striped" style="max-width:600px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Endpoint', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('Peticiones', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($resumen['por_endpoint'] as $endpoint => $peticiones) : ?>
+                        <tr>
+                            <td><code><?php echo esc_html((string) $endpoint); ?></code></td>
+                            <td style="text-align:right;"><?php echo (int) $peticiones; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top:1.5em;"><?php esc_html_e('Peticiones por día', 'flavor-news-hub'); ?></h3>
+            <table class="widefat striped" style="max-width:600px;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Día', 'flavor-news-hub'); ?></th>
+                        <th style="text-align:right;"><?php esc_html_e('Peticiones', 'flavor-news-hub'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($resumen['por_dia'] as $dia => $peticiones) : ?>
+                        <tr>
+                            <td><?php echo esc_html((string) $dia); ?></td>
+                            <td style="text-align:right;"><?php echo (int) $peticiones; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <p style="margin-top:1.5em;font-size:.9em;color:#666;max-width:640px;">
+            <?php esc_html_e('Sólo se cuentan endpoints de flavor-news/v1 con métodos GET/POST. ua_hash es MD5 truncado a 16 caracteres del User-Agent — irreversible y no permite identificar a la persona. La app envía un UA fijo por build (FlavorNewsHub/version (plataforma; canal)), así que todas las instalaciones del mismo build colapsan en un único hash: la métrica indica variedad de clientes, no número de usuarios. La tabla se purga automáticamente cada 90 días.', 'flavor-news-hub'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Sección 3 (la ruidosa): contadores de descargas de GitHub Releases,
+     * más el botón "marcar como mía" para descontar del total las
+     * descargas de prueba del propio admin. El procesado del form vive en
+     * `renderTabEstadisticas()` (debe correr antes que `EstadisticasPage`).
+     */
+    private static function renderSeccionDescargasGitHub(): void
+    {
+        ?>
+        <h2 style="margin-top:2.5em;border-top:1px solid #dcdcde;padding-top:1.5em;">
+            <?php esc_html_e('3. Descargas de GitHub Releases', 'flavor-news-hub'); ?>
+        </h2>
+        <div class="notice notice-warning inline" style="margin:1em 0;max-width:640px;">
+            <p>
+                <?php esc_html_e('Contadores brutos que sirve GitHub: incluyen bots, mirrors y escáneres, y NO cuentan F-Droid/IzzyOnDroid. Son un número honesto de "peticiones servidas", no de usuarios ni de instalaciones. Para saber si la gente actualiza, fíjate en la sección 1.', 'flavor-news-hub'); ?>
+            </p>
+        </div>
+        <?php
         EstadisticasPage::render();
 
         // Bloque "marcar como mía" debajo de la tabla por release.
         $offsetActual = self::offsetDescargasPropias();
         $totalOffset = array_sum($offsetActual);
         ?>
-        <h2 style="margin-top:2em;"><?php esc_html_e('¿Has descargado tú una versión?', 'flavor-news-hub'); ?></h2>
+        <h3 style="margin-top:2em;"><?php esc_html_e('¿Has descargado tú una versión?', 'flavor-news-hub'); ?></h3>
         <p class="description">
             <?php esc_html_e('Si pruebas cada release recién publicada, tus propias descargas inflan los contadores. Aquí puedes registrarlas como propias para que se descuenten del total visible. La página de Estadísticas resta este offset a los download_count que devuelve GitHub.', 'flavor-news-hub'); ?>
         </p>
@@ -216,111 +415,6 @@ final class SistemaPage
                 </button>
             </form>
         <?php endif; ?>
-        <?php
-    }
-
-    /**
-     * Tab "Uso de la API": muestra el resumen agregado del UsoTracker.
-     * Sólo lectura; no hay configuración aquí.
-     */
-    private static function renderTabUso(): void
-    {
-        $diasVentana = isset($_GET['dias']) ? max(1, min(90, (int) $_GET['dias'])) : 7;
-        $resumen = UsoTracker::resumen($diasVentana);
-        ?>
-        <h2><?php esc_html_e('Uso anónimo de la API pública', 'flavor-news-hub'); ?></h2>
-        <p class="description">
-            <?php esc_html_e('Métrica agregada (día, endpoint, hash MD5 truncado del User-Agent). Sin IPs ni cookies. Permite responder a "¿se usa la app?" sin poder responder a "¿quién la usa?". Retención: 90 días.', 'flavor-news-hub'); ?>
-        </p>
-
-        <p>
-            <?php esc_html_e('Ventana:', 'flavor-news-hub'); ?>
-            <?php foreach ([1, 7, 30, 90] as $dias) : ?>
-                <a href="<?php echo esc_url(add_query_arg([
-                    'page' => self::SLUG,
-                    'tab'  => self::TAB_USO,
-                    'dias' => $dias,
-                ], admin_url('admin.php'))); ?>"
-                   class="button <?php echo $diasVentana === $dias ? 'button-primary' : 'button-secondary'; ?>"
-                   style="margin-right:.3em;">
-                    <?php echo esc_html(sprintf(_n('%d día', '%d días', $dias, 'flavor-news-hub'), $dias)); ?>
-                </a>
-            <?php endforeach; ?>
-        </p>
-
-        <div style="display:flex;gap:1em;margin:1em 0;flex-wrap:wrap;">
-            <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
-                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Peticiones totales', 'flavor-news-hub'); ?></div>
-                <div style="font-size:2em;font-weight:600;"><?php echo (int) $resumen['total_peticiones']; ?></div>
-            </div>
-            <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
-                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Variantes de cliente', 'flavor-news-hub'); ?></div>
-                <div style="font-size:2em;font-weight:600;"><?php echo (int) $resumen['uas_distintos']; ?></div>
-                <div style="font-size:.8em;color:#888;margin-top:.25em;">
-                    <?php esc_html_e('versión + plataforma de la app, navegadores, curl, bots… No cuenta instalaciones únicas.', 'flavor-news-hub'); ?>
-                </div>
-            </div>
-            <div style="background:#fff;padding:1em 1.5em;border:1px solid #ccd0d4;min-width:200px;">
-                <div style="font-size:.85em;color:#666;"><?php esc_html_e('Días con actividad', 'flavor-news-hub'); ?></div>
-                <div style="font-size:2em;font-weight:600;"><?php echo (int) count($resumen['por_dia']); ?></div>
-                <div style="font-size:.8em;color:#888;margin-top:.25em;">
-                    <?php
-                    printf(
-                        /* translators: %d días en la ventana */
-                        esc_html__('de %d en la ventana', 'flavor-news-hub'),
-                        (int) $resumen['dias']
-                    );
-                    ?>
-                </div>
-            </div>
-        </div>
-
-        <?php if ($resumen['total_peticiones'] === 0) : ?>
-            <p>
-                <?php esc_html_e('Aún no hay registros. El tracker se activa con la próxima petición a flavor-news/v1/...', 'flavor-news-hub'); ?>
-            </p>
-            <?php return; ?>
-        <?php endif; ?>
-
-        <h3 style="margin-top:1.5em;"><?php esc_html_e('Peticiones por endpoint', 'flavor-news-hub'); ?></h3>
-        <table class="widefat striped" style="max-width:600px;">
-            <thead>
-                <tr>
-                    <th><?php esc_html_e('Endpoint', 'flavor-news-hub'); ?></th>
-                    <th style="text-align:right;"><?php esc_html_e('Peticiones', 'flavor-news-hub'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($resumen['por_endpoint'] as $endpoint => $peticiones) : ?>
-                    <tr>
-                        <td><code><?php echo esc_html((string) $endpoint); ?></code></td>
-                        <td style="text-align:right;"><?php echo (int) $peticiones; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <h3 style="margin-top:1.5em;"><?php esc_html_e('Peticiones por día', 'flavor-news-hub'); ?></h3>
-        <table class="widefat striped" style="max-width:600px;">
-            <thead>
-                <tr>
-                    <th><?php esc_html_e('Día', 'flavor-news-hub'); ?></th>
-                    <th style="text-align:right;"><?php esc_html_e('Peticiones', 'flavor-news-hub'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($resumen['por_dia'] as $dia => $peticiones) : ?>
-                    <tr>
-                        <td><?php echo esc_html((string) $dia); ?></td>
-                        <td style="text-align:right;"><?php echo (int) $peticiones; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <p style="margin-top:1.5em;font-size:.9em;color:#666;">
-            <?php esc_html_e('Sólo se cuentan endpoints de flavor-news/v1 con métodos GET/POST. ua_hash es MD5 truncado a 16 caracteres del User-Agent — irreversible y no permite identificar a la persona. La app envía un UA fijo por build (FlavorNewsHub/version (plataforma; canal)), así que todas las instalaciones del mismo build colapsan en un único hash: la métrica indica variedad de clientes, no número de usuarios. La tabla se purga automáticamente cada 90 días.', 'flavor-news-hub'); ?>
-        </p>
         <?php
     }
 
