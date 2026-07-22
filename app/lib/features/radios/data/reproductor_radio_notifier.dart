@@ -44,7 +44,7 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     // Maneja todos los `ProcessingState` para que el icono refleje siempre
     // lo que hace el motor de audio (no sólo los dos casos extremos
     // ready+playing y idle+!playing).
-    _player.playbackEventStream.listen((_) {
+    _subPlaybackEvent = _player.playbackEventStream.listen((_) {
       _sincronizarEstadoConPlayer();
     }, onError: (Object error, StackTrace st) {
       final actual = state.radioActual;
@@ -64,6 +64,14 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
 
   final AudioPlayer _player = AudioPlayer();
   final Ref _ref;
+
+  /// Suscripción a los eventos del player. Se guarda para poder cancelarla
+  /// en `dispose()` ANTES de `_player.dispose()`: sin esto, un evento
+  /// tardío (buffering intermitente con red inestable) podía ejecutar el
+  /// callback y hacer `state=` sobre un notifier ya dispuesto → crash
+  /// "StateNotifier was used after being disposed". El notifier de
+  /// episodios ya lo hace así a propósito.
+  StreamSubscription<PlaybackEvent>? _subPlaybackEvent;
 
   /// Clave de SharedPreferences donde guardamos la última emisora
   /// reproducida (JSON del modelo `Radio`), para poder "armarla" al
@@ -416,6 +424,9 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
 
   @override
   void dispose() {
+    // Cancelar la suscripción ANTES de disponer el player: así ningún
+    // evento en vuelo intenta tocar el estado de un notifier ya muerto.
+    _subPlaybackEvent?.cancel();
     _player.dispose();
     super.dispose();
   }

@@ -241,17 +241,26 @@ Future<void> aplicarFrecuenciaNotif(FrecuenciaNotif frecuencia) async {
   // incluso cuando se pasa de 60m a 180m: `registerPeriodicTask` no
   // reprograma si la clave existe.
   await Workmanager().cancelByUniqueName(kNombreWorkerTitulares);
-  // Frecuencia efectiva: la que eligió el usuario, o 60 min como
-  // baseline cuando las notificaciones están apagadas — así el widget
-  // de titulares sigue refrescándose aunque no queramos popups.
   // Guardamos la preferencia para que el worker sepa si puede notificar.
   final sp = await SharedPreferences.getInstance();
   await sp.setBool('fnh.pref.notifActiva', frecuencia.esActiva);
-  final minutos = frecuencia.esActiva ? frecuencia.minutos : 60;
+
+  // Si las notificaciones están en "nunca" NO registramos ningún worker
+  // periódico. Antes se mantenía uno cada 60 min "para refrescar el
+  // widget de titulares", pero eso hacía un GET + escrituras cada hora en
+  // TODOS los dispositivos, incluidos los que no tienen widget ni quieren
+  // notificaciones — un goteo constante de batería y datos para nada. El
+  // widget ya se refresca al abrir la app (el feed escribe sus titulares
+  // en cada carga, ver WidgetTitularesWriter) y con el periodo nativo de
+  // Android, así que el worker horario era redundante para ese caso.
+  if (!frecuencia.esActiva) {
+    return;
+  }
+
   await Workmanager().registerPeriodicTask(
     kNombreWorkerTitulares,
     kNombreWorkerTitulares,
-    frequency: Duration(minutes: minutos),
+    frequency: Duration(minutes: frecuencia.minutos),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
     tag: kTagWorker,
     constraints: Constraints(

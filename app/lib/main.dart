@@ -59,6 +59,12 @@ void main() {
 /// errores asíncronos solo se registran; no reemplazan la UI.
 bool _appMontada = false;
 
+/// Guarda de idempotencia: `JustAudioBackground.init` lanza
+/// "already initialized" si se llama dos veces. Sin esto, el botón
+/// "Reintentar" de la pantalla de error re-ejecutaba `_arrancar`, volvía a
+/// invocarlo y petaba de nuevo → el usuario no podía salir nunca.
+bool _audioBackgroundInicializado = false;
+
 /// Secuencia de arranque. Extraída de `main` para poder relanzarla desde la
 /// pantalla de error sin reiniciar el proceso.
 ///
@@ -72,32 +78,63 @@ bool _appMontada = false;
 Future<void> _arrancar() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'org.flavornewshub.audio',
-    androidNotificationChannelName: 'Radios en directo',
-    androidNotificationOngoing: true,
-  );
-
+  // SharedPreferences es la ÚNICA dependencia dura del arranque: sin ella
+  // no podemos aplicar tema/idioma ni sobreescribir el provider. El resto
+  // de inicializaciones nativas (audio en segundo plano, workmanager,
+  // notificaciones, info de paquete) son features opcionales: si alguna
+  // falla en un fabricante hostil (Xiaomi/Huawei con gestión agresiva de
+  // background, OEM sin canal de notificación de audio…), NO deben tumbar
+  // la app entera a la pantalla de error. Por eso cada una va en su propio
+  // try/catch y `runApp` se ejecuta siempre.
   final sharedPrefs = await SharedPreferences.getInstance();
+
+  // Controles de audio en la notificación del sistema (radio con pantalla
+  // bloqueada, botones bluetooth, Android Auto). Opcional: sin esto la
+  // radio sigue sonando, solo pierde los controles en la notificación.
+  if (!_audioBackgroundInicializado) {
+    try {
+      await JustAudioBackground.init(
+        androidNotificationChannelId: 'org.flavornewshub.audio',
+        androidNotificationChannelName: 'Radios en directo',
+        androidNotificationOngoing: true,
+      );
+      _audioBackgroundInicializado = true;
+    } catch (error, pila) {
+      RegistroErrores.instancia.registrar(error, pila);
+    }
+  }
 
   // Resolvemos el User-Agent una sola vez al arranque para que el
   // cliente HTTP del backend pueda enviarlo síncronamente. El plugin
-  // lo usa como variante de cliente en su panel de uso anónimo.
-  final infoPaquete = await PackageInfo.fromPlatform();
-  final userAgent = construirUserAgent(version: infoPaquete.version);
+  // lo usa como variante de cliente en su panel de uso anónimo. Si
+  // `PackageInfo` falla, caemos a un UA con versión desconocida en vez
+  // de abortar el arranque.
+  String versionApp = '0.0.0';
+  try {
+    final infoPaquete = await PackageInfo.fromPlatform();
+    versionApp = infoPaquete.version;
+  } catch (error, pila) {
+    RegistroErrores.instancia.registrar(error, pila);
+  }
+  final userAgent = construirUserAgent(version: versionApp);
 
-  // Workmanager arranca antes de la UI. Siempre registramos el worker
-  // periódico (aunque las notificaciones estén off): lo usamos para
-  // refrescar los widgets Android de titulares en segundo plano.
-  await inicializarWorkmanager();
-  final codigoFrecuencia = sharedPrefs.getString('fnh.pref.notifFrecuencia');
-  final frecuenciaGuardada = codigoFrecuencia != null
-      ? FrecuenciaNotif.values.firstWhere(
-          (f) => f.name == codigoFrecuencia,
-          orElse: () => FrecuenciaNotif.nunca,
-        )
-      : FrecuenciaNotif.nunca;
-  await aplicarFrecuenciaNotif(frecuenciaGuardada);
+  // Workmanager + tarea periódica de titulares. Opcional: si el runtime
+  // de background no arranca, la app funciona igual (sin notificaciones
+  // ni refresco del widget con la app cerrada). Todo dentro del try para
+  // que un fallo de registro no impida montar la UI.
+  try {
+    await inicializarWorkmanager();
+    final codigoFrecuencia = sharedPrefs.getString('fnh.pref.notifFrecuencia');
+    final frecuenciaGuardada = codigoFrecuencia != null
+        ? FrecuenciaNotif.values.firstWhere(
+            (f) => f.name == codigoFrecuencia,
+            orElse: () => FrecuenciaNotif.nunca,
+          )
+        : FrecuenciaNotif.nunca;
+    await aplicarFrecuenciaNotif(frecuenciaGuardada);
+  } catch (error, pila) {
+    RegistroErrores.instancia.registrar(error, pila);
+  }
 
   // Despertamos la ingesta del backend. En sitios con poco tráfico
   // web wp-cron tarda en disparar — esto asegura que al abrir la app

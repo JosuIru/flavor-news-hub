@@ -148,9 +148,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 onReintentar: () => ref.read(feedProvider.notifier).refrescar(),
               );
             }
-            final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
-            final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
-            final leidos = ref.watch(leidosProvider).valueOrNull ?? const <int>{};
+            // `ItemCard` deriva su propio estado (guardado/útil/leído) con
+            // `select` por id, así que aquí ya no observamos los tres Sets:
+            // marcar un item repinta sólo su tarjeta, no toda la lista.
             final indiceBase = estado.modoOffline ? 1 : 0; // +1 si hay banner offline
 
             return ListView.separated(
@@ -174,9 +174,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 final item = estado.items[indiceItem];
                 return ItemCard(
                   item: item,
-                  estaGuardado: guardados.contains(item.id),
-                  esUtil: utiles.contains(item.id),
-                  estaLeido: leidos.contains(item.id),
                   onTap: () => context.push('/items/${item.id}'),
                   onSourceTap: (idSource) => context.push('/sources/$idSource'),
                   onTopicTap: (slug) async {
@@ -185,7 +182,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                         .alternarTopic(slug);
                   },
                   onGuardarAlternar: () {
-                    final estaba = guardados.contains(item.id);
+                    final estaba = ref
+                            .read(guardadosProvider)
+                            .valueOrNull
+                            ?.contains(item.id) ??
+                        false;
                     ref.read(guardadosProvider.notifier).alternar(item);
                     // Confirmamos con deshacer solo al guardar; al quitar de
                     // guardados no interrumpimos con un SnackBar.
@@ -200,7 +201,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                     }
                   },
                   onUtilAlternar: () {
-                    final estaba = utiles.contains(item.id);
+                    final estaba = ref
+                            .read(utilesProvider)
+                            .valueOrNull
+                            ?.contains(item.id) ??
+                        false;
                     ref.read(utilesProvider.notifier).alternar(item);
                     if (!estaba) {
                       mostrarSnackBarDeshacer(

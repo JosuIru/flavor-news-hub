@@ -1,14 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flavor_news_hub/l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/models/item.dart';
+import '../../history/data/historial_provider.dart';
 
 /// Tarjeta de un item en el listado del feed. Semánticamente es un botón
 /// (todo el área es tappable) con título, metadatos, chips de temáticas
 /// y, si la hay, imagen destacada a la derecha.
-class ItemCard extends StatelessWidget {
+///
+/// Deriva su estado (guardado/útil/leído) con `select` sobre cada provider,
+/// filtrando por `item.id`: así al marcar un item sólo se reconstruye SU
+/// tarjeta, no toda la lista. Antes las tres pertenencias se calculaban en
+/// el builder de la lista y cualquier toggle repintaba todas las tarjetas
+/// visibles.
+class ItemCard extends ConsumerWidget {
   const ItemCard({
     required this.item,
     required this.onTap,
@@ -16,9 +24,6 @@ class ItemCard extends StatelessWidget {
     required this.onTopicTap,
     required this.onGuardarAlternar,
     required this.onUtilAlternar,
-    required this.estaGuardado,
-    required this.esUtil,
-    required this.estaLeido,
     super.key,
   });
 
@@ -28,12 +33,18 @@ class ItemCard extends StatelessWidget {
   final ValueChanged<String> onTopicTap;
   final VoidCallback onGuardarAlternar;
   final VoidCallback onUtilAlternar;
-  final bool estaGuardado;
-  final bool esUtil;
-  final bool estaLeido;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final estaGuardado = ref.watch(
+      guardadosProvider.select((s) => s.valueOrNull?.contains(item.id) ?? false),
+    );
+    final esUtil = ref.watch(
+      utilesProvider.select((s) => s.valueOrNull?.contains(item.id) ?? false),
+    );
+    final estaLeido = ref.watch(
+      leidosProvider.select((s) => s.valueOrNull?.contains(item.id) ?? false),
+    );
     final esquemaColores = Theme.of(context).colorScheme;
     final textos = AppLocalizations.of(context);
     final localeCodigo = Localizations.localeOf(context).toLanguageTag();
