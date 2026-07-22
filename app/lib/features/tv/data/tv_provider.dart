@@ -21,26 +21,19 @@ import '../../../core/utils/territory_scoring.dart';
 /// migrado (fuentes existentes en instancias actualizadas desde una
 /// versión previa al campo medium_type se crean con default 'news').
 final tvSourcesProvider = FutureProvider<List<Source>>((ref) async {
-  final api = ref.watch(flavorNewsApiProvider);
+  // Derivamos del catálogo completo que `sourcesProvider` ya descarga y
+  // cachea (lo comparten Fuentes y Podcasts). Antes esta pestaña volvía a
+  // paginar TODO el catálogo por su cuenta —descarga duplicada— y, peor,
+  // como observa los filtros transversales/idioma, cada toque de un chip
+  // re-descargaba las fuentes enteras. Ahora el fetch es único y cacheado;
+  // aquí sólo filtramos en cliente (audiovisual + topics/idioma), que es
+  // barato y ya se hacía así.
+  final catalogo = await ref.watch(sourcesProvider.future);
   final transversal = ref.watch(filtrosTransversalesProvider);
   final idiomasEfectivos = ref.watch(idiomasEfectivosConOverrideProvider);
-  // Misma corrección que sourcesProvider en v0.9.55: recorrer todas
-  // las páginas para no truncar la lista alfabéticamente. Antes el
-  // pestaña TV → Medios solo mostraba sources hasta "Jot Down" porque
-  // pedía solo la primera página de 100.
-  final primera = await api.fetchSources(perPage: 100);
-  final todas = <Source>[...primera.items];
-  for (var p = 2; p <= primera.totalPages; p++) {
-    try {
-      final siguiente = await api.fetchSources(perPage: 100, page: p);
-      todas.addAll(siguiente.items);
-    } on FlavorNewsApiException {
-      break;
-    }
-  }
   const mediosAudiovisuales = {'tv_station', 'video'};
   const feedTypesAudiovisuales = {'youtube', 'video', 'peertube'};
-  final fuentes = todas.where((s) {
+  final fuentes = catalogo.items.where((s) {
     if (!s.active) return false;
     return mediosAudiovisuales.contains(s.mediumType) ||
         feedTypesAudiovisuales.contains(s.feedType);

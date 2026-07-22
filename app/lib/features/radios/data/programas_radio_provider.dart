@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../core/models/item.dart';
+import '../../../core/providers/api_provider.dart';
+import '../../../core/providers/user_agent_provider.dart';
 import '../../personal_sources/data/fuente_personal.dart';
 import '../../personal_sources/data/parser_feed_xml.dart';
 
@@ -17,7 +18,14 @@ final programasRadioProvider = FutureProvider.autoDispose
   final uri = Uri.tryParse(args.rssUrl);
   if (uri == null) return const [];
 
-  final resp = await http.get(uri).timeout(const Duration(seconds: 15));
+  // Reutilizamos el http.Client compartido (evita abrir y descartar una
+  // conexión por cada consulta) y enviamos User-Agent: sin él, algunos
+  // orígenes de RSS responden 403 al cliente Dart por defecto.
+  final cliente = ref.watch(httpClientProvider);
+  final userAgent = ref.watch(userAgentProvider);
+  final resp = await cliente
+      .get(uri, headers: {'user-agent': userAgent})
+      .timeout(const Duration(seconds: 15));
   if (resp.statusCode < 200 || resp.statusCode >= 300) {
     throw 'HTTP ${resp.statusCode}';
   }

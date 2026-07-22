@@ -194,9 +194,10 @@ class FlavorNewsApi {
     String? language,
     String? topic,
     String? search,
+    int perPage = 100,
   }) async {
     final respuesta = await _get('radios', query: {
-      'per_page': '100',
+      'per_page': '$perPage',
       if (territory != null && territory.isNotEmpty) 'territory': territory,
       if (language != null && language.isNotEmpty) 'language': language,
       if (topic != null && topic.isNotEmpty) 'topic': topic,
