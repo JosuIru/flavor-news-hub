@@ -37,7 +37,11 @@ class RadiosBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
     final asyncRadios = ref.watch(radiosProvider);
-    final estadoReproductor = ref.watch(reproductorRadioProvider);
+    // Ojo: NO observamos aquí `reproductorRadioProvider`. Antes sí, y cada
+    // transición del player (incluidos los eventos de buffering, que llegan
+    // repetidos con red inestable) re-ejecutaba el filtrado + orden de las
+    // ~80 radios y reconstruía la lista entera. Ahora cada `_FilaRadio`
+    // observa sólo su propio estado con `select`.
     final favoritas = ref.watch(radiosFavoritasProvider);
     final territorioBase = ref.watch(
       preferenciasProvider.select((p) => p.territorioBase),
@@ -217,7 +221,6 @@ class RadiosBody extends ConsumerWidget {
                         final radio = ordenadas[indice];
                         return _FilaRadio(
                           radio: radio,
-                          estadoReproductor: estadoReproductor,
                           esFavorita: favoritas.contains(radio.id),
                           onToggle: () => ref.read(reproductorRadioProvider.notifier).alternar(radio),
                           onFavorita: () =>
@@ -374,17 +377,15 @@ class RadiosScreen extends ConsumerWidget {
   }
 }
 
-class _FilaRadio extends StatelessWidget {
+class _FilaRadio extends ConsumerWidget {
   const _FilaRadio({
     required this.radio,
-    required this.estadoReproductor,
     required this.esFavorita,
     required this.onToggle,
     required this.onFavorita,
   });
 
   final modelo_radio.Radio radio;
-  final EstadoReproductor estadoReproductor;
   final bool esFavorita;
   final VoidCallback onToggle;
   final VoidCallback onFavorita;
@@ -406,13 +407,20 @@ class _FilaRadio extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
     final esquema = Theme.of(context).colorScheme;
-    final reproduciendo = estadoReproductor.reproduciendoRadio(radio.id);
-    final cargando = estadoReproductor.cargandoRadio(radio.id);
-    final errorEnEstaRadio = estadoReproductor.estado == EstadoPlayback.error &&
-        estadoReproductor.radioActual?.id == radio.id;
+    // `select` a un record con sólo lo que esta fila necesita: la fila se
+    // reconstruye únicamente cuando cambia el estado de SU radio, no cuando
+    // el player emite cualquier evento de otra emisora.
+    final (reproduciendo, cargando, errorEnEstaRadio) = ref.watch(
+      reproductorRadioProvider.select((estado) => (
+            estado.reproduciendoRadio(radio.id),
+            estado.cargandoRadio(radio.id),
+            estado.estado == EstadoPlayback.error &&
+                estado.radioActual?.id == radio.id,
+          )),
+    );
 
     final tieneWeb = radio.websiteUrl.isNotEmpty;
     final tieneRss = radio.rssUrl.isNotEmpty;

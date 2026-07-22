@@ -133,13 +133,21 @@ class _MiniReproductor extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final estadoEpisodio = ref.watch(reproductorEpisodioProvider);
+    // `select` a sólo (estado, episodioActual): la barra NO muestra la
+    // posición, pero el estado del reproductor de episodios se actualiza
+    // ~5 veces/segundo con la posición mientras suena. Sin este `select`,
+    // este widget —presente en TODAS las pestañas— se reconstruía a ese
+    // ritmo para nada. La radio no tiene stream de posición, así que su
+    // estado se puede observar entero sin coste.
+    final (estadoTipoEpisodio, episodioActual) = ref.watch(
+      reproductorEpisodioProvider.select((s) => (s.estado, s.episodioActual)),
+    );
     final estadoRadio = ref.watch(reproductorRadioProvider);
 
-    final episodioActivo = estadoEpisodio.episodioActual != null &&
-        (estadoEpisodio.estado == EstadoEpisodio.reproduciendo ||
-            estadoEpisodio.estado == EstadoEpisodio.pausado ||
-            estadoEpisodio.estado == EstadoEpisodio.cargando);
+    final episodioActivo = episodioActual != null &&
+        (estadoTipoEpisodio == EstadoEpisodio.reproduciendo ||
+            estadoTipoEpisodio == EstadoEpisodio.pausado ||
+            estadoTipoEpisodio == EstadoEpisodio.cargando);
     final radioActiva = estadoRadio.radioActual != null &&
         (estadoRadio.estado == EstadoPlayback.reproduciendo ||
             estadoRadio.estado == EstadoPlayback.cargando);
@@ -151,9 +159,9 @@ class _MiniReproductor extends ConsumerWidget {
     final esquema = Theme.of(context).colorScheme;
 
     if (episodioActivo) {
-      final episodio = estadoEpisodio.episodioActual!;
-      final cargando = estadoEpisodio.estado == EstadoEpisodio.cargando;
-      final reproduciendo = estadoEpisodio.estado == EstadoEpisodio.reproduciendo;
+      final episodio = episodioActual;
+      final cargando = estadoTipoEpisodio == EstadoEpisodio.cargando;
+      final reproduciendo = estadoTipoEpisodio == EstadoEpisodio.reproduciendo;
       return _Barra(
         color: esquema.surfaceContainerHigh,
         icono: Icons.music_note,

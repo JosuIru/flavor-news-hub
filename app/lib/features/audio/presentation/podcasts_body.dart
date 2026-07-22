@@ -320,10 +320,14 @@ class _TilePodcast extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
-    final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
-    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
-    final estaGuardado = guardados.contains(item.id);
-    final esUtil = utiles.contains(item.id);
+    // `select` por pertenencia: alternar guardado/útil en un tile sólo
+    // repinta ese tile, no toda la lista de podcasts.
+    final estaGuardado = ref.watch(
+      guardadosProvider.select((s) => s.valueOrNull?.contains(item.id) ?? false),
+    );
+    final esUtil = ref.watch(
+      utilesProvider.select((s) => s.valueOrNull?.contains(item.id) ?? false),
+    );
     return ListTile(
       leading: const Icon(Icons.podcasts),
       title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
