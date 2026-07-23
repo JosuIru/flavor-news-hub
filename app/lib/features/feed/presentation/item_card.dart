@@ -149,6 +149,22 @@ class ItemCard extends ConsumerWidget {
     );
   }
 
+  /// Formateadores de fecha cacheados por locale. Instanciar un
+  /// `DateFormat` no es gratis; sin este cache se creaba uno nuevo en cada
+  /// `build` de cada tarjeta con fecha > 7 días, y eso se multiplica al
+  /// reconstruir listas y en scroll rápido del feed.
+  static final Map<String, DateFormat> _formateadoresFecha = {};
+
+  static DateFormat _formateadorPara(String localeCodigo) {
+    return _formateadoresFecha.putIfAbsent(localeCodigo, () {
+      try {
+        return DateFormat.yMMMd(localeCodigo);
+      } catch (_) {
+        return DateFormat.yMMMd();
+      }
+    });
+  }
+
   static String _fechaHumana(String fechaIsoUtc, String localeCodigo) {
     if (fechaIsoUtc.isEmpty) return '';
     final timestamp = DateTime.tryParse(fechaIsoUtc);
@@ -164,11 +180,7 @@ class ItemCard extends ConsumerWidget {
     if (diferencia.inDays < 7 && diferencia.inDays >= 0) {
       return '${diferencia.inDays} d';
     }
-    try {
-      return DateFormat.yMMMd(localeCodigo).format(timestamp.toLocal());
-    } catch (_) {
-      return DateFormat.yMMMd().format(timestamp.toLocal());
-    }
+    return _formateadorPara(localeCodigo).format(timestamp.toLocal());
   }
 }
 

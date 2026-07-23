@@ -30,34 +30,37 @@ class FlavorNewsHubApp extends ConsumerWidget {
 
     // Sincroniza el widget Android de radio cada vez que cambia el estado
     // del reproductor. `listen` no rebuilds, sólo reacciona a cambios.
+    // `.ignore()`: escribir el widget es fire-and-forget y no crítico. Si
+    // `home_widget` falla (p. ej. plataforma sin widgets), no queremos que
+    // el error suba al zone y ensucie el informe local — se descarta.
     ref.listen<EstadoReproductor>(reproductorRadioProvider, (_, nuevo) {
-      WidgetRadioWriter.escribir(nuevo);
+      WidgetRadioWriter.escribir(nuevo).ignore();
     });
 
     // El widget de música refleja el reproductor genérico de episodios
     // (pódcast + tracks de Audius/Funkwhale/Jamendo/Archive).
     ref.listen<EstadoReproductorEpisodio>(reproductorEpisodioProvider, (_, nuevo) {
-      WidgetMusicaWriter.escribir(nuevo);
+      WidgetMusicaWriter.escribir(nuevo).ignore();
     });
 
     // El widget de favoritos se reescribe cuando cambia el set de IDs o
     // cuando llega la lista de radios del backend/seed.
     ref.listen<Set<int>>(radiosFavoritasProvider, (_, ids) {
       final radios = ref.read(radiosProvider).valueOrNull ?? const [];
-      WidgetFavoritosWriter.escribir(ids, radios);
+      WidgetFavoritosWriter.escribir(ids, radios).ignore();
       // La banda FAV del Sintonizador filtra con estos IDs.
-      WidgetSintonizadorWriter.escribirFavoritas(ids);
+      WidgetSintonizadorWriter.escribirFavoritas(ids).ignore();
     });
     ref.listen(radiosProvider, (_, nueva) {
       final radios = nueva.valueOrNull ?? const [];
       final ids = ref.read(radiosFavoritasProvider);
-      WidgetFavoritosWriter.escribir(ids, radios);
+      WidgetFavoritosWriter.escribir(ids, radios).ignore();
       // Widget sintonizador (radio madera) necesita la lista entera
       // para navegar con ◄ / ► sin volver a llamar a Flutter, y los
       // IDs de favoritas para la banda FAV (se reescriben aquí para
       // poblarlos en cada arranque, no sólo al marcar/desmarcar).
-      WidgetSintonizadorWriter.escribir(radios);
-      WidgetSintonizadorWriter.escribirFavoritas(ids);
+      WidgetSintonizadorWriter.escribir(radios).ignore();
+      WidgetSintonizadorWriter.escribirFavoritas(ids).ignore();
     });
 
     return MaterialApp.router(
