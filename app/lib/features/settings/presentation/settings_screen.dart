@@ -1,10 +1,18 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flavor_news_hub/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../history/data/historial_provider.dart';
+import '../data/configuracion_backup.dart';
 
 import '../../../core/config/canal_distribucion.dart';
 import '../../../core/idioma_contenido/politica_idioma_contenido.dart';
@@ -176,6 +184,19 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: Text(textos.settingsShareAppSubtitle),
             onTap: () => Share.share(textos.shareAppMessage),
           ),
+          const Divider(height: 24),
+          ListTile(
+            leading: const Icon(Icons.save_alt_outlined),
+            title: Text(textos.settingsBackupExport),
+            subtitle: Text(textos.settingsBackupExportSubtitle),
+            onTap: () => _exportarConfiguracion(context, ref, textos),
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings_backup_restore_outlined),
+            title: Text(textos.settingsBackupImport),
+            subtitle: Text(textos.settingsBackupImportSubtitle),
+            onTap: () => _importarConfiguracion(context, ref, textos),
+          ),
           // En el flavor `playstore` Google Play se encarga de las
           // actualizaciones; ofrecer un botón propio de "comprobar
           // actualización" sólo confunde, y la permission para
@@ -248,6 +269,130 @@ class SettingsScreen extends ConsumerWidget {
   /// actualización, abrimos directamente la release en el navegador —
   /// no dependemos del diálogo automático de `AvisoActualizacion`
   /// (cuyo flag `_mostrado` puede estar a `true` si ya apareció).
+  /// Exporta toda la configuración (ajustes + favoritos + guardados/útiles)
+  /// a un fichero JSON y lo pasa al share sheet para que el usuario lo
+  /// guarde donde quiera. Es la red de seguridad contra la pérdida de datos
+  /// al reinstalar o saltar de F-Droid a GitHub (cambio de firma).
+  Future<void> _exportarConfiguracion(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations textos,
+  ) async {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final dao = await ref.read(itemsLocalesDaoProvider.future);
+      final datos = await ConfiguracionBackup.construir(prefs, dao);
+      final contenido = const JsonEncoder.withIndent('  ').convert(datos);
+      final dir = await getTemporaryDirectory();
+      final fecha = DateTime.now().toIso8601String().substring(0, 10);
+      final ruta = '${dir.path}/flavor-news-hub-backup-$fecha.json';
+      await File(ruta).writeAsString(contenido);
+      await Share.shareXFiles(
+        [XFile(ruta, mimeType: 'application/json')],
+        subject: 'Flavor News Hub — copia de seguridad',
+      );
+    } catch (_) {
+      if (context.mounted) {
+        _mostrarAvisoBackup(context, textos.settingsBackupExportError);
+      }
+    }
+  }
+
+  /// Deja al usuario elegir un fichero de copia, confirma, y restaura las
+  /// preferencias y los artículos guardados/útiles. Al terminar avisa de
+  /// que conviene reiniciar la app (muchos providers leen prefs al arrancar).
+  Future<void> _importarConfiguracion(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations textos,
+  ) async {
+    final Map<String, dynamic> datos;
+    try {
+      final resultado = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        withData: true,
+      );
+      if (resultado == null || resultado.files.isEmpty) return; // cancelado
+      final elegido = resultado.files.first;
+      final bytes = elegido.bytes ??
+          (elegido.path != null
+              ? await File(elegido.path!).readAsBytes()
+              : null);
+      if (bytes == null) throw const FormatException('sin datos');
+      final decodificado = jsonDecode(utf8.decode(bytes));
+      if (decodificado is! Map) throw const FormatException('no es un objeto');
+      datos = Map<String, dynamic>.from(decodificado);
+    } on FormatException {
+      if (context.mounted) {
+        _mostrarAvisoBackup(context, textos.settingsBackupImportInvalid);
+      }
+      return;
+    } catch (_) {
+      if (context.mounted) {
+        _mostrarAvisoBackup(context, textos.settingsBackupImportError);
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(textos.settingsBackupConfirmTitle),
+        content: Text(textos.settingsBackupConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(textos.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(textos.settingsBackupConfirmAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !context.mounted) return;
+
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final dao = await ref.read(itemsLocalesDaoProvider.future);
+      final resumen = await ConfiguracionBackup.restaurar(datos, prefs, dao);
+      if (!context.mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(textos.settingsBackupDoneTitle),
+          content: Text(textos.settingsBackupDone(
+            resumen.prefs,
+            resumen.guardados,
+            resumen.utiles,
+          )),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(textos.commonOk),
+            ),
+          ],
+        ),
+      );
+    } on FormatException {
+      if (context.mounted) {
+        _mostrarAvisoBackup(context, textos.settingsBackupImportInvalid);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        _mostrarAvisoBackup(context, textos.settingsBackupImportError);
+      }
+    }
+  }
+
+  void _mostrarAvisoBackup(BuildContext context, String mensaje) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
   Future<void> _comprobarActualizacion(
     BuildContext context,
     WidgetRef ref,

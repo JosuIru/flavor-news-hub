@@ -580,6 +580,50 @@ class AppLocalizationsGl extends AppLocalizations {
   String get settingsShareAppSubtitle => 'Pásaa a quen poida serlle útil.';
 
   @override
+  String get settingsBackupExport => 'Exportar configuración';
+
+  @override
+  String get settingsBackupExportSubtitle =>
+      'Guarda ajustes, favoritos y artículos guardados en un fichero para no perderlos al reinstalar.';
+
+  @override
+  String get settingsBackupImport => 'Restaurar configuración';
+
+  @override
+  String get settingsBackupImportSubtitle =>
+      'Recupera una copia tras reinstalar o cambiar de origen (F-Droid/GitHub).';
+
+  @override
+  String get settingsBackupExportError =>
+      'No se pudo exportar la copia de seguridad.';
+
+  @override
+  String get settingsBackupImportInvalid =>
+      'El fichero no es una copia de seguridad válida de Flavor News Hub.';
+
+  @override
+  String get settingsBackupImportError =>
+      'No se pudo restaurar la copia de seguridad.';
+
+  @override
+  String get settingsBackupConfirmTitle => '¿Restaurar esta copia?';
+
+  @override
+  String get settingsBackupConfirmBody =>
+      'Se sobrescribirán tus ajustes actuales con los de la copia. Tus artículos guardados y útiles se añadirán a los que ya tengas.';
+
+  @override
+  String get settingsBackupConfirmAction => 'Restaurar';
+
+  @override
+  String get settingsBackupDoneTitle => 'Copia restaurada';
+
+  @override
+  String settingsBackupDone(int ajustes, int guardados, int utiles) {
+    return 'Restaurados $ajustes ajustes, $guardados guardados y $utiles útiles. Cierra y vuelve a abrir la app para aplicar todos los cambios.';
+  }
+
+  @override
   String get settingsNotifications => 'Notificacións';
 
   @override

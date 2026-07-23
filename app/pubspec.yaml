@@ -46,6 +46,10 @@ dependencies:
   # Compartir por canal nativo (mensajería, redes, email).
   share_plus: ^10.0.2
 
+  # Selector de ficheros para importar la copia de seguridad de la config
+  # (el export se comparte con share_plus). FOSS, compatible con F-Droid.
+  file_picker: ^8.1.2
+
   # Render HTML en el extracto y en las fichas editoriales. Ligero, sin
   # JS ni plugins — las plantillas del backend ya sanean con wp_kses_post.
   flutter_widget_from_html_core: ^0.15.2

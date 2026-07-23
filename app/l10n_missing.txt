@@ -1,1 +1,46 @@
-{}
+{
+  "ca": [
+    "settingsBackupExport",
+    "settingsBackupExportSubtitle",
+    "settingsBackupImport",
+    "settingsBackupImportSubtitle",
+    "settingsBackupExportError",
+    "settingsBackupImportInvalid",
+    "settingsBackupImportError",
+    "settingsBackupConfirmTitle",
+    "settingsBackupConfirmBody",
+    "settingsBackupConfirmAction",
+    "settingsBackupDoneTitle",
+    "settingsBackupDone"
+  ],
+
+  "eu": [
+    "settingsBackupExport",
+    "settingsBackupExportSubtitle",
+    "settingsBackupImport",
+    "settingsBackupImportSubtitle",
+    "settingsBackupExportError",
+    "settingsBackupImportInvalid",
+    "settingsBackupImportError",
+    "settingsBackupConfirmTitle",
+    "settingsBackupConfirmBody",
+    "settingsBackupConfirmAction",
+    "settingsBackupDoneTitle",
+    "settingsBackupDone"
+  ],
+
+  "gl": [
+    "settingsBackupExport",
+    "settingsBackupExportSubtitle",
+    "settingsBackupImport",
+    "settingsBackupImportSubtitle",
+    "settingsBackupExportError",
+    "settingsBackupImportInvalid",
+    "settingsBackupImportError",
+    "settingsBackupConfirmTitle",
+    "settingsBackupConfirmBody",
+    "settingsBackupConfirmAction",
+    "settingsBackupDoneTitle",
+    "settingsBackupDone"
+  ]
+}

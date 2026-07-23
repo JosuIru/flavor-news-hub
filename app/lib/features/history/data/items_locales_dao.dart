@@ -278,6 +278,40 @@ class ItemsLocalesDao {
     return borradosPorFecha + borradosPorTope;
   }
 
+  /// Restaura items marcados desde una copia de seguridad: inserta (o
+  /// actualiza) cada uno con su marca puesta (`saved_at` / `useful_at`).
+  /// Conserva el payload para que aparezcan en Guardados/Útiles aunque no
+  /// estén ya en el feed del backend. Idempotente: reimportar no duplica.
+  Future<void> restaurarMarcados({
+    required List<Item> guardados,
+    required List<Item> utiles,
+  }) async {
+    if (guardados.isEmpty && utiles.isEmpty) return;
+    final ahoraMs = DateTime.now().toUtc().millisecondsSinceEpoch;
+    final batch = _db.batch();
+    for (final item in guardados) {
+      batch.rawInsert('''
+        INSERT INTO ${BaseDatosLocal.tablaItems}
+          (id, payload_json, cached_at, saved_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          payload_json = excluded.payload_json,
+          saved_at     = excluded.saved_at
+      ''', [item.id, jsonEncode(item.toJson()), ahoraMs, ahoraMs]);
+    }
+    for (final item in utiles) {
+      batch.rawInsert('''
+        INSERT INTO ${BaseDatosLocal.tablaItems}
+          (id, payload_json, cached_at, useful_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          payload_json = excluded.payload_json,
+          useful_at    = excluded.useful_at
+      ''', [item.id, jsonEncode(item.toJson()), ahoraMs, ahoraMs]);
+    }
+    await batch.commit(noResult: true);
+  }
+
   Iterable<Item> _deserializar(List<Map<String, Object?>> filas) {
     return filas
         .map((fila) {
