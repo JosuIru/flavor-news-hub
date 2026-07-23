@@ -449,9 +449,32 @@ final class EstadisticasPage
                 }
             }
             ?>
-            <div style="display:flex;align-items:flex-end;gap:3px;height:160px;max-width:900px;border-bottom:1px solid #ccd0d4;padding-bottom:2px;margin:1em 0;">
+            <div style="display:flex;gap:1.2em;align-items:center;margin:.5em 0;font-size:.85em;color:#555;">
+                <span style="display:inline-flex;align-items:center;gap:.35em;">
+                    <span style="width:12px;height:12px;background:#2271b1;border-radius:2px;display:inline-block;"></span>
+                    <?php esc_html_e('APK', 'flavor-news-hub'); ?>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:.35em;">
+                    <span style="width:12px;height:12px;background:#00a32a;border-radius:2px;display:inline-block;"></span>
+                    <?php esc_html_e('ZIP del plugin', 'flavor-news-hub'); ?>
+                </span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:3px;height:160px;max-width:900px;border-bottom:1px solid #ccd0d4;padding-bottom:2px;margin:0 0 1em;">
                 <?php foreach ($ultimos as $dia) :
-                    $altura = $maximo > 0 ? max(2, (int) round($dia['total'] / $maximo * 150)) : 2;
+                    // Barra apilada: segmento APK (abajo) + segmento ZIP
+                    // (arriba). Cada segmento se escala contra el MISMO
+                    // máximo (el total del día más alto), así la altura total
+                    // de la columna sigue representando el total del día y a
+                    // la vez se ve el reparto. Damos 2px mínimos a cualquier
+                    // valor > 0 que redondee a 0 para que no desaparezca.
+                    $alturaApk = $maximo > 0 ? (int) round($dia['apk'] / $maximo * 150) : 0;
+                    $alturaZip = $maximo > 0 ? (int) round($dia['zip'] / $maximo * 150) : 0;
+                    if ($dia['apk'] > 0 && $alturaApk < 2) {
+                        $alturaApk = 2;
+                    }
+                    if ($dia['zip'] > 0 && $alturaZip < 2) {
+                        $alturaZip = 2;
+                    }
                     $titulo = sprintf(
                         /* translators: 1: fecha, 2: total, 3: APK, 4: ZIP */
                         __('%1$s — %2$d descargas (APK %3$d, ZIP %4$d)', 'flavor-news-hub'),
@@ -460,9 +483,19 @@ final class EstadisticasPage
                         $dia['apk'],
                         $dia['zip']
                     );
+                    // El redondeo del segmento superior visible va arriba: si
+                    // hay ZIP, lo lleva el ZIP; si no, el APK.
+                    $radioApk = $alturaZip > 0 ? '0' : '2px 2px 0 0';
                     ?>
                     <div title="<?php echo esc_attr($titulo); ?>"
-                         style="flex:1 1 0;min-width:4px;height:<?php echo (int) $altura; ?>px;background:#2271b1;border-radius:2px 2px 0 0;"></div>
+                         style="flex:1 1 0;min-width:4px;display:flex;flex-direction:column;justify-content:flex-end;">
+                        <?php if ($alturaZip > 0) : ?>
+                            <div style="height:<?php echo (int) $alturaZip; ?>px;background:#00a32a;border-radius:2px 2px 0 0;"></div>
+                        <?php endif; ?>
+                        <?php if ($alturaApk > 0) : ?>
+                            <div style="height:<?php echo (int) $alturaApk; ?>px;background:#2271b1;border-radius:<?php echo esc_attr($radioApk); ?>;"></div>
+                        <?php endif; ?>
+                    </div>
                 <?php endforeach; ?>
             </div>
             <p class="description">
