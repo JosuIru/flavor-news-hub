@@ -15,6 +15,15 @@ class ItemsLocalesDao {
 
   Database get _db => _base.db;
 
+  /// Items cacheados desde la última purga en sesión. Cuando supera el
+  /// tope, disparamos `purgarCacheAntiguo` sin esperar al siguiente
+  /// arranque en frío (ver `cachearMuchos`).
+  int _itemsCacheadosDesdeUltimaPurga = 0;
+
+  /// Umbral para purgar durante la sesión: igual que el tope de filas del
+  /// cache, así la tabla nunca queda muy por encima entre arranques.
+  static const int _umbralPurgaEnSesion = 2000;
+
   /// Upsert masivo: si ya existe el id, NO pisa `saved_at` ni `read_at` (las
   /// marcas del usuario sobreviven a un refresh del feed).
   Future<void> cachearMuchos(List<Item> items) async {
@@ -37,6 +46,20 @@ class ItemsLocalesDao {
       ''', [item.id, jsonEncode(item.toJson()), ahoraMs]);
     }
     await batch.commit(noResult: true);
+
+    // Purga en sesión: antes `purgarCacheAntiguo` sólo corría al abrir la
+    // BD (arranque en frío), así que con la app abierta y muchos refrescos
+    // del feed (cada uno cachea cientos de items) la tabla crecía muy por
+    // encima del tope hasta el siguiente arranque, degradando cada query.
+    // Acumulamos lo cacheado y purgamos al superar el umbral. try/catch:
+    // una purga fallida nunca debe romper el cacheo del feed.
+    _itemsCacheadosDesdeUltimaPurga += items.length;
+    if (_itemsCacheadosDesdeUltimaPurga >= _umbralPurgaEnSesion) {
+      _itemsCacheadosDesdeUltimaPurga = 0;
+      try {
+        await purgarCacheAntiguo();
+      } catch (_) {}
+    }
   }
 
   Future<List<Item>> obtenerCache({int limite = 50}) async {
@@ -64,12 +87,17 @@ class ItemsLocalesDao {
     return lista.isEmpty ? null : lista.first;
   }
 
-  Future<List<Item>> obtenerGuardados() async {
+  /// Items guardados por el usuario, más recientes primero. Tope alto
+  /// (1000): las guardadas son preciadas y no queremos ocultar ninguna en
+  /// uso realista, pero acotamos el caso patológico para no deserializar
+  /// un conjunto sin límite en el hilo de UI.
+  Future<List<Item>> obtenerGuardados({int limite = 1000}) async {
     final filas = await _db.query(
       BaseDatosLocal.tablaItems,
       columns: ['payload_json'],
       where: 'saved_at IS NOT NULL',
       orderBy: 'saved_at DESC',
+      limit: limite,
     );
     return _deserializar(filas).toList();
   }
@@ -169,12 +197,15 @@ class ItemsLocalesDao {
     );
   }
 
-  Future<List<Item>> obtenerUtiles() async {
+  /// Items marcados "útil" por el usuario, más recientes primero. Mismo
+  /// criterio de tope que `obtenerGuardados`.
+  Future<List<Item>> obtenerUtiles({int limite = 1000}) async {
     final filas = await _db.query(
       BaseDatosLocal.tablaItems,
       columns: ['payload_json'],
       where: 'useful_at IS NOT NULL',
       orderBy: 'useful_at DESC',
+      limit: limite,
     );
     return _deserializar(filas).toList();
   }
