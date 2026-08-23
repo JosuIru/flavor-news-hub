@@ -219,6 +219,13 @@ class RadioService : Service() {
                     .build(),
                 /* handleAudioFocus = */ true,
             )
+            // Al desconectarse la salida (Bluetooth del coche, auriculares)
+            // el sistema emite AUDIO_BECOMING_NOISY; con esto ExoPlayer se
+            // pausa solo en vez de seguir sonando por el altavoz del móvil.
+            // El listener de abajo convierte esa pausa en un stop completo
+            // — para una radio en directo "pausado" no significa nada y
+            // dejaría el foreground service streameando batería para nadie.
+            .setHandleAudioBecomingNoisy(true)
             .build()
             .apply {
                 addListener(crearOyentePlayer())
@@ -277,6 +284,19 @@ class RadioService : Service() {
                     // Estado tras release o error grave; no refrescamos
                     // estado — `manejarStop` ya lo hace si hace falta.
                 }
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            // Pausa provocada por AUDIO_BECOMING_NOISY (el coche/auriculares
+            // se desconectaron): paramos del todo. Un stream en directo no
+            // se puede "reanudar donde iba", y quedarnos pausados dejaría
+            // el servicio foreground vivo indefinidamente.
+            if (!playWhenReady &&
+                reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY
+            ) {
+                Log.i(TAG, "Salida de audio desconectada — paramos la radio")
+                manejarStop()
             }
         }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
@@ -125,6 +126,28 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
       if (duracion == null || state.episodioActual == null) return;
       state = state.copyWith(duracion: duracion);
     });
+
+    // Desconexión de la salida de audio (Bluetooth del coche, auriculares):
+    // pausamos — a diferencia de la radio en directo, un episodio sí se
+    // puede reanudar donde iba. Sin esto seguía sonando por el altavoz
+    // del móvil (o mudo) gastando batería en segundo plano.
+    unawaited(_suscribirDesconexionSalidaAudio());
+  }
+
+  Future<void> _suscribirDesconexionSalidaAudio() async {
+    try {
+      final sesionAudio = await AudioSession.instance;
+      _suscripcionBecomingNoisy =
+          sesionAudio.becomingNoisyEventStream.listen((_) {
+        if (state.estado == EstadoEpisodio.reproduciendo) {
+          unawaited(pausar());
+        }
+      });
+    } catch (error) {
+      // En plataformas sin sesión de audio (tests, desktop) no hay nada
+      // que escuchar; el playback normal no debe verse afectado.
+      debugPrint('[ReproductorEpisodio] suscripción becoming-noisy falló: $error');
+    }
   }
 
   final AudioPlayer _player = AudioPlayer();
@@ -140,6 +163,7 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
   late final StreamSubscription<dynamic> _suscripcionPlayback;
   late final StreamSubscription<Duration> _suscripcionPosicion;
   late final StreamSubscription<Duration?> _suscripcionDuracion;
+  StreamSubscription<void>? _suscripcionBecomingNoisy;
 
   EstadoEpisodio _estadoDesdePlayer() {
     if (_player.processingState == ProcessingState.loading ||
@@ -333,6 +357,7 @@ class ReproductorEpisodioNotifier extends StateNotifier<EstadoReproductorEpisodi
     _suscripcionPlayback.cancel();
     _suscripcionPosicion.cancel();
     _suscripcionDuracion.cancel();
+    _suscripcionBecomingNoisy?.cancel();
     _player.dispose();
     super.dispose();
   }
