@@ -79,4 +79,52 @@ final class InterleaveSources
 
         return $resultado;
     }
+
+    /**
+     * Recorta la lista a `$limite` items con un tope de `$topePorSource`
+     * por medio, y después la intercala con [aplicar].
+     *
+     * Pensado para consumidores que enseñan "lo último" en un espacio
+     * pequeño (widget de podcasts, pestaña Podcasts de la app): cuando
+     * una fuente muy prolífica llena la ventana cronológica entera, el
+     * interleave solo no ayuda — no hay otras fuentes dentro de la
+     * página que intercalar. El caller debe pasar una ventana mayor que
+     * `$limite` (típico 3-4×) para que las fuentes menos frecuentes
+     * entren en ella.
+     *
+     * Igual que en el widget Android (`repartirEntreFuentes`): primero
+     * los N más recientes de cada medio, y si con eso no se llena el
+     * cupo, segunda pasada rellenando con los descartados en orden —
+     * mejor una página llena con repeticiones que una a medias cuando
+     * hay pocas fuentes.
+     *
+     * @param array<int,\WP_Post> $posts ventana ordenada por fecha DESC
+     * @return array<int,\WP_Post>
+     */
+    public static function conTopePorSource(array $posts, int $topePorSource, int $limite): array
+    {
+        if ($topePorSource < 1 || $limite < 1) {
+            return self::aplicar(array_slice(array_values($posts), 0, max(0, $limite)));
+        }
+        $seleccionados = [];
+        $sobrantes = [];
+        $cuentaPorSource = [];
+        foreach ($posts as $post) {
+            if (!$post instanceof \WP_Post) continue;
+            if (count($seleccionados) >= $limite) break;
+            $idSource = (int) get_post_meta((int) $post->ID, '_fnh_source_id', true);
+            $yaPuestos = $cuentaPorSource[$idSource] ?? 0;
+            if ($yaPuestos >= $topePorSource) {
+                $sobrantes[] = $post;
+                continue;
+            }
+            $cuentaPorSource[$idSource] = $yaPuestos + 1;
+            $seleccionados[] = $post;
+        }
+        foreach ($sobrantes as $post) {
+            if (count($seleccionados) >= $limite) break;
+            $seleccionados[] = $post;
+        }
+        return self::aplicar($seleccionados);
+    }
 }

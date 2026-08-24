@@ -63,6 +63,7 @@ final class ItemsEndpoint
             'medium_type'         => ['type' => 'string', 'description' => 'Incluye sólo items de sources con estos medium_types (coma-separado): news, video, tv_station, radio…'],
             's'                   => ['type' => 'string', 'description' => 'Búsqueda por texto libre en título y cuerpo.'],
             'es_movimiento'       => ['type' => 'boolean', 'description' => 'Si true, devuelve sólo items de sources marcadas como voz de movimiento.'],
+            'max_per_source'      => ['type' => 'integer', 'default' => 0, 'minimum' => 0, 'maximum' => 20, 'description' => 'Tope de items por medio en la página, para que una fuente prolífica no la monopolice. Amplía la ventana consultada (4×) y rellena con descartados si no se llena el cupo. 0 = sin tope. Se ignora con `source` directo o búsqueda por texto.'],
         ];
     }
 
@@ -179,11 +180,30 @@ final class ItemsEndpoint
             $argumentosQuery['meta_query'] = $metaQueryExtra;
         }
 
+        // `max_per_source`: el interleave por sí solo no basta cuando una
+        // fuente prolífica llena la página cronológica entera (no hay
+        // otras fuentes DENTRO de la página que intercalar). Con tope
+        // activo consultamos una ventana 4× mayor y recortamos después,
+        // para que las fuentes menos frecuentes entren en ella. No aplica
+        // con `source` directo (una sola fuente por definición) ni con
+        // búsqueda (el orden es por relevancia, no cronológico).
+        $topePorSource = max(0, (int) $request->get_param('max_per_source'));
+        $conTope = $topePorSource > 0 && $idSourceDirecto === 0 && $terminoBusqueda === '';
+        if ($conTope) {
+            $argumentosQuery['posts_per_page'] = min($porPagina * 4, 200);
+            $argumentosQuery['offset'] = ($pagina - 1) * $porPagina;
+            unset($argumentosQuery['paged']);
+        }
+
         $consulta = new \WP_Query($argumentosQuery);
 
         // Si el consumidor pide un source concreto no tocamos el orden:
         // todos los items son del mismo medio y el interleave no aplica.
-        $posts = $idSourceDirecto > 0 ? $consulta->posts : InterleaveSources::aplicar($consulta->posts);
+        if ($conTope) {
+            $posts = InterleaveSources::conTopePorSource($consulta->posts, $topePorSource, $porPagina);
+        } else {
+            $posts = $idSourceDirecto > 0 ? $consulta->posts : InterleaveSources::aplicar($consulta->posts);
+        }
 
         // Precarga batch: una query para todas las metas de items + una
         // para todas las metas de sources únicos + una para términos.
@@ -198,7 +218,13 @@ final class ItemsEndpoint
 
         $respuesta = new \WP_REST_Response($coleccion);
         $respuesta->header('X-WP-Total', (string) $consulta->found_posts);
-        $respuesta->header('X-WP-TotalPages', (string) $consulta->max_num_pages);
+        // Con tope por source la query usa una ventana 4× con `offset`,
+        // así que el `max_num_pages` de WP saldría dividido por la
+        // ventana; lo recalculamos sobre el tamaño de página real.
+        $totalPaginas = $conTope
+            ? (int) ceil($consulta->found_posts / $porPagina)
+            : (int) $consulta->max_num_pages;
+        $respuesta->header('X-WP-TotalPages', (string) $totalPaginas);
         return $respuesta;
     }
 

@@ -32,3 +32,29 @@ if (!function_exists('remove_accents')) {
         return strtr($cadena, $equivalencias);
     }
 }
+
+// Stubs mínimos para InterleaveSources: un WP_Post con ID y un
+// get_post_meta que resuelve `_fnh_source_id` desde el mapa que
+// InterleaveSourcesTest rellena en cada test.
+if (!class_exists('WP_Post')) {
+    #[\AllowDynamicProperties]
+    class WP_Post
+    {
+        public int $ID;
+
+        public function __construct(int $id)
+        {
+            $this->ID = $id;
+        }
+    }
+}
+
+if (!function_exists('get_post_meta')) {
+    function get_post_meta(int $idPost, string $clave = '', bool $single = false)
+    {
+        if ($clave === '_fnh_source_id') {
+            return \FlavorNewsHub\Tests\Unit\InterleaveSourcesTest::$sourcePorPost[$idPost] ?? 0;
+        }
+        return '';
+    }
+}

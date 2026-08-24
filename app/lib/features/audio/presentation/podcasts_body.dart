@@ -34,7 +34,7 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
       topic: topicCsv,
       language: idiomaCsv,
     );
-    return pagina.items;
+    return _repartirEntreFuentes(pagina.items);
   } on FlavorNewsApiException catch (e) {
     if (!e.esProblemaRed) rethrow;
     try {
@@ -57,7 +57,7 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
           // que haya en cache sin romper la pantalla.
         }
       }
-      return items.where((item) {
+      return _repartirEntreFuentes(items.where((item) {
         if (topicsActivos.isNotEmpty && item.topics.isNotEmpty) {
           final slugsItem = item.topics.map((t) => t.slug).toSet();
           if (!slugsItem.any(topicsActivos.contains)) {
@@ -72,12 +72,37 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
           }
         }
         return true;
-      }).toList();
+      }).toList());
     } catch (_) {
       return const [];
     }
   }
 });
+
+/// Tope de episodios del mismo medio en la lista. Sin esto, una fuente
+/// prolífica (Radio Kurruf publica en ráfaga) llenaba los 50 items de la
+/// página 1 y las demás no aparecían nunca. Mismo criterio que el widget
+/// Android (`repartirEntreFuentes` con margen y relleno): primero los N
+/// más recientes de cada medio y, si no se llena la lista, segunda
+/// pasada con los descartados en orden — mejor lista llena con
+/// repeticiones que media lista cuando hay pocas fuentes.
+List<Item> _repartirEntreFuentes(List<Item> items, {int topePorFuente = 5}) {
+  final seleccionados = <Item>[];
+  final sobrantes = <Item>[];
+  final cuentaPorFuente = <int, int>{};
+  for (final item in items) {
+    final idFuente = item.source?.id ?? 0;
+    final yaPuestos = cuentaPorFuente[idFuente] ?? 0;
+    if (yaPuestos >= topePorFuente) {
+      sobrantes.add(item);
+      continue;
+    }
+    cuentaPorFuente[idFuente] = yaPuestos + 1;
+    seleccionados.add(item);
+  }
+  seleccionados.addAll(sobrantes);
+  return seleccionados;
+}
 
 /// Sub-pestaña "Podcasts" del Audio screen. Lista simple; al tocar
 /// abrimos el detalle del item (que tiene reproductor de audio si
