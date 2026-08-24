@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Widget de titulares: cabecera con título + icono de refrescar, y un
+  Widget de últimos podcasts: cabecera con título + icono de refrescar, y un
   ListView scrolleable que pinta los titulares vía un `RemoteViewsService`
   (`TitularesRemoteViewsService` / `TitularesRemoteViewsFactory`). Cada
   fila muestra título + fuente + miniatura opcional.
@@ -31,7 +31,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/widget_titulares_cabecera"
+            android:text="@string/widget_podcasts_cabecera"
             android:textColor="@android:color/white"
             android:textStyle="bold"
             android:textSize="13sp" />
@@ -83,7 +83,7 @@
         android:id="@+id/widget_vacio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/widget_titulares_vacio"
+        android:text="@string/widget_podcasts_vacio"
         android:textColor="#CCE0E0E0"
         android:textSize="12sp"
         android:gravity="center"

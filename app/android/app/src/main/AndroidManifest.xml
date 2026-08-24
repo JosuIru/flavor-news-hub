@@ -121,6 +121,16 @@
             android:name=".TitularesRemoteViewsService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="false" />
+        <!-- Idem para los widgets de vídeos y podcasts: mismo patrón,
+             cada AppWidgetProvider necesita su propio service. -->
+        <service
+            android:name=".VideosRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
+        <service
+            android:name=".PodcastsRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
         <receiver
             android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true">
@@ -154,6 +164,34 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/titulares_widget_info" />
+        </receiver>
+
+        <!-- Widget de pantalla de inicio: últimos vídeos. El propio
+             provider pide los datos al backend (source_type de vídeo),
+             sin depender de que la app haya abierto la pestaña Vídeos. -->
+        <receiver
+            android:name=".VideosWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_videos_cabecera">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/videos_widget_info" />
+        </receiver>
+
+        <!-- Widget de pantalla de inicio: últimos episodios de podcast. -->
+        <receiver
+            android:name=".PodcastsWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_podcasts_cabecera">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/podcasts_widget_info" />
         </receiver>
 
         <!-- Widget de pantalla de inicio: radio actual. -->

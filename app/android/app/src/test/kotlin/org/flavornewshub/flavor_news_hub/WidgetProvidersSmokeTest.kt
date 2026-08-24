@@ -43,6 +43,16 @@ class WidgetProvidersSmokeTest {
     }
 
     @Test
+    fun `VideosWidgetProvider carga y onUpdate no peta`() {
+        onUpdateNoPeta(VideosWidgetProvider())
+    }
+
+    @Test
+    fun `PodcastsWidgetProvider carga y onUpdate no peta`() {
+        onUpdateNoPeta(PodcastsWidgetProvider())
+    }
+
+    @Test
     fun `ReproductorRadioWidgetProvider carga y onUpdate no peta`() {
         onUpdateNoPeta(ReproductorRadioWidgetProvider())
     }

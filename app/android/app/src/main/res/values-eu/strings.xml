@@ -51,4 +51,24 @@
     <string name="widget_preview_favorito_2">Radio Vallekas</string>
     <string name="widget_preview_favorito_3">Cuac FM</string>
     <string name="widget_preview_favorito_4">Radio Bronka</string>
+
+    <string name="widget_videos_cabecera">Bideoak</string>
+    <string name="widget_videos_descripcion">Flavor News Hub-eko azken bideoak</string>
+    <string name="widget_videos_vacio">Oraindik bideorik ez. Sakatu ↻ kargatzeko edo ireki aplikazioa.</string>
+    <string name="widget_podcasts_cabecera">Podcastak</string>
+    <string name="widget_podcasts_descripcion">Podcasten azken atalak</string>
+    <string name="widget_podcasts_vacio">Oraindik atalik ez. Sakatu ↻ kargatzeko edo ireki aplikazioa.</string>
+
+    <string name="widget_preview_videos_1">Auzo-batzarra: etxebizitzaren aldeko martxaren bideo-kronika</string>
+    <string name="widget_preview_videos_fuente_1">La Directa · duela 1 ord</string>
+    <string name="widget_preview_videos_2">Dokumentala: fabrika berreskuratu zuten kooperatibak</string>
+    <string name="widget_preview_videos_fuente_2">Ahotsa.info · duela 5 ord</string>
+    <string name="widget_preview_videos_3">Elkarrizketa Huelvako aldi baterako langileei</string>
+    <string name="widget_preview_videos_fuente_3">El Salto · duela 8 ord</string>
+    <string name="widget_preview_podcasts_1">Radio Vallekas: Madril hegoaldeko langile memoria</string>
+    <string name="widget_preview_podcasts_fuente_1">Carne Cruda · 52 min</string>
+    <string name="widget_preview_podcasts_2">Feminismoak periferian: 12. atala</string>
+    <string name="widget_preview_podcasts_fuente_2">Radio Bronka · 41 min</string>
+    <string name="widget_preview_podcasts_3">Elikadura burujabetza, baratzetik mahaira</string>
+    <string name="widget_preview_podcasts_fuente_3">Cuac FM · 35 min</string>
 </resources>

@@ -59,4 +59,26 @@
     <string name="widget_preview_favorito_2">Radio Vallekas</string>
     <string name="widget_preview_favorito_3">Cuac FM</string>
     <string name="widget_preview_favorito_4">Radio Bronka</string>
+
+    <string name="widget_videos_cabecera">Vídeos</string>
+    <string name="widget_videos_descripcion">Últimos vídeos de Flavor News Hub</string>
+    <string name="widget_videos_vacio">Sin vídeos todavía. Toca ↻ para cargar o abre la app.</string>
+    <string name="widget_podcasts_cabecera">Podcasts</string>
+    <string name="widget_podcasts_descripcion">Últimos episodios de podcast</string>
+    <string name="widget_podcasts_vacio">Sin episodios todavía. Toca ↻ para cargar o abre la app.</string>
+
+    <!-- Textos de demostración de los previewLayouts de los widgets de
+         vídeos y podcasts. No se ven nunca en el widget real. -->
+    <string name="widget_preview_videos_1">Asamblea de barrio: crónica en vídeo de la marcha por la vivienda</string>
+    <string name="widget_preview_videos_fuente_1">La Directa · hace 1 h</string>
+    <string name="widget_preview_videos_2">Documental: las cooperativas que recuperaron su fábrica</string>
+    <string name="widget_preview_videos_fuente_2">Ahotsa.info · hace 5 h</string>
+    <string name="widget_preview_videos_3">Entrevista a las temporeras de Huelva</string>
+    <string name="widget_preview_videos_fuente_3">El Salto · hace 8 h</string>
+    <string name="widget_preview_podcasts_1">Radio Vallekas: memoria obrera del sur de Madrid</string>
+    <string name="widget_preview_podcasts_fuente_1">Carne Cruda · 52 min</string>
+    <string name="widget_preview_podcasts_2">Feminismos en la periferia: episodio 12</string>
+    <string name="widget_preview_podcasts_fuente_2">Radio Bronka · 41 min</string>
+    <string name="widget_preview_podcasts_3">Soberanía alimentaria, del huerto a la mesa</string>
+    <string name="widget_preview_podcasts_fuente_3">Cuac FM · 35 min</string>
 </resources>

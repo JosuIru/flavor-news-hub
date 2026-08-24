@@ -11,6 +11,8 @@ import 'package:home_widget/home_widget.dart';
 class WidgetsRefrescador {
   static const List<String> _proveedores = [
     'TitularesWidgetProvider',
+    'VideosWidgetProvider',
+    'PodcastsWidgetProvider',
     'ReproductorRadioWidgetProvider',
     'ReproductorMusicaWidgetProvider',
     'FavoritosWidgetProvider',

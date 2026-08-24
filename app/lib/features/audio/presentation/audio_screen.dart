@@ -13,7 +13,21 @@ import 'podcasts_body.dart';
 /// podcasts de medios del directorio y búsqueda de música federada.
 /// Tres `Tab`s dentro de un solo Scaffold.
 class AudioScreen extends ConsumerStatefulWidget {
-  const AudioScreen({super.key});
+  const AudioScreen({super.key, this.pestanaInicial});
+
+  /// Pestaña con la que abrir la pantalla: `radios`, `podcasts` o
+  /// `musica`. Llega por query param desde deep links (la cabecera del
+  /// widget de podcasts usa `flavornews://audio?tab=podcasts`). `null`
+  /// = comportamiento de siempre, abrir en Radios.
+  final String? pestanaInicial;
+
+  /// Índice de la pestaña dentro del `TabBar`. Nombres desconocidos
+  /// caen en Radios en vez de romper la navegación.
+  static int indiceDePestana(String? nombre) => switch (nombre) {
+        'podcasts' => 1,
+        'musica' || 'music' => 2,
+        _ => 0,
+      };
 
   @override
   ConsumerState<AudioScreen> createState() => _AudioScreenState();
@@ -26,7 +40,11 @@ class _AudioScreenState extends ConsumerState<AudioScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: AudioScreen.indiceDePestana(widget.pestanaInicial),
+    );
     // Escuchamos cambios de pestaña para que el AppBar se rebuilde
     // y el botón de filtros se adapte (mostrar/ocultar y enrutar al
     // sheet correcto según el tab activo).
@@ -35,6 +53,22 @@ class _AudioScreenState extends ConsumerState<AudioScreen>
 
   void _alCambiarTab() {
     if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(AudioScreen anterior) {
+    super.didUpdateWidget(anterior);
+    // Deep link con la pantalla ya montada (p. ej. tap en la cabecera del
+    // widget de podcasts con la app abierta en Audio→Radios): GoRouter
+    // reconstruye el widget pero reutiliza este State, así que el
+    // `initialIndex` de initState no vuelve a aplicarse. Saltamos aquí a
+    // la pestaña pedida. Sólo cuando el parámetro cambia y viene
+    // explícito — una reconstrucción normal sin `tab` no debe devolver
+    // al usuario a Radios.
+    if (widget.pestanaInicial != anterior.pestanaInicial &&
+        widget.pestanaInicial != null) {
+      _tabController.animateTo(AudioScreen.indiceDePestana(widget.pestanaInicial));
+    }
   }
 
   @override

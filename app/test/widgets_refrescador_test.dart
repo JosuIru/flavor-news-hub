@@ -17,6 +17,8 @@ void main() {
 
   const todosLosProveedores = [
     'TitularesWidgetProvider',
+    'VideosWidgetProvider',
+    'PodcastsWidgetProvider',
     'ReproductorRadioWidgetProvider',
     'ReproductorMusicaWidgetProvider',
     'FavoritosWidgetProvider',
@@ -25,19 +27,21 @@ void main() {
   ];
 
   group('WidgetsRefrescador', () {
-    test('repinta los seis providers de la app', () async {
+    test('repinta los ocho providers de la app', () async {
       await WidgetsRefrescador.repintarTodos();
 
       expect(almacen.redibujados, todosLosProveedores);
     });
 
     test('un provider sin colocar no aborta el lote', () async {
-      // Falla justo el primero: los cinco restantes deben repintarse igual.
+      // Falla justo el primero: los siete restantes deben repintarse igual.
       almacen.proveedoresQueFallan.add('TitularesWidgetProvider');
 
       await WidgetsRefrescador.repintarTodos();
 
       expect(almacen.redibujados, [
+        'VideosWidgetProvider',
+        'PodcastsWidgetProvider',
         'ReproductorRadioWidgetProvider',
         'ReproductorMusicaWidgetProvider',
         'FavoritosWidgetProvider',
