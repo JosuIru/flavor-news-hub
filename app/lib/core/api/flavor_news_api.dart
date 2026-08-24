@@ -52,6 +52,7 @@ class FlavorNewsApi {
     String? mediumType,
     String? search,
     bool? esMovimiento,
+    int? maxPerSource,
   }) async {
     final respuesta = await _get(
       'items',
@@ -69,6 +70,12 @@ class FlavorNewsApi {
         if (mediumType != null && mediumType.isNotEmpty) 'medium_type': mediumType,
         if (search != null && search.isNotEmpty) 's': search,
         if (esMovimiento == true) 'es_movimiento': '1',
+        // Tope de items por medio en la página, para que una fuente que
+        // publica en ráfaga no la monopolice. Los backends anteriores a
+        // 0.8.18 ignoran el parámetro (WP descarta args no declarados),
+        // así que es seguro enviarlo siempre.
+        if (maxPerSource != null && maxPerSource > 0)
+          'max_per_source': '$maxPerSource',
       },
     );
     final lista = _parsearLista<Item>(respuesta.body, Item.fromJson);

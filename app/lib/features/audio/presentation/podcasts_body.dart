@@ -33,6 +33,12 @@ final _itemsPodcastProvider = FutureProvider.autoDispose<List<Item>>((ref) async
       sourceType: 'podcast',
       topic: topicCsv,
       language: idiomaCsv,
+      // Sin esto, un canal que publica en ráfaga (Radio Kurruf) llena la
+      // página entera y las demás emisoras no aparecen nunca. El reparto
+      // local de abajo NO puede arreglarlo por su cuenta: si los 50 items
+      // que llegan son del mismo medio, no hay nada que repartir. Hace
+      // falta que el backend amplíe la ventana (`max_per_source`).
+      maxPerSource: 3,
     );
     return _repartirEntreFuentes(pagina.items);
   } on FlavorNewsApiException catch (e) {

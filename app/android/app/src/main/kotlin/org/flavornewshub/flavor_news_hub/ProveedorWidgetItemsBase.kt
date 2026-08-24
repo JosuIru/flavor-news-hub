@@ -350,6 +350,12 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
                 }
                 val base = urlBase.trimEnd('/')
                 val parametros = StringBuilder("per_page=$elementosPorPagina&$filtroTipoFuente")
+                // Tope por medio en el propio backend. `repartirEntreFuentes`
+                // (abajo) sólo reordena lo que llega: si la página entera
+                // es de un mismo canal prolífico no puede diversificar
+                // nada. Los backends antiguos ignoran el parámetro y nos
+                // quedamos con el reparto local como estaba.
+                maximoPorFuente?.let { parametros.append("&max_per_source=").append(it) }
                 val territorioBase = prefs.getString("flutter.fnh.pref.territorioBase", "") ?: ""
                 if (territorioBase.isNotBlank()) {
                     parametros.append("&territory=")
