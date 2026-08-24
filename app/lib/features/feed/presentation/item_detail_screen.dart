@@ -39,16 +39,18 @@ final itemDetalleProvider = FutureProvider.autoDispose.family<Item, int>((ref, i
       message: 'El item no está cacheado localmente.',
     );
   }
+  // Cache-first: si el item ya está en la BD local —lo habitual, porque el
+  // feed cachea todo lo que muestra— lo servimos sin pegar a la red. El
+  // detalle pinta el mismo modelo `Item` que trae la lista (`fetchItems` y
+  // `fetchItem` comparten `Item.fromJson`), así que el contenido es
+  // idéntico y nos ahorramos una petición por cada artículo abierto. Sólo
+  // vamos a la red si el item no está cacheado (búsqueda, deep link…).
+  final dao = await ref.watch(itemsLocalesDaoProvider.future);
+  final cacheado = await dao.obtenerPorId(idItem);
+  if (cacheado != null) return cacheado;
+
   final api = ref.watch(flavorNewsApiProvider);
-  try {
-    return await api.fetchItem(idItem);
-  } on FlavorNewsApiException catch (e) {
-    if (!e.esProblemaRed) rethrow;
-    final dao = await ref.watch(itemsLocalesDaoProvider.future);
-    final cacheado = await dao.obtenerPorId(idItem);
-    if (cacheado != null) return cacheado;
-    rethrow;
-  }
+  return api.fetchItem(idItem);
 });
 
 /// Argumentos para [colectivosRelacionadosProvider].

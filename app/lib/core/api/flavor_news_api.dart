@@ -194,9 +194,10 @@ class FlavorNewsApi {
     String? language,
     String? topic,
     String? search,
+    int perPage = 100,
   }) async {
     final respuesta = await _get('radios', query: {
-      'per_page': '100',
+      'per_page': '$perPage',
       if (territory != null && territory.isNotEmpty) 'territory': territory,
       if (language != null && language.isNotEmpty) 'language': language,
       if (topic != null && topic.isNotEmpty) 'topic': topic,
@@ -211,27 +212,41 @@ class FlavorNewsApi {
     final uri = baseUrl.resolve(ruta).replace(
           queryParameters: query?.isEmpty == true ? null : query,
         );
-    try {
-      final respuesta = await httpClient
-          .get(uri, headers: {
-            'Accept': 'application/json',
-            'User-Agent': userAgent,
-          })
-          .timeout(_tiempoMaximoPeticion);
-      _lanzarSiHayError(respuesta);
-      return respuesta;
-    } on TimeoutException {
-      throw const FlavorNewsApiException(
-        statusCode: 0,
-        errorCode: 'network_error',
-        message: 'Tiempo de espera agotado.',
-      );
-    } on SocketException catch (error) {
-      throw FlavorNewsApiException(
-        statusCode: 0,
-        errorCode: 'network_error',
-        message: error.message,
-      );
+    // GET es idempotente: reintentamos UNA vez ante un fallo de transporte
+    // (timeout / socket), típico en móvil inestable (túnel, cambio de
+    // celda). Así un blip puntual ya no tira la pantalla a error/offline.
+    // No reintentamos errores HTTP (los lanza `_lanzarSiHayError` y no los
+    // captura este catch) ni los POST (podrían duplicar un envío).
+    const maxIntentos = 2;
+    const backoff = Duration(milliseconds: 400);
+    for (var intento = 1;; intento++) {
+      try {
+        final respuesta = await httpClient
+            .get(uri, headers: {
+              'Accept': 'application/json',
+              'User-Agent': userAgent,
+            })
+            .timeout(_tiempoMaximoPeticion);
+        _lanzarSiHayError(respuesta);
+        return respuesta;
+      } on TimeoutException {
+        if (intento >= maxIntentos) {
+          throw const FlavorNewsApiException(
+            statusCode: 0,
+            errorCode: 'network_error',
+            message: 'Tiempo de espera agotado.',
+          );
+        }
+      } on SocketException catch (error) {
+        if (intento >= maxIntentos) {
+          throw FlavorNewsApiException(
+            statusCode: 0,
+            errorCode: 'network_error',
+            message: error.message,
+          );
+        }
+      }
+      await Future<void>.delayed(backoff);
     }
   }
 

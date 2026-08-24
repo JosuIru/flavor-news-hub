@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget de últimos vídeos: cabecera con título + icono de refrescar, y un
+  ListView scrolleable que pinta los titulares vía un `RemoteViewsService`
+  (`TitularesRemoteViewsService` / `TitularesRemoteViewsFactory`). Cada
+  fila muestra título + fuente + miniatura opcional.
+
+  Estado vacío: un TextView marcado como `emptyView` del ListView; el
+  sistema lo enseña automáticamente cuando la factory devuelve count=0.
+
+  Limitación de Android: no se puede capturar gestos de pull-to-refresh
+  dentro del widget — el tap al icono ↻ es la única vía de refrescar
+  manualmente (auto-refresh periódico via Worker está aparte).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_fondo"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp">
+        <TextView
+            android:id="@+id/widget_titulo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_videos_cabecera"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+        <!-- Zona táctil de 48dp (mínimo de Material), con el icono
+             centrado dentro. Sin esto Android fusiona el tap con el
+             resto del widget — el usuario ve "es todo un enlace".
+             Envolvemos icono + spinner en un FrameLayout: durante el
+             refresh ocultamos el icono y mostramos el ProgressBar
+             indeterminado, que es la única forma fiable de animar
+             algo en RemoteViews (AnimatedVectorDrawable no se puede
+             arrancar desde aquí). -->
+        <FrameLayout
+            android:id="@+id/widget_refrescar"
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+            <ImageView
+                android:id="@+id/widget_refrescar_icono"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_popup_sync"
+                android:contentDescription="@string/widget_refrescar" />
+            <ProgressBar
+                android:id="@+id/widget_refrescar_spinner"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- ListView scrolleable: el sistema renderiza sólo los items
+         visibles, así que mantener 10 en SharedPreferences no es caro.
+         `dividerHeight=0` para que cada item gestione su propio padding. -->
+    <ListView
+        android:id="@+id/items_lista"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="#33000000"
+        android:dividerHeight="1dp"
+        android:scrollbarStyle="outsideOverlay" />
+
+    <!-- Estado vacío: visible automáticamente cuando la lista no tiene
+         items. Usado vía `setEmptyView` desde el provider. -->
+    <TextView
+        android:id="@+id/widget_vacio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_videos_vacio"
+        android:textColor="#CCE0E0E0"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp" />
+</LinearLayout>

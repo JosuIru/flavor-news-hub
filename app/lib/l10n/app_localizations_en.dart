@@ -581,6 +581,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pass it on to anyone who might find it useful.';
 
   @override
+  String get settingsBackupExport => 'Export settings';
+
+  @override
+  String get settingsBackupExportSubtitle =>
+      'Save your settings, favourites and saved articles to a file so you don\'t lose them when reinstalling.';
+
+  @override
+  String get settingsBackupImport => 'Restore settings';
+
+  @override
+  String get settingsBackupImportSubtitle =>
+      'Recover a backup after reinstalling or switching source (F-Droid/GitHub).';
+
+  @override
+  String get settingsBackupExportError => 'The backup could not be exported.';
+
+  @override
+  String get settingsBackupImportInvalid =>
+      'The file is not a valid Flavor News Hub backup.';
+
+  @override
+  String get settingsBackupImportError => 'The backup could not be restored.';
+
+  @override
+  String get settingsBackupConfirmTitle => 'Restore this backup?';
+
+  @override
+  String get settingsBackupConfirmBody =>
+      'Your current settings will be overwritten with those from the backup. Your saved and useful articles will be added to the ones you already have.';
+
+  @override
+  String get settingsBackupConfirmAction => 'Restore';
+
+  @override
+  String get settingsBackupDoneTitle => 'Backup restored';
+
+  @override
+  String settingsBackupDone(int ajustes, int guardados, int utiles) {
+    return 'Restored $ajustes settings, $guardados saved and $utiles useful. Close and reopen the app to apply all changes.';
+  }
+
+  @override
   String get settingsNotifications => 'Notifications';
 
   @override

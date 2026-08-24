@@ -51,4 +51,24 @@
     <string name="widget_preview_favorito_2">Radio Vallekas</string>
     <string name="widget_preview_favorito_3">Cuac FM</string>
     <string name="widget_preview_favorito_4">Radio Bronka</string>
+
+    <string name="widget_videos_cabecera">Videos</string>
+    <string name="widget_videos_descripcion">Latest videos from Flavor News Hub</string>
+    <string name="widget_videos_vacio">No videos yet. Tap ↻ to load or open the app.</string>
+    <string name="widget_podcasts_cabecera">Podcasts</string>
+    <string name="widget_podcasts_descripcion">Latest podcast episodes</string>
+    <string name="widget_podcasts_vacio">No episodes yet. Tap ↻ to load or open the app.</string>
+
+    <string name="widget_preview_videos_1">Neighbourhood assembly: video report from the housing march</string>
+    <string name="widget_preview_videos_fuente_1">La Directa · 1h ago</string>
+    <string name="widget_preview_videos_2">Documentary: the co-ops that took back their factory</string>
+    <string name="widget_preview_videos_fuente_2">Ahotsa.info · 5h ago</string>
+    <string name="widget_preview_videos_3">Interview with the seasonal workers of Huelva</string>
+    <string name="widget_preview_videos_fuente_3">El Salto · 8h ago</string>
+    <string name="widget_preview_podcasts_1">Radio Vallekas: working-class memory of southern Madrid</string>
+    <string name="widget_preview_podcasts_fuente_1">Carne Cruda · 52 min</string>
+    <string name="widget_preview_podcasts_2">Feminisms on the outskirts: episode 12</string>
+    <string name="widget_preview_podcasts_fuente_2">Radio Bronka · 41 min</string>
+    <string name="widget_preview_podcasts_3">Food sovereignty, from the garden to the table</string>
+    <string name="widget_preview_podcasts_fuente_3">Cuac FM · 35 min</string>
 </resources>

@@ -1142,6 +1142,78 @@ abstract class AppLocalizations {
   /// **'Pasa la app a quien crea que le puede servir.'**
   String get settingsShareAppSubtitle;
 
+  /// No description provided for @settingsBackupExport.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar configuración'**
+  String get settingsBackupExport;
+
+  /// No description provided for @settingsBackupExportSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guarda ajustes, favoritos y artículos guardados en un fichero para no perderlos al reinstalar.'**
+  String get settingsBackupExportSubtitle;
+
+  /// No description provided for @settingsBackupImport.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar configuración'**
+  String get settingsBackupImport;
+
+  /// No description provided for @settingsBackupImportSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recupera una copia tras reinstalar o cambiar de origen (F-Droid/GitHub).'**
+  String get settingsBackupImportSubtitle;
+
+  /// No description provided for @settingsBackupExportError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo exportar la copia de seguridad.'**
+  String get settingsBackupExportError;
+
+  /// No description provided for @settingsBackupImportInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'El fichero no es una copia de seguridad válida de Flavor News Hub.'**
+  String get settingsBackupImportInvalid;
+
+  /// No description provided for @settingsBackupImportError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo restaurar la copia de seguridad.'**
+  String get settingsBackupImportError;
+
+  /// No description provided for @settingsBackupConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Restaurar esta copia?'**
+  String get settingsBackupConfirmTitle;
+
+  /// No description provided for @settingsBackupConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se sobrescribirán tus ajustes actuales con los de la copia. Tus artículos guardados y útiles se añadirán a los que ya tengas.'**
+  String get settingsBackupConfirmBody;
+
+  /// No description provided for @settingsBackupConfirmAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar'**
+  String get settingsBackupConfirmAction;
+
+  /// No description provided for @settingsBackupDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia restaurada'**
+  String get settingsBackupDoneTitle;
+
+  /// No description provided for @settingsBackupDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurados {ajustes} ajustes, {guardados} guardados y {utiles} útiles. Cierra y vuelve a abrir la app para aplicar todos los cambios.'**
+  String settingsBackupDone(int ajustes, int guardados, int utiles);
+
   /// No description provided for @settingsNotifications.
   ///
   /// In es, this message translates to:

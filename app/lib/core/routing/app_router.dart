@@ -50,7 +50,13 @@ final enrutadorProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/audio',
-            pageBuilder: (context, state) => const NoTransitionPage(child: AudioScreen()),
+            // `?tab=` permite entrar directo a una pestaña concreta; lo
+            // usa la cabecera del widget de podcasts.
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: AudioScreen(
+                pestanaInicial: state.uri.queryParameters['tab'],
+              ),
+            ),
           ),
           // Alias legacy: deep-links antiguos a `/radios` entran directos a
           // la pestaña Audio. El shell detecta ambas rutas como mismo tab.

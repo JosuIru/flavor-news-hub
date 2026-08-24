@@ -105,8 +105,6 @@ class _ListaGuardados extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
     final asyncItems = ref.watch(itemsGuardadosProvider);
-    final leidos = ref.watch(leidosProvider).valueOrNull ?? const <int>{};
-    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
 
     return asyncItems.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -169,9 +167,6 @@ class _ListaGuardados extends ConsumerWidget {
             final item = items[indice];
             return ItemCard(
               item: item,
-              estaGuardado: true,
-              esUtil: utiles.contains(item.id),
-              estaLeido: leidos.contains(item.id),
               onTap: () => context.push('/items/${item.id}'),
               onSourceTap: (idSource) => context.push('/sources/$idSource'),
               onTopicTap: (_) {

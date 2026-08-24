@@ -349,13 +349,17 @@ class _TarjetaVideo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final esquema = Theme.of(context).colorScheme;
     final idCanal = item.source?.id ?? 0;
-    final canalesFav = ref.watch(canalesFavoritosProvider);
-    final esCanalFavorito = idCanal > 0 && canalesFav.contains(idCanal);
+    // `select` por pertenencia: al marcar un favorito/guardado sólo se
+    // reconstruye la tarjeta cuya pertenencia cambió, no todas las del grid.
+    final esCanalFavorito = ref.watch(
+      canalesFavoritosProvider.select((favs) => idCanal > 0 && favs.contains(idCanal)),
+    );
     // Guardados vive en SQLite (DAO): al guardar, se cachea el payload
     // completo para que aparezca en "Guardados" aunque el item desaparezca
     // del feed del backend. Mismo provider que usa el feed de noticias.
-    final idsGuardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
-    final estaGuardado = idsGuardados.contains(item.id);
+    final estaGuardado = ref.watch(
+      guardadosProvider.select((s) => s.valueOrNull?.contains(item.id) ?? false),
+    );
     return InkWell(
       onTap: () => _abrir(context),
       borderRadius: BorderRadius.circular(12),

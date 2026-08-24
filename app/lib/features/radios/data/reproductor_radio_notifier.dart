@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,7 +45,7 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     // Maneja todos los `ProcessingState` para que el icono refleje siempre
     // lo que hace el motor de audio (no sólo los dos casos extremos
     // ready+playing y idle+!playing).
-    _player.playbackEventStream.listen((_) {
+    _subPlaybackEvent = _player.playbackEventStream.listen((_) {
       _sincronizarEstadoConPlayer();
     }, onError: (Object error, StackTrace st) {
       final actual = state.radioActual;
@@ -60,10 +61,44 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
     // construcción del notifier, y todo su cuerpo está protegido: nunca
     // debe tocar el arranque de la app.
     unawaited(Future.microtask(precargarUltimaEmisora));
+    // Desconexión de la salida de audio (Bluetooth del coche, auriculares):
+    // el sistema emite AUDIO_BECOMING_NOISY y aquí paramos la radio. Un
+    // directo no se puede "reanudar donde iba", y sin esto el stream
+    // seguía sonando (o mudo, con el volumen bajo) en segundo plano
+    // gastando batería y datos hasta que el usuario se daba cuenta.
+    unawaited(_suscribirDesconexionSalidaAudio());
+  }
+
+  Future<void> _suscribirDesconexionSalidaAudio() async {
+    try {
+      final sesionAudio = await AudioSession.instance;
+      _subBecomingNoisy = sesionAudio.becomingNoisyEventStream.listen((_) {
+        if (state.estado == EstadoPlayback.reproduciendo ||
+            state.estado == EstadoPlayback.cargando) {
+          unawaited(parar());
+        }
+      });
+    } catch (error) {
+      // En plataformas sin sesión de audio (tests, desktop) no hay nada
+      // que escuchar; el playback normal no debe verse afectado.
+      debugPrint('[ReproductorRadio] suscripción becoming-noisy falló: $error');
+    }
   }
 
   final AudioPlayer _player = AudioPlayer();
   final Ref _ref;
+
+  /// Suscripción a los eventos del player. Se guarda para poder cancelarla
+  /// en `dispose()` ANTES de `_player.dispose()`: sin esto, un evento
+  /// tardío (buffering intermitente con red inestable) podía ejecutar el
+  /// callback y hacer `state=` sobre un notifier ya dispuesto → crash
+  /// "StateNotifier was used after being disposed". El notifier de
+  /// episodios ya lo hace así a propósito.
+  StreamSubscription<PlaybackEvent>? _subPlaybackEvent;
+
+  /// Suscripción al evento AUDIO_BECOMING_NOISY del sistema (la salida de
+  /// audio actual desapareció). Cancelada en `dispose()` como el resto.
+  StreamSubscription<void>? _subBecomingNoisy;
 
   /// Clave de SharedPreferences donde guardamos la última emisora
   /// reproducida (JSON del modelo `Radio`), para poder "armarla" al
@@ -416,6 +451,10 @@ class ReproductorRadioNotifier extends StateNotifier<EstadoReproductor> {
 
   @override
   void dispose() {
+    // Cancelar la suscripción ANTES de disponer el player: así ningún
+    // evento en vuelo intenta tocar el estado de un notifier ya muerto.
+    _subPlaybackEvent?.cancel();
+    _subBecomingNoisy?.cancel();
     _player.dispose();
     super.dispose();
   }

@@ -106,7 +106,10 @@ final resultadosBusquedaProvider =
 
   Future<List<modelo_radio.Radio>> buscarRadios() async {
     try {
-      return await api.fetchRadios(search: consulta);
+      // En búsqueda basta un puñado de resultados (como items/sources/
+      // colectivos, que ya piden 10). Sin esto se descargaban 100 radios
+      // en cada pulsación con debounce.
+      return await api.fetchRadios(search: consulta, perPage: 10);
     } catch (error) {
       debugPrint('[Buscador] /radios falló, fallback seed: $error');
       final radios = await ref.watch(radiosSeedProvider.future);

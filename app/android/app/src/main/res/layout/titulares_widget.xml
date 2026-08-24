@@ -69,7 +69,7 @@
          visibles, así que mantener 10 en SharedPreferences no es caro.
          `dividerHeight=0` para que cada item gestione su propio padding. -->
     <ListView
-        android:id="@+id/titulares_lista"
+        android:id="@+id/items_lista"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"

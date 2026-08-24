@@ -16,8 +16,6 @@ class HistorialScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textos = AppLocalizations.of(context);
     final asyncItems = ref.watch(itemsLeidosProvider);
-    final guardados = ref.watch(guardadosProvider).valueOrNull ?? const <int>{};
-    final utiles = ref.watch(utilesProvider).valueOrNull ?? const <int>{};
 
     return Scaffold(
       appBar: AppBar(title: Text(textos.historyTitle)),
@@ -58,9 +56,6 @@ class HistorialScreen extends ConsumerWidget {
               final item = items[indice];
               return ItemCard(
                 item: item,
-                estaGuardado: guardados.contains(item.id),
-                esUtil: utiles.contains(item.id),
-                estaLeido: true,
                 onTap: () => context.push('/items/${item.id}'),
                 onSourceTap: (idSource) => context.push('/sources/$idSource'),
                 onTopicTap: (_) {},

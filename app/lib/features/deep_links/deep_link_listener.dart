@@ -16,6 +16,11 @@ import '../radios/data/reproductor_radio_notifier.dart';
 ///   flavornews://music             → abre /music (pantalla de búsqueda federada)
 ///   flavornews://items/<id>        → abre el detalle de ese item
 ///   flavornews://search            → abre el buscador
+///   flavornews://feed              → abre el feed (cabecera del widget
+///                                    de titulares)
+///   flavornews://videos            → abre /videos (cabecera del widget
+///                                    de vídeos)
+///   flavornews://audio?tab=podcasts → abre /audio en la pestaña Podcasts
 ///
 /// Se registra una sola vez al arrancar la app. El canal nativo vive en
 /// `MainActivity.kt` y expone dos caminos: `getInitial` para cold-start y
@@ -120,17 +125,49 @@ class _EstadoDeepLink extends ConsumerState<DeepLinkListener> {
       return;
     }
 
+    // Ruta `feed`: cabecera del widget de titulares. Lleva al feed,
+    // que es justo la lista que el widget está enseñando.
+    if (uri.host == 'feed') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          ref.read(enrutadorProvider).go('/');
+        } catch (error) {
+          debugPrint('[DeepLink] go / falló: $error');
+        }
+      });
+      return;
+    }
+
+    // Ruta `videos`: cabecera del widget de últimos vídeos.
+    if (uri.host == 'videos') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          ref.read(enrutadorProvider).push('/videos');
+        } catch (error) {
+          debugPrint('[DeepLink] push /videos falló: $error');
+        }
+      });
+      return;
+    }
+
     // Ruta `audio`: tap en el widget "Reproductor radio" o cabecera de
     // Favoritos cuando no hay deep-link más específico. Navega al
     // shell tab de Audio sin lanzar reproducción — el usuario ya tiene
     // el control en la app.
+    //
+    // `?tab=podcasts` lo usa la cabecera del widget de podcasts para
+    // abrir directamente esa pestaña en vez de Radios.
     if (uri.host == 'audio') {
+      final tab = uri.queryParameters['tab'];
+      final destino = tab == null || tab.isEmpty ? '/audio' : '/audio?tab=$tab';
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         try {
-          ref.read(enrutadorProvider).go('/audio');
+          ref.read(enrutadorProvider).go(destino);
         } catch (error) {
-          debugPrint('[DeepLink] go /audio falló: $error');
+          debugPrint('[DeepLink] go $destino falló: $error');
         }
       });
       return;

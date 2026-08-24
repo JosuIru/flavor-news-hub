@@ -51,4 +51,24 @@
     <string name="widget_preview_favorito_2">Radio Vallekas</string>
     <string name="widget_preview_favorito_3">Cuac FM</string>
     <string name="widget_preview_favorito_4">Radio Bronka</string>
+
+    <string name="widget_videos_cabecera">Vídeos</string>
+    <string name="widget_videos_descripcion">Últims vídeos de Flavor News Hub</string>
+    <string name="widget_videos_vacio">Encara no hi ha vídeos. Toca ↻ per carregar o obre l\'app.</string>
+    <string name="widget_podcasts_cabecera">Podcasts</string>
+    <string name="widget_podcasts_descripcion">Últims episodis de podcast</string>
+    <string name="widget_podcasts_vacio">Encara no hi ha episodis. Toca ↻ per carregar o obre l\'app.</string>
+
+    <string name="widget_preview_videos_1">Assemblea de barri: crònica en vídeo de la marxa per l\'habitatge</string>
+    <string name="widget_preview_videos_fuente_1">La Directa · fa 1 h</string>
+    <string name="widget_preview_videos_2">Documental: les cooperatives que van recuperar la seva fàbrica</string>
+    <string name="widget_preview_videos_fuente_2">Ahotsa.info · fa 5 h</string>
+    <string name="widget_preview_videos_3">Entrevista a les temporeres de Huelva</string>
+    <string name="widget_preview_videos_fuente_3">El Salto · fa 8 h</string>
+    <string name="widget_preview_podcasts_1">Radio Vallekas: memòria obrera del sud de Madrid</string>
+    <string name="widget_preview_podcasts_fuente_1">Carne Cruda · 52 min</string>
+    <string name="widget_preview_podcasts_2">Feminismes a la perifèria: episodi 12</string>
+    <string name="widget_preview_podcasts_fuente_2">Radio Bronka · 41 min</string>
+    <string name="widget_preview_podcasts_3">Sobirania alimentària, de l\'hort a la taula</string>
+    <string name="widget_preview_podcasts_fuente_3">Cuac FM · 35 min</string>
 </resources>

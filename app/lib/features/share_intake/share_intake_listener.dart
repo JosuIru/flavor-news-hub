@@ -40,6 +40,10 @@ class _EstadoShareIntake extends ConsumerState<ShareIntakeListener> {
       // dispararse la próxima vez que se pida `getInitialMedia` (p. ej.
       // tras un hot-reload).
       ReceiveSharingIntent.instance.reset();
+    }).catchError((_) {
+      // `receive_sharing_intent` (fijado a 1.8.1 por su historial de
+      // versiones) puede fallar en el arranque; es un flujo cosmético, así
+      // que descartamos el error en vez de dejar que suba al zone.
     });
     // Foreground: con la app ya abierta.
     _subscripcionStream = ReceiveSharingIntent.instance.getMediaStream().listen(_procesarMedios);

@@ -48,17 +48,26 @@ class BaseDatosLocal {
             useful_at INTEGER
           );
         ''');
-        await database.execute('CREATE INDEX idx_saved_at ON $tablaItems (saved_at);');
-        await database.execute('CREATE INDEX idx_read_at ON $tablaItems (read_at);');
-        await database.execute('CREATE INDEX idx_cached_at ON $tablaItems (cached_at);');
-        await database.execute('CREATE INDEX idx_useful_at ON $tablaItems (useful_at);');
+        await database.execute('CREATE INDEX IF NOT EXISTS idx_saved_at ON $tablaItems (saved_at);');
+        await database.execute('CREATE INDEX IF NOT EXISTS idx_read_at ON $tablaItems (read_at);');
+        await database.execute('CREATE INDEX IF NOT EXISTS idx_cached_at ON $tablaItems (cached_at);');
+        await database.execute('CREATE INDEX IF NOT EXISTS idx_useful_at ON $tablaItems (useful_at);');
       },
       onUpgrade: (database, versionVieja, versionNueva) async {
         if (versionVieja < 2) {
-          await database.execute('ALTER TABLE $tablaItems ADD COLUMN useful_at INTEGER;');
-          await database.execute('CREATE INDEX idx_useful_at ON $tablaItems (useful_at);');
+          // SQLite no tiene `ADD COLUMN IF NOT EXISTS`: si una migración
+          // anterior quedó a medias y la columna ya existe, el ALTER lanza.
+          // Lo envolvemos para que una re-ejecución no rompa la apertura.
+          try {
+            await database.execute('ALTER TABLE $tablaItems ADD COLUMN useful_at INTEGER;');
+          } catch (_) {}
+          await database.execute('CREATE INDEX IF NOT EXISTS idx_useful_at ON $tablaItems (useful_at);');
         }
       },
+      // Si por lo que sea se abre con una versión de esquema menor que la
+      // del fichero (rollback de la app), recreamos la BD en vez de
+      // petar. Se pierde el cache (se re-descarga), pero no la app.
+      onDowngrade: onDatabaseDowngradeDelete,
     );
     return BaseDatosLocal._(db);
   }
