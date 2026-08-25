@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace FlavorNewsHub\REST;
 
 use FlavorNewsHub\CPT\Item;
+use FlavorNewsHub\CPT\Source;
+use FlavorNewsHub\Ingest\FeedIngester;
 use FlavorNewsHub\Database\IngestLogTable;
 use FlavorNewsHub\Ingest\Scheduler;
 use FlavorNewsHub\Options\OptionsRepository;
@@ -151,7 +153,58 @@ final class DiagnosticsEndpoint
             'top_errores_7d'          => $topMetricas['errores'],
             'top_latencia_7d'         => $topMetricas['latencia'],
             'fuentes_sin_304_7d'      => $topMetricas['sin_304'],
+            'fuentes_en_cuarentena'   => self::obtenerFuentesEnCuarentena(),
         ], 200);
+    }
+
+    /**
+     * Fuentes que el circuit breaker tiene en cuarentena ahora mismo.
+     *
+     * Sin esta lista son literalmente invisibles: `ingestarFuente` sale
+     * ANTES de crear el log cuando la fuente está en cuarentena (a
+     * propósito, para no inundar la tabla), así que una fuente que
+     * falla de forma sostenida deja de aparecer en `ultimos_logs` y,
+     * como sólo se reintenta una vez al día, tampoco acumula errores
+     * suficientes para entrar en `top_errores_7d` — que lo copan las
+     * que fallan en cada ronda. El resultado es una fuente que no
+     * publica nada y no da ninguna señal de por qué.
+     *
+     * Igual que `ultimos_logs`, expone el nombre y no el `source_id`:
+     * el endpoint es público y el id es un identificador estable.
+     *
+     * @return list<array{source_name:string,errores_consecutivos:int,reintento_utc:string}>
+     */
+    private static function obtenerFuentesEnCuarentena(): array
+    {
+        global $wpdb;
+        $ahora = time();
+        $filas = $wpdb->get_results($wpdb->prepare(
+            "SELECT p.ID, p.post_title, m_next.meta_value AS proximo, m_err.meta_value AS errores
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} m_next
+               ON m_next.post_id = p.ID AND m_next.meta_key = %s
+             LEFT JOIN {$wpdb->postmeta} m_err
+               ON m_err.post_id = p.ID AND m_err.meta_key = %s
+             WHERE p.post_type = %s
+               AND p.post_status = 'publish'
+               AND CAST(m_next.meta_value AS UNSIGNED) > %d
+             ORDER BY CAST(m_err.meta_value AS UNSIGNED) DESC
+             LIMIT 50",
+            FeedIngester::META_PROXIMO_INTENTO_TRAS,
+            FeedIngester::META_ERRORES_CONSECUTIVOS,
+            Source::SLUG,
+            $ahora
+        ), ARRAY_A) ?: [];
+
+        $salida = [];
+        foreach ($filas as $fila) {
+            $salida[] = [
+                'source_name'          => (string) $fila['post_title'],
+                'errores_consecutivos' => (int) $fila['errores'],
+                'reintento_utc'        => gmdate('c', (int) $fila['proximo']),
+            ];
+        }
+        return $salida;
     }
 
     /**

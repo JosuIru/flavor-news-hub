@@ -18,11 +18,16 @@ Combina dos señales que, por separado, no dicen toda la verdad:
 
 El cruce de ambas es lo que permite responder la pregunta clave:
 "¿por qué una fuente carga desde el móvil pero no desde el servidor?".
-Si el servidor reporta error pero el sondeo local da 200, el veredicto
-es inequívoco: bloqueo por IP/WAF del datacenter.
+Si el servidor reporta un error de TRANSPORTE (status HTTP != 200) pero
+el sondeo local da 200, el veredicto es inequívoco: bloqueo por IP/WAF
+del datacenter. Ojo: si el servidor obtuvo 200 y aun así registró error,
+NO es bloqueo de IP (un WAF rechaza con status de error, no con 200);
+es un fallo de contenido del feed, reproducible desde cualquier IP.
 
   - 200 aquí pero con errores en el server  -> bloqueo por IP/WAF del
-    datacenter (Cloudflare/Sucuri marcan la IP de salida del hosting).
+    datacenter (Cloudflare/Sucuri marcan la IP de salida del hosting),
+    SÓLO si el servidor tuvo status de error. Si el servidor también dio
+    200, es contenido inválido en origen (XML mal formado), no bloqueo.
     Es la causa #1 del fenómeno "móvil sí, servidor no".
   - 429 aquí y allá                         -> rate-limit del origen;
     bajar la frecuencia o subir el throttle por host lo arregla.
@@ -166,12 +171,59 @@ def sondear_feed(feed_url: str) -> dict:
             "ssl_roto": ssl not in ("0", ""), "waf": waf, "host": host}
 
 
+def diagnosticar_contenido(mensaje_servidor: str) -> str:
+    """Clasifica un error de CONTENIDO a partir del mensaje del servidor.
+
+    Cuando el servidor recibió 200 pero registró un error, la petición
+    llegó al origen y respondió bien: lo que falla es el cuerpo. Distingue
+    el XML mal formado (caracteres/markup inválidos) del cuerpo que ni
+    siquiera es un feed (HTML de error servido con 200, feed vacío…).
+    """
+    mensaje = (mensaje_servidor or "").lower()
+    if "invalid xml" in mensaje or "invalid characters" in mensaje or "xml error" in mensaje:
+        return "XML mal formado en origen → el feed emite caracteres/markup inválidos"
+    if "could not be found" in mensaje or "valid rss" in mensaje or "valid atom" in mensaje:
+        return "respuesta sin feed (200 pero el cuerpo no es RSS/Atom) → revisar feed_url"
+    return "contenido inválido en origen (200 pero no parsea como feed)"
+
+
+def clasificar_error_servidor(srv_http, srv_msg: str) -> str:
+    """Causa probable usando SÓLO la señal del servidor (status + mensaje).
+
+    Se aplica cuando no hay sondeo local con el que cruzar: la fuente no
+    está en el seed (típicamente porque se añadió desde el admin de
+    producción). El endpoint ya trae status y mensaje, que bastan para
+    clasificar sin descargar el feed desde esta máquina.
+    """
+    mensaje = (srv_msg or "").lower()
+    http = str(srv_http)
+    if "no tiene feed_url" in mensaje:
+        return "sin feed_url en producción → la fuente se creó sin URL en el admin"
+    if "could not resolve host" in mensaje or "couldn't resolve" in mensaje:
+        return "DNS muerto → el dominio del feed ya no resuelve (origen desaparecido)"
+    if http == "200":
+        return diagnosticar_contenido(srv_msg)
+    if http == "404":
+        return "feed_url muerto/cambiado en origen (404)"
+    if http in ("403", "486"):
+        return "anti-bot del origen (403)"
+    if http == "429":
+        return "rate-limit del origen (429)"
+    if http == "0":
+        return "origen inalcanzable (timeout / DNS / SSL)"
+    return f"error de servidor HTTP {http}"
+
+
 def veredicto_cruzado(srv_http, srv_msg: str, sondeo: dict) -> str:
     """Cruza el error real del servidor con el sondeo local.
 
     Es el diagnóstico que ninguna de las dos señales da por separado:
 
-      - server falla + local 200  -> "móvil sí, servidor no": la IP del
+      - server con 200 pero error -> el origen respondió bien a la IP del
+        datacenter; el fallo es de CONTENIDO (feed mal formado), no de
+        transporte. Nunca es bloqueo de IP: un WAF rechaza con un status
+        de error, no con 200.
+      - server con error + local 200 -> "móvil sí, servidor no": la IP del
         datacenter está bloqueada (WAF/anti-bot). Causa #1.
       - server y local coinciden   -> el fallo es del origen, no de la
         IP: feed muerto, rate-limit global, TLS roto…
@@ -181,14 +233,30 @@ def veredicto_cruzado(srv_http, srv_msg: str, sondeo: dict) -> str:
     ssl_roto = sondeo.get("ssl_roto", False)
     host = sondeo.get("host", "")
     waf = sondeo.get("waf", "")
+    detalle = f" [srv: {srv_msg}]" if srv_msg else ""
 
     # Sin dato de servidor (modo --todas): sólo el sondeo local.
     if srv_http is None:
         return sondeo["nota"]
 
-    # El servidor falla pero localmente carga -> "móvil sí, servidor no".
+    # No se pudo sondear localmente (la fuente no está en el seed, p.ej.
+    # añadida desde el admin). En vez de quedarnos en "intermitente — sin
+    # feed_url en seed", clasificamos con la señal del servidor, que el
+    # endpoint ya trae: status + mensaje real del último error.
+    if local_http == "?":
+        return f"sólo-servidor: {clasificar_error_servidor(srv_http, srv_msg)}{detalle}"
+
+    # El servidor obtuvo 200: la petición llegó y el origen respondió. No
+    # hubo bloqueo de transporte, así que el error es del CONTENIDO del
+    # feed (XML mal formado, cuerpo vacío o que no es RSS/Atom),
+    # reproducible desde cualquier IP. Etiquetarlo como "bloqueo de IP"
+    # era el falso veredicto: el datacenter no estaba bloqueado.
+    if str(srv_http) == "200":
+        return f"origen: {diagnosticar_contenido(srv_msg)}{detalle}"
+
+    # A partir de aquí el servidor SÍ tuvo un error de transporte (status
+    # != 200). Si localmente carga -> "móvil sí, servidor no".
     if local_http == "200" and not ssl_roto:
-        detalle = f" [srv: {srv_msg}]" if srv_msg else ""
         # YouTube no es un WAF que bloquee por reputación: limita las
         # RÁFAGAS de peticiones por IP. El servidor, con 280 fuentes en
         # cola, las dispara seguidas; el sondeo local (una sola) pasa.
@@ -248,6 +316,21 @@ def main() -> int:
               f"fuentes activas: {diagnostico.get('sources_activas')}  ·  "
               f"items 24h: {diagnostico.get('items_nuevos_ultimas_24h')}  ·  "
               f"última ingesta: {diagnostico.get('ultima_ejecucion_utc')}\n")
+        # Fuentes en cuarentena: el circuit breaker las salta ANTES de
+        # crear el log, así que no aparecen en `ultimos_logs` y, al
+        # reintentarse sólo una vez al día, tampoco acumulan errores
+        # para entrar en el top-40. Sin listarlas aquí son invisibles:
+        # dejan de publicar y no dan ninguna señal de por qué (así se
+        # nos escapó Radio Sudaca). Los backends viejos no traen la
+        # clave y simplemente no se imprime nada.
+        en_cuarentena = diagnostico.get("fuentes_en_cuarentena") or []
+        if en_cuarentena:
+            print(f"EN CUARENTENA ({len(en_cuarentena)}) — saltadas sin dejar log:")
+            for entrada in en_cuarentena:
+                print(f"  {entrada.get('source_name','?')[:34]:36} "
+                      f"{entrada.get('errores_consecutivos',0):3} errores seguidos"
+                      f"  · reintento {entrada.get('reintento_utc','?')}")
+            print()
         # El endpoint ahora trae el error REAL del servidor por fuente
         # (`mensaje` + `http_status`). Lo cruzamos con el sondeo local.
         fuentes_a_revisar = [
