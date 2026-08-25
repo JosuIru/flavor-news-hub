@@ -84,6 +84,7 @@ final class CatalogoPage
             $datos
         );
         $existentesMapa = self::mapaExistentesPorSlug($cptSlug, $slugsJson);
+        $instalados = self::valoresInstalados($existentesMapa);
 
         $totalJson = count($datos);
         $totalExistentes = count($existentesMapa);
@@ -134,6 +135,45 @@ final class CatalogoPage
         );
         echo '</p>';
 
+        // Filtros en cliente. Con ~270 entradas, buscar a mano las que
+        // hay que re-importar es inviable; "Sólo las que difieren" deja
+        // en pantalla exactamente las que el seed cambiaría, y el botón
+        // de seleccionar actúa sólo sobre lo visible para que no se
+        // cuele nada fuera del filtro.
+        echo '<div style="margin:12px 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">';
+        printf(
+            '<input type="search" id="fnh-filtro-texto" placeholder="%s" style="min-width:260px;" />',
+            esc_attr__('Buscar por nombre, territorio, idioma o URL…', 'flavor-news-hub')
+        );
+        if ($tab === 'sources') {
+            echo '<select id="fnh-filtro-tipo"><option value="">'
+                . esc_html__('Todos los tipos', 'flavor-news-hub') . '</option>';
+            $tipos = array_values(array_unique(array_map(
+                static fn(array $x): string => (string) ($x['feed_type'] ?? 'rss'),
+                $datos
+            )));
+            sort($tipos);
+            foreach ($tipos as $tipo) {
+                printf('<option value="%s">%s</option>', esc_attr($tipo), esc_html($tipo));
+            }
+            echo '</select>';
+        }
+        echo '<select id="fnh-filtro-estado">';
+        echo '<option value="">' . esc_html__('Todas', 'flavor-news-hub') . '</option>';
+        echo '<option value="difiere">' . esc_html__('Sólo las que difieren de lo instalado', 'flavor-news-hub') . '</option>';
+        echo '<option value="pendiente">' . esc_html__('Sólo pendientes de instalar', 'flavor-news-hub') . '</option>';
+        echo '<option value="igual">' . esc_html__('Sólo ya sincronizadas', 'flavor-news-hub') . '</option>';
+        echo '</select>';
+        printf(
+            '<button type="button" class="button" id="fnh-marcar-visibles">%s</button>',
+            esc_html__('Marcar las visibles', 'flavor-news-hub')
+        );
+        printf(
+            '<span id="fnh-contador" class="description" data-plantilla="%s"></span>',
+            esc_attr__('%1$d visibles de %2$d', 'flavor-news-hub')
+        );
+        echo '</div>';
+
         echo '<table class="widefat striped">';
         echo '<thead><tr>';
         echo '<td style="width:32px;"><input type="checkbox" id="fnh-check-all" /></td>';
@@ -153,8 +193,28 @@ final class CatalogoPage
             $slug = (string) ($entry['slug'] ?? '');
             if ($slug === '') continue;
             $existe = isset($existentesMapa[$slug]);
+            $comparacion = self::compararConInstalado(
+                $entry,
+                $instalados[$slug] ?? null,
+                $tab
+            );
+            $idiomasFila = $entry['languages'] ?? [];
+            $blobBusqueda = strtolower(trim(implode(' ', [
+                (string) ($entry['name'] ?? ''),
+                $slug,
+                (string) ($entry['territory'] ?? ''),
+                is_array($idiomasFila) ? implode(' ', $idiomasFila) : '',
+                (string) ($entry['feed_url'] ?? ''),
+                (string) ($entry['stream_url'] ?? ''),
+                (string) ($entry['feed_type'] ?? ''),
+            ])));
 
-            echo '<tr>';
+            printf(
+                '<tr data-fnh-buscar="%s" data-fnh-tipo="%s" data-fnh-estado="%s">',
+                esc_attr($blobBusqueda),
+                esc_attr((string) ($entry['feed_type'] ?? '')),
+                esc_attr($comparacion['estado'])
+            );
             echo '<td>';
             // Checkbox SIEMPRE — antes sólo se dibujaba para entradas
             // pendientes y eso impedía re-importar (con "Sobrescribir
@@ -185,6 +245,12 @@ final class CatalogoPage
                     esc_url((string) $urlEdicion),
                     esc_html__('Ya instalada — editar', 'flavor-news-hub')
                 );
+                if ($comparacion['estado'] === 'difiere') {
+                    printf(
+                        '<br /><strong style="color:#b32d2e;">%s</strong>',
+                        esc_html($comparacion['detalle'])
+                    );
+                }
             } else {
                 echo '<span style="color:#777;">' . esc_html__('Pendiente', 'flavor-news-hub') . '</span>';
             }
@@ -196,10 +262,73 @@ final class CatalogoPage
 
         echo '</form>';
 
-        // Pequeño JS para el "select all" — sin dependencias.
-        echo '<script>(function(){var c=document.getElementById("fnh-check-all");';
-        echo 'if(!c)return;c.addEventListener("change",function(){';
-        echo 'document.querySelectorAll(\'input[name="slugs[]"]\').forEach(function(x){x.checked=c.checked;});});})();</script>';
+        // JS del filtrado y del "select all" — sin dependencias.
+        // Clave: tanto el check-all de la cabecera como "Marcar las
+        // visibles" actúan SÓLO sobre filas visibles. Con un check-all
+        // global, filtrar y marcar seleccionaba también lo oculto, que
+        // es justo cómo se desactivan por error fuentes que no querías
+        // tocar.
+        ?>
+        <script>
+        (function () {
+            var tabla = document.querySelector('table.widefat tbody');
+            if (!tabla) return;
+            var filas = Array.prototype.slice.call(tabla.querySelectorAll('tr'));
+            var texto = document.getElementById('fnh-filtro-texto');
+            var tipo = document.getElementById('fnh-filtro-tipo');
+            var estado = document.getElementById('fnh-filtro-estado');
+            var checkAll = document.getElementById('fnh-check-all');
+            var botonVisibles = document.getElementById('fnh-marcar-visibles');
+            var contador = document.getElementById('fnh-contador');
+
+            function visibles() {
+                return filas.filter(function (f) { return f.style.display !== 'none'; });
+            }
+            function casilla(fila) {
+                return fila.querySelector('input[name="slugs[]"]');
+            }
+            function aplicar() {
+                var q = (texto && texto.value || '').trim().toLowerCase();
+                var t = tipo && tipo.value || '';
+                var e = estado && estado.value || '';
+                var n = 0;
+                filas.forEach(function (fila) {
+                    var ok = true;
+                    if (q && (fila.getAttribute('data-fnh-buscar') || '').indexOf(q) === -1) ok = false;
+                    if (ok && t && fila.getAttribute('data-fnh-tipo') !== t) ok = false;
+                    if (ok && e && fila.getAttribute('data-fnh-estado') !== e) ok = false;
+                    fila.style.display = ok ? '' : 'none';
+                    if (ok) { n++; }
+                    // Una fila oculta no debe seguir marcada: al enviar
+                    // el formulario se importaría igualmente.
+                    if (!ok) { var c = casilla(fila); if (c) { c.checked = false; } }
+                });
+                if (contador) {
+                    contador.textContent = (contador.getAttribute('data-plantilla') || '%1$d / %2$d')
+                        .replace('%1$d', n).replace('%2$d', filas.length);
+                }
+                if (checkAll) { checkAll.checked = false; }
+            }
+            function marcar(valor) {
+                visibles().forEach(function (fila) {
+                    var c = casilla(fila);
+                    if (c) { c.checked = valor; }
+                });
+            }
+
+            if (texto) { texto.addEventListener('input', aplicar); }
+            if (tipo) { tipo.addEventListener('change', aplicar); }
+            if (estado) { estado.addEventListener('change', aplicar); }
+            if (checkAll) {
+                checkAll.addEventListener('change', function () { marcar(checkAll.checked); });
+            }
+            if (botonVisibles) {
+                botonVisibles.addEventListener('click', function () { marcar(true); });
+            }
+            aplicar();
+        })();
+        </script>
+        <?php
     }
 
     /**
@@ -226,6 +355,89 @@ final class CatalogoPage
             $mapa[(string) $f->post_name] = (int) $f->ID;
         }
         return $mapa;
+    }
+
+    /**
+     * Valores instalados de las entradas ya presentes, para poder
+     * señalar cuáles difieren del seed.
+     *
+     * Sin esto la tabla sólo distinguía "instalada" de "pendiente", y
+     * con ~270 entradas era imposible saber cuáles hay que re-importar
+     * tras corregir el catálogo: había que ir buscando a mano. Peor
+     * aún, marcar de más con "Sobrescribir metas" desactiva fuentes
+     * vivas cuya `active` haya derivado respecto al seed.
+     *
+     * @param array<string,int> $existentesMapa slug → post_id
+     * @return array<string,array{feed_url:string,stream_url:string,active:bool}>
+     */
+    private static function valoresInstalados(array $existentesMapa): array
+    {
+        if (empty($existentesMapa)) return [];
+        global $wpdb;
+        $ids = array_map('intval', array_values($existentesMapa));
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $filas = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT post_id, meta_key, meta_value
+                 FROM {$wpdb->postmeta}
+                 WHERE post_id IN ($placeholders)
+                   AND meta_key IN ('_fnh_feed_url', '_fnh_stream_url', '_fnh_active')",
+                ...$ids
+            ),
+            ARRAY_A
+        ) ?: [];
+        $porId = [];
+        foreach ($filas as $fila) {
+            $porId[(int) $fila['post_id']][$fila['meta_key']] = (string) $fila['meta_value'];
+        }
+        $salida = [];
+        foreach ($existentesMapa as $slug => $idPost) {
+            $metas = $porId[(int) $idPost] ?? [];
+            $salida[(string) $slug] = [
+                'feed_url'   => (string) ($metas['_fnh_feed_url'] ?? ''),
+                'stream_url' => (string) ($metas['_fnh_stream_url'] ?? ''),
+                // Ausencia de meta = activa (así la trata el ingester).
+                'active'     => !array_key_exists('_fnh_active', $metas)
+                    || (bool) $metas['_fnh_active'],
+            ];
+        }
+        return $salida;
+    }
+
+    /**
+     * Compara una entrada del seed con lo instalado y devuelve qué
+     * cambiaría al re-importarla con "Sobrescribir metas".
+     *
+     * @param array<string,mixed> $entrada
+     * @param array{feed_url:string,stream_url:string,active:bool}|null $instalado
+     * @return array{estado:string,detalle:string}
+     */
+    private static function compararConInstalado(
+        array $entrada,
+        ?array $instalado,
+        string $tab
+    ): array {
+        if ($instalado === null) {
+            return ['estado' => 'pendiente', 'detalle' => ''];
+        }
+        // `active` sólo se pisa si el seed lo declara (ver ImportadorCatalogo).
+        if (array_key_exists('active', $entrada)) {
+            $activoSeed = (bool) $entrada['active'];
+            if ($activoSeed !== $instalado['active']) {
+                return [
+                    'estado'  => 'difiere',
+                    'detalle' => $activoSeed
+                        ? __('Se ACTIVARÁ', 'flavor-news-hub')
+                        : __('Se DESACTIVARÁ', 'flavor-news-hub'),
+                ];
+            }
+        }
+        $claveUrl = $tab === 'sources' ? 'feed_url' : 'stream_url';
+        $urlSeed = (string) ($entrada[$claveUrl] ?? '');
+        if ($urlSeed !== '' && $urlSeed !== $instalado[$claveUrl]) {
+            return ['estado' => 'difiere', 'detalle' => __('URL distinta', 'flavor-news-hub')];
+        }
+        return ['estado' => 'igual', 'detalle' => ''];
     }
 
     private static function procesarAccionSiCorresponde(): void

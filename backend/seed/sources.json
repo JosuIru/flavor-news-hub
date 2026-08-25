@@ -132,7 +132,7 @@
     ],
     "topics": [],
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 6463,
@@ -774,7 +774,7 @@
       "cultura",
       "internacional"
     ],
-    "active": false
+    "active": true
   },
   {
     "id": 6466,
@@ -1487,7 +1487,8 @@
       "ecologismo",
       "migraciones"
     ],
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7169,
@@ -2094,7 +2095,7 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7296,
@@ -3719,7 +3720,7 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7338,
@@ -4560,7 +4561,7 @@
       "ecologismo"
     ],
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7383,
@@ -5183,5 +5184,39 @@
       "politica"
     ],
     "es_movimiento": true
+  },
+  {
+    "id": 7422,
+    "name": "A-Radio Berlin",
+    "slug": "a-radio-berlin",
+    "feed_url": "https://www.aradio-berlin.org/feed/mp3/",
+    "feed_type": "podcast",
+    "website_url": "https://www.aradio-berlin.org",
+    "territory": "Berlin",
+    "languages": [
+      "de"
+    ],
+    "topics": [
+      "internacional",
+      "memoria-historica"
+    ],
+    "es_movimiento": false
+  },
+  {
+    "id": 7423,
+    "name": "Tas Tas Irratia",
+    "slug": "tas-tas-irratia",
+    "feed_url": "https://tastasirratia.org/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://tastasirratia.org",
+    "territory": "Bilbo",
+    "languages": [
+      "eu"
+    ],
+    "topics": [
+      "memoria-historica"
+    ],
+    "es_movimiento": false,
+    "active": false
   }
 ]

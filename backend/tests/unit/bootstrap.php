@@ -58,3 +58,12 @@ if (!function_exists('get_post_meta')) {
         return '';
     }
 }
+
+// Stub de traducción: `CatalogoPage::compararConInstalado` devuelve
+// etiquetas traducidas y los tests unitarios corren sin WordPress.
+if (!function_exists('__')) {
+    function __(string $texto, string $dominio = ''): string
+    {
+        return $texto;
+    }
+}
