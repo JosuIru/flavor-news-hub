@@ -131,6 +131,24 @@ jobs:
         run: |
           mkdir -p plugin_build/flavor-news-hub
           cp -r backend/. plugin_build/flavor-news-hub/
+          # Sellar la versión del tag en la cabecera del plugin y en
+          # FNH_VERSION. Sin esto quedaban a fuego en el repo y todos
+          # los ZIP publicados declaraban la misma versión vieja: como
+          # WordPress y el Plugin Update Checker deciden si hay
+          # actualización comparando esa cabecera, subir el ZIP nuevo
+          # no daba error pero tampoco actualizaba nada. Falla la build
+          # si el reemplazo no encuentra su sitio, para que una
+          # renombrada silenciosa no vuelva a publicar ZIPs mal
+          # versionados.
+          VERSION_PLUGIN="${GITHUB_REF_NAME#v}"
+          ARCHIVO_PLUGIN=plugin_build/flavor-news-hub/flavor-news-hub.php
+          sed -i -E "s|^( \* Version: +).*$|\1${VERSION_PLUGIN}|" "$ARCHIVO_PLUGIN"
+          sed -i -E "s|^(define\('FNH_VERSION', ')[^']*('\);)$|\1${VERSION_PLUGIN}\2|" "$ARCHIVO_PLUGIN"
+          grep -q "^ \* Version: \+${VERSION_PLUGIN}$" "$ARCHIVO_PLUGIN" \
+            || { echo "::error::No se pudo sellar la cabecera Version del plugin"; exit 1; }
+          grep -q "^define('FNH_VERSION', '${VERSION_PLUGIN}');$" "$ARCHIVO_PLUGIN" \
+            || { echo "::error::No se pudo sellar FNH_VERSION"; exit 1; }
+          echo "Plugin sellado como ${VERSION_PLUGIN}"
           rm -rf plugin_build/flavor-news-hub/vendor \
                  plugin_build/flavor-news-hub/tests \
                  plugin_build/flavor-news-hub/phpunit.xml.dist \
