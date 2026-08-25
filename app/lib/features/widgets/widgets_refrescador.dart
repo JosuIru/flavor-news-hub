@@ -20,14 +20,19 @@ class WidgetsRefrescador {
     'SintonizadorWidgetProvider',
   ];
 
+  /// Repinta todos los providers en paralelo. Son ocho saltos
+  /// independientes por el canal de plataforma y encadenarlos con
+  /// `await` dentro de un bucle sumaba sus latencias en el hilo de UI
+  /// justo al guardar ajustes, que es cuando se llama. Ninguno depende
+  /// del anterior.
   static Future<void> repintarTodos() async {
-    for (final nombre in _proveedores) {
+    await Future.wait(_proveedores.map((nombre) async {
       try {
         await HomeWidget.updateWidget(name: nombre, androidName: nombre);
       } catch (_) {
         // Si un provider concreto no está colocado por el usuario,
         // updateWidget puede fallar — no hace falta romper el lote.
       }
-    }
+    }));
   }
 }

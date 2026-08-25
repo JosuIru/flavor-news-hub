@@ -32,6 +32,55 @@ final class InterleaveSources
      * @param array<int,\WP_Post> $posts
      * @return array<int,\WP_Post>
      */
+    /**
+     * `_fnh_source_id` de una tanda de posts en UNA consulta.
+     *
+     * `get_post_meta` por post sólo es barato si WP_Query ha precargado
+     * el meta cache, y quien usa una ventana ampliada (ver
+     * `ItemsEndpoint` con `max_per_source`) lo desactiva a propósito:
+     * descarta ~3/4 de los posts y precargar todas sus metas es tirar
+     * trabajo. Aquí pedimos sólo la clave que necesitamos, de golpe.
+     *
+     * @param array<int,\WP_Post> $posts
+     * @return array<int,int> post_id → source_id
+     */
+    private static function sourceIdsDe(array $posts): array
+    {
+        $ids = [];
+        foreach ($posts as $post) {
+            if ($post instanceof \WP_Post) {
+                $ids[] = (int) $post->ID;
+            }
+        }
+        if (empty($ids)) {
+            return [];
+        }
+        global $wpdb;
+        // Sin $wpdb (tests unitarios puros) caemos a get_post_meta, que
+        // allí está stubeado.
+        if (!isset($wpdb)) {
+            $mapa = [];
+            foreach ($ids as $id) {
+                $mapa[$id] = (int) get_post_meta($id, '_fnh_source_id', true);
+            }
+            return $mapa;
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $filas = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT post_id, meta_value FROM {$wpdb->postmeta}
+                 WHERE meta_key = '_fnh_source_id' AND post_id IN ($placeholders)",
+                ...$ids
+            ),
+            ARRAY_A
+        ) ?: [];
+        $mapa = [];
+        foreach ($filas as $fila) {
+            $mapa[(int) $fila['post_id']] = (int) $fila['meta_value'];
+        }
+        return $mapa;
+    }
+
     public static function aplicar(array $posts): array
     {
         if (count($posts) < 3) {
@@ -39,12 +88,12 @@ final class InterleaveSources
         }
 
         // Agrupar por source preservando el orden cronológico recibido.
-        // Cache para no leer post_meta dos veces por post.
+        $sourcePorPost = self::sourceIdsDe($posts);
         $gruposPorSource = [];
         $ordenLlegadaPorSource = [];
         foreach ($posts as $post) {
             if (!$post instanceof \WP_Post) continue;
-            $idSource = (int) get_post_meta((int) $post->ID, '_fnh_source_id', true);
+            $idSource = $sourcePorPost[(int) $post->ID] ?? 0;
             if (!isset($gruposPorSource[$idSource])) {
                 $gruposPorSource[$idSource] = [];
                 $ordenLlegadaPorSource[$idSource] = count($ordenLlegadaPorSource);
@@ -109,10 +158,11 @@ final class InterleaveSources
         $seleccionados = [];
         $sobrantes = [];
         $cuentaPorSource = [];
+        $sourcePorPost = self::sourceIdsDe($posts);
         foreach ($posts as $post) {
             if (!$post instanceof \WP_Post) continue;
             if (count($seleccionados) >= $limite) break;
-            $idSource = (int) get_post_meta((int) $post->ID, '_fnh_source_id', true);
+            $idSource = $sourcePorPost[(int) $post->ID] ?? 0;
             $yaPuestos = $cuentaPorSource[$idSource] ?? 0;
             if ($yaPuestos >= $topePorSource) {
                 $sobrantes[] = $post;

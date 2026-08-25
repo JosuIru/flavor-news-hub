@@ -138,6 +138,54 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
         "${prefijoClaveEstado}_ultimo_refresco",
     )
 
+    /**
+     * Firma de la lista escrita en prefs (ids + URLs de imagen). Sirve
+     * para saber si un refresco ha traído algo nuevo: si coincide con
+     * la anterior no hace falta `notifyAppWidgetViewDataChanged`, que
+     * es lo que obliga a la factory a rehacer su trabajo.
+     */
+    private fun claveFirmaLista() = "${prefijoClaveEstado}_firma_lista"
+
+    /**
+     * Pinta SÓLO el estado del refresco (spinner, icono y texto del
+     * empty view) con `partiallyUpdateAppWidget`.
+     *
+     * La alternativa —un `onUpdate` completo— reconstruye el RemoteViews
+     * entero y termina en `notifyAppWidgetViewDataChanged`, con lo que
+     * la factory recarga la lista y, antes del cache de miniaturas,
+     * volvía a bajar las 10 imágenes. Como el refresco enciende y apaga
+     * el spinner, eso eran dos rondas completas por ciclo para no
+     * cambiar ni un dato.
+     */
+    private fun pintarEstadoRefresco(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        widgetIds: IntArray,
+        actualizando: Boolean,
+        mensajeError: String,
+    ) {
+        if (widgetIds.isEmpty()) return
+        val recursos = IdiomaWidget.recursos(context)
+        val textoEstado = when {
+            actualizando -> recursos.getString(stringActualizando)
+            mensajeError.isNotEmpty() -> recursos.getString(stringError, mensajeError)
+            else -> recursos.getString(stringVacio)
+        }
+        for (widgetId in widgetIds) {
+            val vistas = RemoteViews(context.packageName, layoutWidget)
+            vistas.setViewVisibility(
+                R.id.widget_refrescar_icono,
+                if (actualizando) View.GONE else View.VISIBLE,
+            )
+            vistas.setViewVisibility(
+                R.id.widget_refrescar_spinner,
+                if (actualizando) View.VISIBLE else View.GONE,
+            )
+            vistas.setTextViewText(R.id.widget_vacio, textoEstado)
+            appWidgetManager.partiallyUpdateAppWidget(widgetId, vistas)
+        }
+    }
+
     private fun actualizarUno(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -335,10 +383,11 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
             .putBoolean(claveActualizando, true)
             .putLong(claveUltimoRefresco, System.currentTimeMillis())
             .apply()
-        if (ids.isNotEmpty()) onUpdate(context, mgr, ids)
+        pintarEstadoRefresco(context, mgr, ids, actualizando = true, mensajeError = "")
 
         Thread {
             var errorMensaje: String? = null
+            var huboCambios = false
             try {
                 val prefs = context.getSharedPreferences(
                     "FlutterSharedPreferences", Context.MODE_PRIVATE
@@ -398,7 +447,18 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
                 }
                 val filtrados = repartirEntreFuentes(admitidos)
 
+                // Firma de lo que vamos a escribir. Si coincide con la
+                // anterior, el refresco no ha traído nada nuevo y nos
+                // ahorramos el `notify` (y con él la recarga de la
+                // lista): el caso habitual del auto-refresco cada 30
+                // minutos, donde casi nunca hay publicaciones nuevas.
+                val firmaNueva = filtrados.joinToString("|") { item ->
+                    "${item.optInt("id")}:${item.optString("media_url", "")}"
+                }
+                huboCambios = firmaNueva != widgetPrefs.getString(claveFirmaLista(), null)
+
                 val editor = widgetPrefs.edit()
+                editor.putString(claveFirmaLista(), firmaNueva)
                 for (i in 0 until MAXIMO_SLOTS) {
                     val slot = i + 1
                     if (i < filtrados.size) {
@@ -435,7 +495,18 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
                     .putBoolean(claveActualizando, false)
                     .putString(claveUltimoError, errorMensaje ?: "")
                     .apply()
-                if (ids.isNotEmpty()) onUpdate(context, mgr, ids)
+                // Sólo repintamos entero (y con ello recargamos la
+                // lista) si la lista cambió de verdad. Si no, basta con
+                // apagar el spinner y dejar el texto correcto.
+                if (huboCambios) {
+                    onUpdate(context, mgr, ids)
+                } else {
+                    pintarEstadoRefresco(
+                        context, mgr, ids,
+                        actualizando = false,
+                        mensajeError = errorMensaje ?: "",
+                    )
+                }
             }
         }.start()
     }

@@ -50,6 +50,21 @@ class FabricaFilasItems(
 
     private val items = mutableListOf<FilaItem>()
 
+    /**
+     * Miniaturas ya descargadas, por URL. Sobrevive a
+     * `onDataSetChanged` a propósito: el sistema llama a ese método en
+     * CADA `notifyAppWidgetViewDataChanged`, y el provider notifica
+     * varias veces por ciclo de refresco (spinner, resultado, cambio de
+     * tema, idioma). Sin cache, cada notificación volvía a bajar las 10
+     * imágenes con timeouts de 5 s aunque la lista fuese idéntica —
+     * megas de datos y radio encendida cada media hora, en dos widgets.
+     *
+     * Se poda al final de cada `onDataSetChanged` con las URLs que ya
+     * no están en la lista, así que su tamaño queda acotado por los
+     * slots del widget.
+     */
+    private val cacheMiniaturas = mutableMapOf<String, Bitmap>()
+
     // Modo oscuro que el provider detectó con su `context` del broadcast
     // y dejó en las prefs. Lo usamos en `getViewAt` en lugar de recalcular
     // con `applicationContext`, que reportaba claro aunque el sistema
@@ -74,13 +89,25 @@ class FabricaFilasItems(
             val fuente = prefs.getString("${prefijoClaveItem}_${indice}_fuente", "") ?: ""
             val idItem = prefs.getString("${prefijoClaveItem}_${indice}_id", "") ?: ""
             val urlImagen = prefs.getString("${prefijoClaveItem}_${indice}_imagen", "") ?: ""
-            val miniatura = if (urlImagen.isNotEmpty()) descargarMiniatura(urlImagen) else null
+            val miniatura = if (urlImagen.isEmpty()) null else {
+                // `getOrPut` no vale: si la descarga falla devuelve null
+                // y no queremos cachear el fallo (la próxima vuelta
+                // debe reintentarlo), ni meter null en el mapa.
+                cacheMiniaturas[urlImagen] ?: descargarMiniatura(urlImagen)?.also {
+                    cacheMiniaturas[urlImagen] = it
+                }
+            }
             items.add(FilaItem(titulo, fuente, idItem, urlImagen, miniatura))
         }
+        // Podar lo que ya no se muestra para que el cache no crezca a
+        // base de items viejos que fueron rotando por la lista.
+        val urlesVigentes = items.mapTo(mutableSetOf()) { it.urlImagen }
+        cacheMiniaturas.keys.retainAll(urlesVigentes)
     }
 
     override fun onDestroy() {
         items.clear()
+        cacheMiniaturas.clear()
     }
 
     override fun getCount(): Int = items.size

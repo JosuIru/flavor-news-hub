@@ -193,6 +193,14 @@ final class ItemsEndpoint
             $argumentosQuery['posts_per_page'] = min($porPagina * 4, 200);
             $argumentosQuery['offset'] = ($pagina - 1) * $porPagina;
             unset($argumentosQuery['paged']);
+            // De la ventana ampliada descartamos ~3/4 de los posts, así
+            // que no merece la pena que WP precargue TODAS sus metas: de
+            // esos sólo necesitamos `_fnh_source_id` para repartir, y lo
+            // trae `InterleaveSources` con una consulta suya. La carga
+            // completa se hace después, ya sobre la página recortada,
+            // en `precargarCachesParaListado`.
+            $argumentosQuery['update_post_meta_cache'] = false;
+            $argumentosQuery['update_post_term_cache'] = false;
         }
 
         $consulta = new \WP_Query($argumentosQuery);
