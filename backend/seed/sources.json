@@ -1325,8 +1325,8 @@
     "id": 7159,
     "name": "Aiaraldea Komunikabidea",
     "slug": "aiaraldea-komunikabidea",
-    "feed_url": "https://aiaraldea.eus/feed",
-    "feed_type": "podcast",
+    "feed_url": "https://aiaraldea.eus/aktualitatea/feed-rss",
+    "feed_type": "rss",
     "website_url": "https://aiaraldea.eus",
     "territory": "Aiara",
     "languages": [
@@ -2366,7 +2366,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7307,
@@ -2423,7 +2424,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7309,
@@ -2457,7 +2459,7 @@
     "id": 7310,
     "name": "Radio La Leñera",
     "slug": "radio-la-lenera",
-    "feed_url": "https://comecuco.org/la-lenera/feed/",
+    "feed_url": "https://comecuco.org/category/la-lenera/feed/",
     "feed_type": "podcast",
     "website_url": "https://comecuco.org/la-lenera/",
     "territory": "Mendoza",
@@ -2485,7 +2487,7 @@
     "id": 7311,
     "name": "La Pujante",
     "slug": "la-pujante",
-    "feed_url": "https://comecuco.org/la-pujante/feed/",
+    "feed_url": "https://comecuco.org/category/la-pujante/feed/",
     "feed_type": "podcast",
     "website_url": "https://comecuco.org/la-pujante/",
     "territory": "Mendoza",
