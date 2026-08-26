@@ -34,6 +34,13 @@ class TitularesWidgetProvider : ProveedorWidgetItemsBase() {
     override val stringVacio = R.string.widget_titulares_vacio
     override val stringActualizando = R.string.widget_titulares_actualizando
     override val stringError = R.string.widget_titulares_error
-    // Sin auto-refresco: `FeedNotifier` escribe estos datos en cada
-    // carga del feed, así que el widget ya llega fresco desde la app.
+    // `FeedNotifier` escribe estos datos en cada carga del feed, pero
+    // eso sólo pasa si el usuario ABRE la app. Un widget recién
+    // colocado —o el de alguien que lleva días sin entrar— se quedaba
+    // vacío o congelado sin ninguna forma de recuperarse salvo tocar ↻,
+    // porque `onEnabled` tampoco pedía datos con esto a null. Con
+    // auto-refresco se abastece igual que vídeos y podcasts; cuando la
+    // app sí se abre, sigue mandando ella los datos frescos y la firma
+    // de la lista evita repintados redundantes.
+    override val minutosAutoRefresco = 30
 }

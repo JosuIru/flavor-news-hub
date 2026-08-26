@@ -130,6 +130,41 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
     protected companion object {
         /** Slots que se mantienen en las prefs (y tope de la lista). */
         const val MAXIMO_SLOTS = 10
+
+        /**
+         * Tras este tiempo, un `actualizando = true` en prefs se
+         * considera huérfano y se limpia.
+         *
+         * El refresco corre en un `Thread` suelto lanzado desde un
+         * broadcast: Android puede matar el proceso en cualquier
+         * momento y entonces el `finally` que baja el flag NUNCA se
+         * ejecuta. El flag se quedaba a `true` de forma permanente, y
+         * eso tenía dos efectos que dejaban el widget muerto sin
+         * ninguna pista: `tocaRefrescoAutomatico` devolvía siempre
+         * false (ningún refresco automático volvía a entrar) y la
+         * cabecera se quedaba con el spinner puesto y el icono ↻
+         * oculto. Con margen sobre los timeouts HTTP (10 s + 10 s) más
+         * la descarga de miniaturas.
+         */
+        const val TIMEOUT_REFRESCO_MS = 2 * 60_000L
+    }
+
+    /**
+     * ¿Hay de verdad un refresco en curso? Además de leer el flag,
+     * comprueba que no lleve colgado más de [TIMEOUT_REFRESCO_MS] —y
+     * si lo está, lo limpia—, para que el widget se recupere solo de
+     * un proceso muerto a mitad de refresco.
+     */
+    private fun refrescoEnCurso(prefs: android.content.SharedPreferences): Boolean {
+        val (claveActualizando, _, claveUltimoRefresco) = clavesEstado()
+        if (!prefs.getBoolean(claveActualizando, false)) return false
+        // `claveUltimoRefresco` se sella al ARRANCAR el refresco, así
+        // que sirve de marca de inicio del que está en curso.
+        val transcurrido = System.currentTimeMillis() - prefs.getLong(claveUltimoRefresco, 0L)
+        if (transcurrido in 0..TIMEOUT_REFRESCO_MS) return true
+        Log.w(etiquetaLog, "flag 'actualizando' huérfano (${transcurrido}ms) — lo limpiamos")
+        prefs.edit().putBoolean(claveActualizando, false).apply()
+        return false
     }
 
     private fun clavesEstado() = Triple(
@@ -234,8 +269,8 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
         // empty view se oculta automáticamente.
         val widgetPrefs = HomeWidgetPlugin.getData(context)
         val recursos = IdiomaWidget.recursos(context)
-        val (claveActualizando, claveUltimoError, _) = clavesEstado()
-        val actualizando = widgetPrefs.getBoolean(claveActualizando, false)
+        val (_, claveUltimoError, _) = clavesEstado()
+        val actualizando = refrescoEnCurso(widgetPrefs)
         val ultimoError = widgetPrefs.getString(claveUltimoError, "") ?: ""
         val textoEmpty = when {
             actualizando -> recursos.getString(stringActualizando)
@@ -354,8 +389,8 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
     private fun tocaRefrescoAutomatico(context: Context): Boolean {
         val minutos = minutosAutoRefresco ?: return false
         val prefs = HomeWidgetPlugin.getData(context)
-        val (claveActualizando, _, claveUltimoRefresco) = clavesEstado()
-        if (prefs.getBoolean(claveActualizando, false)) return false
+        val (_, _, claveUltimoRefresco) = clavesEstado()
+        if (refrescoEnCurso(prefs)) return false
         val ultimoRefresco = prefs.getLong(claveUltimoRefresco, 0L)
         val transcurrido = System.currentTimeMillis() - ultimoRefresco
         return transcurrido > minutos * 60_000L
