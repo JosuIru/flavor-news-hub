@@ -440,11 +440,16 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
                 // nada. Los backends antiguos ignoran el parámetro y nos
                 // quedamos con el reparto local como estaba.
                 maximoPorFuente?.let { parametros.append("&max_per_source=").append(it) }
+                // OJO: `territorioBase` NO va como filtro. En la app sólo
+                // sirve para ORDENAR (`ordenarItemsLocalPrimero`, "lo mío
+                // primero"); el filtro duro `territory=` viene de otro
+                // ajuste distinto que el usuario elige a mano. Mandarlo
+                // aquí como filtro dejaba los widgets VACÍOS para
+                // cualquiera con un territorio pequeño configurado: con
+                // `territorioBase=Navarra` el backend devuelve cero items
+                // tanto en titulares como en podcasts. Lo aplicamos
+                // después, ordenando, en `ordenarLocalPrimero`.
                 val territorioBase = prefs.getString("flutter.fnh.pref.territorioBase", "") ?: ""
-                if (territorioBase.isNotBlank()) {
-                    parametros.append("&territory=")
-                        .append(URLEncoder.encode(territorioBase, "UTF-8"))
-                }
                 val idiomasContenido = leerIdiomasContenidoEfectivos(prefs)
                 if (idiomasContenido.isNotEmpty()) {
                     parametros.append("&language=").append(
@@ -480,7 +485,9 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
                     if (idFuente > 0 && bloqueadas.contains(idFuente)) continue
                     admitidos.add(item)
                 }
-                val filtrados = repartirEntreFuentes(admitidos)
+                val filtrados = repartirEntreFuentes(
+                    ordenarLocalPrimero(admitidos, territorioBase)
+                )
 
                 // Firma de lo que vamos a escribir. Si coincide con la
                 // anterior, el refresco no ha traído nada nuevo y nos
@@ -544,6 +551,32 @@ abstract class ProveedorWidgetItemsBase : AppWidgetProvider() {
                 }
             }
         }.start()
+    }
+
+    /**
+     * Pone delante los items del territorio del usuario, conservando el
+     * orden cronológico dentro de cada grupo.
+     *
+     * Equivalente ligero de `ordenarItemsLocalPrimero` de la app: allí
+     * se calcula una "fecha efectiva" que bonifica lo local; aquí basta
+     * con agrupar, porque el widget sólo enseña 10 filas. Lo importante
+     * es que `territorioBase` ordene y NO filtre: como filtro vaciaba
+     * el widget entero.
+     */
+    private fun ordenarLocalPrimero(
+        items: List<JSONObject>,
+        territorioBase: String,
+    ): List<JSONObject> {
+        val base = territorioBase.trim().lowercase()
+        if (base.isEmpty()) return items
+        val (locales, resto) = items.partition { item ->
+            val fuente = item.optJSONObject("source")
+            listOf("territory", "region", "city", "country", "network").any { campo ->
+                val valor = fuente?.optString(campo, "").orEmpty().trim().lowercase()
+                valor.isNotEmpty() && (valor.contains(base) || base.contains(valor))
+            }
+        }
+        return locales + resto
     }
 
     /**
