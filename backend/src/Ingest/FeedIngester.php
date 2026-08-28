@@ -967,6 +967,39 @@ final class FeedIngester
      * acumulado errores consecutivos. El meta se borra solo cuando
      * una ingesta posterior tiene éxito (ver `resetearContadorErrores`).
      */
+    /**
+     * Al cambiar `_fnh_feed_url` de una fuente, borra su contador de
+     * errores consecutivos y su cuarentena.
+     *
+     * Enganchado a `updated_post_meta`/`added_post_meta`, así que cubre
+     * la importación del catálogo, la edición en wp-admin y WP-CLI por
+     * igual. Sin esto, arreglar una URL rota no tenía efecto visible:
+     * la fuente conservaba sus cientos de errores y su próximo intento
+     * programado, con lo que seguía saltándose hasta 24 h — y encima en
+     * silencio, porque en cuarentena ni siquiera deja log.
+     *
+     * @param int|string $idMeta   sin usar; lo pasa el hook de WP
+     * @param int        $idPost
+     * @param string     $claveMeta
+     * @param mixed      $valor    sin usar; lo pasa el hook de WP
+     */
+    public static function alCambiarFeedUrl($idMeta, $idPost, $claveMeta, $valor = null): void
+    {
+        if ($claveMeta !== '_fnh_feed_url') {
+            return;
+        }
+        $idPost = (int) $idPost;
+        if ($idPost <= 0 || get_post_type($idPost) !== Source::SLUG) {
+            return;
+        }
+        delete_post_meta($idPost, self::META_ERRORES_CONSECUTIVOS);
+        delete_post_meta($idPost, self::META_PROXIMO_INTENTO_TRAS);
+        // El ETag/Last-Modified guardados son del feed ANTERIOR: contra
+        // la URL nueva provocarían un 304 espurio y no traeríamos nada.
+        delete_post_meta($idPost, self::META_ETAG);
+        delete_post_meta($idPost, self::META_LAST_MODIFIED);
+    }
+
     private static function estaEnCuarentena(int $idFuente): bool
     {
         $proximoIntentoTras = (int) get_post_meta($idFuente, self::META_PROXIMO_INTENTO_TRAS, true);

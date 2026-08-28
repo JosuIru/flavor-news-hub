@@ -114,6 +114,15 @@ final class Plugin
         add_filter('cron_schedules', [Scheduler::class, 'registrarIntervalo']);
         add_action(Scheduler::HOOK_CRON, [FeedIngester::class, 'ingestarTodasLasFuentesActivas']);
 
+        // Corregir la URL de un feed levanta su cuarentena. Sin esto, una
+        // fuente con cientos de errores acumulados seguía penalizada
+        // después de arreglarla —sólo se reintenta una vez al día—, así
+        // que el admin corregía la URL y no veía ningún efecto hasta el
+        // día siguiente, sin saber por qué. Vale para cualquier vía de
+        // cambio: importación del catálogo, edición en wp-admin o WP-CLI.
+        add_action('updated_post_meta', [FeedIngester::class, 'alCambiarFeedUrl'], 10, 4);
+        add_action('added_post_meta', [FeedIngester::class, 'alCambiarFeedUrl'], 10, 4);
+
         // Precalentado de los transients que alimentan la pestaña
         // Sistema → Descargas. Los enganchamos al MISMO cron de
         // ingesta con prioridad 20 (la ingesta corre en 10), de
