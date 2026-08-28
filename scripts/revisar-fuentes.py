@@ -300,6 +300,12 @@ def main() -> int:
     parser.add_argument("--instancia", default=INSTANCIA_DEFAULT)
     parser.add_argument("--todas", action="store_true",
                         help="sondea todas las fuentes del seed, no sólo el top de errores")
+    parser.add_argument("--cuarentena", action="store_true",
+                        help="sondea las fuentes EN CUARENTENA en vez del top de "
+                             "errores. Son las que el circuit breaker salta sin "
+                             "dejar log: no aparecen en el top porque sólo se "
+                             "reintentan una vez al día, así que llevan meses "
+                             "cayendo en silencio. Requiere backend >= 0.16.19")
     args = parser.parse_args()
 
     mapa_feeds = cargar_mapa_feed_urls()
@@ -333,15 +339,35 @@ def main() -> int:
             print()
         # El endpoint ahora trae el error REAL del servidor por fuente
         # (`mensaje` + `http_status`). Lo cruzamos con el sondeo local.
-        fuentes_a_revisar = [
-            {
-                "nombre":   entrada["nombre"],
-                "errores":  entrada.get("errores", 0),
-                "srv_http": entrada.get("http_status"),
-                "srv_msg":  entrada.get("mensaje", ""),
-            }
-            for entrada in diagnostico.get("top_errores_7d", [])
-        ]
+        if args.cuarentena:
+            # En cuarentena el servidor no ha llegado a registrar un
+            # error nuevo (sale antes de crear el log), así que no hay
+            # `http_status` ni `mensaje` que cruzar: el veredicto sale
+            # del sondeo local. Lo que aporta el diagnóstico aquí es
+            # QUÉ fuentes mirar y cuántos errores llevan acumulados.
+            fuentes_a_revisar = [
+                {
+                    "nombre":   entrada.get("source_name", ""),
+                    "errores":  entrada.get("errores_consecutivos", 0),
+                    "srv_http": None,
+                    "srv_msg":  "",
+                }
+                for entrada in (diagnostico.get("fuentes_en_cuarentena") or [])
+            ]
+            if not fuentes_a_revisar:
+                print("No hay fuentes en cuarentena (o el backend es anterior "
+                      "a 0.16.19 y no expone la clave).")
+                return 0
+        else:
+            fuentes_a_revisar = [
+                {
+                    "nombre":   entrada["nombre"],
+                    "errores":  entrada.get("errores", 0),
+                    "srv_http": entrada.get("http_status"),
+                    "srv_msg":  entrada.get("mensaje", ""),
+                }
+                for entrada in diagnostico.get("top_errores_7d", [])
+            ]
 
     encabezado = (f"{'FUENTE':<28} {'ERR':>4} {'SRV':>4} {'LOCAL':>5} {'WAF/CDN':<11} VEREDICTO")
     print(encabezado)

@@ -69,6 +69,15 @@ final class FeedIngester
     ];
 
     /**
+     * User-Agent de reserva, de lector de feeds, para el reintento
+     * cuando el origen responde HTML a un UA de navegador (ver
+     * `pareceFeed`). Se identifica honestamente como el agregador que
+     * es, que además es lo que esperan los sitios que filtran así.
+     */
+    private const UA_LECTOR_FEEDS =
+        'FlavorNewsHub/1.0 (+https://github.com/JosuIru/flavor-news-hub; agregador de medios libres)';
+
+    /**
      * Cabeceras condicionales: meta donde guardamos el ETag y el
      * Last-Modified que devolvió el servidor en el último fetch
      * exitoso. En la siguiente ronda los mandamos como If-None-Match
@@ -1150,11 +1159,58 @@ final class FeedIngester
             ];
         }
 
+        // Algunos orígenes hacen lo CONTRARIO de lo esperado: sirven el
+        // RSS a los lectores de feeds y devuelven una pared anti-bot
+        // (HTML, con 200) a los User-Agent de navegador. Como aquí
+        // mandamos uno de navegador —necesario para los que filtran al
+        // revés—, esos feeds caían siempre: 200, cuerpo HTML, cero
+        // items, error, y a la larga cuarentena. Caso verificado:
+        // desinformemonos.org devuelve text/html a Chrome y
+        // application/rss+xml a cualquier UA de lector.
+        //
+        // Reintento único y sólo cuando ya ha ido mal, así que no añade
+        // tráfico al camino normal.
+        if (!self::pareceFeed($cuerpo)) {
+            $args['user-agent'] = self::UA_LECTOR_FEEDS;
+            add_action('http_api_curl', $endurecedorCurl, 10, 1);
+            try {
+                $reintento = wp_remote_get($urlFeed, $args);
+            } finally {
+                remove_action('http_api_curl', $endurecedorCurl, 10);
+            }
+            if (!is_wp_error($reintento)
+                && (int) wp_remote_retrieve_response_code($reintento) === 200
+            ) {
+                $cuerpoReintento = (string) wp_remote_retrieve_body($reintento);
+                if (self::pareceFeed($cuerpoReintento)) {
+                    return [
+                        'body'          => $cuerpoReintento,
+                        'etag'          => (string) wp_remote_retrieve_header($reintento, 'etag'),
+                        'last_modified' => (string) wp_remote_retrieve_header($reintento, 'last-modified'),
+                        'http_status'   => 200,
+                    ];
+                }
+            }
+        }
+
         return [
             'body'          => $cuerpo,
             'etag'          => (string) wp_remote_retrieve_header($respuesta, 'etag'),
             'last_modified' => (string) wp_remote_retrieve_header($respuesta, 'last-modified'),
             'http_status'   => $codigoHttp,
         ];
+    }
+
+    /**
+     * ¿El cuerpo parece un feed (RSS/Atom/RDF) y no una página HTML?
+     *
+     * Mira sólo la cabecera del documento para no recorrer feeds
+     * grandes. Tolera BOM, declaración XML, comentarios y hojas de
+     * estilo XML antes del elemento raíz.
+     */
+    private static function pareceFeed(string $cuerpo): bool
+    {
+        $inicio = ltrim(substr($cuerpo, 0, 2048), "\xEF\xBB\xBF \t\n\r");
+        return (bool) preg_match('/<(?:\w+:)?(?:rss|feed|rdf)\b/i', $inicio);
     }
 }
