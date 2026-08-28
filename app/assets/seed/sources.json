@@ -5350,5 +5350,286 @@
     "topics": [],
     "es_movimiento": true,
     "active": false
+  },
+  {
+    "id": 7432,
+    "name": "Ágora Sol Radio",
+    "slug": "agora-sol-radio",
+    "feed_url": "https://agorasolradio.org/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://agorasolradio.org",
+    "territory": "Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7433,
+    "name": "Radio Almaina",
+    "slug": "radio-almaina",
+    "feed_url": "https://radioalmaina.org/feed/podcast/",
+    "feed_type": "podcast",
+    "website_url": "https://radioalmaina.org",
+    "territory": "Granada",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7434,
+    "name": "Bilbo Hiria Irratia",
+    "slug": "bilbo-hiria-irratia",
+    "feed_url": "https://www.bilbohiria.eus/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://www.bilbohiria.eus",
+    "territory": "Bizkaia",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7435,
+    "name": "Arraio Irratia",
+    "slug": "arraio-irratia",
+    "feed_url": "https://www.arraio.eus/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://www.arraio.eus",
+    "territory": "Gipuzkoa",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7436,
+    "name": "NAIZ Irratia",
+    "slug": "naiz-irratia",
+    "feed_url": "https://irratia.naiz.eus/eu/rss/sections/irratia.rss",
+    "feed_type": "podcast",
+    "website_url": "https://irratia.naiz.eus/eu",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": false
+  },
+  {
+    "id": 7437,
+    "name": "Euskalerria Irratia",
+    "slug": "euskalerria-irratia",
+    "feed_url": "https://euskalerriairratia.eus/irratia/podcastak/rss",
+    "feed_type": "podcast",
+    "website_url": "https://euskalerriairratia.eus",
+    "territory": "Nafarroa",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": false
+  },
+  {
+    "id": 7438,
+    "name": "Hala Bedi Irratia (podcastak)",
+    "slug": "hala-bedi-irratia-podcastak",
+    "feed_url": "https://halabedi.eus/?post_type=podcast&feed=rss2",
+    "feed_type": "podcast",
+    "website_url": "https://halabedi.eus",
+    "territory": "Araba",
+    "languages": [
+      "eu",
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7439,
+    "name": "Antxeta Irratia",
+    "slug": "antxeta-irratia",
+    "feed_url": "https://antxetamedia.eus/podcastak/ahapetik/rss",
+    "feed_type": "podcast",
+    "website_url": "https://antxetamedia.eus",
+    "territory": "Gipuzkoa",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7440,
+    "name": "Arrosa Sarea",
+    "slug": "arrosa-sarea",
+    "feed_url": "https://www.arrosasarea.eus/category/irratien-programak/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://www.arrosasarea.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7441,
+    "name": "Radio Zapatista",
+    "slug": "radio-zapatista",
+    "feed_url": "https://radiozapatista.org/?feed=rss2",
+    "feed_type": "podcast",
+    "website_url": "https://radiozapatista.org",
+    "territory": "Chiapas",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7442,
+    "name": "Devuelvan Nuestra Tierra",
+    "slug": "devuelvan-nuestra-tierra",
+    "feed_url": "https://www.ivoox.com/feed_fg_f1611804_filtro_1.xml",
+    "feed_type": "podcast",
+    "website_url": "https://www.tierraviva.org.py",
+    "territory": "Chaco",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7443,
+    "name": "Saber es tu Derecho",
+    "slug": "saber-es-tu-derecho",
+    "feed_url": "https://www.ivoox.com/feed_fg_f1612023_filtro_1.xml",
+    "feed_type": "podcast",
+    "website_url": "https://www.tierraviva.org.py",
+    "territory": "Paraguay",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7444,
+    "name": "Radio Topo",
+    "slug": "radio-topo",
+    "feed_url": "https://radiotopo.org/feed/podcast/",
+    "feed_type": "podcast",
+    "website_url": "https://radiotopo.org",
+    "territory": "Aragón",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7445,
+    "name": "EcoLeganés Radio",
+    "slug": "ecoleganes-radio",
+    "feed_url": "https://ecoleganes.org/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://ecoleganes.org",
+    "territory": "Leganés, Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7446,
+    "name": "Radio Kolor",
+    "slug": "radio-kolor",
+    "feed_url": "https://radiokolor.es/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://radiokolor.es",
+    "territory": "Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7447,
+    "name": "Radio XATA",
+    "slug": "radio-xata",
+    "feed_url": "https://radioxata.org/feed/",
+    "feed_type": "podcast",
+    "website_url": "https://radioxata.org",
+    "territory": "Pinto, Madrid",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7448,
+    "name": "Voces Libres (Ràdio Malva)",
+    "slug": "voces-libres-radio-malva",
+    "feed_url": "https://hardcuore.podcast.audio/@voceslibres/feed.xml",
+    "feed_type": "podcast",
+    "website_url": "https://radiomalva.org",
+    "territory": "País Valencià",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7449,
+    "name": "Hardcuore (Ràdio Malva)",
+    "slug": "hardcuore-radio-malva",
+    "feed_url": "https://hardcuore.podcast.audio/@hardcuore/feed.xml",
+    "feed_type": "podcast",
+    "website_url": "https://radiomalva.org",
+    "territory": "País Valencià",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true
+  },
+  {
+    "id": 7450,
+    "name": "La Directa (podcast)",
+    "slug": "la-directa-podcast",
+    "feed_url": "https://directa.cat/feed/podcast/",
+    "feed_type": "podcast",
+    "website_url": "https://directa.cat",
+    "territory": "Països Catalans",
+    "languages": [
+      "ca"
+    ],
+    "topics": [],
+    "es_movimiento": false
+  },
+  {
+    "id": 7451,
+    "name": "Argia Multimedia",
+    "slug": "argia-multimedia",
+    "feed_url": "https://www.argia.eus/multimedia/rss",
+    "feed_type": "podcast",
+    "website_url": "https://www.argia.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": false
   }
 ]
