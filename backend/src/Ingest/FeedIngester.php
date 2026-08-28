@@ -61,6 +61,11 @@ final class FeedIngester
         // (Voz de la Mixteca, de la Montaña, de las Huastecas, del
         // Valle, de los Vientos, de los Mayas, de los Vientos…).
         'ecos.inpi.gob.mx',
+        // Onda Color (Málaga). Verificado: con la verificación TLS
+        // desactivada su feed devuelve RSS válido con items; con ella
+        // activada falla el handshake por cadena incompleta y la fuente
+        // llevaba ~37 errores consecutivos, ya en cuarentena.
+        'ondacolor.org',
     ];
 
     /**
