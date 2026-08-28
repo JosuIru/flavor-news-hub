@@ -3676,8 +3676,8 @@
     "id": 7335,
     "name": "RCPA Radio Comunitaria",
     "slug": "rcpa-radio-comunitaria",
-    "feed_url": "https://www.rcpa.cl/feed/",
-    "feed_type": "rss",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UClOg6GwzVQ-4hMVJ-WxW05g",
+    "feed_type": "youtube",
     "website_url": "https://www.rcpa.cl/",
     "territory": "San Felipe",
     "languages": [
@@ -3784,7 +3784,8 @@
     "legal_note": "",
     "has_live_stream": false,
     "live_stream_permit": "none",
-    "es_movimiento": true
+    "es_movimiento": true,
+    "active": false
   },
   {
     "id": 7340,
@@ -3866,7 +3867,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "active": false
   },
   {
     "id": 7343,
@@ -3893,7 +3895,8 @@
     "content_license": "all-rights-reserved",
     "legal_note": "",
     "has_live_stream": false,
-    "live_stream_permit": "none"
+    "live_stream_permit": "none",
+    "active": false
   },
   {
     "id": 7345,
@@ -5225,6 +5228,127 @@
       "memoria-historica"
     ],
     "es_movimiento": false,
+    "active": false
+  },
+  {
+    "id": 7424,
+    "name": "ConFech",
+    "slug": "confech",
+    "feed_url": "https://www.confech.cl/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.confech.cl",
+    "territory": "Chile",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": false,
+    "active": false
+  },
+  {
+    "id": 7425,
+    "name": "Coordinadora Arauco-Malleco",
+    "slug": "coordinadora-arauco-malleco",
+    "feed_url": "https://weftun.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://weftun.org",
+    "territory": "Wallmapu",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": false,
+    "active": false
+  },
+  {
+    "id": 7426,
+    "name": "Ecologistas en Acción",
+    "slug": "ecologistas-en-accion-2",
+    "feed_url": "https://www.ecologistasenaccion.org/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.ecologistasenaccion.org",
+    "territory": "Estado",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": true,
+    "active": false
+  },
+  {
+    "id": 7427,
+    "name": "FM La Tribu",
+    "slug": "fm-la-tribu",
+    "feed_url": "https://fmlatribu.com/noticias/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.fmlatribu.com/",
+    "territory": "Buenos Aires",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": false
+  },
+  {
+    "id": 7428,
+    "name": "Furor TV",
+    "slug": "furor-tv",
+    "feed_url": "https://www.furor.tv/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.furor.tv/",
+    "territory": "Estado español",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": false,
+    "active": false
+  },
+  {
+    "id": 7429,
+    "name": "Hamaika Telebista",
+    "slug": "hamaika-tb",
+    "feed_url": "",
+    "feed_type": "rss",
+    "website_url": "https://www.hamaika.eus",
+    "territory": "Euskal Herria",
+    "languages": [
+      "eu"
+    ],
+    "topics": [],
+    "es_movimiento": true,
+    "active": false
+  },
+  {
+    "id": 7430,
+    "name": "Radio Activa Bolivia",
+    "slug": "radio-activa-bolivia",
+    "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCVhmz_DiPWfcnErVwzVZF9Q",
+    "feed_type": "youtube",
+    "website_url": "https://radioactivabolivia.com/",
+    "territory": "Patacamaya, La Paz",
+    "languages": [
+      "es"
+    ],
+    "topics": [],
+    "es_movimiento": false
+  },
+  {
+    "id": 7431,
+    "name": "Radio ZP-30",
+    "slug": "radio-zp-30",
+    "feed_url": "https://www.zp30.com.py/es/podcast/feed/",
+    "feed_type": "rss",
+    "website_url": "https://www.zp30.com.py/",
+    "territory": "Filadelfia, Chaco",
+    "languages": [
+      "es",
+      "de",
+      "gn",
+      "en"
+    ],
+    "topics": [],
+    "es_movimiento": true,
     "active": false
   }
 ]
