@@ -41,6 +41,8 @@ es un fallo de contenido del feed, reproducible desde cualquier IP.
 Uso:
   python3 scripts/revisar-fuentes.py              # top errores 7d + sondeo
   python3 scripts/revisar-fuentes.py --todas      # sondea TODAS las fuentes del seed
+  python3 scripts/revisar-fuentes.py --cuarentena  # las silenciadas por el circuit breaker
+  python3 scripts/revisar-fuentes.py --radios      # streams del catálogo de radios
   python3 scripts/revisar-fuentes.py --instancia https://otra.instancia
 
 No modifica nada. Sólo lee producción y los feeds de origen.
@@ -51,6 +53,7 @@ import argparse
 import json
 import subprocess
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -73,6 +76,7 @@ CABECERAS_INGESTER = [
 
 RAIZ_REPO = Path(__file__).resolve().parent.parent
 SEED_FUENTES = RAIZ_REPO / "backend" / "seed" / "sources.json"
+SEED_RADIOS = RAIZ_REPO / "backend" / "seed" / "radios.json"
 
 
 def obtener_diagnostico(instancia: str) -> dict:
@@ -295,11 +299,74 @@ def clasificar(codigo_http: str, ssl_verify: str) -> str:
     return f"HTTP {codigo_http}"
 
 
+def revisar_radios() -> int:
+    """Sondea los `stream_url` del catálogo de radios.
+
+    Las radios NO se ingestan: son streams en directo, así que no
+    generan logs ni errores. Una emisora con la URL caducada
+    simplemente falla cuando alguien pulsa play, y nadie se entera.
+    Este modo es la única vigilancia que tienen.
+
+    AVISO IMPORTANTE al leer la salida: un servidor Icecast sólo
+    publica un mount MIENTRAS la emisora está emitiendo. Muchas radios
+    comunitarias no emiten 24/7, así que un fallo aislado NO significa
+    que la URL esté rota — puede estar fuera de antena. Sólo un fallo
+    repetido a lo largo de varios días (o un DNS muerto, que sí es
+    inequívoco) justifica tocar el catálogo.
+    """
+    datos = json.loads(SEED_RADIOS.read_text(encoding="utf-8"))
+    radios = datos if isinstance(datos, list) else datos.get("radios", datos)
+    print(f"{len(radios)} emisoras en el catálogo de radios\n")
+    print(f"{'EMISORA':30} {'ESTADO':28} URL")
+    print("-" * 100)
+    caidas = 0
+    for radio in sorted(radios, key=lambda r: str(r.get("name", ""))):
+        nombre = str(radio.get("name", "?"))
+        url = str(radio.get("stream_url", "") or "").strip()
+        if not url:
+            print(f"{nombre[:28]:30} {'SIN stream_url':28}")
+            caidas += 1
+            continue
+        # `quote` sobre el path: hay entradas con acentos (La Leñera)
+        # que revientan la petición antes de salir a la red.
+        partes = urllib.parse.urlsplit(url)
+        url_segura = urllib.parse.urlunsplit((
+            partes.scheme, partes.netloc, urllib.parse.quote(partes.path),
+            urllib.parse.quote(partes.query, safe="=&"), "",
+        ))
+        try:
+            peticion = urllib.request.Request(
+                url_segura, headers={"User-Agent": USER_AGENT_INGESTER}
+            )
+            with urllib.request.urlopen(peticion, timeout=15) as respuesta:
+                cuerpo = respuesta.read(1024)
+            tipo = respuesta.headers.get("Content-Type", "?")
+            estado = f"OK {respuesta.status} {tipo[:18]}" if cuerpo else "200 sin datos"
+        except urllib.error.HTTPError as error:
+            estado = f"HTTP {error.code}"
+        except Exception as error:  # noqa: BLE001
+            motivo = str(getattr(error, "reason", error))
+            estado = "DNS MUERTO" if "not known" in motivo or "Name or service" in motivo \
+                else f"{type(error).__name__}: {motivo[:16]}"
+        if not estado.startswith("OK"):
+            caidas += 1
+        print(f"{nombre[:28]:30} {estado:28} {url[:44]}")
+    print()
+    print(f"{len(radios) - caidas} responden · {caidas} no responden")
+    print("Recuerda: 'no responde' puede ser simplemente fuera de antena.")
+    print("Repite el sondeo otro día antes de dar por muerta una emisora.")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--instancia", default=INSTANCIA_DEFAULT)
     parser.add_argument("--todas", action="store_true",
                         help="sondea todas las fuentes del seed, no sólo el top de errores")
+    parser.add_argument("--radios", action="store_true",
+                        help="sondea los streams del catálogo de radios en vez "
+                             "de los feeds. Las radios no se ingestan, así que "
+                             "no generan logs: esta es su única vigilancia")
     parser.add_argument("--cuarentena", action="store_true",
                         help="sondea las fuentes EN CUARENTENA en vez del top de "
                              "errores. Son las que el circuit breaker salta sin "
@@ -307,6 +374,9 @@ def main() -> int:
                              "reintentan una vez al día, así que llevan meses "
                              "cayendo en silencio. Requiere backend >= 0.16.19")
     args = parser.parse_args()
+
+    if args.radios:
+        return revisar_radios()
 
     mapa_feeds = cargar_mapa_feed_urls()
 
