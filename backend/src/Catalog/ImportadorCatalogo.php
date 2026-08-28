@@ -86,15 +86,33 @@ final class ImportadorCatalogo
                     'meta_value'     => $urlFeedSeed,
                     'no_found_rows'  => true,
                 ]);
-                $hayOtroPostConEsaUrl = false;
+                $idOtroPostConEsaUrl = 0;
                 foreach ($idsConMismaUrl as $idEnUso) {
                     if (!$existente || (int) $idEnUso !== (int) $existente->ID) {
-                        $hayOtroPostConEsaUrl = true;
+                        $idOtroPostConEsaUrl = (int) $idEnUso;
                         break;
                     }
                 }
-                if ($hayOtroPostConEsaUrl) {
-                    $errores[] = "Slug '$slug' saltado: feed_url ya en uso por otro source ($urlFeedSeed).";
+                if ($idOtroPostConEsaUrl > 0) {
+                    // Nombrar al culpable. Con el mensaje anterior —sólo
+                    // la URL— el admin no tenía forma de encontrar la
+                    // otra fuente: si está desactivada no sale en
+                    // `/sources`, y buscarla a mano entre cientos de
+                    // entradas era el único recurso.
+                    $otroTitulo = (string) (get_the_title($idOtroPostConEsaUrl) ?: '(sin título)');
+                    $otroPost = get_post($idOtroPostConEsaUrl);
+                    $otroSlug = $otroPost ? (string) $otroPost->post_name : '';
+                    $otroActivo = get_post_meta($idOtroPostConEsaUrl, '_fnh_active', true);
+                    $errores[] = sprintf(
+                        "Slug '%s' saltado: la feed_url %s ya la usa «%s» (slug %s, %s, ID %d). "
+                        . "Borra o cambia la URL de una de las dos y vuelve a importar.",
+                        $slug,
+                        $urlFeedSeed,
+                        $otroTitulo,
+                        $otroSlug !== '' ? $otroSlug : '?',
+                        ($otroActivo === '' || (bool) $otroActivo) ? 'activa' : 'desactivada',
+                        $idOtroPostConEsaUrl
+                    );
                     $saltados++;
                     continue;
                 }
