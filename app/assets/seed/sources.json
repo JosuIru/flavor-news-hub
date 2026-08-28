@@ -1338,7 +1338,7 @@
       "cultura"
     ],
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7160,
@@ -2126,7 +2126,7 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7297,
@@ -2179,7 +2179,7 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7299,
@@ -3699,7 +3699,7 @@
     "has_live_stream": false,
     "live_stream_permit": "none",
     "es_movimiento": true,
-    "active": false
+    "active": true
   },
   {
     "id": 7337,
